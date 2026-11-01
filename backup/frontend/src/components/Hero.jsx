@@ -1,433 +1,678 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+import { FiArrowRight, FiShield, FiLayers, FiCompass } from "react-icons/fi";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function HeroSection() {
   const rootRef = useRef(null);
 
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
 
-    const stats = root.querySelectorAll(".stat-band .num");
-    const statObs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const el = entry.target;
-            const target = parseInt(el.dataset.count, 10);
-            const dur = 1400;
-            const start = performance.now();
-            function tick(now) {
-              const p = Math.min((now - start) / dur, 1);
-              const eased = 1 - Math.pow(1 - p, 3);
-              el.textContent = Math.round(eased * target).toLocaleString();
-              if (p < 1) requestAnimationFrame(tick);
-            }
-            requestAnimationFrame(tick);
-            statObs.unobserve(el);
+      mm.add(
+        {
+          isNormal: "(prefers-reduced-motion: no-preference)",
+          isReduced: "(prefers-reduced-motion: reduce)",
+        },
+        (context) => {
+          const { isNormal } = context.conditions;
+
+          if (isNormal) {
+            // Master entrance sequence
+            const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+            tl.from(".hero-badge", {
+              y: 24,
+              opacity: 0,
+              duration: 0.8,
+              delay: 0.15,
+            })
+              .from(
+                ".hero-title-line",
+                {
+                  y: 45,
+                  opacity: 0,
+                  duration: 1,
+                  stagger: 0.15,
+                },
+                "-=0.5"
+              )
+              .from(
+                ".hero-lede",
+                {
+                  y: 25,
+                  opacity: 0,
+                  duration: 0.8,
+                },
+                "-=0.6"
+              )
+              .from(
+                ".hero-cta-pill",
+                {
+                  y: 20,
+                  opacity: 0,
+                  stagger: 0.1,
+                  duration: 0.7,
+                },
+                "-=0.5"
+              )
+              .from(
+                ".hero-trust-item",
+                {
+                  opacity: 0,
+                  y: 15,
+                  stagger: 0.08,
+                  duration: 0.6,
+                },
+                "-=0.4"
+              )
+              .from(
+                ".hero-telemetry-dock",
+                {
+                  y: 35,
+                  opacity: 0,
+                  duration: 0.9,
+                },
+                "-=0.4"
+              )
+              .from(
+                ".hero-scroll-cue",
+                {
+                  opacity: 0,
+                  duration: 0.6,
+                },
+                "-=0.3"
+              );
+
+            // Counter ticker animation
+            const statNumbers = rootRef.current.querySelectorAll(".hero-stat-num");
+            statNumbers.forEach((el) => {
+              const target = parseInt(el.dataset.count, 10);
+              const suffix = el.dataset.suffix || "";
+              const obj = { val: 0 };
+              gsap.to(obj, {
+                val: target,
+                duration: 1.8,
+                ease: "power2.out",
+                delay: 0.6,
+                onUpdate: () => {
+                  el.textContent = Math.round(obj.val).toLocaleString() + suffix;
+                },
+              });
+            });
+
+            // GSAP ScrollTrigger: Parallax zoom on hero media
+            gsap.to(".hero-bg-media", {
+              scale: 1.18,
+              yPercent: 12,
+              ease: "none",
+              scrollTrigger: {
+                trigger: rootRef.current,
+                start: "top top",
+                end: "bottom top",
+                scrub: 1,
+              },
+            });
+
+            // GSAP ScrollTrigger: Smooth fade & recede on content
+            gsap.to(".hero-content-wrapper", {
+              y: -40,
+              opacity: 0.2,
+              ease: "none",
+              scrollTrigger: {
+                trigger: rootRef.current,
+                start: "top top",
+                end: "bottom top",
+                scrub: 1,
+              },
+            });
           }
-        });
-      },
-      { threshold: 0.4 },
-    );
-    stats.forEach((s) => statObs.observe(s));
+        },
+        rootRef
+      );
+    },
+    { scope: rootRef }
+  );
 
-    return () => statObs.disconnect();
-  }, []);
+  // Subtle 3D mouse parallax on the telemetry dock (desktop only)
+  const handleMouseMove = (e) => {
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.innerWidth < 1024) return;
+
+    const dock = rootRef.current?.querySelector(".hero-telemetry-dock");
+    if (!dock) return;
+
+    const rect = dock.getBoundingClientRect();
+    const x = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
+    const y = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
+
+    gsap.to(dock, {
+      rotationY: x * 4,
+      rotationX: -y * 4,
+      transformPerspective: 1200,
+      ease: "power2.out",
+      duration: 0.5,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    const dock = rootRef.current?.querySelector(".hero-telemetry-dock");
+    if (!dock) return;
+    gsap.to(dock, {
+      rotationY: 0,
+      rotationX: 0,
+      ease: "power2.out",
+      duration: 0.8,
+    });
+  };
+
+  const handleScrollCueClick = () => {
+    const target = document.querySelector("#clients") || document.querySelector("#about");
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
-    <div ref={rootRef}>
+    <div ref={rootRef} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
       <style>{`
-        /* ============ HERO ============ */
+        /* ============ REDESIGNED ARCHITECTURAL HERO ============ */
         .hero {
-            padding: 58px 0 0;
-            background: var(--ink);
-            color: var(--paper);
-            position: relative;
-            overflow: hidden;
+          position: relative;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          padding: 130px 24px 48px;
+          background: #0d0c0a;
+          color: var(--paper, #faf7f0);
+          overflow: hidden;
+          isolation: isolate;
         }
 
-        .hero-bg {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            overflow: hidden;
+        @media (min-width: 768px) {
+          .hero {
+            padding: 150px 32px 56px;
+          }
         }
 
-        .hero-bg img {
-            width: 100%;
-            height: 100%;
-            display: block;
-            object-fit: cover;
-            object-position: center 30%;
+        /* Ambient Background & Blueprint Mesh */
+        .hero-bg-container {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          overflow: hidden;
+          pointer-events: none;
         }
 
-        .hero-overlay {
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-            background:
-                linear-gradient(100deg, rgba(23, 20, 15, .94) 0%, rgba(23, 20, 15, .82) 32%, rgba(23, 20, 15, .5) 62%, rgba(23, 20, 15, .7) 100%),
-                linear-gradient(0deg, rgba(23, 20, 15, .9) 0%, rgba(23, 20, 15, 0) 26%);
+        .hero-bg-media {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 38%;
+          filter: brightness(0.42) contrast(1.15) saturate(0.9);
+          transform: scale(1.05);
+          will-change: transform;
         }
 
-        .hero .blueprint {
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-            opacity: .35;
-            background-image:
-                linear-gradient(rgba(250, 247, 240, .05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(250, 247, 240, .05) 1px, transparent 1px);
-            background-size: 42px 42px;
+        .hero-vignette {
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(ellipse 90% 65% at 50% 35%, rgba(13, 12, 10, 0.45) 0%, rgba(13, 12, 10, 0.88) 75%, #0d0c0a 100%),
+            linear-gradient(180deg, rgba(13, 12, 10, 0.7) 0%, transparent 30%, transparent 70%, #0d0c0a 100%);
         }
 
-        .hero::after {
-            content: "";
-            position: absolute;
-            z-index: 1;
-            right: -10%;
-            top: 10%;
-            width: 60%;
-            height: 120%;
-            background: radial-gradient(ellipse at center, rgba(169, 131, 46, .18), transparent 65%);
-            pointer-events: none;
+        .hero-blueprint-grid {
+          position: absolute;
+          inset: 0;
+          opacity: 0.22;
+          background-image:
+            linear-gradient(rgba(197, 160, 89, 0.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(197, 160, 89, 0.08) 1px, transparent 1px);
+          background-size: 54px 54px;
+          mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 80%);
+          -webkit-mask-image: radial-gradient(ellipse at 50% 40%, black 20%, transparent 80%);
         }
 
-        .hero-inner {
-            position: relative;
-            z-index: 2;
-            display: grid;
-            grid-template-columns: 1.15fr .85fr;
-            gap: 60px;
-            align-items: center;
-            padding-bottom: 70px;
+        .hero-ambient-glow {
+          position: absolute;
+          top: 20%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 800px;
+          height: 450px;
+          background: radial-gradient(circle, rgba(197, 160, 89, 0.14) 0%, transparent 65%);
+          filter: blur(80px);
+          pointer-events: none;
+          z-index: 1;
         }
 
-        .hero-visual {
-            box-shadow: 0 30px 70px -30px rgba(0, 0, 0, .6);
+        /* Central Content Container */
+        .hero-content-wrapper {
+          position: relative;
+          z-index: 2;
+          max-width: 1180px;
+          width: 100%;
+          margin: 0 auto;
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
 
-        .hero-copy .eyebrow {
-            color: var(--brass-light);
+        /* Badge / Origin Pill */
+        .hero-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 18px;
+          border-radius: 100px;
+          background: rgba(20, 19, 17, 0.72);
+          border: 1px solid rgba(197, 160, 89, 0.32);
+          box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(12px);
+          margin-bottom: 24px;
         }
 
-        .hero-copy .eyebrow::before {
-            background: var(--brass-light);
+        .hero-badge-bullet {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: var(--brass, #c5a059);
+          box-shadow: 0 0 10px var(--brass, #c5a059);
         }
 
-        .hero-copy h1 {
-            font-family: var(--font-serif);
-            font-size: clamp(38px, 5.2vw, 68px);
-            font-weight: 500;
-            line-height: 1.05;
-            letter-spacing: -0.015em;
-            margin-top: 18px;
-            color: var(--paper);
+        .hero-badge-text {
+          font-family: var(--font-sans);
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: var(--brass-light, #dfba73);
         }
 
-        .hero-copy h1 .em {
-            font-style: italic;
-            color: var(--brass-light);
-            font-weight: 400;
-            display: inline-block;
-            line-height: 1.1;
-            padding-bottom: 4px;
+        /* Massive 2-Line Editorial Headline */
+        .hero-heading {
+          margin: 0 auto;
+          max-width: 1080px;
+          font-family: var(--font-serif);
+          font-size: clamp(2.6rem, 5.2vw, 4.8rem);
+          font-weight: 500;
+          line-height: 1.12;
+          letter-spacing: -0.015em;
+          color: #ffffff;
         }
 
-        .hero-copy p.lede {
-            margin-top: 22px;
-            font-size: 17px;
-            line-height: 1.75;
-            color: rgba(250, 247, 240, .72);
-            max-width: 50ch;
+        .hero-title-line {
+          display: block;
         }
 
-        .hero-points {
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .hero-title-italic {
+          font-style: italic;
+          color: var(--brass-light, #dfba73);
+          font-weight: 400;
         }
 
-        .hero-points li {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-            font-size: 14.5px;
-            color: rgba(250, 247, 240, .88);
+        /* Subtitle / Lede */
+        .hero-lede {
+          margin-top: 24px;
+          max-width: 64ch;
+          font-family: var(--font-sans);
+          font-size: clamp(15px, 1.4vw, 17.5px);
+          line-height: 1.75;
+          color: rgba(250, 247, 240, 0.78);
         }
 
-        .hero-points svg {
-            flex: none;
-            margin-top: 3px;
-            width: 16px;
-            height: 16px;
-            color: var(--brass-light);
+        /* CTA Row */
+        .hero-cta-group {
+          margin-top: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          flex-wrap: wrap;
         }
 
-        .hero-ctas {
-            display: flex;
-            gap: 16px;
-            margin-top: 36px;
-            flex-wrap: wrap;
+        .hero-btn-primary {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 16px 32px;
+          border-radius: 4px;
+          background: linear-gradient(135deg, #dfba73 0%, #c5a059 100%);
+          color: #0d0c0a;
+          font-family: var(--font-sans);
+          font-size: 13.5px;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          text-decoration: none;
+          box-shadow: 0 12px 28px -6px rgba(197, 160, 89, 0.35);
+          transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+          border: none;
         }
 
-        .hero-visual {
-            position: relative;
-            aspect-ratio: 4/5;
-            border-radius: 2px;
-            overflow: hidden;
-            border: 1px solid rgba(250, 247, 240, .14);
+        .hero-btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 16px 36px -6px rgba(197, 160, 89, 0.5);
+          filter: brightness(1.05);
         }
 
-        .hero-visual .room-block {
-            height: 100%;
-            width: 100%;
-            position: relative;
+        .hero-btn-primary:active {
+          transform: scale(0.98);
         }
 
-        .hero-visual .room-block img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
+        .hero-btn-secondary {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 15px 30px;
+          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.04);
+          color: var(--paper, #faf7f0);
+          font-family: var(--font-sans);
+          font-size: 13.5px;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          text-decoration: none;
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          backdrop-filter: blur(10px);
+          transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
         }
 
-        .hero-visual .room-block::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(23,20,15,0) 55%, rgba(23,20,15,.85) 100%);
+        .hero-btn-secondary:hover {
+          transform: translateY(-2px);
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(197, 160, 89, 0.45);
+          color: #ffffff;
         }
 
-        .hero-visual .rb-tag {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 3;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: var(--brass-light);
-            background: rgba(23, 20, 15, .55);
-            padding: 7px 12px;
-            backdrop-filter: blur(4px);
+        .hero-btn-secondary:active {
+          transform: scale(0.98);
         }
 
-        .hero-visual .rb-label {
-            position: absolute;
-            bottom: 60px;
-            left: 20px;
-            right: 20px;
-            z-index: 3;
-            font-family: var(--serif);
-            font-size: 19px;
-            line-height: 1.3;
-            color: var(--paper);
+        /* Trust Points (Direct, non-spammy) */
+        .hero-trust-bar {
+          margin-top: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 24px;
+          flex-wrap: wrap;
         }
 
-        .hero-visual .frame-tag {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            z-index: 3;
-            background: var(--brass);
-            color: var(--ink);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            padding: 8px 14px;
+        .hero-trust-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12.5px;
+          font-weight: 500;
+          color: rgba(250, 247, 240, 0.68);
+          letter-spacing: 0.02em;
         }
 
-        .stat-band {
-            position: relative;
-            z-index: 2;
-            border-top: 1px solid rgba(250, 247, 240, .14);
-            background: rgba(23, 20, 15, .55);
-            backdrop-filter: blur(6px);
+        .hero-trust-icon {
+          color: var(--brass-light, #dfba73);
+          flex-shrink: 0;
         }
 
-        .stat-band .wrap {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
+        /* Spatial Antigravity Telemetry Dock */
+        .hero-telemetry-container {
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          max-width: 1080px;
+          margin: 56px auto 0;
+          perspective: 1200px;
         }
 
-        .stat-band .stat {
-            padding: 30px 10px;
-            text-align: center;
-            border-right: 1px solid rgba(250, 247, 240, .14);
+        .hero-telemetry-dock {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          background: rgba(20, 19, 17, 0.76);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 6px;
+          box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+          overflow: hidden;
+          transition: transform 0.2s ease-out, border-color 0.3s ease;
         }
 
-        .stat-band .stat:last-child {
+        .hero-telemetry-dock:hover {
+          border-color: rgba(197, 160, 89, 0.28);
+        }
+
+        @media (min-width: 820px) {
+          .hero-telemetry-dock {
+            grid-template-columns: repeat(4, 1fr);
+          }
+        }
+
+        .hero-stat-cell {
+          padding: 24px 20px;
+          text-align: center;
+          position: relative;
+          border-right: 1px solid rgba(255, 255, 255, 0.06);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        @media (min-width: 820px) {
+          .hero-stat-cell {
+            border-bottom: none;
+          }
+          .hero-stat-cell:last-child {
             border-right: none;
+          }
         }
 
-        .stat-band .num {
-            font-family: var(--font-serif);
-            font-size: clamp(28px, 3.4vw, 42px);
-            color: var(--brass-light);
-            font-weight: 500;
-            line-height: 1;
+        .hero-stat-num {
+          font-family: var(--font-serif);
+          font-size: clamp(28px, 3vw, 38px);
+          font-weight: 600;
+          color: var(--brass-light, #dfba73);
+          line-height: 1;
         }
 
-        .stat-band .lbl {
-            margin-top: 6px;
-            font-size: 11.5px;
-            letter-spacing: .09em;
-            text-transform: uppercase;
-            color: rgba(250, 247, 240, .65);
+        .hero-stat-label {
+          margin-top: 8px;
+          font-family: var(--font-sans);
+          font-size: 11.5px;
+          font-weight: 600;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: rgba(250, 247, 240, 0.65);
         }
 
-        @media(max-width:900px) {
-            .hero-inner {
-                grid-template-columns: 1fr;
-            }
-
-            .hero-visual {
-                aspect-ratio: 16/10;
-                order: -1;
-            }
+        .hero-stat-sub {
+          margin-top: 4px;
+          font-size: 11px;
+          color: rgba(250, 247, 240, 0.4);
         }
 
-        @media(max-width:700px) {
-            .stat-band .wrap {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        /* Minimalist Scroll Cue */
+        .hero-scroll-cue {
+          position: relative;
+          z-index: 2;
+          margin-top: 40px;
+          display: inline-flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          background: none;
+          border: none;
+          color: rgba(250, 247, 240, 0.5);
+          transition: color 0.25s ease;
+        }
 
-            .stat-band .stat:nth-child(2n) {
-                border-right: none;
-            }
+        .hero-scroll-cue:hover {
+          color: var(--brass-light, #dfba73);
+        }
 
-            .stat-band .stat {
-                border-bottom: 1px solid rgba(250, 247, 240, .14);
-            }
+        .hero-scroll-text {
+          font-size: 10px;
+          letter-spacing: 0.22em;
+          text-transform: uppercase;
+          font-weight: 600;
+        }
+
+        .hero-scroll-line {
+          width: 1px;
+          height: 32px;
+          background: linear-gradient(180deg, var(--brass, #c5a059), transparent);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .hero-scroll-line::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 40%;
+          background: #ffffff;
+          animation: heroScrollPulse 2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+        }
+
+        @keyframes heroScrollPulse {
+          0% {
+            transform: translateY(-100%);
+          }
+          100% {
+            transform: translateY(280%);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .hero-scroll-line::after {
+            animation: none;
+          }
+          .hero-bg-media {
+            transform: none !important;
+          }
         }
       `}</style>
 
       <section className="hero" id="home">
-        <div className="hero-bg" aria-hidden="true">
+        {/* Background Visual Layer */}
+        <div className="hero-bg-container" aria-hidden="true">
           <img
-            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1800&q=80"
-            alt=""
+            className="hero-bg-media"
+            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2200&q=85"
+            alt="Yashmeen bespoke architectural interior fit-out in Dubai"
             loading="eager"
           />
+          <div className="hero-vignette" />
+          <div className="hero-blueprint-grid" />
+          <div className="hero-ambient-glow" />
         </div>
-        <div className="hero-overlay"></div>
-        <div className="blueprint"></div>
-        <div className="wrap hero-inner">
-          <div className="hero-copy">
-            <span className="eyebrow">Dubai · Est. 2016</span>
-            <h1>
-              Dubai's fit-out
-              <br />
-              partner for <span className="em">considered</span>
-              <br />
-              interiors.
-            </h1>
-            <p className="lede">
-              Yashmeen Future Building designs, builds and installs turnkey
-              commercial, hospitality and residential spaces - one in-house team
-              from first sketch to final snag.
-            </p>
-            <ul className="hero-points">
-              <li>
-                <svg viewBox="0 0 20 20" fill="none">
-                  <path
-                    d="M4 10.5L8 14.5L16 5.5"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                35,000 sq.ft in-house production facility - joinery, upholstery,
-                metal &amp; glass.
-              </li>
-              <li>
-                <svg viewBox="0 0 20 20" fill="none">
-                  <path
-                    d="M4 10.5L8 14.5L16 5.5"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                200+ in-house designers, engineers and project managers.
-              </li>
-              <li>
-                <svg viewBox="0 0 20 20" fill="none">
-                  <path
-                    d="M4 10.5L8 14.5L16 5.5"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Most projects delivered in 60-90 days, ISO 9001 · 14001 · 45001
-                certified.
-              </li>
-            </ul>
-            <div className="hero-ctas">
-              <a href="#contact" className="btn btn-brass">
-                Book a Consultation
-              </a>
-              <a href="#projects" className="btn btn-light">
-                View Our Projects
-              </a>
-            </div>
+
+        {/* Central Content */}
+        <div className="hero-content-wrapper">
+          {/* Origin Eyebrow */}
+          <div className="hero-badge">
+            <span className="hero-badge-bullet" />
+            <span className="hero-badge-text">Dubai - Established 2016</span>
           </div>
-          <div className="hero-visual">
-            <div className="room-block">
-              <img
-                src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
-                alt="Private residence living room, Emirates Hills"
-                loading="lazy"
-              />
-              <span className="rb-tag">Featured Project</span>
-              <span className="rb-label">
-                Private Residence - Emirates Hills
-              </span>
-            </div>
-            <span className="frame-tag">Design &amp; Build</span>
+
+          {/* 2-Line Master Headline */}
+          <h1 className="hero-heading">
+            <span className="hero-title-line">Architecture of distinction.</span>
+            <span className="hero-title-line hero-title-italic">
+              Turnkey fit-out contracting in Dubai.
+            </span>
+          </h1>
+
+          {/* Editorial Lede */}
+          <p className="hero-lede">
+            Yashmeen Future Building engineers and delivers bespoke commercial,
+            hospitality, and private residential fit-outs across the UAE. A single,
+            accountable in-house team from design and municipal approvals to final handover.
+          </p>
+
+          {/* Action CTAs */}
+          <div className="hero-cta-group">
+            <a href="#contact" className="hero-btn-primary hero-cta-pill">
+              Schedule Consultation <FiArrowRight size={15} />
+            </a>
+            <a href="#projects" className="hero-btn-secondary hero-cta-pill">
+              Explore Selected Works
+            </a>
+          </div>
+
+          {/* Subtle Trust Indicators */}
+          <div className="hero-trust-bar">
+            <span className="hero-trust-item">
+              <FiCompass size={14} className="hero-trust-icon" />
+              Bay Square Studio, Business Bay
+            </span>
+            <span className="hero-trust-item">
+              <FiLayers size={14} className="hero-trust-icon" />
+              35,000 Sq.Ft Al Quoz Workshop
+            </span>
+            <span className="hero-trust-item">
+              <FiShield size={14} className="hero-trust-icon" />
+              ISO 9001 · 14001 · 45001 Certified
+            </span>
           </div>
         </div>
-        <div className="stat-band">
-          <div className="wrap">
-            <div className="stat">
-              <div className="num" data-count="9">
-                0
+
+        {/* Antigravity Spatial Telemetry Dock */}
+        <div className="hero-telemetry-container">
+          <div className="hero-telemetry-dock">
+            <div className="hero-stat-cell">
+              <div className="hero-stat-num" data-count="9" data-suffix="+">
+                9+
               </div>
-              <div className="lbl">Years Active</div>
+              <div className="hero-stat-label">Years of Heritage</div>
+              <div className="hero-stat-sub">Established in Dubai</div>
             </div>
-            <div className="stat">
-              <div className="num" data-count="640">
-                0
+            <div className="hero-stat-cell">
+              <div className="hero-stat-num" data-count="640" data-suffix="+">
+                640+
               </div>
-              <div className="lbl">Projects Delivered</div>
+              <div className="hero-stat-label">Commissions Delivered</div>
+              <div className="hero-stat-sub">Villas, Offices &amp; F&amp;B</div>
             </div>
-            <div className="stat">
-              <div className="num" data-count="200">
-                0
+            <div className="hero-stat-cell">
+              <div className="hero-stat-num" data-count="35000" data-suffix=" SF">
+                35,000 SF
               </div>
-              <div className="lbl">In-House Staff</div>
+              <div className="hero-stat-label">In-House Workshop</div>
+              <div className="hero-stat-sub">Al Quoz Industrial 4</div>
             </div>
-            <div className="stat">
-              <div className="num" data-count="150">
-                0
+            <div className="hero-stat-cell">
+              <div className="hero-stat-num" data-count="200" data-suffix="+">
+                200+
               </div>
-              <div className="lbl">High-End Villas</div>
-            </div>
-            <div className="stat">
-              <div className="num" data-count="90">
-                0
-              </div>
-              <div className="lbl">Commercial Offices</div>
+              <div className="hero-stat-label">Craftsmen &amp; Engineers</div>
+              <div className="hero-stat-sub">Single Accountability</div>
             </div>
           </div>
+        </div>
+
+        {/* Minimalist Scroll Cue */}
+        <div style={{ textAlign: "center", position: "relative", zIndex: 2 }}>
+          <button
+            type="button"
+            className="hero-scroll-cue"
+            onClick={handleScrollCueClick}
+            aria-label="Scroll to explore Yashmeen fit-out services"
+          >
+            <span className="hero-scroll-text">Scroll to explore</span>
+            <span className="hero-scroll-line" />
+          </button>
         </div>
       </section>
     </div>

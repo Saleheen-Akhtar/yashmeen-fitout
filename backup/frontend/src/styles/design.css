@@ -1,0 +1,155 @@
+.contact-section {
+  padding: 80px 20px;
+  text-align: center;
+  background: url("/static/contact-banner.webp") top center no-repeat #edf2f6;
+}
+.contact-section h1 {
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 15px;
+  margin-top: 0px;
+}
+.branches-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  margin-top: 80px;
+  background: #fff;
+  padding: 40px;
+  border-radius: 10px;
+}
+
+/* .branches-content h2 {
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 15px;
+} */
+
+.branches-content h3 {
+  font-weight: 700;
+  color: #000;
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.branches-content p {
+  margin-bottom: 50px;
+}
+
+.branches-grid {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 80px;
+}
+
+.branch-card {
+  flex-basis: 42%;
+  border: 1px solid #e6edf3;
+  border-top: 4px solid #cf332a;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  margin-bottom: 30px;
+  padding: 25px;
+  text-align: left;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.branch-card:hover {
+  transform: translateY(-5px);
+}
+
+.branch-card h4 {
+  color: #254184;
+  font-size: 24px;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.branch-card p {
+  margin-bottom: 10px;
+}
+
+.branch-card a {
+  color: #0077ff;
+  text-decoration: none;
+}
+
+.branch-card a:hover {
+  text-decoration: underline;
+}
+.career-container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+.containers img {
+  width: 120px;
+  display: block;
+  margin: auto;
+}
+.containers h4 {
+  font-size: 20px;
+  margin-top: 30px;
+}
+.career-box {
+  background: #f0f5ff;
+  border-radius: 15px;
+  padding: 30px 20px;
+  text-align: left;
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  border: 1px solid #edf2f6;
+}
+
+.career-info h3 {
+  color: #0077ff;
+  margin-bottom: 10px;
+}
+
+.career-info p {
+  margin: 5px 0 10px;
+}
+
+.career-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.view-btn,
+.apply-btn {
+  flex: 1;
+  padding: 9px 21px;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.view-btn {
+  background: #e9f3ff;
+  color: #0077ff;
+  border: 1px solid #0077ff;
+}
+
+.view-btn:hover {
+  background: #0077ff;
+  color: #fff;
+}
+
+.apply-btn {
+  background: #0077ff;
+  color: #fff;
+}
+
+.apply-btn:hover {
+  background: #005ec7;
+}

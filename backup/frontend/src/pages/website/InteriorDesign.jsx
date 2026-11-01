@@ -169,20 +169,20 @@ export default function InteriorDesign() {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .intpg-page{
-          --intpg-ink:#191919;
-          --intpg-black:#0A0A0A;
-          --intpg-gray-50:#F7F6F4;
-          --intpg-gray-100:#F0EFEC;
-          --intpg-gray-200:#E4E2DD;
-          --intpg-gray-500:#6B6B6B;
-          --intpg-brass:#A9793F;
-          --intpg-brass-deep:#8C6431;
+          --intpg-ink:#faf7f0;
+          --intpg-black:#0d0c0a;
+          --intpg-gray-50:#141311;
+          --intpg-gray-100:rgba(255,255,255,0.05);
+          --intpg-gray-200:rgba(255,255,255,0.08);
+          --intpg-gray-500:rgba(250,247,240,0.72);
+          --intpg-brass:var(--brass, #c5a059);
+          --intpg-brass-deep:var(--brass-light, #dfba73);
           --intpg-font:'Montserrat', sans-serif;
           --intpg-max-w:1180px;
 
           min-height:100vh;
           width:100%;
-          background:#FFFFFF;
+          background:#0d0c0a;
           color:var(--intpg-ink);
           font-family:var(--intpg-font);
         }
@@ -385,8 +385,9 @@ export default function InteriorDesign() {
         @media (min-width:700px){ .intpg-service-grid{ grid-template-columns:repeat(2,1fr); } }
         @media (min-width:1000px){ .intpg-service-grid{ grid-template-columns:repeat(3,1fr); } }
         .intpg-service-card{
-          background:#FFFFFF;
-          border:1px solid var(--intpg-gray-200);
+          background:rgba(255,255,255,0.03);
+          border:1px solid rgba(255,255,255,0.08);
+          backdrop-filter:blur(16px);
           border-radius:8px;
           padding:30px 26px;
           transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
@@ -400,7 +401,7 @@ export default function InteriorDesign() {
           width:52px;
           height:52px;
           border-radius:50%;
-          background:var(--intpg-gray-100);
+          background:rgba(197,160,89,0.12);
           color:var(--intpg-brass-deep);
           display:flex;
           align-items:center;
@@ -655,7 +656,7 @@ export default function InteriorDesign() {
         .intpg-cta-link-label{
           display:flex;
           align-items:center;
-          background:#FFFFFF;
+          background:#0d0c0a;
           color:var(--intpg-ink);
           padding:15px 26px;
           font-size:14.5px;

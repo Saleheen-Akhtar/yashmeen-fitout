@@ -314,19 +314,23 @@ export default function ProjectDetailsPage() {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         :root{
-          --ink:#191919;
-          --dark:#1A1616;
-          --card:#F6F6F6;
-          --gray-200:#E4E2DD;
-          --gray-500:#6B6B6B;
-          --brass:#A9793F;
-          --brass-deep:#8C6431;
+          --ink:#faf7f0;
+          --dark:#0d0c0a;
+          --card:#141311;
+          --gray-200:rgba(255,255,255,0.08);
+          --gray-500:rgba(250,247,240,0.72);
+          --brass:var(--brass, #c5a059);
+          --brass-deep:var(--brass-light, #dfba73);
           --font-display:'Montserrat', sans-serif;
           --font-body:'Montserrat', sans-serif;
           --max-w:1180px;
         }
         *{ box-sizing:border-box; }
-        .page{ min-height:100vh; width:100%; background:#FFFFFF; color:var(--ink); font-family:var(--font-body); }
+        .page{
+          min-height:100vh;
+          width:100%;
+          background:#0d0c0a;
+          color:var(--ink); font-family:var(--font-body); }
         button{ font-family:inherit; }
         .wrap{ max-width:var(--max-w); margin:0 auto; padding:0 24px; }
         .edge{ width:100%; }
@@ -416,13 +420,23 @@ export default function ProjectDetailsPage() {
         @media (min-width:640px){ .info-grid{ grid-template-columns:repeat(2,1fr); } }
         @media (min-width:1024px){ .info-grid{ grid-template-columns:repeat(4,1fr); } }
         .info-card{
-          position:relative; background:var(--card); border-radius:28px;
+          position:relative;
+          background:rgba(255,255,255,0.03);
+          border:1px solid rgba(255,255,255,0.08);
+          backdrop-filter:blur(16px); border-radius:28px;
           padding:26px 26px 20px;
         }
         .info-top{ display:flex; align-items:center; gap:14px; }
         .info-icon{
-          flex-shrink:0; width:48px; height:48px; border-radius:50%; background:#FFFFFF;
-          display:flex; align-items:center; justify-content:center; color:var(--ink);
+          flex-shrink:0;
+          width:48px;
+          height:48px;
+          border-radius:50%;
+          background:rgba(197,160,89,0.12);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          color:var(--brass-deep);
         }
         .info-label{ font-size:16px; font-weight:400; }
         .info-rule{ margin:20px 0 0; border:0; border-top:1px solid var(--gray-200); }
@@ -431,8 +445,14 @@ export default function ProjectDetailsPage() {
           font-size:12.5px; line-height:1.5; color:var(--ink);
         }
         .info-go{
-          position:absolute; right:14px; bottom:14px;
-          width:40px; height:40px; border-radius:50%; background:#FFFFFF; color:var(--ink);
+          position:absolute;
+          right:14px;
+          bottom:14px;
+          width:40px;
+          height:40px;
+          border-radius:50%;
+          background:rgba(255,255,255,0.06);
+          color:var(--brass-deep);
           display:flex; align-items:center; justify-content:center;
           box-shadow:0 1px 4px rgba(0,0,0,0.12);
         }

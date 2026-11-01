@@ -138,14 +138,14 @@ export default function FAQ() {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .faq-page-root{
-          --faq-ink:#191919;
-          --faq-black:#0A0A0A;
-          --faq-gray-50:#F7F6F4;
-          --faq-gray-100:#F0EFEC;
-          --faq-gray-200:#E4E2DD;
-          --faq-gray-500:#6B6B6B;
-          --faq-brass:#A9793F;
-          --faq-brass-deep:#8C6431;
+          --faq-ink:#faf7f0;
+          --faq-black:#0d0c0a;
+          --faq-gray-50:#141311;
+          --faq-gray-100:rgba(255,255,255,0.05);
+          --faq-gray-200:rgba(255,255,255,0.08);
+          --faq-gray-500:rgba(250,247,240,0.72);
+          --faq-brass:var(--brass, #c5a059);
+          --faq-brass-deep:var(--brass-light, #dfba73);
           --faq-font-display:'Montserrat', sans-serif;
           --faq-font-body:'Montserrat', sans-serif;
           --faq-max-w:1180px;
@@ -154,7 +154,7 @@ export default function FAQ() {
           box-sizing:border-box;
           min-height:100vh;
           width:100%;
-          background:#FFFFFF;
+          background:#0d0c0a;
           color:var(--faq-ink);
           font-family:var(--faq-font-body);
         }

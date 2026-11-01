@@ -247,20 +247,20 @@ export default function Career() {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .careerpg-page{
-          --careerpg-ink:#191919;
-          --careerpg-black:#0A0A0A;
-          --careerpg-gray-50:#F7F6F4;
-          --careerpg-gray-100:#F0EFEC;
-          --careerpg-gray-200:#E4E2DD;
-          --careerpg-gray-500:#6B6B6B;
-          --careerpg-brass:#A9793F;
-          --careerpg-brass-deep:#8C6431;
+          --careerpg-ink:#faf7f0;
+          --careerpg-black:#0d0c0a;
+          --careerpg-gray-50:#141311;
+          --careerpg-gray-100:rgba(255,255,255,0.05);
+          --careerpg-gray-200:rgba(255,255,255,0.08);
+          --careerpg-gray-500:rgba(250,247,240,0.72);
+          --careerpg-brass:var(--brass, #c5a059);
+          --careerpg-brass-deep:var(--brass-light, #dfba73);
           --careerpg-font:'Montserrat', sans-serif;
           --careerpg-max-w:1180px;
 
           min-height:100vh;
           width:100%;
-          background:#FFFFFF;
+          background:#0d0c0a;
           color:var(--careerpg-ink);
           font-family:var(--careerpg-font);
         }

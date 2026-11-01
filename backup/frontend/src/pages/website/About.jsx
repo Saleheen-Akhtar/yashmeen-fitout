@@ -207,14 +207,14 @@ export default function AboutPage() {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         :root{
-          --ink:#191919;
-          --black:#0A0A0A;
-          --gray-50:#F7F6F4;
-          --gray-100:#F0EFEC;
-          --gray-200:#E4E2DD;
-          --gray-500:#6B6B6B;
-          --brass:#A9793F;
-          --brass-deep:#8C6431;
+          --ink:#faf7f0;
+          --black:#0d0c0a;
+          --gray-50:#141311;
+          --gray-100:rgba(255,255,255,0.05);
+          --gray-200:rgba(255,255,255,0.08);
+          --gray-500:rgba(250,247,240,0.72);
+          --brass:var(--brass, #c5a059);
+          --brass-deep:var(--brass-light, #dfba73);
           --font-display:'Montserrat', sans-serif;
           --font-body:'Montserrat', sans-serif;
           --max-w:1180px;
@@ -225,7 +225,7 @@ export default function AboutPage() {
         .page{
           min-height:100vh;
           width:100%;
-          background:#FFFFFF;
+          background:#0d0c0a;
           color:var(--ink);
           font-family:var(--font-body);
         }
@@ -433,8 +433,9 @@ export default function AboutPage() {
           .mv-grid{ grid-template-columns:1fr 1fr; }
         }
         .mv-card{
-          background:#FFFFFF;
-          border:1px solid var(--gray-200);
+          background:rgba(255,255,255,0.03);
+          border:1px solid rgba(255,255,255,0.08);
+          backdrop-filter:blur(16px);
           border-radius:10px;
           padding:32px;
         }
@@ -504,8 +505,8 @@ export default function AboutPage() {
           display:flex;
           align-items:flex-start;
           gap:12px;
-          background:#FFFFFF;
-          border:1px solid var(--gray-200);
+          background:rgba(255,255,255,0.03);
+          border:1px solid rgba(255,255,255,0.08);
           border-radius:8px;
           padding:16px 18px;
           font-size:14px;

@@ -176,20 +176,20 @@ export default function Construction() {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .conspg-page{
-          --conspg-ink:#191919;
-          --conspg-black:#0A0A0A;
-          --conspg-gray-50:#F7F6F4;
-          --conspg-gray-100:#F0EFEC;
-          --conspg-gray-200:#E4E2DD;
-          --conspg-gray-500:#6B6B6B;
-          --conspg-brass:#A9793F;
-          --conspg-brass-deep:#8C6431;
+          --conspg-ink:#faf7f0;
+          --conspg-black:#0d0c0a;
+          --conspg-gray-50:#141311;
+          --conspg-gray-100:rgba(255,255,255,0.05);
+          --conspg-gray-200:rgba(255,255,255,0.08);
+          --conspg-gray-500:rgba(250,247,240,0.72);
+          --conspg-brass:var(--brass, #c5a059);
+          --conspg-brass-deep:var(--brass-light, #dfba73);
           --conspg-font:'Montserrat', sans-serif;
           --conspg-max-w:1180px;
 
           min-height:100vh;
           width:100%;
-          background:#FFFFFF;
+          background:#0d0c0a;
           color:var(--conspg-ink);
           font-family:var(--conspg-font);
         }
@@ -389,8 +389,9 @@ export default function Construction() {
         @media (min-width:700px){ .conspg-service-grid{ grid-template-columns:repeat(2,1fr); } }
         @media (min-width:1000px){ .conspg-service-grid{ grid-template-columns:repeat(3,1fr); } }
         .conspg-service-card{
-          background:#FFFFFF;
-          border:1px solid var(--conspg-gray-200);
+          background:rgba(255,255,255,0.03);
+          border:1px solid rgba(255,255,255,0.08);
+          backdrop-filter:blur(16px);
           border-radius:8px;
           padding:30px 26px;
           transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
@@ -404,7 +405,7 @@ export default function Construction() {
           width:52px;
           height:52px;
           border-radius:50%;
-          background:var(--conspg-gray-100);
+          background:rgba(197,160,89,0.12);
           color:var(--conspg-brass-deep);
           display:flex;
           align-items:center;
@@ -670,7 +671,7 @@ export default function Construction() {
         .conspg-cta-link-label{
           display:flex;
           align-items:center;
-          background:#FFFFFF;
+          background:#0d0c0a;
           color:var(--conspg-ink);
           padding:15px 26px;
           font-size:14.5px;

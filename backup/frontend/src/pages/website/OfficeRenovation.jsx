@@ -188,20 +188,20 @@ export default function OfficeRenovation() {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .offrenpg-page{
-          --offrenpg-ink:#191919;
-          --offrenpg-black:#0A0A0A;
-          --offrenpg-gray-50:#F7F6F4;
-          --offrenpg-gray-100:#F0EFEC;
-          --offrenpg-gray-200:#E4E2DD;
-          --offrenpg-gray-500:#6B6B6B;
-          --offrenpg-brass:#A9793F;
-          --offrenpg-brass-deep:#8C6431;
+          --offrenpg-ink:#faf7f0;
+          --offrenpg-black:#0d0c0a;
+          --offrenpg-gray-50:#141311;
+          --offrenpg-gray-100:rgba(255,255,255,0.05);
+          --offrenpg-gray-200:rgba(255,255,255,0.08);
+          --offrenpg-gray-500:rgba(250,247,240,0.72);
+          --offrenpg-brass:var(--brass, #c5a059);
+          --offrenpg-brass-deep:var(--brass-light, #dfba73);
           --offrenpg-font:'Montserrat', sans-serif;
           --offrenpg-max-w:1180px;
 
           min-height:100vh;
           width:100%;
-          background:#FFFFFF;
+          background:#0d0c0a;
           color:var(--offrenpg-ink);
           font-family:var(--offrenpg-font);
         }
@@ -734,7 +734,7 @@ export default function OfficeRenovation() {
         .offrenpg-cta-link-label{
           display:flex;
           align-items:center;
-          background:#FFFFFF;
+          background:#0d0c0a;
           color:var(--offrenpg-ink);
           padding:15px 26px;
           font-size:14.5px;

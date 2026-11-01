@@ -52,14 +52,14 @@ export default function FoundersMessage() {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         :root{
-          --ink:#191919;
-          --black:#0A0A0A;
-          --gray-50:#F7F6F4;
-          --gray-100:#F0EFEC;
-          --gray-200:#E4E2DD;
-          --gray-500:#6B6B6B;
-          --brass:#A9793F;
-          --brass-deep:#8C6431;
+          --ink:#faf7f0;
+          --black:#0d0c0a;
+          --gray-50:#141311;
+          --gray-100:rgba(255,255,255,0.05);
+          --gray-200:rgba(255,255,255,0.08);
+          --gray-500:rgba(250,247,240,0.72);
+          --brass:var(--brass, #c5a059);
+          --brass-deep:var(--brass-light, #dfba73);
           --font-display:'Montserrat', sans-serif;
           --font-body:'Montserrat', sans-serif;
           --max-w:1180px;
@@ -70,7 +70,7 @@ export default function FoundersMessage() {
         .page{
           min-height:100vh;
           width:100%;
-          background:#FFFFFF;
+          background:#0d0c0a;
           color:var(--ink);
           font-family:var(--font-body);
         }

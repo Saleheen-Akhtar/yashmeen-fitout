@@ -93,14 +93,14 @@ export default function ContactPage() {
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .contactpg-page{
-          --contactpg-ink:#191919;
-          --contactpg-black:#0A0A0A;
-          --contactpg-gray-50:#F7F6F4;
-          --contactpg-gray-100:#F0EFEC;
-          --contactpg-gray-200:#E4E2DD;
-          --contactpg-gray-500:#6B6B6B;
-          --contactpg-brass:#A9793F;
-          --contactpg-brass-deep:#8C6431;
+          --contactpg-ink:#faf7f0;
+          --contactpg-black:#0d0c0a;
+          --contactpg-gray-50:#141311;
+          --contactpg-gray-100:rgba(255,255,255,0.05);
+          --contactpg-gray-200:rgba(255,255,255,0.08);
+          --contactpg-gray-500:rgba(250,247,240,0.72);
+          --contactpg-brass:var(--brass, #c5a059);
+          --contactpg-brass-deep:var(--brass-light, #dfba73);
           --contactpg-font-display:'Montserrat', sans-serif;
           --contactpg-font-serif:'Montserrat', sans-serif;
           --contactpg-font-body:'Montserrat', sans-serif;
@@ -108,7 +108,7 @@ export default function ContactPage() {
 
           min-height:100vh;
           width:100%;
-          background:#FFFFFF;
+          background:#0d0c0a;
           color:var(--contactpg-ink);
           font-family:var(--contactpg-font-body);
         }
@@ -192,8 +192,9 @@ export default function ContactPage() {
           display:flex;
           align-items:flex-start;
           gap:18px;
-          background:#FFFFFF;
-          border:1px solid var(--contactpg-gray-200);
+          background:rgba(255,255,255,0.03);
+          border:1px solid rgba(255,255,255,0.08);
+          backdrop-filter:blur(16px);
           border-radius:6px;
           padding:28px 24px;
         }
@@ -202,7 +203,7 @@ export default function ContactPage() {
           width:52px;
           height:52px;
           border-radius:50%;
-          background:var(--contactpg-gray-100);
+          background:rgba(197,160,89,0.12);
           display:flex;
           align-items:center;
           justify-content:center;
@@ -311,7 +312,8 @@ export default function ContactPage() {
 
         .contactpg-field-input{
           width:100%;
-          background:#FFFFFF;
+          background:#0d0c0a;
+          color:#faf7f0;
           border:1px solid var(--contactpg-gray-200);
           border-radius:6px;
           padding:14px 16px;

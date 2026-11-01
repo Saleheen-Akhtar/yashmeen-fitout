@@ -180,8 +180,15 @@ export default function QuotePage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
         .enqpg-page{
-          --ink:#191919; --black:#0A0A0A; --g50:#F7F6F4; --g100:#F0EFEC; --g200:#E4E2DD; --g500:#6B6B6B;
-          --brass:#A9793F; --brass-deep:#8C6431; --brass-soft:#E1B27A; --err:#B3261E;
+          --ink:#faf7f0;
+          --black:#0d0c0a;
+          --g50:#0d0c0a;
+          --g100:rgba(255,255,255,0.05);
+          --g200:rgba(255,255,255,0.1);
+          --g500:rgba(250,247,240,0.72);
+          --brass:var(--brass, #c5a059);
+          --brass-deep:var(--brass-light, #dfba73);
+          --brass-soft:var(--brass-light, #dfba73); --err:#B3261E;
           font-family:'Montserrat',sans-serif; color:var(--ink); background:var(--g50); min-height:100vh; width:100%;
         }
         .enqpg-page *{ box-sizing:border-box; }
@@ -202,8 +209,9 @@ export default function QuotePage() {
 
         .enqpg-shell{
           display:grid; grid-template-columns:1fr; margin:-84px 0 80px;
-          border-radius:16px; overflow:hidden; background:#fff;
-          box-shadow:0 40px 80px -40px rgba(10,10,10,.45);
+          border-radius:16px; overflow:hidden; background:#141311;
+          border:1px solid rgba(255,255,255,0.08);
+          box-shadow:0 40px 80px -40px rgba(0,0,0,0.7);
         }
         @media(min-width:768px){ .enqpg-shell{ margin-top:-96px; } }
         @media(min-width:980px){ .enqpg-shell{ grid-template-columns:.78fr 1.22fr; } }
@@ -299,7 +307,7 @@ export default function QuotePage() {
           display:inline-flex; align-items:center; gap:10px; font:inherit; font-size:14.5px; font-weight:700;
           border:0; border-radius:10px; padding:15px 26px; cursor:pointer; transition:all .15s;
         }
-        .enqpg-btn.primary{ background:var(--black); color:#fff; }
+        .enqpg-btn.primary{ background:linear-gradient(135deg, var(--brass-deep), var(--brass)); color:#0d0c0a; font-weight:700; }
         .enqpg-btn.primary:hover:not(:disabled){ background:var(--brass-deep); }
         .enqpg-btn.ghost{ background:transparent; color:var(--ink); border:1.5px solid var(--g200); }
         .enqpg-btn.ghost:hover{ border-color:var(--ink); }

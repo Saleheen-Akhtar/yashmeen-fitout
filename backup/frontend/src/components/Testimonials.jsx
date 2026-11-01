@@ -76,7 +76,7 @@ export default function TestimonialsSection() {
         /* ============ TESTIMONIALS ============ */
         .testi {
             padding: 110px 0;
-            background: #f5f2eb;
+            background: #141311; color: #faf7f0;
             overflow: hidden;
             position: relative;
         }
@@ -99,12 +99,13 @@ export default function TestimonialsSection() {
         }
 
         .testi-card {
-            background: #ffffff;
-            border: 1px solid rgba(23, 20, 15, 0.08);
-            border-radius: 8px;
-            padding: 54px 50px;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            padding: 56px 50px;
             text-align: center;
-            box-shadow: 0 20px 45px -15px rgba(23, 20, 15, 0.08);
+            box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
             position: relative;
             transition: all 0.4s ease;
         }
@@ -121,8 +122,8 @@ export default function TestimonialsSection() {
             font-family: var(--font-serif);
             font-size: clamp(20px, 2.4vw, 25px);
             line-height: 1.6;
-            color: var(--ink, #17140f);
-            font-weight: 500;
+            color: #faf7f0;
+            font-weight: 400;
             font-style: italic;
             margin: 0;
         }
@@ -138,15 +139,15 @@ export default function TestimonialsSection() {
         .testi-card .who strong {
             font-size: 16px;
             font-weight: 700;
-            color: var(--ink);
+            color: #ffffff;
             letter-spacing: 0.02em;
         }
 
         .testi-card .who span {
-            font-size: 13px;
-            color: var(--brass-dim, #9e7d38);
+            font-size: 12.5px;
+            color: var(--brass-light, #dfba73);
             font-weight: 600;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
         }
 
@@ -162,9 +163,9 @@ export default function TestimonialsSection() {
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            border: 1px solid rgba(23, 20, 15, 0.15);
-            background: #ffffff;
-            color: var(--ink);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            color: #faf7f0;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -189,7 +190,7 @@ export default function TestimonialsSection() {
             width: 8px;
             height: 8px;
             border-radius: 4px;
-            background: rgba(23, 20, 15, 0.2);
+            background: rgba(255, 255, 255, 0.25);
             border: none;
             cursor: pointer;
             padding: 0;
@@ -214,12 +215,8 @@ export default function TestimonialsSection() {
             className="section-head reveal"
             style={{ textAlign: "center", margin: "0 auto 40px" }}
           >
-            <span className="eyebrow" style={{ justifyContent: "center" }}>
-              Client Trust &amp; Reputation
-            </span>
-            <h2 className="section-title" style={{ maxWidth: "none" }}>
-              What our clients say.
-            </h2>
+            
+            <h2 className="section-title" style={{ maxWidth: "none", color: "#faf7f0" }}>Voices from delivered spaces</h2>
           </div>
 
           <div className="testi-shell reveal">

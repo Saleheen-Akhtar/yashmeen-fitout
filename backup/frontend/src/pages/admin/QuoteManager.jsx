@@ -45,9 +45,9 @@ const SearchIcon = () => (
 );
 
 const formatDate = (value) => {
-  if (!value) return "—";
+  if (!value) return "-";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -56,9 +56,9 @@ const formatDate = (value) => {
 };
 
 const formatDateTime = (value) => {
-  if (!value) return "—";
+  if (!value) return "-";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -68,7 +68,7 @@ const formatDateTime = (value) => {
   });
 };
 
-const orDash = (value) => (value && String(value).trim() ? value : "—");
+const orDash = (value) => (value && String(value).trim() ? value : "-");
 
 export default function QuoteManager() {
   const [quotes, setQuotes] = useState([]);
@@ -154,7 +154,7 @@ export default function QuoteManager() {
 
   const renderServices = (services, max) => {
     const list = Array.isArray(services) ? services : [];
-    if (list.length === 0) return "—";
+    if (list.length === 0) return "-";
     const shown = max ? list.slice(0, max) : list;
     const extra = list.length - shown.length;
     return (
@@ -287,7 +287,7 @@ export default function QuoteManager() {
 
               <div style={styles.pagerRow}>
                 <span style={styles.pagerInfo}>
-                  Showing {from}–{to} of {pagination.total}
+                  Showing {from}-{to} of {pagination.total}
                 </span>
                 <div style={styles.pagerBtns}>
                   <button

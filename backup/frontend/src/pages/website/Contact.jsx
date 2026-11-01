@@ -405,7 +405,7 @@ export default function ContactPage() {
         <div className="contactpg-hero-dark-overlay" />
         <div className="contactpg-hero-inner-container">
           <h1 className="contactpg-hero-heading">
-            Contact Us – Yashmeen Future Building & Fit-Out Company
+            Contact Us - Yashmeen Future Building & Fit-Out Company
           </h1>
         </div>
       </section>
@@ -469,7 +469,7 @@ export default function ContactPage() {
                   <p className="contactpg-success-title">Message received.</p>
                   <p className="contactpg-success-copy">
                     {successMsg ||
-                      "Thank you — a member of the studio will be in touch within one working day."}
+                      "Thank you - a member of the studio will be in touch within one working day."}
                   </p>
                   <button
                     type="button"

@@ -565,7 +565,7 @@ export default function AboutPage() {
               </p>
               <p className="about-copy">
                 We believe good interiors are equal parts imagination and
-                precision — a balance we bring to every partition, finish, and
+                precision - a balance we bring to every partition, finish, and
                 fixture we install.
               </p>
 
@@ -622,7 +622,7 @@ export default function AboutPage() {
               <p className="mv-card-copy">
                 To deliver turnkey interior fit-outs that combine
                 internationally recognised quality standards with honest pricing
-                and dependable timelines — so every client, regardless of
+                and dependable timelines - so every client, regardless of
                 project size, gets a space finished the way it was promised.
               </p>
             </div>
@@ -633,7 +633,7 @@ export default function AboutPage() {
               </div>
               <h3 className="mv-card-title">Our Vision</h3>
               <p className="mv-card-copy">
-                To be the UAE&rsquo;s most trusted interior fit-out partner —
+                To be the UAE&rsquo;s most trusted interior fit-out partner -
                 known not just for the spaces we build, but for how consistently
                 we deliver on what we say we&rsquo;ll do.
               </p>

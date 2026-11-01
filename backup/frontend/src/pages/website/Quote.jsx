@@ -15,7 +15,7 @@ const FALLBACK_CONTACT = {
   phone: "+971 54 386 2870",
   email: "info@yfbfitoutcontracting.com",
   address: "Bay Square, Building 12 - Office G01, Business Bay, Dubai - UAE",
-  hours: "Sat – Thu, 9:00 AM – 6:00 PM",
+  hours: "Sat - Thu, 9:00 AM - 6:00 PM",
 };
 
 // Values must match the PROJECT_TYPES enum in the quote schema
@@ -40,8 +40,8 @@ const SERVICES = [
   "Home or office automation",
 ];
 
-const BUDGETS = ["Under AED 50,000", "AED 50,000 – 150,000", "AED 150,000 – 500,000", "AED 500,000+", "Not sure yet"];
-const TIMELINES = ["As soon as possible", "Within 1–3 months", "3–6 months", "Just exploring"];
+const BUDGETS = ["Under AED 50,000", "AED 50,000 - 150,000", "AED 150,000 - 500,000", "AED 500,000+", "Not sure yet"];
+const TIMELINES = ["As soon as possible", "Within 1-3 months", "3-6 months", "Just exploring"];
 const STEPS = ["Your details", "Your project", "Final details"];
 const NEXT = [
   "We review your enquiry within one working day.",

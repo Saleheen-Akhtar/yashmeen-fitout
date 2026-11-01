@@ -172,7 +172,7 @@ export default function Login() {
             </h1>
             <p style={styles.subtext}>
               Bespoke, functional spaces for commercial, hospitality and
-              residential clients — designed and built under one roof in Al
+              residential clients - designed and built under one roof in Al
               Quoz, Dubai.
             </p>
           </div>
@@ -199,7 +199,7 @@ export default function Login() {
           <div className="cryptusLoginStat" style={styles.statFooter}>
             <div style={styles.statDivider} />
             <p style={styles.statText}>
-              One facility in Al Quoz — from drawing to delivery
+              One facility in Al Quoz - from drawing to delivery
             </p>
           </div>
         </div>

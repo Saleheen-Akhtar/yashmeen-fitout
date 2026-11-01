@@ -319,7 +319,7 @@ export default function VideoGallery() {
           </h1>
           <p className="vidgal-hero-copy">
             A running record of walkthroughs and fit-out films from sites across
-            the portfolio — filter by sector to see how each space was built,
+            the portfolio - filter by sector to see how each space was built,
             room by room.
           </p>
         </div>
@@ -428,7 +428,7 @@ export default function VideoGallery() {
                         style={imgStyle}
                       />
                     ) : (
-                      // Uploaded files have no thumbnail – show a plain panel
+                      // Uploaded files have no thumbnail - show a plain panel
                       <div
                         style={{
                           width: "100%",

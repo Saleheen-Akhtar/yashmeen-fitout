@@ -86,8 +86,8 @@ export default function BlogSection() {
         /* ============ BLOG ============ */
         .blog {
             padding: 110px 0;
-            background: var(--paper, #faf7f0);
-            border-top: 1px solid var(--line, rgba(23, 20, 15, 0.08));
+            background: #11100e; color: #faf7f0;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .blog .reveal {
@@ -111,12 +111,19 @@ export default function BlogSection() {
             display: flex;
             flex-direction: column;
             min-width: 0;
-            background: #ffffff;
-            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
             overflow: hidden;
-            border: 1px solid var(--line, rgba(23, 20, 15, 0.1));
-            box-shadow: 0 4px 18px rgba(23, 20, 15, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
             transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(197, 160, 89, 0.4);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.65), 0 0 20px rgba(197, 160, 89, 0.1);
         }
 
         .blog-card:hover {
@@ -246,8 +253,8 @@ export default function BlogSection() {
       <section className="blog" id="blog">
         <div className="wrap">
           <div className="section-head reveal">
-            <span className="eyebrow">Editorial &amp; Insights</span>
-            <h2 className="section-title">From the architectural journal.</h2>
+            
+            <h2 className="section-title" style={{ color: "#faf7f0" }}>From the architectural journal</h2>
             <p className="lede">
               Perspectives, design codes, and engineering insights from our Dubai studio and manufacturing floor.
             </p>

@@ -28,7 +28,7 @@ const CONS_INTRO_IMAGE = unsplash("photo-1504307651254-35680f356dfd", 900);
 // Replace with your real YouTube embed URL: https://www.youtube.com/embed/VIDEO_ID
 const CONS_VIDEO_URL = "https://www.youtube.com/embed/C0JYhtQcsGk";
 
-// Placeholder numbers — replace with your real figures
+// Placeholder numbers - replace with your real figures
 const CONS_STATS = [
   { value: "150+", label: "Projects Built" },
   { value: "10+", label: "Years of Experience" },
@@ -128,7 +128,7 @@ const CONS_PROCESS = [
 
 const CONS_PROJECTS = [
   {
-    title: "Private Villa — New Build",
+    title: "Private Villa - New Build",
     tag: "Residential",
     img: unsplash("photo-1613490493576-7fde63acd811"), // finished modern villa
   },
@@ -698,7 +698,7 @@ export default function Construction() {
         <div className="conspg-hero-dark-overlay" />
         <div className="conspg-hero-inner-container">
           <h1 className="conspg-hero-heading">
-            Construction – Yashmeen Future Building & Fit-Out Company
+            Construction - Yashmeen Future Building & Fit-Out Company
           </h1>
         </div>
       </section>

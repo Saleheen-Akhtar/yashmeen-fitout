@@ -1,3 +1,4 @@
+import BeforeAfterSection from '../../components/Beforeafter';
 import { useEffect, useRef } from "react";
 import ClientsSection from "../../components/Clients";
 import ContactSection from "../../components/ContactSection";
@@ -28,6 +29,7 @@ export default function Home() {
       <ClientsSection />
       <AboutSection />
       <ServicesSection />
+      <BeforeAfterSection />
       <CertificationsSection />
       <WhySection />
       <ProjectLanding />

@@ -45,11 +45,12 @@ export default function Clients() {
       <style>{`
         /* ============ CLIENT LOGOS ============ */
         .clients {
-            padding: 50px 0;
-            background: #ffffff;
-            border-bottom: 1px solid rgba(23, 20, 15, 0.08);
-            border-top: 1px solid rgba(23, 20, 15, 0.04);
+            padding: 54px 0;
+            background: #11100e;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
             overflow: hidden;
+            position: relative;
         }
 
         .clients .reveal {
@@ -72,15 +73,29 @@ export default function Clients() {
             gap: 16px;
         }
 
-        .clients-head .eyebrow {
-            margin: 0;
+        .clients-head .trust-label {
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--brass-light, #dfba73);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .clients-head .trust-label::before {
+            content: "";
+            width: 18px;
+            height: 1px;
+            background: var(--brass, #c5a059);
         }
 
         .clients-head span.sub {
             font-size: 13px;
-            color: var(--ink-soft, #5e584f);
-            font-weight: 500;
-            letter-spacing: 0.02em;
+            color: rgba(250, 247, 240, 0.65);
+            font-weight: 400;
+            letter-spacing: 0.01em;
         }
 
         .logo-marquee {
@@ -88,13 +103,13 @@ export default function Clients() {
             overflow: hidden;
             -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
             mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
-            padding: 10px 0;
+            padding: 8px 0;
         }
 
         .logo-track {
             display: flex;
             align-items: center;
-            gap: 52px;
+            gap: 40px;
             width: max-content;
             animation: marquee 36s linear infinite;
         }
@@ -117,34 +132,35 @@ export default function Clients() {
             align-items: center;
             gap: 12px;
             flex: none;
-            padding: 10px 18px;
+            padding: 10px 20px;
             border-radius: 4px;
-            border: 1px solid rgba(23, 20, 15, 0.06);
-            background: #faf8f4;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
             transition: all .25s ease;
             cursor: default;
         }
 
         .client-logo-item:hover {
-            border-color: rgba(197, 160, 89, 0.4);
-            background: #ffffff;
-            box-shadow: 0 8px 20px -6px rgba(197, 160, 89, 0.18);
+            border-color: rgba(197, 160, 89, 0.45);
+            background: rgba(255, 255, 255, 0.07);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 18px rgba(197, 160, 89, 0.15);
             transform: translateY(-2px);
         }
 
         .client-logo-item .bullet {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: var(--brass, #c5a059);
-            opacity: 0.6;
+            box-shadow: 0 0 8px rgba(197, 160, 89, 0.6);
         }
 
         .client-logo-item .lname {
             font-family: var(--font-serif);
             font-size: 19px;
-            font-weight: 600;
-            color: var(--ink, #17140f);
+            font-weight: 500;
+            color: #faf7f0;
             letter-spacing: -0.01em;
             white-space: nowrap;
         }
@@ -154,16 +170,16 @@ export default function Clients() {
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: var(--brass-dim, #9e7d38);
-            padding-left: 6px;
-            border-left: 1px solid rgba(23, 20, 15, 0.12);
+            color: var(--brass-light, #dfba73);
+            padding-left: 8px;
+            border-left: 1px solid rgba(255, 255, 255, 0.12);
         }
       `}</style>
 
       <section className="clients" id="clients">
         <div className="wrap">
           <div className="clients-head reveal">
-            <span className="eyebrow">Trusted Across The UAE</span>
+            <span className="trust-label">Trusted Across The UAE</span>
             <span className="sub">
               Delivering turnkey fit-out contracts for premier developers, hospitality groups &amp; private estates.
             </span>

@@ -39,9 +39,9 @@ const toDateInput = (value) => {
 };
 
 const formatDate = (value) => {
-  if (!value) return "—";
+  if (!value) return "-";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -252,7 +252,7 @@ export default function VacancyManager() {
     );
     try {
       // NOTE: vacancyAPI.status must accept a second `data` argument
-      // and pass it as the PATCH body — see the note after this file.
+      // and pass it as the PATCH body - see the note after this file.
       await vacancyAPI.status(vacancy._id, { status: nextStatus });
     } catch (err) {
       // revert on failure
@@ -518,7 +518,7 @@ export default function VacancyManager() {
                       setFormExperience(e.target.value);
                       clearError();
                     }}
-                    placeholder="e.g. 1–3 years"
+                    placeholder="e.g. 1-3 years"
                   />
                 </div>
               </div>

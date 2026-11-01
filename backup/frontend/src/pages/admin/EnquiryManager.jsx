@@ -41,9 +41,9 @@ const SearchIcon = () => (
 );
 
 const formatDate = (value) => {
-  if (!value) return "—";
+  if (!value) return "-";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -52,9 +52,9 @@ const formatDate = (value) => {
 };
 
 const formatDateTime = (value) => {
-  if (!value) return "—";
+  if (!value) return "-";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleString("en-GB", {
     day: "2-digit",
     month: "short",

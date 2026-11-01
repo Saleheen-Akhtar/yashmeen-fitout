@@ -192,27 +192,12 @@ export default function ContactSection() {
         }
 
         .map-block {
-            margin-top: 6px;
-            height: 170px;
-            position: relative;
-            border: 1px solid rgba(250, 247, 240, .16);
+            margin-top: 28px;
+            border-radius: 4px;
             overflow: hidden;
-        }
-
-        .map-block iframe {
-            width: 100%;
-            height: 100%;
-            border: 0;
-            display: block;
-            filter: grayscale(.15) contrast(1.05);
-        }
-
-        form.contact-form {
-            background: #ffffff;
-            color: var(--ink, #17140f);
-            padding: 44px;
-            border-radius: 8px;
-            box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: 190px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         }
 
         .form-row {
@@ -227,12 +212,12 @@ export default function ContactSection() {
 
         .field label {
             display: block;
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 700;
-            letter-spacing: .05em;
+            letter-spacing: .08em;
             text-transform: uppercase;
             margin-bottom: 8px;
-            color: var(--ink-soft, #6b6255);
+            color: var(--brass-light, #dfba73);
         }
 
         .field input,
@@ -240,21 +225,22 @@ export default function ContactSection() {
         .field textarea {
             width: 100%;
             padding: 14px 16px;
-            border: 1px solid var(--line-strong, rgba(23, 20, 15, 0.18));
-            background: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.04);
             font-family: var(--font-sans);
             font-size: 14.5px;
-            color: var(--ink, #17140f);
-            border-radius: 6px;
+            color: #faf7f0;
+            border-radius: 4px;
             transition: all .25s ease;
         }
 
         .field input:focus,
         .field select:focus,
         .field textarea:focus {
-            border-color: var(--brass);
+            border-color: var(--brass, #c5a059);
+            background: rgba(255, 255, 255, 0.08);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.2);
+            box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.25);
         }
 
         .field textarea {
@@ -325,9 +311,9 @@ export default function ContactSection() {
       <section className="contact" id="contact">
         <div className="wrap">
           <div className="section-head reveal">
-            <span className="eyebrow">Get In Touch</span>
+            <span className="eyebrow">Bay Square Studio</span>
             <h2 className="section-title" style={{ color: "#faf7f0" }}>
-              Start your project.
+              Start your project
             </h2>
           </div>
           <div className="contact-grid">
@@ -475,7 +461,7 @@ export default function ContactSection() {
               </button>
               {status === "sent" && (
                 <p className="form-msg" role="status">
-                  Thank you — your enquiry has been received. Our team will be
+                  Thank you - your enquiry has been received. Our team will be
                   in touch shortly.
                 </p>
               )}

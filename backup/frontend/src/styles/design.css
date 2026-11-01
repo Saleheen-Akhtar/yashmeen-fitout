@@ -1,89 +1,107 @@
+/* Yashmeen Architectural Fit-Out Contracting - System Layout Styles */
+
 .contact-section {
   padding: 80px 20px;
   text-align: center;
-  background: url("/static/contact-banner.webp") top center no-repeat #edf2f6;
+  background: var(--obsidian, #0d0c0a);
 }
 .contact-section h1 {
-  font-weight: 700;
-  color: #fff;
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-weight: 500;
+  color: var(--paper, #faf7f0);
   margin-bottom: 15px;
   margin-top: 0px;
 }
 .branches-content {
   max-width: 1100px;
   margin: 0 auto;
-  margin-top: 80px;
-  background: #fff;
+  margin-top: 60px;
+  background: var(--graphite, #141311);
   padding: 40px;
-  border-radius: 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
 }
 
-/* .branches-content h2 {
-  font-weight: 700;
-  color: #222;
-  margin-bottom: 15px;
-} */
-
 .branches-content h3 {
-  font-weight: 700;
-  color: #000;
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-weight: 600;
+  color: var(--paper, #faf7f0);
   text-align: left;
   margin-top: 0;
   margin-bottom: 15px;
+  font-size: 28px;
 }
 
 .branches-content p {
-  margin-bottom: 50px;
+  color: rgba(250, 247, 240, 0.75);
+  margin-bottom: 40px;
+  line-height: 1.7;
 }
 
 .branches-grid {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  margin-top: 80px;
+  margin-top: 40px;
+  gap: 24px;
 }
 
 .branch-card {
-  flex-basis: 42%;
-  border: 1px solid #e6edf3;
-  border-top: 4px solid #cf332a;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
-  margin-bottom: 30px;
-  padding: 25px;
+  flex: 1 1 45%;
+  min-width: 280px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 3px solid var(--brass, #c5a059);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  padding: 28px;
   text-align: left;
+  border-radius: 4px;
   transition:
     transform 0.3s ease,
-    box-shadow 0.3s ease;
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .branch-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  border-color: rgba(197, 160, 89, 0.35);
 }
 
 .branch-card h4 {
-  color: #254184;
-  font-size: 24px;
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  color: var(--brass-light, #dfba73);
+  font-size: 22px;
   margin-top: 0;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
+  font-weight: 600;
 }
 
 .branch-card p {
+  color: rgba(250, 247, 240, 0.8);
   margin-bottom: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
 }
 
 .branch-card a {
-  color: #0077ff;
+  color: var(--brass, #c5a059);
   text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: color 0.2s;
 }
 
 .branch-card a:hover {
+  color: var(--brass-light, #dfba73);
   text-decoration: underline;
 }
+
 .career-container {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 24px;
 }
 .containers img {
   width: 120px;
@@ -91,65 +109,86 @@
   margin: auto;
 }
 .containers h4 {
-  font-size: 20px;
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: 22px;
   margin-top: 30px;
+  color: var(--paper, #faf7f0);
 }
 .career-box {
-  background: #f0f5ff;
-  border-radius: 15px;
-  padding: 30px 20px;
+  background: var(--graphite, #141311);
+  border-radius: 4px;
+  padding: 30px 24px;
   text-align: left;
   display: flex;
   align-items: start;
   justify-content: space-between;
   transition:
     transform 0.3s ease,
-    box-shadow 0.3s ease;
-  border: 1px solid #edf2f6;
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.career-box:hover {
+  transform: translateY(-3px);
+  border-color: rgba(197, 160, 89, 0.3);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.35);
 }
 
 .career-info h3 {
-  color: #0077ff;
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  color: var(--brass-light, #dfba73);
   margin-bottom: 10px;
+  font-size: 22px;
 }
 
 .career-info p {
   margin: 5px 0 10px;
+  color: rgba(250, 247, 240, 0.78);
+  font-size: 14.5px;
+  line-height: 1.6;
 }
 
 .career-buttons {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   margin-top: 20px;
 }
 
 .view-btn,
 .apply-btn {
-  flex: 1;
-  padding: 9px 21px;
-  border-radius: 30px;
-  font-size: 0.95rem;
+  padding: 10px 24px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s ease;
   border: none;
 }
 
 .view-btn {
-  background: #e9f3ff;
-  color: #0077ff;
-  border: 1px solid #0077ff;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--paper, #faf7f0);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .view-btn:hover {
-  background: #0077ff;
-  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .apply-btn {
-  background: #0077ff;
-  color: #fff;
+  background: linear-gradient(135deg, var(--brass-light, #dfba73), var(--brass, #c5a059));
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(197, 160, 89, 0.25);
 }
 
 .apply-btn:hover {
-  background: #005ec7;
+  background: linear-gradient(135deg, var(--brass, #c5a059), var(--brass-dim, #9e7d38));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(197, 160, 89, 0.35);
 }

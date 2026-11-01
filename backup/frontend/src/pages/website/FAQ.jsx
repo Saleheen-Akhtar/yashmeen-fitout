@@ -6,15 +6,15 @@ const FAQ_GROUPS = [
     items: [
       {
         q: "Which areas do you serve?",
-        a: "We're based in Business Bay, Dubai, and deliver turnkey interior fit-out projects across Dubai, Abu Dhabi, and the surrounding UAE region — for residential, commercial, and hospitality spaces alike.",
+        a: "We're based in Business Bay, Dubai, and deliver turnkey interior fit-out projects across Dubai, Abu Dhabi, and the surrounding UAE region - for residential, commercial, and hospitality spaces alike.",
       },
       {
         q: "Are you ISO certified?",
-        a: "Yes. Every project we run follows ISO 9001:2015 (Quality Management), ISO 14001:2015 (Environmental Management), and ISO 45001:2015 (Health & Safety) — regardless of project size.",
+        a: "Yes. Every project we run follows ISO 9001:2015 (Quality Management), ISO 14001:2015 (Environmental Management), and ISO 45001:2015 (Health & Safety) - regardless of project size.",
       },
       {
         q: "What types of projects do you take on?",
-        a: "Offices, retail stores, restaurants, hotels, and residences — from full turnkey fit-outs to smaller renovations like kitchen, bathroom, or living room refurbishments.",
+        a: "Offices, retail stores, restaurants, hotels, and residences - from full turnkey fit-outs to smaller renovations like kitchen, bathroom, or living room refurbishments.",
       },
     ],
   },
@@ -27,7 +27,7 @@ const FAQ_GROUPS = [
       },
       {
         q: "How long does a typical fit-out take?",
-        a: "It depends on scope — a single-room renovation can take a few weeks, while a full commercial turnkey fit-out typically runs 8–16 weeks. We'll give you a firm timeline once the scope is confirmed.",
+        a: "It depends on scope - a single-room renovation can take a few weeks, while a full commercial turnkey fit-out typically runs 8-16 weeks. We'll give you a firm timeline once the scope is confirmed.",
       },
       {
         q: "Do you handle MEP works like electrical, AC, and plumbing?",
@@ -48,7 +48,7 @@ const FAQ_GROUPS = [
       },
       {
         q: "How is pricing structured?",
-        a: "You'll receive an itemised quote before work begins — no hidden variations. What you approve is what you're billed for, with payment released in stages tied to project milestones.",
+        a: "You'll receive an itemised quote before work begins - no hidden variations. What you approve is what you're billed for, with payment released in stages tied to project milestones.",
       },
       {
         q: "Do you provide a written contract?",
@@ -65,7 +65,7 @@ const FAQ_GROUPS = [
       },
       {
         q: "What if something needs fixing after we move in?",
-        a: "Just reach out — snagging and minor post-handover fixes are part of our service, and we'll schedule a visit to resolve it promptly.",
+        a: "Just reach out - snagging and minor post-handover fixes are part of our service, and we'll schedule a visit to resolve it promptly.",
       },
     ],
   },
@@ -359,7 +359,7 @@ export default function FAQ() {
           <h2 className="faq-page-cta-heading">Still have questions?</h2>
           <p className="faq-page-cta-copy">
             Our team is happy to walk you through anything specific to your
-            project — no obligation, just answers.
+            project - no obligation, just answers.
           </p>
           <a href="/contact" className="faq-page-cta-btn">
             ENQUIRE NOW

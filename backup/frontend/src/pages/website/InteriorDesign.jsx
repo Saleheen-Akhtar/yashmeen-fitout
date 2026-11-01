@@ -25,7 +25,7 @@ const INT_INTRO_IMAGE = unsplash("photo-1616486338812-3dadae4b4ace", 900);
 // Replace with your real YouTube embed URL: https://www.youtube.com/embed/VIDEO_ID
 const INT_VIDEO_URL = "https://www.youtube.com/embed/bt7_sYLWhZg";
 
-// Placeholder numbers — replace with your real figures
+// Placeholder numbers - replace with your real figures
 const INT_STATS = [
   { value: "150+", label: "Interiors Delivered" },
   { value: "10+", label: "Years of Experience" },
@@ -683,7 +683,7 @@ export default function InteriorDesign() {
         <div className="intpg-hero-dark-overlay" />
         <div className="intpg-hero-inner-container">
           <h1 className="intpg-hero-heading">
-            Interior Design – Yashmeen Future Building & Fit-Out Company
+            Interior Design - Yashmeen Future Building & Fit-Out Company
           </h1>
         </div>
       </section>

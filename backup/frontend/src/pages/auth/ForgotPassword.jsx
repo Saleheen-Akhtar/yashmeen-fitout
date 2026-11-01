@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 /**
- * ForgotPasswordPage — split-screen "reset password" screen for
+ * ForgotPasswordPage - split-screen "reset password" screen for
  * Yashmeen Future Building, a Dubai-based fit-out and design studio.
  * Shares the same design system as LoginPage.jsx.
  * - Unique class names prefixed with "cryptusLogin" to avoid collisions.
@@ -117,7 +117,7 @@ export default function ForgotPassword() {
     <div className="cryptusLoginPage" style={styles.page}>
       <style>{css}</style>
 
-      {/* LEFT — brand panel */}
+      {/* LEFT - brand panel */}
       <div className="cryptusLoginLeftPanel" style={styles.leftPanel}>
         <div style={styles.leftContent}>
           <div style={styles.brandRow}>
@@ -138,7 +138,7 @@ export default function ForgotPassword() {
             </h1>
             <p style={styles.subtext}>
               Bespoke, functional spaces for commercial, hospitality and
-              residential clients — designed and built under one roof in Al
+              residential clients - designed and built under one roof in Al
               Quoz, Dubai.
             </p>
           </div>
@@ -165,13 +165,13 @@ export default function ForgotPassword() {
           <div className="cryptusLoginStat" style={styles.statFooter}>
             <div style={styles.statDivider} />
             <p style={styles.statText}>
-              One facility in Al Quoz — from drawing to delivery
+              One facility in Al Quoz - from drawing to delivery
             </p>
           </div>
         </div>
       </div>
 
-      {/* RIGHT — form panel */}
+      {/* RIGHT - form panel */}
       <div className="cryptusLoginRightPanel" style={styles.rightPanel}>
         <div className="cryptusLoginCard" style={styles.card}>
           <Link

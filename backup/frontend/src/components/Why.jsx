@@ -37,7 +37,7 @@ export default function WhySection() {
         /* ============ WHY US ============ */
         .why {
             padding: 110px 0;
-            background: var(--paper, #ffffff);
+            background: #11100e; color: #faf7f0;
         }
 
         /*
@@ -63,34 +63,36 @@ export default function WhySection() {
         }
 
         .why-list {
-            border-top: 1px solid var(--line, #e7e2d8);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            margin-top: 32px;
         }
 
         .why-item {
-            padding: 28px 0;
-            border-bottom: 1px solid var(--line, #e7e2d8);
+            padding: 24px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             display: grid;
-            grid-template-columns: 60px 1fr;
-            gap: 20px;
+            grid-template-columns: 50px 1fr;
+            gap: 18px;
         }
 
         .why-item .wn {
-            font-family: var(--serif, Georgia, serif);
-            font-size: 26px;
-            color: var(--stone-deep, #c9c0aa);
-            font-weight: 600;
+            font-family: var(--font-serif);
+            font-size: 24px;
+            color: var(--brass-light, #dfba73);
+            font-weight: 500;
         }
 
         .why-item h4 {
-            font-size: 17.5px;
-            color: var(--ink, #17140f);
+            font-size: 17px;
+            color: #faf7f0;
+            font-weight: 600;
         }
 
         .why-item p {
-            margin-top: 8px;
-            font-size: 14.5px;
-            color: var(--ink-soft, #6b6255);
-            line-height: 1.7;
+            margin-top: 6px;
+            font-size: 14px;
+            color: rgba(250, 247, 240, 0.7);
+            line-height: 1.65;
         }
 
         .why-visual {
@@ -99,10 +101,12 @@ export default function WhySection() {
 
         .why-visual .room-block {
             height: 100%;
-            min-height: 420px;
+            min-height: 440px;
             position: relative;
             overflow: hidden;
-            border-radius: 2px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.55);
         }
 
         .why-visual .room-block img {
@@ -167,59 +171,45 @@ export default function WhySection() {
         <div className="wrap why-grid">
           <div>
             <div className="section-head reveal" style={{ marginBottom: "0" }}>
-              <span className="eyebrow">Why Us</span>
-              <h2 className="section-title" style={{ maxWidth: "13ch" }}>
-                Why clients choose to build with us.
+              
+              <h2 className="section-title" style={{ maxWidth: "16ch", color: "#faf7f0" }}>
+                Disciplined 4-stage execution methodology
               </h2>
             </div>
             <div className="why-list reveal">
               <div className="why-item">
                 <div className="wn">01</div>
                 <div>
-                  <h4>Everything in-house</h4>
+                  <h4>Technical Survey &amp; Statutory Approvals</h4>
                   <p>
-                    Design, engineering, manufacturing and installation under
-                    one team — no subcontracting, no quality drift.
+                    Full laser-scanning site survey, MEP load calculations, and expedited Dubai Municipality, Civil Defense, and master-developer permits.
                   </p>
                 </div>
               </div>
               <div className="why-item">
                 <div className="wn">02</div>
                 <div>
-                  <h4>Fast, reliable delivery</h4>
+                  <h4>In-House Al Quoz Joinery Benchwork</h4>
                   <p>
-                    Most projects complete in 60–90 days thanks to architects,
-                    MEP engineers and site teams working from one schedule.
+                    Custom millwork, architectural metalwork, and glass partitioning handcrafted in our 35,000 sq.ft facility before site delivery.
                   </p>
                 </div>
               </div>
               <div className="why-item">
                 <div className="wn">03</div>
                 <div>
-                  <h4>ISO-certified quality</h4>
+                  <h4>Sequenced Turnkey Fit-Out Construction</h4>
                   <p>
-                    ISO 9001, 14001 and 45001 govern how every project is run,
-                    independently audited each year.
+                    Dedicated site superintendents coordinate acoustics, HVAC, smart lighting, and wall finishes under one uncompromised milestone schedule.
                   </p>
                 </div>
               </div>
               <div className="why-item">
                 <div className="wn">04</div>
                 <div>
-                  <h4>Transparent process</h4>
+                  <h4>Handover &amp; 12-Month Snag Warranty</h4>
                   <p>
-                    Regular progress updates and no surprises — if a challenge
-                    appears on site, we resolve it and tell you.
-                  </p>
-                </div>
-              </div>
-              <div className="why-item">
-                <div className="wn">05</div>
-                <div>
-                  <h4>Regional coverage</h4>
-                  <p>
-                    Based in Dubai, delivering across Abu Dhabi, Sharjah and the
-                    Northern Emirates.
+                    Comprehensive air-balancing, authority completion certificates, zero-snag delivery, and 12-month post-handover warranty support.
                   </p>
                 </div>
               </div>
@@ -233,7 +223,7 @@ export default function WhySection() {
                 loading="lazy"
               />
               <span className="rb-tag">Site Walkthrough</span>
-              <span className="rb-label">Office Fit-Out — DIFC, Dubai</span>
+              <span className="rb-label">Office Fit-Out - DIFC, Dubai</span>
             </div>
           </div>
         </div>

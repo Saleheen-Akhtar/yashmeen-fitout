@@ -192,7 +192,7 @@ export default function PopupManager() {
     setFormError("");
 
     try {
-      // Sent as multipart/form-data. The file field name is "photo" —
+      // Sent as multipart/form-data. The file field name is "photo" -
       // it must match upload.single("photo") on the backend.
       const fd = new FormData();
       fd.append("title", trimmed);

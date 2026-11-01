@@ -393,7 +393,7 @@ export default function PhotoGallery() {
         <div className="photogal-hero-dark-overlay" />
         <div className="photogal-hero-inner-container">
           <h1 className="photogal-hero-heading">
-            Project Gallery – Yashmeen Future Building & Fit-Out Company
+            Project Gallery - Yashmeen Future Building & Fit-Out Company
           </h1>
         </div>
       </section>

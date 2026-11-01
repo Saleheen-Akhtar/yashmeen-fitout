@@ -349,8 +349,8 @@ export default function ProjectsSection() {
       <section className="projects" id="projects">
         <div className="wrap">
           <div className="section-head reveal">
-            <span className="eyebrow">Project Portfolio</span>
-            <h2 className="section-title">Recently completed fit-outs.</h2>
+            <span className="eyebrow">Flagship Commissions</span>
+            <h2 className="section-title">Recently completed fit-outs</h2>
             <p className="lede" style={{ color: "rgba(255, 255, 255, 0.72)" }}>
               Explore our curated portfolio of delivered luxury villas, corporate offices,
               and hospitality venues across Dubai and the UAE.

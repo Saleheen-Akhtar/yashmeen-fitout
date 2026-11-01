@@ -56,7 +56,7 @@ export default function OfferSection() {
         /* ============ OFFERINGS TABS ============ */
         .offer {
             padding: 110px 0;
-            background: var(--stone, #f4f1ea);
+            background: #141311; color: #faf7f0;
         }
 
         /*
@@ -78,12 +78,17 @@ export default function OfferSection() {
             display: grid;
             grid-template-columns: .7fr 1.3fr;
             gap: 0;
-            border: 1px solid var(--line-strong, #d8d2c4);
-            background: var(--paper, #ffffff);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.55);
         }
 
         .offer-tabs {
-            border-right: 1px solid var(--line-strong, #d8d2c4);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.01);
         }
 
         .offer-tab {
@@ -91,22 +96,20 @@ export default function OfferSection() {
             width: 100%;
             text-align: left;
             padding: 22px 26px;
-            border-bottom: 1px solid var(--line, #e7e2d8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             background: transparent;
             font-size: 14.5px;
             font-weight: 600;
-            color: var(--ink-soft, #6b6255);
+            color: rgba(250, 247, 240, 0.65);
             transition: all .25s;
             cursor: pointer;
-        }
-
-        .offer-tab:last-child {
-            border-bottom: none;
+            border-left: 3px solid transparent;
         }
 
         .offer-tab.active {
-            background: var(--ink, #17140f);
-            color: var(--paper, #faf7f0);
+            background: rgba(197, 160, 89, 0.12);
+            color: var(--brass-light, #dfba73);
+            border-left: 3px solid var(--brass, #c5a059);
         }
 
         .offer-panels {
@@ -140,30 +143,18 @@ export default function OfferSection() {
         }
 
         .offer-panel h3 {
-            font-size: 24px;
-            color: var(--ink, #17140f);
+            font-family: var(--font-serif);
+            font-size: 26px;
+            color: #faf7f0;
+            font-weight: 500;
+            letter-spacing: -0.01em;
         }
 
         .offer-panel p {
             margin-top: 14px;
-            color: var(--ink-soft, #6b6255);
-            font-size: 14.5px;
+            color: rgba(250, 247, 240, 0.75);
+            font-size: 15px;
             line-height: 1.75;
-        }
-
-        .offer-panel ul {
-            margin-top: 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .offer-panel ul li {
-            font-size: 13.5px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            color: var(--ink-soft, #6b6255);
         }
 
         .offer-panel ul li::before {
@@ -241,8 +232,8 @@ export default function OfferSection() {
       <section className="offer" id="offer">
         <div className="wrap">
           <div className="section-head reveal">
-            <span className="eyebrow">Since 2016</span>
-            <h2 className="section-title">What can we offer.</h2>
+            
+            <h2 className="section-title" style={{ color: "#faf7f0" }}>Scope of Turnkey Contracting</h2>
           </div>
           <div className="offer-shell reveal">
             <div className="offer-tabs">
@@ -268,7 +259,7 @@ export default function OfferSection() {
                   <h3>Commercial spaces that work as hard as you do.</h3>
                   <p>
                     From offices to lounges, we plan layouts around how teams
-                    actually move, meet and focus — then build to a fixed
+                    actually move, meet and focus - then build to a fixed
                     schedule.
                   </p>
                   <ul>
@@ -291,7 +282,7 @@ export default function OfferSection() {
                 <div>
                   <h3>Homes designed around daily life.</h3>
                   <p>
-                    Residential fit-outs balance comfort and durability —
+                    Residential fit-outs balance comfort and durability -
                     material choices that photograph well and hold up to real
                     living.
                   </p>
@@ -316,7 +307,7 @@ export default function OfferSection() {
                   <h3>Joinery built under one roof.</h3>
                   <p>
                     Our in-house joinery bay gives designers and craftsmen a
-                    direct line — changes happen at the bench, not through
+                    direct line - changes happen at the bench, not through
                     emails.
                   </p>
                   <ul>
@@ -363,7 +354,7 @@ export default function OfferSection() {
                   <h3>Homes that respond to you.</h3>
                   <p>
                     Lighting, climate and security controlled from your phone or
-                    by voice — integrated during fit-out, not retrofitted.
+                    by voice - integrated during fit-out, not retrofitted.
                   </p>
                   <ul>
                     <li>Energy-efficient systems</li>

@@ -24,7 +24,7 @@ const OFFREN_HERO_BG_IMAGE = unsplash("photo-1497366216548-37526070297c", 1800);
 // Replace with your real YouTube embed URL: https://www.youtube.com/embed/VIDEO_ID
 const OFFREN_VIDEO_URL = "https://www.youtube.com/embed/i7efTJ5hcnM";
 
-// Placeholder numbers — replace with your real figures
+// Placeholder numbers - replace with your real figures
 const OFFREN_STATS = [
   { value: "100+", label: "Offices Renovated" },
   { value: "10+", label: "Years of Experience" },
@@ -762,7 +762,7 @@ export default function OfficeRenovation() {
         <div className="offrenpg-hero-dark-overlay" />
         <div className="offrenpg-hero-inner-container">
           <h1 className="offrenpg-hero-heading">
-            Office Renovation – Yashmeen Future Building & Fit-Out Company
+            Office Renovation - Yashmeen Future Building & Fit-Out Company
           </h1>
         </div>
       </section>

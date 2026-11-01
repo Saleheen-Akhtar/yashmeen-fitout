@@ -95,7 +95,7 @@ export default function BannerManager() {
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [banner, setBanner] = useState(null); // { type, text } — page message
+  const [banner, setBanner] = useState(null); // { type, text } - page message
 
   // create modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -208,7 +208,7 @@ export default function BannerManager() {
     setFormError("");
 
     try {
-      // Sent as multipart/form-data. The file field name is "photo" —
+      // Sent as multipart/form-data. The file field name is "photo" -
       // it must match upload.single("photo") on the backend.
       const fd = new FormData();
       fd.append("title", title);
@@ -406,7 +406,7 @@ export default function BannerManager() {
                             {item.link}
                           </a>
                         ) : (
-                          <span style={{ color: palette.slate400 }}>—</span>
+                          <span style={{ color: palette.slate400 }}>-</span>
                         )}
                       </td>
                       <td style={styles.td}>

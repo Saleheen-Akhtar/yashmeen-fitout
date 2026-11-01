@@ -64,7 +64,7 @@ export default function FactorySection() {
         /* ============ FACTORY ============ */
         .factory {
             padding: 110px 0;
-            background: var(--espresso, #241c11);
+            background: #11100e;
             color: var(--paper, #faf7f0);
             position: relative;
             overflow: hidden;
@@ -249,12 +249,12 @@ export default function FactorySection() {
             </div>
           </div>
           <div className="factory-copy reveal">
-            <span className="eyebrow">Our Factory</span>
+            
             <h2
               className="section-title"
               style={{ color: "#faf7f0", maxWidth: "14ch" }}
             >
-              A 35,000 sq.ft facility in Al Quoz 3.
+              A 35,000 sq.ft facility in Al Quoz 3
             </h2>
             <p>
               Three specialist divisions share one roof, keeping design,

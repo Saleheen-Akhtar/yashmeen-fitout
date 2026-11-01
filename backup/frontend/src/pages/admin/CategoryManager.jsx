@@ -207,7 +207,7 @@ export default function CategoryManager() {
         );
         setBanner({ type: "success", text: "Category updated." });
       } else {
-        // FIX: same unwrapping issue existed here — `res` was the full axios
+        // FIX: same unwrapping issue existed here - `res` was the full axios
         // response, so `res?.data` was `{ success, data: {...} }`, not the
         // category. That's why new categories didn't render properly.
         const { data: res } = await categoryAPI.create({

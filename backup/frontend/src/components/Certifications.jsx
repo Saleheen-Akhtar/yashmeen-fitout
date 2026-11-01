@@ -37,7 +37,7 @@ export default function CertificationsSection() {
         /* ============ CERTIFICATIONS ============ */
         .certs {
             padding: 80px 0;
-            background: var(--stone, #f4f1ea);
+            background: #11100e;
         }
 
         /*
@@ -59,40 +59,53 @@ export default function CertificationsSection() {
         .certs-row {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 1px;
-            background: var(--line-strong, #d8d2c4);
-            border: 1px solid var(--line-strong, #d8d2c4);
+            gap: 18px;
+            background: transparent;
+            border: none;
         }
 
         .cert-card {
-            background: var(--paper, #ffffff);
-            padding: 30px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            padding: 32px 18px;
             text-align: center;
+            backdrop-filter: blur(12px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            transition: transform .35s ease, border-color .35s ease, background .35s ease;
+        }
+
+        .cert-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(197, 160, 89, 0.35);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.45);
         }
 
         .cert-card .ring {
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            border: 1.5px solid var(--brass, #a9832e);
+            border: 1.5px solid var(--brass, #c5a059);
             margin: 0 auto 16px;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: rgba(197, 160, 89, 0.08);
         }
 
         .cert-card .ring svg {
             width: 24px;
             height: 24px;
-            color: var(--brass-dim, #8a6a28);
+            color: var(--brass-light, #dfba73);
         }
 
         .cert-card p {
-            font-size: 12.5px;
-            font-weight: 700;
+            font-size: 13px;
+            font-weight: 600;
             letter-spacing: .02em;
-            line-height: 1.4;
-            color: var(--ink, #17140f);
+            line-height: 1.45;
+            color: #faf7f0;
         }
 
         @media(max-width:860px) {
@@ -114,16 +127,10 @@ export default function CertificationsSection() {
             className="section-head reveal"
             style={{ textAlign: "center", margin: "0 auto 40px" }}
           >
-            <span className="eyebrow" style={{ justifyContent: "center" }}>
-              Certifications &amp; Awards
-            </span>
+            
             <h2
               className="section-title"
-              style={{
-                maxWidth: "none",
-                marginLeft: "auto",
-                marginRight: "auto",
-              }}
+              style={{ maxWidth: "none", marginLeft: "auto", marginRight: "auto", color: "#faf7f0" }}
             >
               Independently audited, consistently recognised.
             </h2>

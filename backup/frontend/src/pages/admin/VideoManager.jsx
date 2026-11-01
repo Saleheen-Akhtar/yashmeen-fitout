@@ -199,10 +199,10 @@ export default function VideoManager() {
 
   const getCategoryName = (video) => {
     if (video.categoryId && typeof video.categoryId === "object") {
-      return video.categoryId.categoryName || "—";
+      return video.categoryId.categoryName || "-";
     }
     const match = categories.find((c) => c._id === video.categoryId);
-    return match?.categoryName || "—";
+    return match?.categoryName || "-";
   };
 
   const openCreateModal = () => {

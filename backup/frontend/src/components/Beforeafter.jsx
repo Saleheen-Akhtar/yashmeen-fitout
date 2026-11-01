@@ -100,7 +100,7 @@ export default function BeforeAfterSection() {
         /* ============ BEFORE / AFTER ============ */
         .ba {
             padding: 110px 0;
-            background: var(--paper, #ffffff);
+            background: #141311; color: #faf7f0;
         }
 
         .ba .reveal {
@@ -116,12 +116,13 @@ export default function BeforeAfterSection() {
 
         .ba-shell {
             position: relative;
-            max-width: 880px;
+            max-width: 960px;
             margin: 44px auto 0;
             aspect-ratio: 16/9;
             overflow: hidden;
-            border-radius: 2px;
-            box-shadow: var(--shadow, 0 20px 40px -20px rgba(0,0,0,.4));
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.65);
             cursor: ew-resize;
             user-select: none;
         }
@@ -211,32 +212,33 @@ export default function BeforeAfterSection() {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 46px;
-            height: 46px;
-            background: var(--paper, #faf7f0);
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--brass-light, #dfba73), var(--brass, #c5a059));
             border-radius: 50%;
             transform: translate(-50%, -50%);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, .3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .5), 0 0 15px rgba(197, 160, 89, 0.4);
+            border: 2px solid #ffffff;
             z-index: 7;
             pointer-events: none;
         }
 
         .ba-grip svg {
-            width: 20px;
-            height: 20px;
-            color: var(--ink, #17140f);
+            width: 22px;
+            height: 22px;
+            color: #ffffff;
         }
 
         .ba-hint {
             text-align: center;
             margin-top: 16px;
             font-size: 12.5px;
-            letter-spacing: .06em;
+            letter-spacing: .08em;
             text-transform: uppercase;
-            color: var(--ink-soft, #6b6255);
+            color: rgba(250, 247, 240, 0.6);
         }
       `}</style>
 
@@ -246,11 +248,9 @@ export default function BeforeAfterSection() {
             className="section-head reveal"
             style={{ textAlign: "center", margin: "0 auto" }}
           >
-            <span className="eyebrow" style={{ justifyContent: "center" }}>
-              Transformations
-            </span>
-            <h2 className="section-title" style={{ maxWidth: "none" }}>
-              Drag to compare — before &amp; after.
+            
+            <h2 className="section-title" style={{ maxWidth: "none", color: "#faf7f0" }}>
+              Drag to compare - before &amp; after
             </h2>
           </div>
           <div className="ba-shell reveal" id="baShell">
@@ -262,7 +262,7 @@ export default function BeforeAfterSection() {
                   loading="lazy"
                   draggable="false"
                 />
-                <span className="rb-label">After — full renovation</span>
+                
               </div>
             </div>
             <div className="ba-before" id="baBefore">
@@ -273,7 +273,7 @@ export default function BeforeAfterSection() {
                   loading="lazy"
                   draggable="false"
                 />
-                <span className="rb-label">Before — original layout</span>
+                
               </div>
             </div>
             <div className="ba-tag before">Before</div>
@@ -293,7 +293,7 @@ export default function BeforeAfterSection() {
             </div>
           </div>
           <p className="ba-hint">
-            Drag the handle to reveal the transformation
+            Drag slider to compare raw space with completed luxury handover
           </p>
         </div>
       </section>

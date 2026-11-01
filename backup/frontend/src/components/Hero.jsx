@@ -129,6 +129,9 @@ export default function HeroSection() {
             font-style: italic;
             color: var(--brass-light);
             font-weight: 400;
+            display: inline-block;
+            line-height: 1.1;
+            padding-bottom: 4px;
         }
 
         .hero-copy p.lede {
@@ -325,7 +328,7 @@ export default function HeroSection() {
             </h1>
             <p className="lede">
               Yashmeen Future Building designs, builds and installs turnkey
-              commercial, hospitality and residential spaces — one in-house team
+              commercial, hospitality and residential spaces - one in-house team
               from first sketch to final snag.
             </p>
             <ul className="hero-points">
@@ -339,7 +342,7 @@ export default function HeroSection() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                35,000 sq.ft in-house production facility — joinery, upholstery,
+                35,000 sq.ft in-house production facility - joinery, upholstery,
                 metal &amp; glass.
               </li>
               <li>
@@ -364,7 +367,7 @@ export default function HeroSection() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                Most projects delivered in 60–90 days, ISO 9001 · 14001 · 45001
+                Most projects delivered in 60-90 days, ISO 9001 · 14001 · 45001
                 certified.
               </li>
             </ul>
@@ -386,7 +389,7 @@ export default function HeroSection() {
               />
               <span className="rb-tag">Featured Project</span>
               <span className="rb-label">
-                Private Residence — Emirates Hills
+                Private Residence - Emirates Hills
               </span>
             </div>
             <span className="frame-tag">Design &amp; Build</span>

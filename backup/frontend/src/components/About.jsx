@@ -37,7 +37,9 @@ export default function AboutSection() {
         /* ============ ABOUT ============ */
         .about {
             padding: 110px 0;
-            background: var(--paper, #faf7f0);
+            background: #141311;
+            color: #faf7f0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .about .reveal {
@@ -59,7 +61,7 @@ export default function AboutSection() {
         }
 
         .about-copy p {
-            color: var(--ink-soft, #5e584f);
+            color: rgba(250, 247, 240, 0.75);
             line-height: 1.8;
             font-size: 16px;
             margin-top: 18px;
@@ -80,6 +82,7 @@ export default function AboutSection() {
             position: relative;
             overflow: hidden;
             border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .about-visual .room-block img {
@@ -98,7 +101,7 @@ export default function AboutSection() {
             content: "";
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, rgba(23,20,15,0) 60%, rgba(23,20,15,.75) 100%);
+            background: linear-gradient(180deg, rgba(13,12,10,0) 55%, rgba(13,12,10,.8) 100%);
             pointer-events: none;
         }
 
@@ -109,7 +112,7 @@ export default function AboutSection() {
             z-index: 2;
             font-family: var(--font-serif);
             font-size: 16px;
-            color: #ffffff;
+            color: #faf7f0;
             letter-spacing: 0.02em;
         }
 
@@ -117,12 +120,14 @@ export default function AboutSection() {
             position: absolute;
             left: -24px;
             bottom: -24px;
-            background: var(--ink, #17140f);
+            background: rgba(20, 19, 17, 0.88);
             color: #ffffff;
             padding: 24px 28px;
             border-radius: 4px;
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
-            border-left: 3px solid var(--brass);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-left: 3px solid var(--brass, #c5a059);
+            backdrop-filter: blur(16px);
             z-index: 3;
         }
 
@@ -130,7 +135,7 @@ export default function AboutSection() {
             font-family: var(--font-serif);
             font-size: 38px;
             font-weight: 600;
-            color: var(--brass-light);
+            color: var(--brass-light, #dfba73);
             line-height: 1;
         }
 
@@ -139,7 +144,7 @@ export default function AboutSection() {
             font-weight: 600;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.75);
+            color: rgba(255, 255, 255, 0.85);
             margin-top: 6px;
             max-width: 16ch;
         }
@@ -164,21 +169,22 @@ export default function AboutSection() {
             margin-top: 76px;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            border-top: 1px solid var(--line, rgba(23, 20, 15, 0.12));
-            border-left: 1px solid var(--line, rgba(23, 20, 15, 0.12));
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .pillar {
             padding: 32px 28px;
-            border-right: 1px solid var(--line, rgba(23, 20, 15, 0.12));
-            border-bottom: 1px solid var(--line, rgba(23, 20, 15, 0.12));
-            background: transparent;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02);
             transition: all .35s ease;
         }
 
         .pillar:hover {
-            background: #ffffff;
-            box-shadow: 0 16px 36px -12px rgba(23, 20, 15, 0.12);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border-color: rgba(197, 160, 89, 0.35);
             transform: translateY(-3px);
             z-index: 2;
         }
@@ -186,7 +192,7 @@ export default function AboutSection() {
         .pillar .idx {
             font-family: var(--font-serif);
             font-size: 16px;
-            color: var(--brass);
+            color: var(--brass-light, #dfba73);
             font-weight: 600;
         }
 
@@ -194,14 +200,14 @@ export default function AboutSection() {
             margin-top: 12px;
             font-size: 17px;
             font-weight: 600;
-            color: var(--ink);
+            color: #faf7f0;
             line-height: 1.3;
         }
 
         .pillar p {
             margin-top: 10px;
             font-size: 13.5px;
-            color: var(--ink-soft);
+            color: rgba(250, 247, 240, 0.7);
             line-height: 1.65;
         }
 
@@ -222,8 +228,7 @@ export default function AboutSection() {
         <div className="wrap">
           <div className="about-grid">
             <div className="about-copy reveal">
-              <span className="eyebrow">Who We Are</span>
-              <h2 className="section-title" style={{ maxWidth: "16ch" }}>
+              <h2 className="section-title" style={{ maxWidth: "16ch", color: "#faf7f0" }}>
                 A single studio, every trade under one roof.
               </h2>
               <p>
@@ -232,7 +237,7 @@ export default function AboutSection() {
                 commercial, hospitality and residential clients. From concept
                 sketch to handover, our architects, 3D visualisers, MEP
                 engineers and joinery craftsmen work from the same facility in
-                Al Quoz — so nothing gets lost between drawing and delivery.
+                Al Quoz - so nothing gets lost between drawing and delivery.
               </p>
               <p>
                 Because our MEP team sits alongside design and manufacturing,
@@ -312,7 +317,7 @@ export default function AboutSection() {
             </div>
             <div className="pillar">
               <div className="idx">04</div>
-              <h4>Guaranteed 60–90 Day Handover</h4>
+              <h4>Guaranteed 60-90 Day Handover</h4>
               <p>
                 Precision scheduling and dedicated site superintendents ensure handovers happen on schedule without quality drift.
               </p>

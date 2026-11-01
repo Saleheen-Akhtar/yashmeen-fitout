@@ -78,19 +78,26 @@ export default function ServicesSection() {
         .service-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1px;
-            background: rgba(250, 247, 240, .14);
-            border: 1px solid rgba(250, 247, 240, .14);
+            gap: 24px;
+            background: transparent;
+            border: none;
         }
 
         .service-card {
-            background: var(--ink, #17140f);
-            padding: 38px 32px;
-            transition: background .35s var(--ease, ease);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            padding: 40px 32px;
+            backdrop-filter: blur(12px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            transition: transform 0.35s var(--ease, ease), background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
         }
 
         .service-card:hover {
-            background: #211c14;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(197, 160, 89, 0.4);
+            transform: translateY(-4px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 24px 48px -12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(197, 160, 89, 0.1);
         }
 
         .service-card .snum {
@@ -152,13 +159,13 @@ export default function ServicesSection() {
       <section className="services" id="services">
         <div className="wrap">
           <div className="section-head reveal">
-            <span className="eyebrow">What We Do</span>
+            <span className="eyebrow">Disciplines</span>
             <h2 className="section-title">
-              Six disciplines, one accountable studio.
+              Six disciplines, one accountable studio
             </h2>
             <p className="lede">
               Every service below is delivered by our own people, from our own
-              facility — no layers of subcontracting between your brief and the
+              facility - no layers of subcontracting between your brief and the
               finished room.
             </p>
           </div>
@@ -167,8 +174,8 @@ export default function ServicesSection() {
               <div className="snum">01</div>
               <h3>Interior Fit-Out</h3>
               <p>
-                Design, construction and commissioning of luxury interiors —
-                walls, ceilings, MEP and IT — as one turnkey package.
+                Design, construction and commissioning of luxury interiors -
+                walls, ceilings, MEP and IT - as one turnkey package.
               </p>
               <Link to="/services/interior-design" className="more">
                 Read More{" "}

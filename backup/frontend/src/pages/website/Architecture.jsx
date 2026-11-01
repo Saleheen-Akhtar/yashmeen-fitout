@@ -25,7 +25,7 @@ const ARCH_INTRO_IMAGE = unsplash("photo-1503387762-592deb58ef4e", 900);
 // Replace with your real YouTube embed URL: https://www.youtube.com/embed/VIDEO_ID
 const ARCH_VIDEO_URL = "https://www.youtube.com/embed/CF97mtu3qlE";
 
-// Placeholder numbers — replace with your real figures
+// Placeholder numbers - replace with your real figures
 const ARCH_STATS = [
   { value: "150+", label: "Projects Completed" },
   { value: "10+", label: "Years of Experience" },
@@ -98,12 +98,12 @@ const ARCH_PROCESS = [
 
 const ARCH_PROJECTS = [
   {
-    title: "Contemporary Villa — Full Build",
+    title: "Contemporary Villa - Full Build",
     tag: "Residential",
     img: unsplash("photo-1600596542815-ffad4c1539a9"), // modern villa exterior
   },
   {
-    title: "Corporate Office — Design & Fit-Out",
+    title: "Corporate Office - Design & Fit-Out",
     tag: "Commercial",
     img: unsplash("photo-1497366216548-37526070297c"), // modern office interior
   },
@@ -609,7 +609,7 @@ export default function Architecture() {
         <div className="archpg-hero-dark-overlay" />
         <div className="archpg-hero-inner-container">
           <h1 className="archpg-hero-heading">
-            Architecture Design & Build – Yashmeen Future Building & Fit-Out
+            Architecture Design & Build - Yashmeen Future Building & Fit-Out
             Company
           </h1>
         </div>

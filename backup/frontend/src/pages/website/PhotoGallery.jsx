@@ -29,7 +29,7 @@ const photoUrl = (path = "") =>
 
 /* ---------------- cache layer ---------------- */
 const CACHE_KEY = "photogallery:data:v1";
-const CACHE_TTL = 10 * 60 * 1000; // 10 min – set 0 to always revalidate
+const CACHE_TTL = 10 * 60 * 1000; // 10 min - set 0 to always revalidate
 
 let memoryCache = null; // survives route changes (no re-read from storage)
 let inflight = null; // de-dupes simultaneous requests
@@ -273,7 +273,7 @@ export default function PhotoGallery() {
         <div className="photogal-hero-dark-overlay" />
         <div className="photogal-hero-inner-container">
           <h1 className="photogal-hero-heading">
-            Project Gallery – Yashmeen Future Building & Fit-Out Company
+            Project Gallery - Yashmeen Future Building & Fit-Out Company
           </h1>
         </div>
       </section>

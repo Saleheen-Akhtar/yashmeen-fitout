@@ -101,7 +101,7 @@ export default function ProjectManager() {
   const [deleting, setDeleting] = useState(false);
 
   const getCategoryLabel = (id) =>
-    categories.find((c) => c._id === id)?.categoryName || "—";
+    categories.find((c) => c._id === id)?.categoryName || "-";
 
   const fetchProjects = async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
@@ -430,8 +430,8 @@ export default function ProjectManager() {
                             </div>
                           </div>
                         </td>
-                        <td style={styles.td}>{catLabel || "—"}</td>
-                        <td style={styles.td}>{p.location || "—"}</td>
+                        <td style={styles.td}>{catLabel || "-"}</td>
+                        <td style={styles.td}>{p.location || "-"}</td>
                         <td style={styles.td}>{p.images?.length || 0}</td>
                         <td style={styles.td}>
                           {p.videoUrl ? (
@@ -444,7 +444,7 @@ export default function ProjectManager() {
                               Watch
                             </a>
                           ) : (
-                            "—"
+                            "-"
                           )}
                         </td>
                         <td style={{ ...styles.td, whiteSpace: "nowrap" }}>
@@ -454,7 +454,7 @@ export default function ProjectManager() {
                                 month: "short",
                                 year: "numeric",
                               })
-                            : "—"}
+                            : "-"}
                         </td>
                         <td style={{ ...styles.td, textAlign: "right" }}>
                           <div style={styles.actionsRow}>

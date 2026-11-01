@@ -236,7 +236,7 @@ export default function Career() {
   }, [isApplyOpen]);
 
   const applyRole = applyId?.positionName || "[Role Title]";
-  const applySubject = `Application for ${applyRole} – [Your Name]`;
+  const applySubject = `Application for ${applyRole} - [Your Name]`;
   const applyMailto = `mailto:${APPLY_EMAIL}?subject=${encodeURIComponent(applySubject)}`;
 
   if (pageLoading) return <Loading />;

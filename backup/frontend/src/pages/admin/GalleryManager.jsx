@@ -172,10 +172,10 @@ export default function GalleryManager() {
 
   const getCategoryName = (item) => {
     if (item.categoryId && typeof item.categoryId === "object") {
-      return item.categoryId.categoryName || "—";
+      return item.categoryId.categoryName || "-";
     }
     const match = categories.find((c) => c._id === item.categoryId);
-    return match?.categoryName || "—";
+    return match?.categoryName || "-";
   };
 
   const openCreateModal = () => {
@@ -243,7 +243,7 @@ export default function GalleryManager() {
     setFormError("");
 
     try {
-      // Sent as multipart/form-data. The file field name is "photo" —
+      // Sent as multipart/form-data. The file field name is "photo" -
       // it must match upload.single("photo") on the backend.
       const fd = new FormData();
       fd.append("categoryId", formCategoryId);

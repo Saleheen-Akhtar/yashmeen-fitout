@@ -32,7 +32,7 @@ function SignatureMark() {
 }
 
 function PortraitPlaceholder() {
-  // Stand-in silhouette — swap the whole frame contents for an <img> of the founder.
+  // Stand-in silhouette - swap the whole frame contents for an <img> of the founder.
   return (
     <svg viewBox="0 0 320 320" width="100%" height="100%">
       <rect width="320" height="320" fill="var(--gray-50)" />
@@ -357,7 +357,7 @@ export default function FoundersMessage() {
               <p className="paragraph">
                 When I started this company, I had one frustration I wanted to
                 fix: too many fit-out projects in this region were being run as
-                a series of handoffs — design here, execution there,
+                a series of handoffs - design here, execution there,
                 accountability nowhere. I&rsquo;d seen good ideas get watered
                 down by the time they reached the site, and good clients left
                 chasing answers no one seemed to own.
@@ -369,7 +369,7 @@ export default function FoundersMessage() {
                 Designers who talk to the people installing the ceiling. Site
                 managers who were in the room when the budget was set.
                 It&rsquo;s a simple idea, but it&rsquo;s the one thing
-                I&rsquo;ve refused to compromise on in fifteen years — because
+                I&rsquo;ve refused to compromise on in fifteen years - because
                 it&rsquo;s the difference between a space that looks good in
                 renders and one that still works for you three years later.
               </p>
@@ -378,7 +378,7 @@ export default function FoundersMessage() {
                 <QuoteMark />
                 <p className="quote-text">
                   &ldquo;A good interior isn&rsquo;t the one that impresses on
-                  handover day — it&rsquo;s the one you stop noticing, because
+                  handover day - it&rsquo;s the one you stop noticing, because
                   everything just works.&rdquo;
                 </p>
               </div>
@@ -386,7 +386,7 @@ export default function FoundersMessage() {
               <p className="paragraph">
                 That philosophy is why we hold ourselves to ISO 9001, ISO 14001,
                 and ISO 45001 standards on every contract, not just the large
-                ones — and why our team still walks every site in Dubai and Abu
+                ones - and why our team still walks every site in Dubai and Abu
                 Dhabi personally before we call a project done. We&rsquo;ve
                 grown a lot since our first villa renovation, but the standard
                 hasn&rsquo;t moved.
@@ -394,7 +394,7 @@ export default function FoundersMessage() {
 
               <p className="paragraph">
                 To every client who trusted us with their home, office, or
-                business — thank you. You&rsquo;re the reason this team gets to
+                business - thank you. You&rsquo;re the reason this team gets to
                 keep doing the work we love. And if you&rsquo;re considering
                 Yashmeen Future Building & Fit-Out Company for your next
                 project, I promise you&rsquo;ll get the same standard we&rsquo;d

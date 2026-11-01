@@ -1,14 +1,17 @@
 :root {
   --ink: #17140f;
   --ink-soft: #3a352c;
+  --obsidian: #0d0c0a;
+  --graphite: #141311;
   --stone: #eae2d1;
   --stone-deep: #ddd2b8;
   --paper: #faf7f0;
   --brass: #c5a059;
   --brass-light: #dfba73;
   --brass-dim: #9e7d38;
+  --brass-deep: #8a6a28;
   --brass-glow: rgba(197, 160, 89, 0.22);
-  --espresso: #362a1e;
+  --espresso: #241c11;
   --line: rgba(23, 20, 15, 0.12);
   --line-strong: rgba(23, 20, 15, 0.24);
   --shadow: 0 20px 50px -25px rgba(23, 20, 15, 0.35);
@@ -17,6 +20,14 @@
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-sans: 'Plus Jakarta Sans', Montserrat, sans-serif;
   --serif: var(--font-serif);
+
+  /* Antigravity Spatial Glassmorphism & Depth Tokens */
+  --glass-surface: rgba(20, 19, 17, 0.76);
+  --glass-surface-light: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-gold: rgba(197, 160, 89, 0.3);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --glass-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.45);
 }
 
 *,
@@ -158,11 +169,32 @@ section {
   border-radius: 4px;
   border: 1px solid transparent;
   transition:
-    transform 0.3s var(--ease),
-    background 0.3s,
-    color 0.3s,
-    border-color 0.3s,
-    box-shadow 0.3s;
+    transform 0.25s var(--ease),
+    background 0.25s,
+    color 0.25s,
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+
+.btn:active {
+  transform: scale(0.98) translateY(0);
+}
+
+/* Antigravity Spatial Glassmorphism Card System */
+.spatial-card {
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight), var(--glass-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 4px;
+  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), border-color 0.35s var(--ease);
+}
+
+.spatial-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--glass-border-gold);
+  box-shadow: var(--glass-highlight), 0 30px 60px -15px rgba(0, 0, 0, 0.55), 0 0 30px rgba(197, 160, 89, 0.12);
 }
 
 .btn-brass {

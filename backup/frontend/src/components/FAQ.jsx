@@ -7,19 +7,19 @@ const FAQS = [
   },
   {
     q: "Why work with a dedicated fit-out company?",
-    a: "A dedicated studio coordinates design, MEP, joinery and construction as one schedule instead of several separate contracts — which usually means fewer delays and a single point of accountability.",
+    a: "A dedicated studio coordinates design, MEP, joinery and construction as one schedule instead of several separate contracts - which usually means fewer delays and a single point of accountability.",
   },
   {
     q: "How long does a fit-out project take?",
-    a: "Most projects are delivered within 60–90 days from design sign-off to handover, depending on size and complexity. We agree a fixed schedule before work begins and manage all trades in-house to hold it.",
+    a: "Most projects are delivered within 60-90 days from design sign-off to handover, depending on size and complexity. We agree a fixed schedule before work begins and manage all trades in-house to hold it.",
   },
   {
     q: "Do you handle design as well as construction?",
-    a: "Yes — interior design, 3D visualisation, fit-out construction, MEP works, joinery manufacturing and smart-home installation are all delivered in-house, so you work with one team from concept to completion.",
+    a: "Yes - interior design, 3D visualisation, fit-out construction, MEP works, joinery manufacturing and smart-home installation are all delivered in-house, so you work with one team from concept to completion.",
   },
   {
     q: "Which areas do you cover?",
-    a: "We work across all major Dubai districts — Business Bay, DIFC, Dubai Marina, Palm Jumeirah, Emirates Hills and Downtown Dubai — plus projects in Abu Dhabi and Sharjah.",
+    a: "We work across all major Dubai districts - Business Bay, DIFC, Dubai Marina, Palm Jumeirah, Emirates Hills and Downtown Dubai - plus projects in Abu Dhabi and Sharjah.",
   },
   {
     q: "Are you licensed to work in the UAE?",
@@ -32,7 +32,7 @@ export default function FaqSection() {
   const answerRefs = useRef([]);
   const [openIndex, setOpenIndex] = useState(0);
 
-  // reveal-on-scroll — same fix as every other section
+  // reveal-on-scroll - same fix as every other section
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
@@ -61,7 +61,7 @@ export default function FaqSection() {
     return () => io.disconnect();
   }, []);
 
-  // accordion open/close height sync — this whole mechanism was missing
+  // accordion open/close height sync - this whole mechanism was missing
   useEffect(() => {
     answerRefs.current.forEach((el, i) => {
       if (!el) return;

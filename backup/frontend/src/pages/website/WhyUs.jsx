@@ -23,7 +23,7 @@ const REASONS = [
   {
     icon: "shield",
     title: "ISO-Certified Quality",
-    copy: "Every contract runs under ISO 9001, ISO 14001, and ISO 45001 standards — not just our headline projects.",
+    copy: "Every contract runs under ISO 9001, ISO 14001, and ISO 45001 standards - not just our headline projects.",
   },
   {
     icon: "clock",
@@ -38,17 +38,17 @@ const REASONS = [
   {
     icon: "team",
     title: "One In-House Team",
-    copy: "Designers, engineers, and craftsmen under one roof — no subcontractor hand-offs diluting the brief along the way.",
+    copy: "Designers, engineers, and craftsmen under one roof - no subcontractor hand-offs diluting the brief along the way.",
   },
   {
     icon: "house",
     title: "True Turnkey Delivery",
-    copy: "Partitions, ceilings, flooring, furnishings, and MEP — we manage every trade so you deal with a single point of contact.",
+    copy: "Partitions, ceilings, flooring, furnishings, and MEP - we manage every trade so you deal with a single point of contact.",
   },
   {
     icon: "support",
     title: "Support After Handover",
-    copy: "Snagging, warranty callbacks, and maintenance support don't stop the day we finish — we stay reachable after handover.",
+    copy: "Snagging, warranty callbacks, and maintenance support don't stop the day we finish - we stay reachable after handover.",
   },
 ];
 
@@ -502,7 +502,7 @@ export default function WhyUs() {
           <h1 className="hero-title">Why Choose Us</h1>
           <p className="hero-copy">
             Years of turnkey fit-outs across the UAE have taught Yashmeen Future
-            Building & Fit-Out Company exactly where projects go wrong — so
+            Building & Fit-Out Company exactly where projects go wrong - so
             here&rsquo;s how we make sure yours doesn&rsquo;t.
           </p>
         </div>
@@ -555,7 +555,7 @@ export default function WhyUs() {
             </span>
             <h2 className="section-heading">A closer look at how we work.</h2>
             <p className="section-copy">
-              We Work Together, We Learn Together — a short introduction to the
+              We Work Together, We Learn Together - a short introduction to the
               team and process behind every Yashmeen Future Building & Fit-Out
               Company project.
             </p>
@@ -565,7 +565,7 @@ export default function WhyUs() {
             <div className="video-frame">
               <iframe
                 src={`https://www.youtube.com/embed/${INTRO_VIDEO_ID}`}
-                title="Yashmeen Future Building & Fit-Out Company — We Work Together, We Learn Together"
+                title="Yashmeen Future Building & Fit-Out Company - We Work Together, We Learn Together"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 loading="lazy"
@@ -587,7 +587,7 @@ export default function WhyUs() {
               Six reasons clients come back to us.
             </h2>
             <p className="section-copy">
-              We&rsquo;re not the only fit-out contractor in Dubai — but
+              We&rsquo;re not the only fit-out contractor in Dubai - but
               we&rsquo;re the one that treats your project like it&rsquo;s the
               only one we have.
             </p>

@@ -1,296 +1,224 @@
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect } from "react";
+import { FiChevronLeft, FiChevronRight, FiStar } from "react-icons/fi";
 
 const TESTIMONIALS = [
   {
-    quote: "Genuinely one of the finest turnkey fit-out partners we have commissioned in Dubai. Responsive, impeccably organised, and the custom joinery finish in our villa speaks for itself.",
+    quote:
+      "Genuinely one of the finest turnkey fit-out partners we have commissioned in Dubai. Responsive, impeccably organised, and the custom joinery finish in our Emirates Hills villa speaks for itself.",
     author: "Farah Al Suwaidi",
-    location: "Emirates Hills Villa, Dubai",
-    project: "Turnkey Residential Fit-Out",
-    rating: 5,
+    location: "Emirates Hills, Dubai",
+    project: "Turnkey Luxury Villa Fit-Out",
+    timeline: "Delivered in 72 Days",
   },
   {
-    quote: "From initial concept renderings to final authority handovers, coordination was seamless. Their in-house MEP sequencing saved us weeks of ceiling rework.",
+    quote:
+      "From initial concept renderings to final authority handovers, coordination was seamless. Their in-house MEP sequencing saved us weeks of ceiling rework and Dubai Municipality approvals.",
     author: "Daniyar Omarov",
-    location: "Business Bay Corporate Office, Dubai",
+    location: "Business Bay, Dubai",
     project: "Commercial Headquarters",
-    rating: 5,
+    timeline: "Delivered in 60 Days",
   },
   {
-    quote: "The craftsmanship from their Al Quoz joinery bay is exceptional. Every veneer was grain-matched and delivered precisely on the agreed milestone date.",
+    quote:
+      "The craftsmanship from their Al Quoz joinery bay is exceptional. Every veneer was grain-matched and delivered precisely on the agreed milestone date.",
     author: "Evelyn Marsh",
-    location: "Palm Jumeirah Penthouse, Dubai",
+    location: "Palm Jumeirah Penthouse",
     project: "Luxury Penthouse Renovation",
-    rating: 5,
-  },
-  {
-    quote: "Working with a single accountable studio for both civil architecture and MEP approvals made all the difference. Delivered completely on time within 75 days.",
-    author: "Tariq Mansoori",
-    location: "DIFC Executive Lounge, Dubai",
-    project: "Hospitality & Dining Space",
-    rating: 5,
+    timeline: "Delivered in 80 Days",
   },
 ];
 
 export default function TestimonialsSection() {
-  const rootRef = useRef(null);
   const [activeIdx, setActiveIdx] = useState(0);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveIdx((prev) => (prev + 1) % TESTIMONIALS.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, []);
+  const prev = () => {
+    setActiveIdx((i) => (i === 0 ? TESTIMONIALS.length - 1 : i - 1));
+  };
 
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
+  const next = () => {
+    setActiveIdx((i) => (i === TESTIMONIALS.length - 1 ? 0 : i + 1));
+  };
 
-    const revealEls = root.querySelectorAll(".reveal");
-    if (!("IntersectionObserver" in window)) {
-      revealEls.forEach((el) => el.classList.add("in-view"));
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("in-view");
-            io.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.15 },
-    );
-
-    revealEls.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
-
-  const current = TESTIMONIALS[activeIdx];
+  const t = TESTIMONIALS[activeIdx];
 
   return (
-    <div ref={rootRef}>
+    <section className="testimonials-section">
       <style>{`
-        /* ============ TESTIMONIALS ============ */
-        .testi {
-            padding: 110px 0;
-            background: #141311; color: #faf7f0;
-            overflow: hidden;
-            position: relative;
+        /* ============ AWWWARDS-TIER TESTIMONIALS ============ */
+        .testimonials-section {
+          padding: 120px 24px;
+          background: #0d0c0a;
+          color: var(--paper, #faf7f0);
+          position: relative;
         }
 
-        .testi .reveal {
-            opacity: 0;
-            transform: translateY(18px);
-            transition: opacity .7s ease, transform .7s ease;
+        @media (min-width: 768px) {
+          .testimonials-section {
+            padding: 140px 32px;
+          }
         }
 
-        .testi .reveal.in-view {
-            opacity: 1;
-            transform: none;
+        .testimonials-wrap {
+          max-width: 1080px;
+          margin: 0 auto;
         }
 
-        .testi-shell {
-            max-width: 860px;
-            margin: 0 auto;
-            position: relative;
+        .testi-header {
+          text-align: center;
+          margin-bottom: 50px;
         }
 
-        .testi-card {
-            background: rgba(255, 255, 255, 0.035);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 4px;
-            padding: 56px 50px;
-            text-align: center;
-            box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(16px);
-            position: relative;
-            transition: all 0.4s ease;
+        .testi-eyebrow {
+          display: inline-block;
+          font-size: 11.5px;
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: var(--brass-light, #dfba73);
+          margin-bottom: 12px;
         }
 
-        .testi-card .quote-icon {
-            width: 38px;
-            height: 30px;
-            color: var(--brass, #c5a059);
-            margin: 0 auto 24px;
-            opacity: 0.85;
+        .testi-title {
+          font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+          font-size: clamp(32px, 4.2vw, 52px);
+          font-weight: 500;
+          line-height: 1.15;
+          color: #ffffff;
         }
 
-        .testi-card p.msg {
-            font-family: var(--font-serif);
-            font-size: clamp(20px, 2.4vw, 25px);
-            line-height: 1.6;
-            color: #faf7f0;
-            font-weight: 400;
-            font-style: italic;
-            margin: 0;
+        .testi-bezel {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 20px;
+          padding: 8px;
+          box-shadow: 0 40px 80px -25px rgba(0, 0, 0, 0.7);
         }
 
-        .testi-card .who {
-            margin-top: 32px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
+        .testi-core-card {
+          background: #11100e;
+          border-radius: 14px;
+          padding: 48px 36px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          position: relative;
         }
 
-        .testi-card .who strong {
-            font-size: 16px;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: 0.02em;
+        @media (min-width: 768px) {
+          .testi-core-card {
+            padding: 64px 56px;
+          }
         }
 
-        .testi-card .who span {
-            font-size: 12.5px;
-            color: var(--brass-light, #dfba73);
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
+        .testi-quote-mark {
+          font-family: var(--font-serif);
+          font-size: 72px;
+          line-height: 1;
+          color: var(--brass, #c5a059);
+          opacity: 0.45;
+          margin-bottom: -16px;
         }
 
-        .testi-nav {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 36px;
+        .testi-quote-text {
+          font-family: var(--font-serif);
+          font-size: clamp(22px, 2.6vw, 32px);
+          font-weight: 400;
+          line-height: 1.45;
+          color: #ffffff;
+          font-style: italic;
         }
 
-        .testi-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            background: rgba(255, 255, 255, 0.05);
-            color: #faf7f0;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.25s ease;
+        .testi-author-row {
+          margin-top: 36px;
+          padding-top: 24px;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 20px;
         }
 
-        .testi-btn:hover {
-            border-color: var(--brass);
-            background: var(--brass);
-            color: #ffffff;
-            transform: scale(1.05);
+        .testi-name {
+          font-family: var(--font-sans);
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--brass-light, #dfba73);
+          letter-spacing: 0.02em;
         }
 
-        .testi-dots {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .testi-meta {
+          font-size: 13px;
+          color: rgba(250, 247, 240, 0.65);
+          margin-top: 4px;
         }
 
-        .testi-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.25);
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            transition: all 0.3s ease;
+        .testi-nav-btns {
+          display: flex;
+          gap: 10px;
         }
 
-        .testi-dot.active {
-            width: 24px;
-            background: var(--brass, #c5a059);
+        .testi-nav-arrow {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          color: var(--paper);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.25s ease;
         }
 
-        @media(max-width:640px) {
-            .testi-card {
-                padding: 36px 24px;
-            }
+        .testi-nav-arrow:hover {
+          background: var(--brass, #c5a059);
+          color: #0d0c0a;
+          border-color: var(--brass);
         }
       `}</style>
 
-      <section className="testi" id="testimonials">
-        <div className="wrap">
-          <div
-            className="section-head reveal"
-            style={{ textAlign: "center", margin: "0 auto 40px" }}
-          >
-            
-            <h2 className="section-title" style={{ maxWidth: "none", color: "#faf7f0" }}>Voices from delivered spaces</h2>
-          </div>
+      <div className="testimonials-wrap">
+        <div className="testi-header">
+          <span className="testi-eyebrow">Client Endorsements</span>
+          <h2 className="testi-title">Measured by delivered reality.</h2>
+        </div>
 
-          <div className="testi-shell reveal">
-            <div className="testi-card">
-              <svg
-                className="quote-icon"
-                viewBox="0 0 34 26"
-                fill="currentColor"
-              >
-                <path d="M0 26V14.6C0 6.2 4.9 1 12.9 0l1.5 4.4C9 5.6 6.4 8.6 6.1 13.2h7.5V26H0zm18.6 0V14.6c0-8.4 4.9-13.6 12.9-14.6l1.5 4.4c-5.4 1.2-8 4.2-8.3 8.8h7.5V26H18.6z" />
-              </svg>
-              <p className="msg">&ldquo;{current.quote}&rdquo;</p>
-              <div className="who">
-                <strong>{current.author}</strong>
-                <span>{current.location} &bull; {current.project}</span>
-              </div>
-            </div>
+        <div className="testi-bezel">
+          <div className="testi-core-card">
+            <div className="testi-quote-mark">&ldquo;</div>
+            <p className="testi-quote-text">{t.quote}</p>
 
-            <div className="testi-nav">
-              <button
-                type="button"
-                className="testi-btn"
-                onClick={() =>
-                  setActiveIdx((prev) =>
-                    (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length
-                  )
-                }
-                aria-label="Previous testimonial"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M15 18L9 12L15 6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-
-              <div className="testi-dots">
-                {TESTIMONIALS.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    className={`testi-dot ${i === activeIdx ? "active" : ""}`}
-                    onClick={() => setActiveIdx(i)}
-                    aria-label={`Go to slide ${i + 1}`}
-                  />
-                ))}
+            <div className="testi-author-row">
+              <div>
+                <div className="testi-name">{t.author}</div>
+                <div className="testi-meta">
+                  {t.project} &bull; {t.location} &bull;{" "}
+                  <span style={{ color: "var(--brass-light)" }}>{t.timeline}</span>
+                </div>
               </div>
 
-              <button
-                type="button"
-                className="testi-btn"
-                onClick={() =>
-                  setActiveIdx((prev) => (prev + 1) % TESTIMONIALS.length)
-                }
-                aria-label="Next testimonial"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M9 18L15 12L9 6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
+              <div className="testi-nav-btns">
+                <button
+                  type="button"
+                  className="testi-nav-arrow"
+                  onClick={prev}
+                  aria-label="Previous client endorsement"
+                >
+                  <FiChevronLeft size={18} />
+                </button>
+                <button
+                  type="button"
+                  className="testi-nav-arrow"
+                  onClick={next}
+                  aria-label="Next client endorsement"
+                >
+                  <FiChevronRight size={18} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

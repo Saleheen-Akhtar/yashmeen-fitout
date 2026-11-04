@@ -96,6 +96,7 @@ class Glyph {
     this.cy = pose.y;
     this.homeCx = pose.x;
     this.homeCy = pose.y;
+    this.touched = false;
     this.radius = Glyph.strokeRadius(this.char, this.w, this.h);
     const co = Math.cos(this.angle),
       si = Math.sin(this.angle);
@@ -248,6 +249,7 @@ class World {
   }
 
   grab(g, p) {
+    g.touched = true;
     const node = g.nodes.reduce((a, b) =>
       Math.hypot(a.x - p.x, a.y - p.y) < Math.hypot(b.x - p.x, b.y - p.y) ? a : b
     );
@@ -263,19 +265,20 @@ class World {
     };
     this.returning = 0;
     this.energy = 1;
-    this.puff(g, 1.15, true);
+    this.puff(g, 2.0);
   }
 
   release(vx = 0, vy = 0) {
     if (this.drag) {
       const g = this.drag.glyph;
+      g.touched = true;
       const speed = Math.hypot(vx, vy);
       for (const n of g.nodes) {
-        n.vx = clamp(vx * 1.25, -60, 60);
-        n.vy = clamp(vy * 1.25, -60, 60);
+        n.vx = clamp(vx * 1.15, -45, 45);
+        n.vy = clamp(vy * 1.15, -45, 45);
       }
-      if (speed > 4) {
-        this.puff(g, 1.25, true);
+      if (speed > 5) {
+        this.puff(g, 2.8);
       }
     }
     this.drag = null;
@@ -284,23 +287,25 @@ class World {
 
   returnHome() {
     this.drag = null;
-    this.returning = 45;
+    this.returning = 50;
     this.energy = 1;
     for (const g of this.glyphs) {
-      this.puff(g, 1.15, true);
+      g.touched = false;
+      this.puff(g, 2.2);
     }
   }
 
   followHome() {
     if (this.returning <= 0) return;
     this.returning--;
-    const factor = 0.18;
+    const progress = (50 - this.returning) / 50;
+    const factor = 0.08 + progress * 0.08;
 
     for (const n of this.nodes) {
-      n.x += (n.homeX - n.x) * factor;
-      n.y += (n.homeY - n.y) * factor;
-      n.vx *= 0.5;
-      n.vy *= 0.5;
+      n.vx += (n.homeX - n.x) * factor;
+      n.vy += (n.homeY - n.y) * factor;
+      n.vx *= 0.85;
+      n.vy *= 0.85;
     }
 
     if (this.returning === 0) {
@@ -310,18 +315,22 @@ class World {
         n.vx = 0;
         n.vy = 0;
       }
-      for (const g of this.glyphs) g.update();
+      for (const g of this.glyphs) {
+        g.touched = false;
+        g.update();
+      }
     }
   }
 
   nudge(index, x, y) {
     if (!this.glyphs[index]) return;
     const g = this.glyphs[index];
+    g.touched = true;
     for (const n of g.nodes) {
       n.vx += x;
       n.vy += y;
     }
-    this.puff(g, 1.2, true);
+    this.puff(g, 2.8);
     this.energy = 1;
   }
 
@@ -339,7 +348,7 @@ class World {
   }
 
   get busy() {
-    return !!this.target || this.glyphs.some((g) => g.puff) || this.returning > 0;
+    return !!this.target || this.returning > 0;
   }
 
   followResize() {
@@ -373,26 +382,20 @@ class World {
     for (const l of g.links) l.length *= k;
   }
 
-  puff(g, target, elastic = true) {
-    g.puff = { size: 1, target, v: 0, elastic };
-    this.energy = 1;
-  }
-
-  followPuffs() {
-    for (const g of this.glyphs) {
-      const p = g.puff;
-      if (!p) continue;
-      const k = p.elastic ? 250 : 290,
-        c = p.elastic ? 8.5 : 22;
-      p.v += ((p.target - p.size) * k - p.v * c) / 60;
-      const next = Math.max(0.65, p.size + p.v / 60);
-      this.scaleGlyph(g, next / p.size);
-      p.size = next;
-      if (p.target === 1 && Math.abs(p.size - 1) < 0.002 && Math.abs(p.v) < 0.02) {
-        this.scaleGlyph(g, 1 / p.size);
-        g.puff = null;
-      }
+  puff(g, intensity = 2.5) {
+    // Spongy bubble wobble: radial velocity impulse on nodes that springs back to rest shape
+    // Geometry scale is strictly immutable so letters NEVER get permanently bigger
+    if (!g) return;
+    g.update();
+    const impulse = Math.max(1.2, Math.min(5.0, intensity));
+    for (const n of g.nodes) {
+      const dx = n.x - g.cx;
+      const dy = n.y - g.cy;
+      const dist = Math.hypot(dx, dy) || 1;
+      n.vx += (dx / dist) * impulse;
+      n.vy += (dy / dist) * impulse;
     }
+    this.energy = 1;
   }
 
   solve() {
@@ -464,20 +467,15 @@ class World {
                 b.y -= ny * k;
               }
 
-              // Elastic bubble bounce impulse between distinct letters (88% restitution)
+              // Elastic bubble bounce impulse between distinct letters (82% restitution)
               if (a.body !== b.body) {
                 const normalSpeed = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
                 if (normalSpeed < 0) {
-                  const impulse = -normalSpeed * 0.88;
+                  const impulse = -normalSpeed * 0.82;
                   a.vx += nx * impulse;
                   a.vy += ny * impulse;
                   b.vx -= nx * impulse;
                   b.vy -= ny * impulse;
-
-                  if (Math.abs(impulse) > 1.0 && !a.body.puff && !b.body.puff) {
-                    this.puff(a.body, 1.15, true);
-                    this.puff(b.body, 1.15, true);
-                  }
                 }
               }
             }
@@ -504,93 +502,86 @@ class World {
 
     if (n.x < minX) {
       n.x = minX;
-      if (n.vx < 0) {
-        n.vx = -n.vx * restitution;
-        if (Math.abs(n.vx) > 3 && !n.body.puff) this.puff(n.body, 1.12, true);
-      }
+      if (n.vx < 0) n.vx = -n.vx * restitution;
     } else if (n.x > maxX) {
       n.x = maxX;
-      if (n.vx > 0) {
-        n.vx = -n.vx * restitution;
-        if (Math.abs(n.vx) > 3 && !n.body.puff) this.puff(n.body, 1.12, true);
-      }
+      if (n.vx > 0) n.vx = -n.vx * restitution;
     }
 
     if (n.y < minY) {
       n.y = minY;
-      if (n.vy < 0) {
-        n.vy = -n.vy * restitution;
-        if (Math.abs(n.vy) > 3 && !n.body.puff) this.puff(n.body, 1.12, true);
-      }
+      if (n.vy < 0) n.vy = -n.vy * restitution;
     } else if (n.y > maxY) {
       n.y = maxY;
-      if (n.vy > 0) {
-        n.vy = -n.vy * restitution;
-        if (Math.abs(n.vy) > 3 && !n.body.puff) this.puff(n.body, 1.12, true);
-      }
+      if (n.vy > 0) n.vy = -n.vy * restitution;
     }
   }
 
   step(time = 0) {
     this.time = time;
     this.followResize();
-    this.followPuffs();
     this.followHome();
 
+    const old = this.nodes.map((n) => [n.x, n.y]);
     const t = (time || performance.now()) * 0.0016;
 
     // 1. Perpetual Zero-Gravity Space Float ("Floating Even if We Leave the Words")
-    // Visible 14px space float wave: every letter bobs, sways, and floats in real time.
-    // When left, elastic spring pulls it back like a ball, overshooting and bouncing.
-    for (let i = 0; i < this.glyphs.length; i++) {
-      const g = this.glyphs[i];
-      if (this.drag && this.drag.glyph === g) continue;
+    // Every letter gently bobs, sways, and floats smoothly in space
+    if (this.returning <= 0) {
+      for (let i = 0; i < this.glyphs.length; i++) {
+        const g = this.glyphs[i];
+        if (this.drag && this.drag.glyph === g) continue;
 
-      const floatY = Math.sin(t * 1.8 + i * 1.25) * 14;
-      const floatX = Math.cos(t * 1.2 + i * 1.45) * 8;
-      const floatAngle = Math.sin(t * 1.5 + i * 0.95) * 0.04;
-      const co = Math.cos(floatAngle),
-        si = Math.sin(floatAngle);
+        const floatY = Math.sin(t * 1.6 + i * 1.25) * 0.42;
+        const floatX = Math.cos(t * 1.2 + i * 1.45) * 0.32;
 
-      for (const n of g.nodes) {
-        const rotX = n.ox * co - n.oy * si;
-        const rotY = n.ox * si + n.oy * co;
-        const targetX = g.homeCx + floatX + rotX;
-        const targetY = g.homeCy + floatY + rotY;
+        for (const n of g.nodes) {
+          n.vx += floatX;
+          n.vy += floatY;
 
-        const pull = this.returning > 0 ? 0.14 : 0.038;
-        n.vx += (targetX - n.x) * pull;
-        n.vy += (targetY - n.y) * pull;
+          // If untouched, whisper celestial anchor preserves initial single-row baseline
+          if (!g.touched) {
+            n.vx += (n.homeX - n.x) * 0.006;
+            n.vy += (n.homeY - n.y) * 0.006;
+          }
+        }
       }
     }
 
-    // 2. Soft jelly shape recovery around moving center
+    // 2. Soft jelly shape recovery around CURRENT moving center
+    // Preserves the authentic letter shape wherever the letter is placed (100% flexible)
     for (const g of this.glyphs) {
       g.update();
       const meanX = g.nodes.reduce((s, n) => s + n.ox, 0) / g.nodes.length;
       const meanY = g.nodes.reduce((s, n) => s + n.oy, 0) / g.nodes.length;
       for (const n of g.nodes) {
-        const tx = g.cx + (n.ox - meanX);
-        const ty = g.cy + (n.oy - meanY);
-        n.vx += (tx - n.x) * 0.024;
-        n.vy += (ty - n.y) * 0.024;
+        const targetX = g.cx + (n.ox - meanX);
+        const targetY = g.cy + (n.oy - meanY);
+        n.vx += (targetX - n.x) * 0.04;
+        n.vy += (targetY - n.y) * 0.04;
       }
     }
 
-    // 3. Movement integration with bouncy air friction
-    const friction = this.drag ? 0.94 : 0.965;
+    // 3. Position integration
     for (const n of this.nodes) {
       if (this.drag && n.body === this.drag.glyph) continue;
       n.x += n.vx;
       n.y += n.vy;
-      n.vx *= friction;
-      n.vy *= friction;
       this.confine(n);
     }
 
     // 4. Elastic structure and contact constraint passes
-    for (let i = 0; i < 4; i++) {
+    for (let pass = 0; pass < 3; pass++) {
       this.solve();
+    }
+
+    // 5. Stable velocity derivation with bouncy air glide (butter-smooth)
+    const friction = this.drag ? 0.92 : 0.965;
+    for (let i = 0; i < this.nodes.length; i++) {
+      const n = this.nodes[i];
+      if (this.drag && n.body === this.drag.glyph) continue;
+      n.vx = Math.max(-36, Math.min(36, (n.x - old[i][0]) * friction));
+      n.vy = Math.max(-36, Math.min(36, (n.y - old[i][1]) * friction));
     }
 
     for (const g of this.glyphs) g.update();
@@ -926,7 +917,7 @@ export default function InteractiveBrandLettering({
         const currentPt = recents[recents.length - 1] || { x: press.startX, y: press.startY };
         const dist = Math.hypot(currentPt.x - press.startX, currentPt.y - press.startY);
         if (elapsed < 280 && dist < 10) {
-          world.puff(press.glyph, 1.45, true);
+          world.puff(press.glyph, 3.0);
         }
       }
 
@@ -955,7 +946,7 @@ export default function InteractiveBrandLettering({
       const glyph = hit(point);
       if (glyph && worldRef.current) {
         glyph.z = ++topZRef.current;
-        worldRef.current.puff(glyph, 1.55, true);
+        worldRef.current.puff(glyph, 3.5);
         playPop(glyph.radius);
         wake();
       } else if (worldRef.current) {
@@ -1031,7 +1022,7 @@ export default function InteractiveBrandLettering({
     const g = world.glyphs[index];
     g.z = ++topZRef.current;
     if (dir === "puff") {
-      world.puff(g, 1.45, true);
+      world.puff(g, 3.2);
       playPop(g.radius);
     } else {
       const step = 16;

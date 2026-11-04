@@ -1,25 +1,20 @@
-import HeroSection from "../../components/Hero";
-import Marquee from "../../components/Marquee";
-import IntroSection from "../../components/Intro";
-import DisciplinesSection from "../../components/Disciplines";
-import ShowcaseSection from "../../components/Showcase";
-import Numbers from "../../components/Numbers";
-import MethodologySection from "../../components/Methodology";
-import TestimonialsSection from "../../components/Testimonials";
-import ContactSection from "../../components/ContactSection";
+import "../../styles/home.css";
+import Hero from "../../components/home/Hero";
+import Studio from "../../components/home/Studio";
+import Works from "../../components/home/Works";
+import Process from "../../components/home/Process";
+import Testimonial from "../../components/home/Testimonial";
+import CTA from "../../components/home/CTA";
 
 export default function Home() {
   return (
-    <main data-manual>
-      <HeroSection />
-      <Marquee />
-      <IntroSection />
-      <DisciplinesSection />
-      <ShowcaseSection />
-      <Numbers />
-      <MethodologySection />
-      <TestimonialsSection />
-      <ContactSection />
+    <main>
+      <Hero />
+      <Studio />
+      <Works />
+      <Process />
+      <Testimonial />
+      <CTA />
     </main>
   );
 }

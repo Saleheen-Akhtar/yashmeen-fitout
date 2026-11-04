@@ -3,6 +3,16 @@ import { Link } from "react-router-dom";
 import { FiMaximize2 } from "react-icons/fi";
 import { categoryAPI, projectAPI, itemPath } from "../../services/api"; // adjust the path to your project
 
+
+const CURATED_PROJECTS = [
+  { id: 1, title: "Palm Jumeirah Atelier", category: "Residential", src: "/static/work-oh-office.jpg", year: "2026", size: "14,500 sq.ft", location: "Palm Jumeirah, Dubai" },
+  { id: 2, title: "Emirates Hills Residence", category: "Residential", src: "/static/work-myrtle.jpg", year: "2025", size: "22,000 sq.ft", location: "Emirates Hills, Dubai" },
+  { id: 3, title: "DIFC Corporate Headquarters", category: "Commercial", src: "/static/work-clifton.jpg", year: "2026", size: "18,200 sq.ft", location: "DIFC, Dubai" },
+  { id: 4, title: "Al Quoz Design Pavilion", category: "Atelier", src: "/static/work-runic.jpg", year: "2025", size: "8,500 sq.ft", location: "Al Quoz, Dubai" },
+  { id: 5, title: "Dubai Hills Modern Sanctuary", category: "Residential", src: "/static/work-stanley.jpg", year: "2026", size: "11,800 sq.ft", location: "Dubai Hills Estate, Dubai" },
+  { id: 6, title: "Downtown Fashion Concept Store", category: "Retail", src: "/static/work-samford.jpg", year: "2025", size: "6,200 sq.ft", location: "Downtown Dubai" },
+];
+
 const GALLERY_HERO_BG_IMAGE =
   "https://images.unsplash.com/photo-1758448721205-8465cebc26af?auto=format&fit=crop&w=1800&q=80";
 

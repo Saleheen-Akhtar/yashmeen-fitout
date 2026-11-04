@@ -7,7 +7,7 @@ const COMMISSIONS = [
     index: "(01)",
     title: "Emirates Hills Residence",
     location: "Emirates Hills, Dubai",
-    scope: "Turnkey Architecture & Bespoke Joinery",
+    scope: "Turnkey Architecture & Joinery",
     img: "/static/pages-bg.webp",
     alt: "Emirates Hills luxury architectural residence and landscape in Dubai",
   },
@@ -15,7 +15,7 @@ const COMMISSIONS = [
     id: "02",
     index: "(02)",
     title: "Al Quoz Executive Atelier",
-    location: "Al Quoz Design District, Dubai",
+    location: "Al Quoz, Dubai",
     scope: "Bespoke Millwork & Executive Suite",
     img: "/static/work-clifton.jpg",
     alt: "Bespoke luxury office fit-out with fluted desk and warm architectural lighting",
@@ -47,7 +47,8 @@ export default function Hero() {
   const stageRef = useRef(null);
   const cursorRef = useRef(null);
   const slidesRef = useRef([]);
-  const textRef = useRef(null);
+  const headlineRef = useRef(null);
+  const baselineRef = useRef(null);
   const dragStartXRef = useRef(null);
   const isDraggingRef = useRef(false);
 
@@ -90,15 +91,27 @@ export default function Hero() {
       }
     });
 
-    // Subtle typography reveal
-    if (textRef.current) {
+    // Subtle baseline update animation
+    if (baselineRef.current) {
       gsap.fromTo(
-        textRef.current,
-        { y: 12, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.7, ease: "cubic-bezier(0.16, 1, 0.35, 1)" }
+        baselineRef.current,
+        { opacity: 0.4 },
+        { opacity: 1, duration: 0.6, ease: "power2.out" }
       );
     }
   }, [activeIdx]);
+
+  // Entrance animation on mount
+  useEffect(() => {
+    if (headlineRef.current) {
+      const items = headlineRef.current.children;
+      gsap.fromTo(
+        items,
+        { y: 35, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.2, stagger: 0.12, ease: "cubic-bezier(0.16, 1, 0.35, 1)", delay: 0.15 }
+      );
+    }
+  }, []);
 
   // Interactive mousemove cursor puck
   const handleMouseMove = (e) => {
@@ -162,8 +175,8 @@ export default function Hero() {
   return (
     <section
       ref={stageRef}
-      className="hero-minimal-stage"
-      aria-label="Architectural Portfolio Showcase"
+      className="hero-provocative-stage"
+      aria-label="Yashmeen Turnkey Fit-Out Atelier"
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -171,24 +184,24 @@ export default function Hero() {
       onPointerUp={handlePointerUp}
     >
       {/* 100vw x 100vh Full-Bleed Imagery Canvas */}
-      <div className="hero-minimal-canvas">
+      <div className="hero-provocative-canvas">
         {COMMISSIONS.map((item, idx) => (
           <div
             key={item.id}
             ref={(el) => (slidesRef.current[idx] = el)}
-            className={`hero-minimal-slide ${idx === activeIdx ? "is-active" : ""}`}
+            className={`hero-provocative-slide ${idx === activeIdx ? "is-active" : ""}`}
             style={{ zIndex: idx === activeIdx ? 2 : 1 }}
           >
             <img
               src={item.img}
               alt={item.alt}
-              className="hero-minimal-img"
+              className="hero-provocative-img"
               loading={idx === 0 ? "eager" : "lazy"}
             />
           </div>
         ))}
-        {/* Soft lower scrim for pure typographic contrast */}
-        <div className="hero-minimal-scrim" />
+        {/* Filmic dark vignette scrim for contrast */}
+        <div className="hero-provocative-scrim" />
       </div>
 
       {/* Floating Interactive Custom Cursor Puck (Desktop Only) */}
@@ -201,23 +214,56 @@ export default function Hero() {
         <span className="hero-cursor-arrows">⇄</span>
       </div>
 
-      {/* Quiet, Minimalist Bottom Baseline (Max Negative Space) */}
-      <div className="hero-minimal-baseline">
-        <div className="hero-minimal-meta" ref={textRef}>
-          <h1 className="hero-minimal-title no-split" onClick={openEnquiry}>
-            <span className="hero-minimal-idx">{activeCommission.index}</span>
-            <span>{activeCommission.title}</span>
+      {/* Center-Left Provocative Hook Content */}
+      <div className="hero-provocative-content wrap">
+        <div className="hero-provocative-inner" ref={headlineRef}>
+          {/* Eyebrow Tag */}
+          <div className="hero-provocative-eyebrow">
+            <span className="g-circle is-red" aria-hidden="true" />
+            <span>DUBAI TURNKEY FIT-OUT &amp; BESPOKE JOINERY</span>
+          </div>
+
+          {/* Monumental Provocative Headline */}
+          <h1 className="hero-provocative-headline no-split">
+            WE BUILD WHAT<br />OTHERS ONLY DRAW
           </h1>
-          <p className="hero-minimal-sub">
-            <span>{activeCommission.location}</span>
-            <span className="hero-minimal-dot">·</span>
-            <span>{activeCommission.scope}</span>
+
+          {/* Subtitle Value Proposition */}
+          <p className="hero-provocative-sub">
+            Complete turnkey commercial &amp; luxury residential fit-out, Dubai authority approvals,
+            and 35,000 sq.ft in-house factory joinery direct from the bench.
           </p>
+
+          {/* Magnetic Action Triggers */}
+          <div className="hero-provocative-actions">
+            <button
+              type="button"
+              onClick={openEnquiry}
+              className="btn-pill btn-pill-light hero-cta-pill"
+            >
+              <span>EXPLORE SPACE</span>
+              <span className="g-circle is-dark" aria-hidden="true" />
+            </button>
+
+            <a href="#manifesto" className="hero-secondary-link">
+              <span>OUR CRAFT PHILOSOPHY</span>
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Architectural Telemetry & Scrubber Baseline */}
+      <div className="hero-provocative-baseline" ref={baselineRef}>
+        <div className="hero-baseline-project">
+          <span className="hero-baseline-tag">FEATURED SPACE:</span>
+          <span className="hero-baseline-name">{activeCommission.index} {activeCommission.title}</span>
+          <span className="hero-baseline-sep">·</span>
+          <span className="hero-baseline-loc">{activeCommission.location}</span>
         </div>
 
-        {/* Quiet Numerical Scrubber, Explore Pill & Scroll Prompt */}
-        <div className="hero-minimal-nav">
-          <div className="hero-minimal-numbers" role="tablist" aria-label="Commission Index">
+        <div className="hero-baseline-nav">
+          <div className="hero-baseline-numbers" role="tablist" aria-label="Commission Index">
             {COMMISSIONS.map((item, idx) => (
               <button
                 key={item.id}
@@ -229,22 +275,14 @@ export default function Hero() {
                   goToCommission(idx);
                 }}
                 className={`hero-num-btn ${idx === activeIdx ? "is-active" : ""}`}
-                aria-label={`View commission ${item.id}: ${item.title}`}
+                aria-label={`View space ${item.id}: ${item.title}`}
               >
                 {item.id}
               </button>
             ))}
           </div>
 
-          <button
-            type="button"
-            onClick={openEnquiry}
-            className="btn-pill btn-pill-light hero-explore-pill-btn"
-            style={{ height: 38, padding: "0 18px", fontSize: 12 }}
-          >
-            <span>EXPLORE SPACE</span>
-            <span className="g-circle is-dark" aria-hidden="true" />
-          </button>
+          <span className="hero-baseline-sep">·</span>
 
           <a href="#manifesto" className="hero-minimal-scroll" aria-label="Scroll down to studio">
             <span>(SCROLL)</span>

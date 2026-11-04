@@ -96,6 +96,8 @@ class Glyph {
     this.cy = pose.y;
     this.homeCx = pose.x;
     this.homeCy = pose.y;
+    this.floatCx = pose.x;
+    this.floatCy = pose.y;
     this.touched = false;
     this.radius = Glyph.strokeRadius(this.char, this.w, this.h);
     const co = Math.cos(this.angle),
@@ -258,8 +260,6 @@ class World {
       node,
       x: p.x,
       y: p.y,
-      lastX: p.x,
-      lastY: p.y,
       dx: node.x - p.x,
       dy: node.y - p.y,
     };
@@ -277,6 +277,8 @@ class World {
         n.vx = clamp(vx * 1.15, -45, 45);
         n.vy = clamp(vy * 1.15, -45, 45);
       }
+      g.floatCx = g.cx;
+      g.floatCy = g.cy;
       if (speed > 5) {
         this.puff(g, 2.8);
       }
@@ -291,6 +293,8 @@ class World {
     this.energy = 1;
     for (const g of this.glyphs) {
       g.touched = false;
+      g.floatCx = g.homeCx;
+      g.floatCy = g.homeCy;
       this.puff(g, 2.2);
     }
   }
@@ -299,13 +303,13 @@ class World {
     if (this.returning <= 0) return;
     this.returning--;
     const progress = (50 - this.returning) / 50;
-    const factor = 0.08 + progress * 0.08;
+    const factor = 0.14 + progress * 0.12;
 
     for (const n of this.nodes) {
-      n.vx += (n.homeX - n.x) * factor;
-      n.vy += (n.homeY - n.y) * factor;
-      n.vx *= 0.85;
-      n.vy *= 0.85;
+      n.x += (n.homeX - n.x) * factor;
+      n.y += (n.homeY - n.y) * factor;
+      n.vx *= 0.5;
+      n.vy *= 0.5;
     }
 
     if (this.returning === 0) {
@@ -317,6 +321,8 @@ class World {
       }
       for (const g of this.glyphs) {
         g.touched = false;
+        g.floatCx = g.homeCx;
+        g.floatCy = g.homeCy;
         g.update();
       }
     }
@@ -525,66 +531,93 @@ class World {
     const old = this.nodes.map((n) => [n.x, n.y]);
     const t = (time || performance.now()) * 0.0016;
 
-    // 1. Perpetual Zero-Gravity Space Float ("Floating Even if We Leave the Words")
-    // Every letter gently bobs, sways, and floats smoothly in space
+    // 1. Fluid Harmonic Zero-Gravity Space Float ("Floating Even if We Leave the Words")
+    // Applies gentle Lissajous levitation waves across each letter
     if (this.returning <= 0) {
       for (let i = 0; i < this.glyphs.length; i++) {
         const g = this.glyphs[i];
         if (this.drag && this.drag.glyph === g) continue;
 
-        const floatY = Math.sin(t * 1.6 + i * 1.25) * 0.42;
-        const floatX = Math.cos(t * 1.2 + i * 1.45) * 0.32;
+        const phase = i * 0.78;
+        const waveY = Math.sin(t * 1.35 + phase) * 16;
+        const waveX = Math.cos(t * 0.95 + phase * 1.1) * 10;
+        const waveAngle = Math.sin(t * 1.1 + phase * 0.7) * 0.045;
+        const co = Math.cos(waveAngle);
+        const si = Math.sin(waveAngle);
+
+        const targetCx = (g.floatCx || g.homeCx) + waveX;
+        const targetCy = (g.floatCy || g.homeCy) + waveY;
 
         for (const n of g.nodes) {
-          n.vx += floatX;
-          n.vy += floatY;
+          const rotX = n.ox * co - n.oy * si;
+          const rotY = n.ox * si + n.oy * co;
+          const goalX = targetCx + rotX;
+          const goalY = targetCy + rotY;
 
-          // If untouched, whisper celestial anchor preserves initial single-row baseline
-          if (!g.touched) {
-            n.vx += (n.homeX - n.x) * 0.006;
-            n.vy += (n.homeY - n.y) * 0.006;
-          }
+          n.vx += (goalX - n.x) * 0.045;
+          n.vy += (goalY - n.y) * 0.045;
         }
       }
     }
 
-    // 2. Soft jelly shape recovery around CURRENT moving center
-    // Preserves the authentic letter shape wherever the letter is placed (100% flexible)
-    for (const g of this.glyphs) {
-      g.update();
-      const meanX = g.nodes.reduce((s, n) => s + n.ox, 0) / g.nodes.length;
-      const meanY = g.nodes.reduce((s, n) => s + n.oy, 0) / g.nodes.length;
-      for (const n of g.nodes) {
-        const targetX = g.cx + (n.ox - meanX);
-        const targetY = g.cy + (n.oy - meanY);
-        n.vx += (targetX - n.x) * 0.04;
-        n.vy += (targetY - n.y) * 0.04;
+    // 2. Soft-body drag motion: held node follows pointer, rest of letter follows elastically
+    const move = this.nodes.map((n) => [n.vx, n.vy]);
+    let held = null;
+    if (this.drag) {
+      const d = this.drag;
+      const n = d.node;
+      const mx = clamp(d.x + d.dx - n.x, -70, 70);
+      const my = clamp(d.y + d.dy - n.y, -70, 70);
+      for (const m of d.glyph.nodes) {
+        move[m.id][0] += mx * 0.22;
+        move[m.id][1] += my * 0.22;
+      }
+      held = { n, x0: n.x, y0: n.y, x: n.x + mx, y: n.y + my };
+    }
+
+    // 3. Sub-step position integration and constraint solving
+    let far = 0,
+      thin = Infinity;
+    for (const n of this.nodes) thin = Math.min(thin, n.rx, n.ry);
+    for (const [x, y] of move) far = Math.max(far, Math.hypot(x, y));
+    if (held) far = Math.max(far, Math.hypot(held.x - held.x0, held.y - held.y0));
+    const steps = clamp(Math.ceil(far / (thin * 0.5)), 1, 6);
+    const passes = Math.ceil(4 / steps);
+
+    for (let s = 1; s <= steps; s++) {
+      this.nodes.forEach((n, i) => {
+        n.x += move[i][0] / steps;
+        n.y += move[i][1] / steps;
+      });
+      for (let i = 0; i < passes; i++) {
+        this.solve();
+        if (held) {
+          const tSub = s / steps;
+          held.n.x = held.x0 + (held.x - held.x0) * tSub;
+          held.n.y = held.y0 + (held.y - held.y0) * tSub;
+          this.confine(held.n);
+        }
       }
     }
 
-    // 3. Position integration
-    for (const n of this.nodes) {
-      if (this.drag && n.body === this.drag.glyph) continue;
-      n.x += n.vx;
-      n.y += n.vy;
-      this.confine(n);
-    }
-
-    // 4. Elastic structure and contact constraint passes
-    for (let pass = 0; pass < 3; pass++) {
-      this.solve();
-    }
-
-    // 5. Stable velocity derivation with bouncy air glide (butter-smooth)
-    const friction = this.drag ? 0.92 : 0.965;
+    // 4. Stable velocity derivation with bouncy rubber ball restitution
+    const friction = this.drag ? 0.92 : 0.96;
     for (let i = 0; i < this.nodes.length; i++) {
       const n = this.nodes[i];
-      if (this.drag && n.body === this.drag.glyph) continue;
-      n.vx = Math.max(-36, Math.min(36, (n.x - old[i][0]) * friction));
-      n.vy = Math.max(-36, Math.min(36, (n.y - old[i][1]) * friction));
+      n.vx = clamp((n.x - old[i][0]) * friction, -36, 36);
+      n.vy = clamp((n.y - old[i][1]) * friction, -36, 36);
     }
 
-    for (const g of this.glyphs) g.update();
+    for (const g of this.glyphs) {
+      g.update();
+      if (g.touched && !this.drag) {
+        const speed = Math.hypot(g.nodes[0].vx, g.nodes[0].vy);
+        if (speed > 1.2) {
+          g.floatCx = g.cx;
+          g.floatCy = g.cy;
+        }
+      }
+    }
   }
 }
 
@@ -868,25 +901,9 @@ export default function InteractiveBrandLettering({
         if (recentPositionsRef.current.length > 5) recentPositionsRef.current.shift();
 
         if (world.drag) {
-          const d = world.drag;
-          const clampedX = clamp(point.x, 15, width - 15);
-          const clampedY = clamp(point.y, 15, height - 15);
-          const dx = clampedX - d.lastX;
-          const dy = clampedY - d.lastY;
-          d.lastX = clampedX;
-          d.lastY = clampedY;
-          d.x = clampedX;
-          d.y = clampedY;
-
-          // Butter-smooth drag: translates all nodes of the letter directly with the mouse cursor
-          for (const n of d.glyph.nodes) {
-            n.x += dx;
-            n.y += dy;
-            n.vx = dx * 1.15;
-            n.vy = dy * 1.15;
-          }
+          world.drag.x = clamp(point.x, 15, width - 15);
+          world.drag.y = clamp(point.y, 15, height - 15);
           world.energy = 1;
-          draw();
           wake();
         }
       } else {

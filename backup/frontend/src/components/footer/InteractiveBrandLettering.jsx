@@ -251,7 +251,16 @@ class World {
     const node = g.nodes.reduce((a, b) =>
       Math.hypot(a.x - p.x, a.y - p.y) < Math.hypot(b.x - p.x, b.y - p.y) ? a : b
     );
-    this.drag = { glyph: g, node, x: p.x, y: p.y, dx: node.x - p.x, dy: node.y - p.y };
+    this.drag = {
+      glyph: g,
+      node,
+      x: p.x,
+      y: p.y,
+      lastX: p.x,
+      lastY: p.y,
+      dx: node.x - p.x,
+      dy: node.y - p.y,
+    };
     this.returning = 0;
     this.energy = 1;
     this.puff(g, 1.15, true);
@@ -262,8 +271,8 @@ class World {
       const g = this.drag.glyph;
       const speed = Math.hypot(vx, vy);
       for (const n of g.nodes) {
-        n.vx = clamp(vx * 1.25, -55, 55);
-        n.vy = clamp(vy * 1.25, -55, 55);
+        n.vx = clamp(vx * 1.25, -60, 60);
+        n.vy = clamp(vy * 1.25, -60, 60);
       }
       if (speed > 4) {
         this.puff(g, 1.25, true);
@@ -275,7 +284,7 @@ class World {
 
   returnHome() {
     this.drag = null;
-    this.returning = 60;
+    this.returning = 45;
     this.energy = 1;
     for (const g of this.glyphs) {
       this.puff(g, 1.15, true);
@@ -285,7 +294,7 @@ class World {
   followHome() {
     if (this.returning <= 0) return;
     this.returning--;
-    const factor = 0.16;
+    const factor = 0.18;
 
     for (const n of this.nodes) {
       n.x += (n.homeX - n.x) * factor;
@@ -443,13 +452,17 @@ class World {
               ny = dy / d;
             const ra = Math.hypot(a.rx * nx, a.ry * ny);
             const rb = Math.hypot(b.rx * nx, b.ry * ny);
-            const overlap = ra + rb + 3.2 - d;
+            const overlap = ra + rb - d;
             if (overlap > 0) {
-              const k = overlap * 0.55;
-              a.x += nx * k;
-              a.y += ny * k;
-              b.x -= nx * k;
-              b.y -= ny * k;
+              const k = overlap * 0.35;
+              if (!this.drag || a.body !== this.drag.glyph) {
+                a.x += nx * k;
+                a.y += ny * k;
+              }
+              if (!this.drag || b.body !== this.drag.glyph) {
+                b.x -= nx * k;
+                b.y -= ny * k;
+              }
 
               // Elastic bubble bounce impulse between distinct letters (88% restitution)
               if (a.body !== b.body) {
@@ -481,7 +494,7 @@ class World {
 
   // Energetic perimeter bounce: 88% elastic bubble reflection off container edges
   confine(n) {
-    const pad = 4;
+    const pad = 6;
     const minX = n.rx + pad;
     const maxX = this.width - n.rx - pad;
     const minY = n.ry + pad;
@@ -524,25 +537,30 @@ class World {
     this.followPuffs();
     this.followHome();
 
-    const old = this.nodes.map((n) => [n.x, n.y]);
+    const t = (time || performance.now()) * 0.0016;
 
     // 1. Perpetual Zero-Gravity Space Float ("Floating Even if We Leave the Words")
-    // Every letter gently drifts, bobs, and floats along zero-gravity space curves in real time.
-    // Whisper celestial anchor (0.0022) ensures letters preserve single-row YASHMEEN baseline formation.
-    if (!this.reducedMotion && this.returning <= 0) {
-      const t = time * 0.001;
-      for (const g of this.glyphs) {
-        if (this.drag && this.drag.glyph === g) continue;
-        const phase = g.index * 1.57;
-        const driftX = Math.sin(t * 0.75 + phase) * 0.042;
-        const driftY = Math.cos(t * 0.95 + phase * 1.25) * 0.048;
-        for (const n of g.nodes) {
-          n.vx += driftX;
-          n.vy += driftY;
-          // Whisper celestial anchor (0.0022) preserves single-row YASHMEEN baseline
-          n.vx += (n.homeX - n.x) * 0.0022;
-          n.vy += (n.homeY - n.y) * 0.0022;
-        }
+    // Visible 14px space float wave: every letter bobs, sways, and floats in real time.
+    // When left, elastic spring pulls it back like a ball, overshooting and bouncing.
+    for (let i = 0; i < this.glyphs.length; i++) {
+      const g = this.glyphs[i];
+      if (this.drag && this.drag.glyph === g) continue;
+
+      const floatY = Math.sin(t * 1.8 + i * 1.25) * 14;
+      const floatX = Math.cos(t * 1.2 + i * 1.45) * 8;
+      const floatAngle = Math.sin(t * 1.5 + i * 0.95) * 0.04;
+      const co = Math.cos(floatAngle),
+        si = Math.sin(floatAngle);
+
+      for (const n of g.nodes) {
+        const rotX = n.ox * co - n.oy * si;
+        const rotY = n.ox * si + n.oy * co;
+        const targetX = g.homeCx + floatX + rotX;
+        const targetY = g.homeCy + floatY + rotY;
+
+        const pull = this.returning > 0 ? 0.14 : 0.038;
+        n.vx += (targetX - n.x) * pull;
+        n.vy += (targetY - n.y) * pull;
       }
     }
 
@@ -559,58 +577,22 @@ class World {
       }
     }
 
-    // 3. Pointer drag physics: carries the whole letter along with the cursor
-    const move = this.nodes.map((n) => [n.vx, n.vy]);
-    let held = null;
-    if (this.drag) {
-      const d = this.drag;
-      const n = d.node;
-      const targetX = d.x + d.dx;
-      const targetY = d.y + d.dy;
-      const mx = clamp(targetX - n.x, -140, 140);
-      const my = clamp(targetY - n.y, -140, 140);
-
-      for (const m of d.glyph.nodes) {
-        move[m.id][0] += mx * 0.72;
-        move[m.id][1] += my * 0.72;
-      }
-      held = { n, x0: n.x, y0: n.y, x: targetX, y: targetY };
+    // 3. Movement integration with bouncy air friction
+    const friction = this.drag ? 0.94 : 0.965;
+    for (const n of this.nodes) {
+      if (this.drag && n.body === this.drag.glyph) continue;
+      n.x += n.vx;
+      n.y += n.vy;
+      n.vx *= friction;
+      n.vy *= friction;
+      this.confine(n);
     }
 
-    let far = 0,
-      thin = Infinity;
-    for (const n of this.nodes) thin = Math.min(thin, n.rx, n.ry);
-    for (const [x, y] of move) far = Math.max(far, Math.hypot(x, y));
-    if (held) far = Math.max(far, Math.hypot(held.x - held.x0, held.y - held.y0));
-
-    const steps = clamp(Math.ceil(far / (thin * 0.5)), 1, 8);
-    const passes = Math.ceil(8 / steps);
-
-    for (let s = 1; s <= steps; s++) {
-      this.nodes.forEach((n, i) => {
-        n.x += move[i][0] / steps;
-        n.y += move[i][1] / steps;
-      });
-      for (let i = 0; i < passes; i++) {
-        this.solve();
-        if (held) {
-          const t = s / steps;
-          held.n.x = held.x0 + (held.n.x - held.x0) * t;
-          held.n.y = held.y0 + (held.n.y - held.y0) * t;
-          this.confine(held.n);
-        }
-      }
+    // 4. Elastic structure and contact constraint passes
+    for (let i = 0; i < 4; i++) {
+      this.solve();
     }
 
-    // 4. Fluid air glide friction: bouncy and responsive zero-gravity drift
-    const friction = this.drag ? 0.94 : 0.982;
-    let e = 0;
-    this.nodes.forEach((n, i) => {
-      n.vx = clamp((n.x - old[i][0]) * friction, -48, 48);
-      n.vy = clamp((n.y - old[i][1]) * friction, -48, 48);
-      e += n.vx * n.vx + n.vy * n.vy;
-    });
-    this.energy = Math.sqrt(e / this.nodes.length);
     for (const g of this.glyphs) g.update();
   }
 }
@@ -806,7 +788,11 @@ export default function InteractiveBrandLettering({
     };
 
     const wake = () => {
-      if (!rafRef.current && !document.hidden) {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
+      if (!document.hidden) {
         rafRef.current = requestAnimationFrame(loop);
       }
     };
@@ -891,10 +877,24 @@ export default function InteractiveBrandLettering({
         if (recentPositionsRef.current.length > 5) recentPositionsRef.current.shift();
 
         if (world.drag) {
-          world.drag.x = clamp(point.x, 8, width - 8);
-          world.drag.y = clamp(point.y, 8, height - 8);
+          const d = world.drag;
+          const clampedX = clamp(point.x, 15, width - 15);
+          const clampedY = clamp(point.y, 15, height - 15);
+          const dx = clampedX - d.lastX;
+          const dy = clampedY - d.lastY;
+          d.lastX = clampedX;
+          d.lastY = clampedY;
+          d.x = clampedX;
+          d.y = clampedY;
+
+          // Butter-smooth drag: translates all nodes of the letter directly with the mouse cursor
+          for (const n of d.glyph.nodes) {
+            n.x += dx;
+            n.y += dy;
+            n.vx = dx * 1.15;
+            n.vy = dy * 1.15;
+          }
           world.energy = 1;
-          world.step();
           draw();
           wake();
         }
@@ -916,8 +916,8 @@ export default function InteractiveBrandLettering({
         const pFirst = recents[0];
         const pLast = recents[recents.length - 1];
         const dt = Math.max(16, pLast.time - pFirst.time);
-        vx = ((pLast.x - pFirst.x) / dt) * 16;
-        vy = ((pLast.y - pFirst.y) / dt) * 16;
+        vx = ((pLast.x - pFirst.x) / dt) * 20;
+        vy = ((pLast.y - pFirst.y) / dt) * 20;
       }
 
       if (pressRef.current && world) {
@@ -991,7 +991,10 @@ export default function InteractiveBrandLettering({
     return () => {
       observer.disconnect();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("dblclick", onDoubleClick);

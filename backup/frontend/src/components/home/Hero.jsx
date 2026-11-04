@@ -42,8 +42,10 @@ const COMMISSIONS = [
 
 export default function Hero() {
   const [activeIdx, setActiveIdx] = useState(0);
+  const [cursorPos, setCursorPos] = useState({ x: -100, y: -100, visible: false });
 
   const stageRef = useRef(null);
+  const cursorRef = useRef(null);
   const slidesRef = useRef([]);
   const textRef = useRef(null);
   const dragStartXRef = useRef(null);
@@ -98,6 +100,26 @@ export default function Hero() {
     }
   }, [activeIdx]);
 
+  // Interactive mousemove cursor puck
+  const handleMouseMove = (e) => {
+    if (!stageRef.current) return;
+    const rect = stageRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (cursorRef.current) {
+      gsap.to(cursorRef.current, {
+        x,
+        y,
+        duration: 0.22,
+        ease: "power2.out",
+      });
+    }
+  };
+
+  const handleMouseEnter = () => setCursorPos((p) => ({ ...p, visible: true }));
+  const handleMouseLeave = () => setCursorPos((p) => ({ ...p, visible: false }));
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -142,6 +164,9 @@ export default function Hero() {
       ref={stageRef}
       className="hero-minimal-stage"
       aria-label="Architectural Portfolio Showcase"
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >
@@ -166,6 +191,16 @@ export default function Hero() {
         <div className="hero-minimal-scrim" />
       </div>
 
+      {/* Floating Interactive Custom Cursor Puck (Desktop Only) */}
+      <div
+        ref={cursorRef}
+        className={`hero-custom-cursor-puck ${cursorPos.visible ? "is-visible" : ""}`}
+        aria-hidden="true"
+      >
+        <span>EXPLORE</span>
+        <span className="hero-cursor-arrows">⇄</span>
+      </div>
+
       {/* Quiet, Minimalist Bottom Baseline (Max Negative Space) */}
       <div className="hero-minimal-baseline">
         <div className="hero-minimal-meta" ref={textRef}>
@@ -180,7 +215,7 @@ export default function Hero() {
           </p>
         </div>
 
-        {/* Quiet Numerical Scrubber & Scroll Prompt */}
+        {/* Quiet Numerical Scrubber, Explore Pill & Scroll Prompt */}
         <div className="hero-minimal-nav">
           <div className="hero-minimal-numbers" role="tablist" aria-label="Commission Index">
             {COMMISSIONS.map((item, idx) => (
@@ -201,7 +236,15 @@ export default function Hero() {
             ))}
           </div>
 
-          <span className="hero-minimal-sep">·</span>
+          <button
+            type="button"
+            onClick={openEnquiry}
+            className="btn-pill btn-pill-light hero-explore-pill-btn"
+            style={{ height: 38, padding: "0 18px", fontSize: 12 }}
+          >
+            <span>EXPLORE SPACE</span>
+            <span className="g-circle is-dark" aria-hidden="true" />
+          </button>
 
           <a href="#manifesto" className="hero-minimal-scroll" aria-label="Scroll down to studio">
             <span>(SCROLL)</span>

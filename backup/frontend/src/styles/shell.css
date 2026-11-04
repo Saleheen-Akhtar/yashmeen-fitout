@@ -570,13 +570,14 @@
 }
 
 .interactive-brand-monument {
-  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  margin-bottom: clamp(2rem, 4vw, 3.5rem);
   width: 100%;
-  height: clamp(320px, 32vw, 440px);
+  height: clamp(380px, 40vw, 540px);
   position: relative;
   overflow: hidden;
-  background: transparent;
-  border: none;
+  border-radius: 8px;
+  background: rgba(8, 8, 7, 0.015);
+  border: 1px dashed rgba(8, 8, 7, 0.12);
 }
 
 .interactive-brand-monument canvas {
@@ -584,6 +585,7 @@
   height: 100%;
   cursor: grab;
   display: block;
+  border-radius: 8px;
 }
 
 .interactive-brand-monument canvas:active {

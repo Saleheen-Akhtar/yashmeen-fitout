@@ -3,25 +3,25 @@
    Pacing, 12-column alignment, monumental typography, and asymmetric bento. */
 
 /* ==========================================================================
-   1. FULL-BLEED COMMISSION SCRUBBER (Concept 3: Awwwards SOTD)
+   1. FULL-BLEED EDITORIAL MINIMALIST HERO (OH Architecture Aesthetic)
    ========================================================================== */
-.hero-scrubber-stage {
+.hero-minimal-stage {
   position: relative;
   width: 100vw;
   margin-left: calc(-50vw + 50%);
   height: 100vh;
-  min-height: 640px;
+  min-height: 600px;
   overflow: hidden;
   background-color: #080807;
   user-select: none;
   cursor: grab;
 }
-.hero-scrubber-stage:active {
+.hero-minimal-stage:active {
   cursor: grabbing;
 }
 
-/* Imagery Stack Canvas */
-.hero-scrubber-canvas {
+/* 100vw x 100vh Full-Bleed Imagery Canvas */
+.hero-minimal-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -29,21 +29,21 @@
   overflow: hidden;
 }
 
-.hero-scrubber-slide {
+.hero-minimal-slide {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   opacity: 0;
   pointer-events: none;
-  will-change: transform, opacity, filter;
+  will-change: transform, opacity;
 }
 
-.hero-scrubber-slide.is-active {
+.hero-minimal-slide.is-active {
   opacity: 1;
 }
 
-.hero-scrubber-img {
+.hero-minimal-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -51,301 +51,168 @@
   will-change: transform, filter;
 }
 
-/* Cinematic filmic gradient scrim */
-.hero-scrubber-scrim {
+/* Subtle, whisper-thin gradient: gives pure typographic contrast without darkening the photo */
+.hero-minimal-scrim {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(8, 8, 7, 0.6) 0%,
-    rgba(8, 8, 7, 0.1) 28%,
-    rgba(8, 8, 7, 0.05) 50%,
-    rgba(8, 8, 7, 0.45) 75%,
-    rgba(8, 8, 7, 0.88) 100%
+    rgba(8, 8, 7, 0.45) 0%,
+    rgba(8, 8, 7, 0.0) 25%,
+    rgba(8, 8, 7, 0.0) 65%,
+    rgba(8, 8, 7, 0.75) 100%
   );
   pointer-events: none;
   z-index: 3;
 }
 
-/* Custom Interactive Cursor Puck (Desktop Only) */
-.hero-custom-cursor-puck {
+/* Quiet, Minimalist Bottom Baseline with Expansive Negative Space */
+.hero-minimal-baseline {
   position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 10;
-  pointer-events: none;
-  padding: 8px 16px;
-  border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  color: #ffffff;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transform: translate(-50%, -50%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.hero-custom-cursor-puck.is-visible {
-  opacity: 1;
-}
-.hero-cursor-arrows {
-  font-size: 0.875rem;
-  line-height: 1;
-}
-
-@media (pointer: coarse) or (max-width: 900px) {
-  .hero-custom-cursor-puck {
-    display: none !important;
-  }
-}
-
-/* Top Telemetry HUD */
-.hero-hud-top {
-  position: absolute;
-  top: 100px;
-  left: clamp(1.5rem, 3.5vw, 4rem);
-  right: clamp(1.5rem, 3.5vw, 4rem);
+  bottom: clamp(2rem, 4vw, 3.5rem);
+  left: clamp(1.5rem, 4vw, 5rem);
+  right: clamp(1.5rem, 4vw, 5rem);
   z-index: 5;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  pointer-events: none;
-}
-
-.hero-hud-pill {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(8, 8, 7, 0.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  pointer-events: auto;
-}
-
-.hero-hud-coords {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
-  background: rgba(8, 8, 7, 0.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  font-feature-settings: 'tnum' on;
-  pointer-events: auto;
-}
-
-@media (max-width: 768px) {
-  .hero-hud-coords {
-    display: none;
-  }
-}
-
-/* Bottom Presentation & Scrubber Strip */
-.hero-hud-bottom {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 5;
-  padding: 0 clamp(1.5rem, 3.5vw, 4rem) clamp(1.5rem, 3vw, 2.75rem);
-  display: flex;
-  flex-direction: column;
-  gap: clamp(1.5rem, 2.5vw, 2.25rem);
-  pointer-events: none;
-}
-
-.hero-hud-bottom * {
-  pointer-events: auto;
-}
-
-/* Active Commission Header Row */
-.hero-commission-meta-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   gap: 2rem;
+  pointer-events: none;
 }
 
-.hero-commission-info {
+.hero-minimal-baseline * {
+  pointer-events: auto;
+}
+
+/* Left Typography Anchor */
+.hero-minimal-meta {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-width: 820px;
+  gap: 8px;
+  max-width: 640px;
 }
 
-.hero-commission-eyebrow {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.65);
-}
-
-.hero-commission-title {
-  font-size: clamp(2rem, 4.4vw, 4.25rem);
+.hero-minimal-title {
+  font-size: clamp(1.5rem, 2.75vw, 2.75rem);
   font-weight: 500;
-  line-height: 1.02;
-  letter-spacing: -0.03em;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
   text-transform: uppercase;
   color: #ffffff;
   margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+  transition: opacity 0.2s var(--ease);
+}
+.hero-minimal-title:hover {
+  opacity: 0.85;
 }
 
-.hero-commission-specs {
+.hero-minimal-idx {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.6);
+  font-feature-settings: 'tnum' on;
+}
+
+.hero-minimal-sub {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.75);
-  margin-top: 4px;
+  gap: 8px;
 }
 
-.hero-specs-dot {
+.hero-minimal-dot {
   color: rgba(255, 255, 255, 0.35);
 }
 
-.hero-commission-actions {
+/* Right Numerical Scrubber & Scroll Prompt */
+.hero-minimal-nav {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 14px;
+  align-items: center;
+  gap: 16px;
   flex-shrink: 0;
 }
 
-.hero-scroll-cue-link {
+.hero-minimal-numbers {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hero-num-btn {
+  background: transparent;
+  border: none;
+  padding: 4px 2px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-feature-settings: 'tnum' on;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.38);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s var(--ease);
+}
+.hero-num-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-num-btn.is-active {
+  color: #ffffff;
+  font-weight: 600;
+}
+.hero-num-btn.is-active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #ffffff;
+}
+
+.hero-minimal-sep {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.8125rem;
+}
+
+.hero-minimal-scroll {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
   transition: color 0.2s var(--ease);
 }
-.hero-scroll-cue-link:hover {
+.hero-minimal-scroll:hover {
   color: #ffffff;
 }
 
-.hero-cue-arrow {
+.hero-minimal-arrow {
   animation: heroBounce 2s infinite ease-in-out;
 }
 
-/* 4-Item Architectural Interactive Scrubber Track */
-.hero-interactive-scrubber-bar {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: clamp(1rem, 2vw, 2rem);
-  width: 100%;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding-top: 14px;
-}
-
-.hero-scrubber-tab {
-  background: transparent;
-  border: none;
-  padding: 0;
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.5);
-  transition: color 0.25s var(--ease);
-}
-
-.hero-scrubber-tab:hover {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.hero-scrubber-tab.is-active {
-  color: #ffffff;
-}
-
-.hero-tab-progress-line {
-  width: 100%;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-  overflow: hidden;
-  position: relative;
-}
-
-.hero-tab-progress-fill {
-  height: 100%;
-  background: #ffffff;
-  border-radius: 2px;
-  width: 0%;
-}
-
-.hero-tab-content {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.hero-tab-num {
-  font-size: 0.75rem;
-  font-weight: 600;
-  font-feature-settings: 'tnum' on;
-  letter-spacing: 0.06em;
-}
-
-.hero-tab-title {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (max-width: 900px) {
-  .hero-commission-meta-row {
+@media (max-width: 768px) {
+  .hero-minimal-baseline {
     flex-direction: column;
     align-items: flex-start;
     gap: 1.25rem;
+    bottom: 2rem;
   }
-  .hero-commission-actions {
-    align-items: flex-start;
-    flex-direction: row;
-    align-items: center;
-    gap: 16px;
-  }
-  .hero-interactive-scrubber-bar {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-}
-
-@media (max-width: 600px) {
-  .hero-interactive-scrubber-bar {
-    grid-template-columns: 1fr;
-  }
-  .hero-commission-specs {
-    flex-wrap: wrap;
+  .hero-minimal-nav {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 

@@ -90,25 +90,24 @@ export default function ContactPage() {
   return (
     <div className="contactpg-page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .contactpg-page{
-          --contactpg-ink:#faf7f0;
-          --contactpg-black:#0d0c0a;
-          --contactpg-gray-50:#141311;
-          --contactpg-gray-100:rgba(255,255,255,0.05);
-          --contactpg-gray-200:rgba(255,255,255,0.08);
-          --contactpg-gray-500:rgba(250,247,240,0.72);
-          --contactpg-brass:var(--brass, #c5a059);
-          --contactpg-brass-deep:var(--brass-light, #dfba73);
-          --contactpg-font-display:'Montserrat', sans-serif;
-          --contactpg-font-serif:'Montserrat', sans-serif;
-          --contactpg-font-body:'Montserrat', sans-serif;
+          --contactpg-ink:#1b1a17;
+          --contactpg-black:#fbfaf7;
+          --contactpg-gray-50:#f4f1ea;
+          --contactpg-gray-100:rgba(27,26,23,0.04);
+          --contactpg-gray-200:#e6e1d6;
+          --contactpg-gray-500:#6b665c;
+          --contactpg-brass:#8a6a28;
+          --contactpg-brass-deep:#6f541d;
+          --contactpg-font-display:var(--font-sans);
+          --contactpg-font-serif:var(--font-sans);
+          --contactpg-font-body:var(--font-sans);
           --contactpg-max-w:1180px;
 
           min-height:100vh;
           width:100%;
-          background:#0d0c0a;
+          background:var(--contactpg-black);
           color:var(--contactpg-ink);
           font-family:var(--contactpg-font-body);
         }
@@ -192,8 +191,8 @@ export default function ContactPage() {
           display:flex;
           align-items:flex-start;
           gap:18px;
-          background:rgba(255,255,255,0.03);
-          border:1px solid rgba(255,255,255,0.08);
+          background:#ffffff;
+          border:1px solid var(--contactpg-gray-200);
           backdrop-filter:blur(16px);
           border-radius:6px;
           padding:28px 24px;
@@ -312,8 +311,8 @@ export default function ContactPage() {
 
         .contactpg-field-input{
           width:100%;
-          background:#0d0c0a;
-          color:#faf7f0;
+          background:var(--contactpg-black);
+          color:var(--contactpg-ink);
           border:1px solid var(--contactpg-gray-200);
           border-radius:6px;
           padding:14px 16px;
@@ -345,7 +344,7 @@ export default function ContactPage() {
           display:flex;
           align-items:center;
           background:var(--contactpg-black);
-          color:#FFFFFF;
+          color:var(--contactpg-ink);
           padding:15px 26px;
           font-size:14.5px;
           font-weight:700;

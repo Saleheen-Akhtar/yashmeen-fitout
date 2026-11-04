@@ -19,12 +19,11 @@ export default function BlogsPage() {
   return (
     <div className="bp-page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
 
         .bp-page{
           --ink:#17140f; --ink-soft:#6b6255; --paper:#faf7f0; --line:#e4dfd2;
           --brass:#a9832e; --brass-deep:#8a6a28; --err:#b3261e;
-          background:var(--paper); color:var(--ink); min-height:60vh; font-family:'Manrope',sans-serif;
+          background:var(--paper); color:var(--ink); min-height:60vh; font-family:var(--font-sans);
         }
         .bp-page *{ box-sizing:border-box; }
         .bp-wrap{ max-width:1180px; margin:0 auto; padding:0 24px; }
@@ -41,7 +40,7 @@ export default function BlogsPage() {
         }
         @media(min-width:768px){ .bp-hero{ padding:120px 0; } }
         .bp-hero h1{
-          margin:0; font-family:'Montserrat',sans-serif; font-weight:800; line-height:1.15;
+          margin:0; font-family:var(--font-serif); font-weight:800; line-height:1.15;
           letter-spacing:-.01em; font-size:34px;
         }
         @media(min-width:640px){ .bp-hero h1{ font-size:46px; } }
@@ -75,7 +74,7 @@ export default function BlogsPage() {
           color:var(--brass-deep); font-weight:700;
         }
         .bp-card h2{
-          margin:10px 0 0; font-family:'Montserrat',sans-serif; font-size:19px; font-weight:700; line-height:1.35;
+          margin:10px 0 0; font-family:var(--font-serif); font-size:19px; font-weight:700; line-height:1.35;
           display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
         }
         .bp-card h2 a{ color:inherit; text-decoration:none; }

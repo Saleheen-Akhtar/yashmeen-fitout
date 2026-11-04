@@ -217,7 +217,6 @@ export default function VideoGallery() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@400;500;700;800&display=swap');
 
         /* HERO (same look as Contact page) */
         .vidgal-hero-section{
@@ -255,7 +254,7 @@ export default function VideoGallery() {
         }
         .vidgal-hero-heading{
           margin:0;
-          font-family:'Montserrat', sans-serif;
+          font-family:var(--font-sans);
           font-weight:800;
           color:#FFFFFF;
           font-size:34px;
@@ -267,7 +266,7 @@ export default function VideoGallery() {
         .vidgal-hero-copy{
           margin:22px auto 0;
           max-width:640px;
-          font-family:'Montserrat', sans-serif;
+          font-family:var(--font-sans);
           font-weight:500;
           font-size:15.5px;
           line-height:1.7;
@@ -360,7 +359,7 @@ export default function VideoGallery() {
                   appearance: "none",
                   border: `1px solid ${filter === f.id ? brass : line}`,
                   background: filter === f.id ? brass : "transparent",
-                  color: filter === f.id ? "#181410" : inkDim,
+                  color: filter === f.id ? "#ffffff" : inkDim,
                   fontFamily: "'Manrope', sans-serif",
                   fontWeight: 600,
                   fontSize: 12.5,
@@ -483,7 +482,7 @@ export default function VideoGallery() {
                           fontSize: 10.5,
                           letterSpacing: "0.14em",
                           textTransform: "uppercase",
-                          color: brass,
+                          color: ovBrass,
                           marginBottom: 6,
                           fontWeight: 700,
                         }}
@@ -493,7 +492,7 @@ export default function VideoGallery() {
                       <h3
                         style={{
                           margin: 0,
-                          fontFamily: "'Fraunces', serif",
+                          fontFamily: "var(--font-serif)",
                           fontWeight: 400,
                           fontSize: 18,
                           lineHeight: 1.25,
@@ -580,13 +579,18 @@ export default function VideoGallery() {
 }
 
 /* ---------------- tokens & shared styles ---------------- */
-const ink = "#efe9db";
-const inkDim = "#9c9584";
-const bg = "#0A0A0A"; // solid dark, matches the hero band (was "#fff", which hid the cream text)
-const panel = "#201d18";
-const line = "#33302a";
-const brass = "#b9905a";
-const shadow = "0 30px 60px -25px rgba(0,0,0,0.6)";
+const ink = "#1b1a17";
+const inkDim = "#6b665c";
+const bg = "#fbfaf7";
+const panel = "#ffffff";
+const line = "#e6e1d6";
+const brass = "#8a6a28";
+// Overlay palette: text that sits on photos or the dark lightbox
+const ovInk = "#f3eee2";
+const ovDim = "#cfc8b6";
+const ovBrass = "#e0bd7c";
+const ovLine = "#4a463f";
+const shadow = "0 18px 40px -16px rgba(27,26,23,0.18)";
 
 const messageStyle = {
   padding: "80px 0",
@@ -614,21 +618,19 @@ const tagStyle = {
   letterSpacing: "0.16em",
   textTransform: "uppercase",
   fontWeight: 700,
-  color: brass,
+  color: ovBrass,
   background: "rgba(18,16,14,0.55)",
   backdropFilter: "blur(6px)",
   padding: "6px 10px",
-  border: "1px solid rgba(185,144,90,0.35)",
-};
+  border: "1px solid rgba(185,144,90,0.35)",};
 
 const idxStyle = {
   position: "absolute",
   top: 14,
   right: 14,
-  fontFamily: "'Fraunces', serif",
+  fontFamily: "var(--font-serif)",
   fontSize: 12,
-  color: inkDim,
-};
+  color: ovDim,};
 
 const playStyle = {
   position: "absolute",
@@ -643,8 +645,7 @@ const playStyle = {
   justifyContent: "center",
   border: "1px solid rgba(239,233,219,0.55)",
   background: "rgba(18,16,14,0.35)",
-  backdropFilter: "blur(4px)",
-};
+  backdropFilter: "blur(4px)",};
 
 const metaStyle = { position: "absolute", left: 16, right: 16, bottom: 14 };
 
@@ -665,27 +666,24 @@ const lbHeadStyle = {
   justifyContent: "space-between",
   alignItems: "flex-end",
   marginBottom: 16,
-  gap: 20,
-};
+  gap: 20,};
 const lbCatStyle = {
   fontSize: 10.5,
   letterSpacing: "0.16em",
   textTransform: "uppercase",
-  color: brass,
+  color: ovBrass,
   fontWeight: 700,
-  marginBottom: 6,
-};
+  marginBottom: 6,};
 const lbTitleStyle = {
   margin: 0,
-  fontFamily: "'Fraunces', serif",
+  fontFamily: "var(--font-serif)",
   fontWeight: 400,
   fontSize: 26,
-  color: ink,
-};
+  color: ovInk,};
 const closeBtnStyle = {
-  border: `1px solid ${line}`,
+  border: `1px solid ${ovLine}`,
   background: "transparent",
-  color: ink,
+  color: ovInk,
   width: 38,
   height: 38,
   borderRadius: "50%",
@@ -693,5 +691,4 @@ const closeBtnStyle = {
   flex: "none",
   display: "flex",
   alignItems: "center",
-  justifyContent: "center",
-};
+  justifyContent: "center",};

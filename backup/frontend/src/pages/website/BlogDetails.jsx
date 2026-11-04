@@ -110,13 +110,12 @@ export default function BlogDetails() {
   return (
     <div className="bd-page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
 
         .bd-page{
           --ink:#17140f; --ink-soft:#4f483c; --paper:#faf7f0; --line:#e4dfd2;
           --brass:#b9905a; --brass-deep:#8a6a28; --err:#b3261e;
           background:var(--paper); color:var(--ink); min-height:60vh;
-          font-family:'Manrope',sans-serif;
+          font-family:var(--font-sans);
         }
         .bd-page *{ box-sizing:border-box; }
 
@@ -137,7 +136,7 @@ export default function BlogDetails() {
         }
         .bd-back:hover{ color:var(--brass); gap:11px; }
         .bd-title{
-          margin:0; font-family:'Montserrat',sans-serif; font-weight:800; line-height:1.18;
+          margin:0; font-family:var(--font-serif); font-weight:800; line-height:1.18;
           letter-spacing:-.01em; font-size:30px;
         }
         @media(min-width:640px){ .bd-title{ font-size:40px; } }
@@ -152,7 +151,7 @@ export default function BlogDetails() {
         .bd-content p{ margin:0 0 1.35em; }
         .bd-content strong{ color:var(--ink); font-weight:700; }
         .bd-content h1,.bd-content h2,.bd-content h3,.bd-content h4{
-          font-family:'Montserrat',sans-serif; color:var(--ink); line-height:1.3; margin:1.9em 0 .6em;
+          font-family:var(--font-serif); color:var(--ink); line-height:1.3; margin:1.9em 0 .6em;
         }
         .bd-content h2{ font-size:26px; }
         .bd-content h3{ font-size:21px; }

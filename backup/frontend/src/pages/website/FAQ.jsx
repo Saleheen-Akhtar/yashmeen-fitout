@@ -135,26 +135,25 @@ export default function FAQ() {
   return (
     <div className="faq-page-root">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .faq-page-root{
-          --faq-ink:#faf7f0;
-          --faq-black:#0d0c0a;
-          --faq-gray-50:#141311;
-          --faq-gray-100:rgba(255,255,255,0.05);
-          --faq-gray-200:rgba(255,255,255,0.08);
-          --faq-gray-500:rgba(250,247,240,0.72);
-          --faq-brass:var(--brass, #c5a059);
-          --faq-brass-deep:var(--brass-light, #dfba73);
-          --faq-font-display:'Montserrat', sans-serif;
-          --faq-font-body:'Montserrat', sans-serif;
+          --faq-ink:#1b1a17;
+          --faq-black:#fbfaf7;
+          --faq-gray-50:#f4f1ea;
+          --faq-gray-100:rgba(27,26,23,0.04);
+          --faq-gray-200:#e6e1d6;
+          --faq-gray-500:#6b665c;
+          --faq-brass:#8a6a28;
+          --faq-brass-deep:#6f541d;
+          --faq-font-display:var(--font-sans);
+          --faq-font-body:var(--font-sans);
           --faq-max-w:1180px;
           --faq-max-w-narrow:900px;
 
           box-sizing:border-box;
           min-height:100vh;
           width:100%;
-          background:#0d0c0a;
+          background:var(--faq-black);
           color:var(--faq-ink);
           font-family:var(--faq-font-body);
         }

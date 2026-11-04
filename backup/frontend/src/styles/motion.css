@@ -1,0 +1,25 @@
+/* Motion helpers */
+#scroll-progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(0); z-index: 200; pointer-events: none; }
+::selection { background: var(--accent); color: #fff; }
+
+/* Split-text masks need room for descenders */
+[data-split] > div, [data-split] > * { padding-bottom: 0.06em; }
+
+.is-in-line { position: relative; }
+.line-draw::before { content: ""; position: absolute; left: 0; top: 0; height: 2px; width: 100%; background: var(--ink); transform: scaleX(0); transform-origin: 0 50%; transition: transform 1.2s var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)); }
+.line-draw.is-in::before { transform: scaleX(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .line-draw::before { transform: scaleX(1); transition: none; }
+  #scroll-progress { display: none; }
+}
+
+/* Hide tagged elements until their animation is armed (only when JS and motion are on).
+   The 2.5s fallback guarantees content can never stay hidden. */
+html.motion [data-split]:not([data-m-split]),
+html.motion [data-reveal]:not([data-m-reveal]),
+html.motion [data-stagger]:not([data-m-stagger]) > * {
+  visibility: hidden;
+  animation: m-show 0.01s 2.5s forwards;
+}
+@keyframes m-show { to { visibility: visible; } }

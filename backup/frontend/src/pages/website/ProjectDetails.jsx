@@ -311,25 +311,24 @@ export default function ProjectDetailsPage() {
   return (
     <div className="page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         :root{
-          --ink:#faf7f0;
-          --dark:#0d0c0a;
-          --card:#141311;
-          --gray-200:rgba(255,255,255,0.08);
-          --gray-500:rgba(250,247,240,0.72);
-          --brass:var(--brass, #c5a059);
-          --brass-deep:var(--brass-light, #dfba73);
-          --font-display:'Montserrat', sans-serif;
-          --font-body:'Montserrat', sans-serif;
+          --ink:#1b1a17;
+          --dark:#fbfaf7;
+          --card:#ffffff;
+          --gray-200:#e6e1d6;
+          --gray-500:#6b665c;
+          --brass:#8a6a28;
+          --brass-deep:#6f541d;
+          --font-display:var(--font-sans);
+          --font-body:var(--font-sans);
           --max-w:1180px;
         }
         *{ box-sizing:border-box; }
         .page{
           min-height:100vh;
           width:100%;
-          background:#0d0c0a;
+          background:var(--dark);
           color:var(--ink); font-family:var(--font-body); }
         button{ font-family:inherit; }
         .wrap{ max-width:var(--max-w); margin:0 auto; padding:0 24px; }
@@ -421,8 +420,8 @@ export default function ProjectDetailsPage() {
         @media (min-width:1024px){ .info-grid{ grid-template-columns:repeat(4,1fr); } }
         .info-card{
           position:relative;
-          background:rgba(255,255,255,0.03);
-          border:1px solid rgba(255,255,255,0.08);
+          background:#ffffff;
+          border:1px solid var(--gray-200);
           backdrop-filter:blur(16px); border-radius:28px;
           padding:26px 26px 20px;
         }
@@ -451,7 +450,7 @@ export default function ProjectDetailsPage() {
           width:40px;
           height:40px;
           border-radius:50%;
-          background:rgba(255,255,255,0.06);
+          background:#ffffff;
           color:var(--brass-deep);
           display:flex; align-items:center; justify-content:center;
           box-shadow:0 1px 4px rgba(0,0,0,0.12);
@@ -469,7 +468,7 @@ export default function ProjectDetailsPage() {
 
         /* SHOWCASE */
         .showcase{
-          background:var(--dark); color:#FFFFFF;
+          background:var(--dark); color:var(--ink);
           border-radius:36px 36px 0 0; padding:100px 0 40px;
         }
         @media (min-width:768px){ .showcase{ padding:130px 0 40px; } }
@@ -508,12 +507,12 @@ export default function ProjectDetailsPage() {
         .lb-img{ display:block; max-width:min(1200px,100%); max-height:86vh; object-fit:contain; border-radius:8px; }
         .lb-count{
           position:absolute; bottom:18px; left:0; right:0; text-align:center;
-          font-size:13px; color:rgba(255,255,255,0.7);
+          font-size:13px; color:#ffffff;
         }
         .lb-btn{
           position:absolute; width:46px; height:46px; border-radius:50%; border:0; cursor:pointer;
           display:flex; align-items:center; justify-content:center;
-          background:rgba(255,255,255,0.14); color:#FFFFFF; transition:background .15s;
+          background:rgba(255,255,255,0.14); color:#ffffff; transition:background .15s;
         }
         .lb-btn:hover{ background:var(--brass); }
         .lb-btn:focus-visible{ outline:3px solid #FFFFFF; outline-offset:2px; }

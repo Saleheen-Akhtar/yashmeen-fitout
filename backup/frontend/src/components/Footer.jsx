@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import useWebDetails from "../hooks/cacheStore";
+import "../styles/shell.css";
 
 const ICONS = {
   linkedin: (
@@ -82,255 +83,95 @@ export default function Footer() {
 
   const waNumber = whatsapp ? whatsapp.replace(/[^\d]/g, "") : "";
 
+  const Row = ({ icon, children }) => (
+    <li className="ft-row">
+      <span className="ft-ico" aria-hidden="true">{icon}</span>
+      <span>{children}</span>
+    </li>
+  );
+
   return (
-    <>
-      <style>{`
-        /* ============ FOOTER ============ */
-        footer {
-            background: #100e0a;
-            color: rgba(250, 247, 240, .75);
-            padding: 76px 0 0;
-        }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 1.3fr 1fr 1fr 1fr;
-            gap: 40px;
-            padding-bottom: 56px;
-            border-bottom: 1px solid rgba(250, 247, 240, .1);
-        }
-
-        .footer-brand .logo {
-            color: var(--paper);
-        }
-
-        .footer-brand .logo img {
-            width: 90px;
-            padding: 10px;
-            background: #fff;
-            border-radius: 4px;
-            display: block;
-        }
-
-        .footer-brand p {
-            margin-top: 18px;
-            font-size: 13.5px;
-            line-height: 1.75;
-            max-width: 34ch;
-            color: rgba(250, 247, 240, .55);
-        }
-
-        .footer-social {
-            display: flex;
-            gap: 10px;
-            margin-top: 22px;
-        }
-
-        .footer-social a {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border: 1px solid rgba(250, 247, 240, .2);
-            color: var(--paper);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: all .25s ease;
-        }
-
-        .footer-social a:hover {
-            border-color: var(--brass);
-            background: var(--brass);
-            color: var(--ink);
-            transform: translateY(-2px);
-        }
-
-        .footer-social svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .fcol h5 {
-            font-size: 12px;
-            letter-spacing: .12em;
-            text-transform: uppercase;
-            color: var(--brass-light);
-            margin-bottom: 22px;
-            font-weight: 700;
-        }
-
-        .fcol ul {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .fcol a {
-            color: rgba(250, 247, 240, .7);
-            font-size: 13.5px;
-            transition: color .2s;
-        }
-
-        .fcol a:hover {
-            color: var(--brass-light);
-        }
-
-        .contact-list li {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .contact-list .c-icon {
-            flex-shrink: 0;
-            width: 16px;
-            height: 16px;
-            margin-top: 3px;
-            color: var(--brass);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .contact-list .c-icon svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        .contact-list .c-text {
-            color: rgba(250, 247, 240, .7);
-            font-size: 13.5px;
-            line-height: 1.5;
-            overflow-wrap: anywhere;
-            text-decoration: none;
-            transition: color .2s;
-        }
-
-        .contact-list a.c-text:hover {
-            color: var(--brass-light);
-        }
-
-        .footer-bottom {
-            padding: 26px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12.5px;
-            color: rgba(250, 247, 240, .45);
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        @media(max-width:900px) {
-            .footer-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        @media(max-width:540px) {
-            .footer-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-      `}</style>
-
-      <footer>
-        <div className="wrap">
-          <div className="footer-grid">
-            <div className="footer-brand">
-              <Link to="/" className="logo" aria-label="Yashmeen Future Building">
-                <img src="/static/logo.jpg" alt="Yashmeen Future Building" />
-              </Link>
-              <p>
-                A Dubai-based interior fit-out and design studio delivering
-                turnkey commercial, residential and hospitality spaces since
-                2016.
-              </p>
-
-              {socialLinks?.length > 0 && (
-                <div className="footer-social">
-                  {socialLinks.map((item, i) => (
-                    <a
-                      key={item._id || `${item.platform}-${i}`}
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={item.platform}
-                      title={item.platform}
-                    >
-                      {getIcon(item.platform)}
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="fcol">
-              <h5>Studio</h5>
-              <ul>
-                <li><Link to="/about">About Us</Link></li>
-                <li><Link to="/quote">Get A Quote</Link></li>
-                <li><Link to="/projects">Our Projects</Link></li>
-                <li><Link to="/careers">Career</Link></li>
-                <li><Link to="/blogs">Blogs</Link></li>
-              </ul>
-            </div>
-
-            <div className="fcol">
-              <h5>Services</h5>
-              <ul>
-                <li><Link to="/services/architecture">Architecture</Link></li>
-                <li><Link to="/services/interior-design">Interior Design</Link></li>
-                <li><Link to="/services/construction">Construction</Link></li>
-                <li><Link to="/services/office-renovation">Office Renovation</Link></li>
-                <li><Link to="/services/interior-design">Villa Fitout</Link></li>
-              </ul>
-            </div>
-
-            <div className="fcol">
-              <h5>Contact</h5>
-              <ul className="contact-list">
-                {mobile && (
-                  <li>
-                    <span className="c-icon" aria-hidden="true">{CONTACT_ICONS.phone}</span>
-                    <a className="c-text" href={`tel:${mobile}`}>{mobile}</a>
-                  </li>
-                )}
-                {waNumber && (
-                  <li>
-                    <span className="c-icon" aria-hidden="true">{CONTACT_ICONS.whatsapp}</span>
-                    <a
-                      className="c-text"
-                      href={`https://wa.me/${waNumber}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {whatsapp}
-                    </a>
-                  </li>
-                )}
-                {email && (
-                  <li>
-                    <span className="c-icon" aria-hidden="true">{CONTACT_ICONS.email}</span>
-                    <a className="c-text" href={`mailto:${email}`}>{email}</a>
-                  </li>
-                )}
-                {addressText && (
-                  <li>
-                    <span className="c-icon" aria-hidden="true">{CONTACT_ICONS.location}</span>
-                    <span className="c-text">{addressText}</span>
-                  </li>
-                )}
-              </ul>
-            </div>
+    <footer className="ft">
+      <div className="wrap">
+        <div className="ft-grid">
+          <div className="ft-brand">
+            <Link to="/" aria-label="Yashmeen Future Building, home">
+              <img src="/static/logo.jpg" alt="Yashmeen Future Building" />
+            </Link>
+            <p>
+              Dubai-based interior fit-out and design studio. Turnkey
+              commercial, residential and hospitality spaces since 2016.
+            </p>
+            {socialLinks?.length > 0 && (
+              <div className="ft-social">
+                {socialLinks.map((item, i) => (
+                  <a
+                    key={item._id || `${item.platform}-${i}`}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={item.platform}
+                  >
+                    {getIcon(item.platform)}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="footer-bottom">
-            <span>&copy; {new Date().getFullYear()} Yashmeen Future Building. All rights reserved.</span>
-            <span>Design &amp; concept &mdash; original build, not affiliated with any third party.</span>
+          <nav aria-label="Studio">
+            <h3>Studio</h3>
+            <ul>
+              <li><Link to="/about">About us</Link></li>
+              <li><Link to="/projects">Projects</Link></li>
+              <li><Link to="/blogs">Journal</Link></li>
+              <li><Link to="/careers">Careers</Link></li>
+              <li><Link to="/quote">Get a quote</Link></li>
+            </ul>
+          </nav>
+
+          <nav aria-label="Services">
+            <h3>Services</h3>
+            <ul>
+              <li><Link to="/services/architecture">Architecture</Link></li>
+              <li><Link to="/services/interior-design">Interior design</Link></li>
+              <li><Link to="/services/construction">Construction</Link></li>
+              <li><Link to="/services/office-renovation">Office renovation</Link></li>
+            </ul>
+          </nav>
+
+          <div>
+            <h3>Contact</h3>
+            <ul className="ft-contact">
+              {mobile && (
+                <Row icon={CONTACT_ICONS.phone}>
+                  <a href={`tel:${mobile}`}>{mobile}</a>
+                </Row>
+              )}
+              {waNumber && (
+                <Row icon={CONTACT_ICONS.whatsapp}>
+                  <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer">
+                    WhatsApp {whatsapp}
+                  </a>
+                </Row>
+              )}
+              {email && (
+                <Row icon={CONTACT_ICONS.email}>
+                  <a href={`mailto:${email}`}>{email}</a>
+                </Row>
+              )}
+              {addressText && <Row icon={CONTACT_ICONS.location}>{addressText}</Row>}
+            </ul>
           </div>
         </div>
-      </footer>
-    </>
+
+        <p className="ft-mark" aria-hidden="true" data-nomotion>Yashmeen</p>
+
+        <div className="ft-bottom">
+          <span>&copy; {new Date().getFullYear()} Yashmeen Future Building &amp; Fit-Out Contracting L.L.C</span>
+          <span>Dubai, UAE</span>
+        </div>
+      </div>
+    </footer>
   );
 }

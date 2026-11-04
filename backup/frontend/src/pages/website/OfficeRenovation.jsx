@@ -185,23 +185,22 @@ export default function OfficeRenovation() {
   return (
     <div className="offrenpg-page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .offrenpg-page{
-          --offrenpg-ink:#faf7f0;
-          --offrenpg-black:#0d0c0a;
-          --offrenpg-gray-50:#141311;
-          --offrenpg-gray-100:rgba(255,255,255,0.05);
-          --offrenpg-gray-200:rgba(255,255,255,0.08);
-          --offrenpg-gray-500:rgba(250,247,240,0.72);
-          --offrenpg-brass:var(--brass, #c5a059);
-          --offrenpg-brass-deep:var(--brass-light, #dfba73);
-          --offrenpg-font:'Montserrat', sans-serif;
+          --offrenpg-ink:#1b1a17;
+          --offrenpg-black:#fbfaf7;
+          --offrenpg-gray-50:#f4f1ea;
+          --offrenpg-gray-100:rgba(27,26,23,0.04);
+          --offrenpg-gray-200:#e6e1d6;
+          --offrenpg-gray-500:#6b665c;
+          --offrenpg-brass:#8a6a28;
+          --offrenpg-brass-deep:#6f541d;
+          --offrenpg-font:var(--font-sans);
           --offrenpg-max-w:1180px;
 
           min-height:100vh;
           width:100%;
-          background:#0d0c0a;
+          background:var(--offrenpg-black);
           color:var(--offrenpg-ink);
           font-family:var(--offrenpg-font);
         }
@@ -410,10 +409,10 @@ export default function OfficeRenovation() {
           padding:36px 30px;
         }
         .offrenpg-package-card-featured{
-          background:var(--offrenpg-black);
-          color:#FFFFFF;
-          border-color:var(--offrenpg-black);
-          box-shadow:0 30px 50px -28px rgba(0,0,0,0.5);
+          background:#ffffff;
+          color:var(--offrenpg-ink);
+          border-color:var(--offrenpg-brass);
+          box-shadow:0 18px 40px -16px rgba(27,26,23,0.18);
         }
         @media (min-width:900px){
           .offrenpg-package-card-featured{ transform:translateY(-12px); }
@@ -441,7 +440,7 @@ export default function OfficeRenovation() {
           font-size:14px;
           color:var(--offrenpg-gray-500);
         }
-        .offrenpg-package-card-featured .offrenpg-package-tagline{ color:rgba(255,255,255,0.65); }
+        .offrenpg-package-card-featured .offrenpg-package-tagline{ color:var(--offrenpg-gray-500); }
         .offrenpg-package-list{
           list-style:none;
           margin:26px 0 0;
@@ -450,7 +449,7 @@ export default function OfficeRenovation() {
           display:grid;
           gap:14px;
         }
-        .offrenpg-package-card-featured .offrenpg-package-list{ border-top-color:rgba(255,255,255,0.18); }
+        .offrenpg-package-card-featured .offrenpg-package-list{ border-top-color:var(--offrenpg-gray-200); }
         .offrenpg-package-item{
           display:flex;
           align-items:flex-start;
@@ -476,15 +475,15 @@ export default function OfficeRenovation() {
         }
 
         /* TRENDS (dark band) */
-        .offrenpg-trends-section{ background:var(--offrenpg-black); color:#FFFFFF; }
-        .offrenpg-trends-section .offrenpg-section-heading{ color:#FFFFFF; }
-        .offrenpg-trends-section .offrenpg-eyebrow{ color:#D3A36A; }
-        .offrenpg-trends-section .offrenpg-section-intro{ color:rgba(255,255,255,0.7); }
+        .offrenpg-trends-section{ background:var(--offrenpg-black); color:var(--offrenpg-ink); }
+        .offrenpg-trends-section .offrenpg-section-heading{ color:var(--offrenpg-ink); }
+        .offrenpg-trends-section .offrenpg-eyebrow{ color:#8a6a28; }
+        .offrenpg-trends-section .offrenpg-section-intro{ color:var(--offrenpg-gray-500); }
         .offrenpg-trend-grid{
           display:grid;
           grid-template-columns:1fr;
           margin-top:44px;
-          border-top:1px solid rgba(255,255,255,0.16);
+          border-top:1px solid var(--offrenpg-gray-200);
         }
         @media (min-width:800px){
           .offrenpg-trend-grid{ grid-template-columns:repeat(2,1fr); column-gap:56px; }
@@ -493,7 +492,7 @@ export default function OfficeRenovation() {
           display:flex;
           gap:22px;
           padding:30px 0;
-          border-bottom:1px solid rgba(255,255,255,0.16);
+          border-bottom:1px solid var(--offrenpg-gray-200);
         }
         .offrenpg-trend-number{
           flex-shrink:0;
@@ -512,7 +511,7 @@ export default function OfficeRenovation() {
           margin:8px 0 0;
           font-size:14.5px;
           line-height:1.7;
-          color:rgba(255,255,255,0.7);
+          color:var(--offrenpg-gray-500);
         }
 
         /* BEFORE / AFTER */
@@ -556,7 +555,7 @@ export default function OfficeRenovation() {
           padding:7px 12px;
           border-radius:100px;
           background:rgba(10,10,10,0.78);
-          color:#FFFFFF;
+          color:#ffffff;
         }
         .offrenpg-ba-label-after{
           background:var(--offrenpg-brass);
@@ -689,7 +688,7 @@ export default function OfficeRenovation() {
         }
         .offrenpg-cta-heading{
           margin:0;
-          color:#FFFFFF;
+          color:var(--offrenpg-ink);
           font-size:26px;
           font-weight:700;
           line-height:1.3;
@@ -700,7 +699,7 @@ export default function OfficeRenovation() {
           margin:10px 0 0;
           font-size:14.5px;
           line-height:1.7;
-          color:rgba(255,255,255,0.7);
+          color:var(--offrenpg-gray-500);
         }
         .offrenpg-cta-actions{
           display:flex;
@@ -712,7 +711,7 @@ export default function OfficeRenovation() {
           display:inline-flex;
           align-items:center;
           gap:10px;
-          color:#FFFFFF;
+          color:var(--offrenpg-ink);
           font-size:15px;
           font-weight:700;
         }
@@ -720,7 +719,7 @@ export default function OfficeRenovation() {
           width:44px;
           height:44px;
           border-radius:50%;
-          border:1px solid rgba(255,255,255,0.3);
+          border:1px solid var(--offrenpg-gray-200);
           display:flex;
           align-items:center;
           justify-content:center;
@@ -734,7 +733,7 @@ export default function OfficeRenovation() {
         .offrenpg-cta-link-label{
           display:flex;
           align-items:center;
-          background:#0d0c0a;
+          background:var(--offrenpg-black);
           color:var(--offrenpg-ink);
           padding:15px 26px;
           font-size:14.5px;

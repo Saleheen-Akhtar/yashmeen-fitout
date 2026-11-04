@@ -1,30 +1,23 @@
-import { useState } from "react";
 import HeroSection from "../../components/Hero";
-import ClientsSection from "../../components/Clients";
+import Marquee from "../../components/Marquee";
+import IntroSection from "../../components/Intro";
 import DisciplinesSection from "../../components/Disciplines";
 import ShowcaseSection from "../../components/Showcase";
+import Numbers from "../../components/Numbers";
 import MethodologySection from "../../components/Methodology";
-import ScopeConfigurator from "../../components/ScopeConfigurator";
 import TestimonialsSection from "../../components/Testimonials";
 import ContactSection from "../../components/ContactSection";
-import { OfferModal } from "../../components/OfferModal";
 
 export default function Home() {
-  const [open, setOpen] = useState(true);
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   return (
-    <main className="overflow-x-hidden w-full max-w-full">
-      {open && <OfferModal handleClose={handleClose} />}
+    <main data-manual>
       <HeroSection />
-      <ClientsSection />
+      <Marquee />
+      <IntroSection />
       <DisciplinesSection />
       <ShowcaseSection />
+      <Numbers />
       <MethodologySection />
-      <ScopeConfigurator />
       <TestimonialsSection />
       <ContactSection />
     </main>

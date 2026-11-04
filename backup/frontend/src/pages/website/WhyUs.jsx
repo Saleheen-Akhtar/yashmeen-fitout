@@ -149,19 +149,18 @@ export default function WhyUs() {
   return (
     <div className="page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         :root{
-          --ink:#faf7f0;
-          --black:#0d0c0a;
-          --gray-50:#141311;
-          --gray-100:rgba(255,255,255,0.05);
-          --gray-200:rgba(255,255,255,0.08);
-          --gray-500:rgba(250,247,240,0.72);
-          --brass:var(--brass, #c5a059);
-          --brass-deep:var(--brass-light, #dfba73);
-          --font-display:'Montserrat', sans-serif;
-          --font-body:'Montserrat', sans-serif;
+          --ink:#1b1a17;
+          --black:#fbfaf7;
+          --gray-50:#f4f1ea;
+          --gray-100:rgba(27,26,23,0.04);
+          --gray-200:#e6e1d6;
+          --gray-500:#6b665c;
+          --brass:#8a6a28;
+          --brass-deep:#6f541d;
+          --font-display:var(--font-sans);
+          --font-body:var(--font-sans);
           --max-w:1180px;
         }
 
@@ -170,7 +169,7 @@ export default function WhyUs() {
         .page{
           min-height:100vh;
           width:100%;
-          background:#0d0c0a;
+          background:var(--black);
           color:var(--ink);
           font-family:var(--font-body);
         }
@@ -466,7 +465,7 @@ export default function WhyUs() {
           font-family:var(--font-display);
           font-size:24px;
           font-weight:800;
-          color:#FFFFFF;
+          color:var(--ink);
         }
         @media (min-width:640px){ .cta-heading{ font-size:30px; } }
         .cta-copy{
@@ -474,7 +473,7 @@ export default function WhyUs() {
           max-width:480px;
           font-size:14.5px;
           line-height:1.7;
-          color:rgba(255,255,255,0.65);
+          color:var(--gray-500);
         }
         .cta-btn{
           margin-top:26px;

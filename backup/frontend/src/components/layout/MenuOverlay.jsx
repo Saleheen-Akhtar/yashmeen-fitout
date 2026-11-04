@@ -95,15 +95,18 @@ export default function MenuOverlay({ open, onClose }) {
       <div className="menu-curtain-body wrap">
         <nav className="menu-curtain-nav">
           {MENU_ITEMS.map((item, idx) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              className="menu-curtain-link"
-              onClick={onClose}
-              style={{ transitionDelay: `${idx * 0.04}s` }}
-            >
-              {item.label}
-            </Link>
+            <div key={item.href} className="menu-curtain-item">
+              <Link
+                to={item.href}
+                className="menu-curtain-link"
+                onClick={onClose}
+                style={{
+                  transitionDelay: open ? `${0.2 + idx * 0.06}s` : "0s",
+                }}
+              >
+                {item.label}
+              </Link>
+            </div>
           ))}
         </nav>
       </div>

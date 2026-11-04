@@ -1,25 +1,81 @@
-/* Motion helpers */
-#scroll-progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(0); z-index: 200; pointer-events: none; }
-::selection { background: var(--accent); color: #fff; }
+/* Architectural Motion System
+   Engine: GSAP 3.15 + CustomEase + SplitText + ScrollTrigger + Lenis
+   Inspired by oharchitecture.com.au / oharchitecture.vercel.app/app.js */
 
-/* Split-text masks need room for descenders */
-[data-split] > div, [data-split] > * { padding-bottom: 0.06em; }
-
-.is-in-line { position: relative; }
-.line-draw::before { content: ""; position: absolute; left: 0; top: 0; height: 2px; width: 100%; background: var(--ink); transform: scaleX(0); transform-origin: 0 50%; transition: transform 1.2s var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)); }
-.line-draw.is-in::before { transform: scaleX(1); }
-
-@media (prefers-reduced-motion: reduce) {
-  .line-draw::before { transform: scaleX(1); transition: none; }
-  #scroll-progress { display: none; }
+#scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--ink);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  z-index: 300;
+  pointer-events: none;
 }
 
-/* Hide tagged elements until their animation is armed (only when JS and motion are on).
-   The 2.5s fallback guarantees content can never stay hidden. */
-html.motion [data-split]:not([data-m-split]),
-html.motion [data-reveal]:not([data-m-reveal]),
-html.motion [data-stagger]:not([data-m-stagger]) > * {
-  visibility: hidden;
-  animation: m-show 0.01s 2.5s forwards;
+::selection {
+  background: var(--ink);
+  color: #ffffff;
 }
-@keyframes m-show { to { visibility: visible; } }
+
+/* SplitText Line Masking */
+.split-parent {
+  overflow: hidden !important;
+  display: block !important;
+  position: relative !important;
+  padding-bottom: 0.08em;
+}
+
+.split-child {
+  display: inline-block !important;
+  will-change: transform;
+}
+
+/* Hairline Draw Line */
+.line-draw {
+  position: relative;
+}
+.line-draw::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 1px;
+  width: 100%;
+  background: var(--line);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.35, 1);
+}
+.line-draw.is-in::before {
+  transform: scaleX(1);
+}
+
+/* Architectural Curtain Reveal on Images */
+[data-image-reveal] {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-image-cover] {
+  position: absolute;
+  inset: 0;
+  background: var(--surface-alt);
+  z-index: 2;
+  pointer-events: none;
+  transform-origin: top;
+  will-change: transform, opacity;
+}
+
+/* Hero entrance transitions */
+.hero-editorial .hero-media-wrap img {
+  will-change: transform, filter;
+  transition: filter 1.6s cubic-bezier(0.16, 1, 0.35, 1);
+}
+
+/* Magnetic Pill Buttons */
+[data-magnetic] {
+  will-change: transform;
+}

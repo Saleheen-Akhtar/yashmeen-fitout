@@ -220,7 +220,12 @@
 .menu-curtain-nav {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+}
+
+.menu-curtain-item {
+  overflow: hidden;
+  display: inline-block;
 }
 
 .menu-curtain-link {
@@ -231,14 +236,19 @@
   letter-spacing: -0.03em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.7);
-  transition: color 0.3s var(--ease), transform 0.3s var(--ease);
   display: inline-block;
-  width: fit-content;
+  transform: translateY(120%);
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.35, 1), color 0.3s ease;
+  will-change: transform;
+}
+
+.menu-curtain.is-open .menu-curtain-link {
+  transform: translateY(0%);
 }
 
 .menu-curtain-link:hover {
   color: #ffffff;
-  transform: translateX(16px);
+  transform: translateY(0%) translateX(16px);
 }
 
 .menu-curtain-bottom {

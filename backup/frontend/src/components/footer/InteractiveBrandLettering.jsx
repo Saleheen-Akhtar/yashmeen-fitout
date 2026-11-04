@@ -1,16 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Super-Smooth Bouncy Bubble Soft-Body Lettering Component
- * Inspired by Cole Derochie (colederochie.com)
- * Features:
- * - Fluid bubble physics with elastic restitution and zero stickiness
- * - Letters bounce off walls and each other like soft inflated bubbles
- * - Jelly wobble and squish on impact and throw
- * - Fixed delta-time accumulator physics for silky 60fps/120fps motion
- * - Throw and fling momentum with fluid air glide
- * - Procedural Web Audio synthesized bubble-pop sound
- * - Smooth [RE-ALIGN] baseline return action
+ * Super-Smooth 2-Row Bubble Lettering Engine
+ * Modeled after Cole Derochie (colederochie.com)
+ *
+ * Key Highlights:
+ * 1. 2-Row Monumental Packing: "YASH" (top row) + "MEEN" (bottom row).
+ *    Letters are gigantic, bulbous, touching each other and filling the canvas
+ *    edge-to-edge with zero dead air.
+ * 2. Perpetual Zero-Gravity Space Float: Even when untouched, letters smoothly
+ *    drift, bob, and float in space curves like buoyant zero-gravity balls.
+ * 3. Elastic Ball Collision Rebound: Letters bounce off each other and perimeter
+ *    walls with true momentum exchange and jelly puff squish.
+ * 4. High-Fling Momentum: Throwing letters hurls them across the field, knocking
+ *    other letters out of the way.
+ * 5. Procedural Web Audio pop sound with randomized acoustic click burst.
+ * 6. Smooth [RE-ALIGN] baseline return action.
  */
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -155,10 +160,10 @@ class Glyph {
     this.update();
   }
 
+  // Generous, bulbous bubble stroke radius matching Cole Derochie reference
   static strokeRadius(c, w, h) {
-    if (c === "I") return Math.max(9, h * 0.14);
-    const ratioMap = { E: 0.14, S: 0.13, M: 0.13, H: 0.14, A: 0.14, Y: 0.14, N: 0.14 };
-    return Math.max(9, Math.min(w * 0.24, h * (ratioMap[c] || 0.15)));
+    const ratioMap = { E: 0.19, S: 0.18, M: 0.18, H: 0.19, A: 0.19, Y: 0.19, N: 0.19 };
+    return Math.max(14, Math.min(w * 0.25, h * (ratioMap[c] || 0.19)));
   }
 
   link(a, b) {
@@ -200,6 +205,7 @@ class World {
     this.energy = 1;
     this.reducedMotion = false;
     this.returning = 0;
+    this.time = 0;
     this.nodes.forEach((n, i) => (n.id = i));
 
     this.neighbors = new Set();
@@ -219,7 +225,6 @@ class World {
     }
     for (let i = 0; i < 25; i++) this.solve();
     for (const g of glyphs) g.update();
-    this.sleep();
   }
 
   grab(g, p) {
@@ -237,10 +242,10 @@ class World {
       const g = this.drag.glyph;
       const speed = Math.hypot(vx, vy);
       for (const n of g.nodes) {
-        n.vx = clamp(vx * 1.1, -48, 48);
-        n.vy = clamp(vy * 1.1, -48, 48);
+        n.vx = clamp(vx * 1.15, -55, 55);
+        n.vy = clamp(vy * 1.15, -55, 55);
       }
-      if (speed > 6) {
+      if (speed > 5) {
         this.puff(g, 1.25, true);
       }
     }
@@ -249,24 +254,24 @@ class World {
   }
 
   returnHome() {
-    this.returning = 150;
+    this.returning = 160;
     this.energy = 1;
     for (const g of this.glyphs) {
-      this.puff(g, 1.2, true);
+      this.puff(g, 1.22, true);
     }
   }
 
   followHome() {
     if (this.returning <= 0) return;
-    const progress = 1 - this.returning / 150;
-    const pull = 0.048 * Math.sin(progress * Math.PI * 0.5);
+    const progress = 1 - this.returning / 160;
+    const pull = 0.052 * Math.sin(progress * Math.PI * 0.5);
     this.returning--;
     for (const n of this.nodes) {
       if (this.drag && n.body === this.drag.glyph) continue;
       n.vx += (n.homeX - n.x) * pull;
       n.vy += (n.homeY - n.y) * pull;
-      n.vx *= 0.96;
-      n.vy *= 0.96;
+      n.vx *= 0.95;
+      n.vy *= 0.95;
     }
   }
 
@@ -276,13 +281,8 @@ class World {
     for (const n of g.nodes) {
       n.vx += x; n.vy += y;
     }
-    this.puff(g, 1.2, true);
+    this.puff(g, 1.25, true);
     this.energy = 1;
-  }
-
-  sleep() {
-    for (const n of this.nodes) n.vx = n.vy = 0;
-    this.energy = 0;
   }
 
   resize(w, h) {
@@ -330,7 +330,6 @@ class World {
     for (const g of this.glyphs) {
       const p = g.puff;
       if (!p) continue;
-      // High-elastic bubble oscillation spring (k = 260, c = 8.5)
       const k = p.elastic ? 260 : 300, c = p.elastic ? 8.5 : 22;
       p.v += ((p.target - p.size) * k - p.v * c) / 60;
       const next = Math.max(0.65, p.size + p.v / 60);
@@ -344,7 +343,7 @@ class World {
   }
 
   solve() {
-    // 1. Elastic structural distance constraints along the glyph strokes
+    // 1. Elastic structural stroke integrity
     for (const g of this.glyphs) {
       for (const l of g.links) {
         const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y, d = Math.hypot(dx, dy) || 1;
@@ -370,7 +369,7 @@ class World {
       }
     }
 
-    // 2. Multi-contact spatial hash collision resolution with bubble bounce
+    // 2. Elastic ball-to-ball collisions with momentum rebound
     const cell = Math.max(16, ...this.nodes.map((n) => Math.max(n.rx, n.ry) * 2 + 4));
     const grid = new Map();
     for (const a of this.nodes) {
@@ -383,25 +382,26 @@ class World {
             const nx = dx / d, ny = dy / d;
             const ra = Math.hypot(a.rx * nx, a.ry * ny);
             const rb = Math.hypot(b.rx * nx, b.ry * ny);
-            const overlap = ra + rb + 2.8 - d;
+            const overlap = ra + rb + 3.2 - d;
             if (overlap > 0) {
-              const k = overlap * 0.54;
+              const k = overlap * 0.55;
               a.x += nx * k; a.y += ny * k;
               b.x -= nx * k; b.y -= ny * k;
 
-              // Elastic bubble bounce impulse between different letters
+              // Elastic ball bounce impulse between distinct letters
               if (a.body !== b.body) {
-                const bounceForce = Math.min(overlap * 0.42, 10);
-                a.vx += nx * bounceForce;
-                a.vy += ny * bounceForce;
-                b.vx -= nx * bounceForce;
-                b.vy -= ny * bounceForce;
+                const normalSpeed = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
+                if (normalSpeed < 0) {
+                  const impulse = -normalSpeed * 0.86;
+                  a.vx += nx * impulse;
+                  a.vy += ny * impulse;
+                  b.vx -= nx * impulse;
+                  b.vy -= ny * impulse;
 
-                // Micro wobble puff on energetic collision
-                const relSpeed = Math.hypot(a.vx - b.vx, a.vy - b.vy);
-                if (relSpeed > 8 && !a.body.puff && !b.body.puff) {
-                  this.puff(a.body, 1.12, true);
-                  this.puff(b.body, 1.12, true);
+                  if (Math.abs(impulse) > 1.2 && !a.body.puff && !b.body.puff) {
+                    this.puff(a.body, 1.12, true);
+                    this.puff(b.body, 1.12, true);
+                  }
                 }
               }
             }
@@ -416,7 +416,7 @@ class World {
     for (const n of this.nodes) this.confine(n);
   }
 
-  // Bouncy bubble perimeter walls: bounces inward with restitution instead of dead-sticking
+  // Energetic boundary walls: bouncy bubble perimeter
   confine(n) {
     const pad = 4;
     const minX = n.rx + pad;
@@ -424,33 +424,64 @@ class World {
     const minY = n.ry + pad;
     const maxY = this.height - n.ry - pad;
 
-    const restitution = 0.82;
+    const restitution = 0.88;
 
     if (n.x < minX) {
       n.x = minX;
-      if (n.vx < 0) n.vx = -n.vx * restitution;
+      if (n.vx < 0) {
+        n.vx = -n.vx * restitution;
+        if (Math.abs(n.vx) > 3 && !n.body.puff) this.puff(n.body, 1.1, true);
+      }
     } else if (n.x > maxX) {
       n.x = maxX;
-      if (n.vx > 0) n.vx = -n.vx * restitution;
+      if (n.vx > 0) {
+        n.vx = -n.vx * restitution;
+        if (Math.abs(n.vx) > 3 && !n.body.puff) this.puff(n.body, 1.1, true);
+      }
     }
 
     if (n.y < minY) {
       n.y = minY;
-      if (n.vy < 0) n.vy = -n.vy * restitution;
+      if (n.vy < 0) {
+        n.vy = -n.vy * restitution;
+        if (Math.abs(n.vy) > 3 && !n.body.puff) this.puff(n.body, 1.1, true);
+      }
     } else if (n.y > maxY) {
       n.y = maxY;
-      if (n.vy > 0) n.vy = -n.vy * restitution;
+      if (n.vy > 0) {
+        n.vy = -n.vy * restitution;
+        if (Math.abs(n.vy) > 3 && !n.body.puff) this.puff(n.body, 1.1, true);
+      }
     }
   }
 
-  step() {
+  step(time = 0) {
+    this.time = time;
     this.followResize();
     this.followPuffs();
     this.followHome();
 
     const old = this.nodes.map((n) => [n.x, n.y]);
 
-    // Soft jelly shape recovery around the moving center of mass
+    // 1. Zero-Gravity Space Float: continuous gentle organic space curves
+    if (!this.reducedMotion) {
+      const t = time * 0.001;
+      for (const g of this.glyphs) {
+        if (this.drag && this.drag.glyph === g) continue;
+        const phase = g.index * 1.57;
+        const driftX = Math.sin(t * 0.6 + phase) * 0.045;
+        const driftY = Math.cos(t * 0.8 + phase * 1.25) * 0.045;
+        for (const n of g.nodes) {
+          n.vx += driftX;
+          n.vy += driftY;
+          // Whisper home gravity to preserve 2-row constellation structure
+          n.vx += (n.homeX - n.x) * 0.0018;
+          n.vy += (n.homeY - n.y) * 0.0018;
+        }
+      }
+    }
+
+    // 2. Soft jelly shape recovery around moving center
     for (const g of this.glyphs) {
       g.update();
       const meanX = g.nodes.reduce((s, n) => s + n.ox, 0) / g.nodes.length;
@@ -463,7 +494,7 @@ class World {
       }
     }
 
-    // Weightless drag physics: carries the whole letter softly with the cursor
+    // 3. Weightless drag carry
     const move = this.nodes.map((n) => [n.vx, n.vy]);
     let held = null;
     if (this.drag) {
@@ -503,12 +534,12 @@ class World {
       }
     }
 
-    // Super-smooth fluid air glide friction (0.978 floating, 0.95 dragged)
-    const friction = this.drag ? 0.95 : (this.reducedMotion ? 0.85 : 0.978);
+    // Fluid frictionless space glide
+    const friction = this.drag ? 0.95 : (this.reducedMotion ? 0.88 : 0.982);
     let e = 0;
     this.nodes.forEach((n, i) => {
-      n.vx = clamp((n.x - old[i][0]) * friction, -42, 42);
-      n.vy = clamp((n.y - old[i][1]) * friction, -42, 42);
+      n.vx = clamp((n.x - old[i][0]) * friction, -45, 45);
+      n.vy = clamp((n.y - old[i][1]) * friction, -45, 45);
       e += n.vx * n.vx + n.vy * n.vy;
     });
     this.energy = Math.sqrt(e / this.nodes.length);
@@ -570,7 +601,6 @@ function prepareLetter(glyph) {
 }
 
 export default function InteractiveBrandLettering({
-  word = "YASHMEEN",
   color = "#080807",
   haloColor = "#fcfcfc",
 }) {
@@ -586,7 +616,7 @@ export default function InteractiveBrandLettering({
   const wakeRef = useRef(null);
   const [hintVisible, setHintVisible] = useState(true);
 
-  // Synthesized bubble pop sound with acoustic click burst
+  // Synthesized bubble pop sound
   const playPop = (radius) => {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -613,7 +643,6 @@ export default function InteractiveBrandLettering({
       osc.start(now);
       osc.stop(now + 0.19);
 
-      // Organic acoustic click burst
       const clickBuf = ctx.createBuffer(1, Math.round(ctx.sampleRate * 0.012), ctx.sampleRate);
       const data = clickBuf.getChannelData(0);
       for (let i = 0; i < data.length; i++) {
@@ -637,30 +666,50 @@ export default function InteractiveBrandLettering({
     let width = 0, height = 0, ratio = 1;
     let previousTime = 0;
     let accumulator = 0;
-    let quietFrames = 0;
 
+    // 2-Row Monumental Packing: YASH on top, MEEN on bottom (matches COLEDEROCHIE reference)
     const createLayout = (w, h) => {
-      const chars = [...word];
-      const count = chars.length;
-      const paddingX = Math.max(22, w * 0.035);
+      const rows = [
+        ["Y", "A", "S", "H"],
+        ["M", "E", "E", "N"],
+      ];
+
+      const paddingX = Math.max(16, w * 0.02);
+      const paddingY = Math.max(16, h * 0.025);
       const innerW = w - paddingX * 2;
-      const colW = innerW / count;
-      const glyphH = Math.min(h * 0.58, colW * 1.5);
-      const glyphW = Math.min(colW * 0.90, glyphH * 0.82);
+      const innerH = h - paddingY * 2;
 
-      const angles = [-0.03, 0.03, -0.04, 0.04, -0.03, 0.04, -0.03, 0.03];
-      const yOffsets = [-0.02, 0.02, -0.015, 0.02, -0.02, 0.015, -0.02, 0.02];
+      // Two balanced bands
+      const rowH = innerH / 2;
+      const colW = innerW / 4;
 
-      const poses = chars.map((char, i) => ({
-        x: paddingX + colW * (i + 0.5),
-        y: h * 0.5 + (yOffsets[i % yOffsets.length] || 0) * h,
-        w: glyphW,
-        h: glyphH,
-        angle: angles[i % angles.length] || 0,
-        packingScale: 1.05,
-      }));
+      const glyphW = colW * 0.94;
+      const glyphH = rowH * 0.92;
 
-      const glyphs = chars.map((c, i) => new Glyph(c, poses[i], i));
+      const angles = [
+        [-0.04, 0.03, -0.05, 0.04],
+        [-0.03, 0.04, -0.04, 0.03],
+      ];
+
+      const glyphs = [];
+      let globalIdx = 0;
+
+      for (let r = 0; r < 2; r++) {
+        const chars = rows[r];
+        for (let c = 0; c < 4; c++) {
+          const char = chars[c];
+          const pose = {
+            x: paddingX + colW * (c + 0.5),
+            y: paddingY + rowH * (r + 0.5),
+            w: glyphW,
+            h: glyphH,
+            angle: angles[r][c],
+            packingScale: 1.15,
+          };
+          glyphs.push(new Glyph(char, pose, globalIdx++));
+        }
+      }
+
       return new World(w, h, glyphs);
     };
 
@@ -670,7 +719,7 @@ export default function InteractiveBrandLettering({
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       ctx.clearRect(0, 0, width, height);
 
-      const halo = Math.max(3.5, Math.min(7.0, Math.min(width, height) * 0.009));
+      const halo = Math.max(4.0, Math.min(8.0, Math.min(width, height) * 0.01));
       const sorted = [...world.glyphs].sort((a, b) => (a.z || 0) - (b.z || 0));
 
       for (const glyph of sorted) {
@@ -684,71 +733,56 @@ export default function InteractiveBrandLettering({
         const band = (halo * 2) / Math.sqrt(drawing.rx * drawing.ry);
         const outer = glyph.radius * 2 + band;
 
-        // 1. Crisp separation halo
+        // 1. Separation halo
         ctx.strokeStyle = haloColor;
         ctx.lineWidth = outer;
         for (const path of drawing.paths) ctx.stroke(path);
 
-        // 2. Core inflatable bubble stroke
+        // 2. Core bulbous inflatable body
         ctx.strokeStyle = color;
         ctx.lineWidth = glyph.radius * 2;
         for (const path of drawing.paths) ctx.stroke(path);
 
-        // 3. Subtle glossy bubble highlight sheen
+        // 3. Subtle glossy specular highlight
         ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
-        ctx.lineWidth = Math.max(2, glyph.radius * 0.42);
+        ctx.lineWidth = Math.max(3, glyph.radius * 0.45);
         for (const path of drawing.paths) ctx.stroke(path);
 
         ctx.restore();
       }
     };
 
-    // Fixed-timestep accumulator physics loop for buttery smoothness
+    // Continuous 60fps zero-gravity space float loop
     const frame = (time) => {
       rafRef.current = 0;
       const world = worldRef.current;
-      if (document.hidden || !world) {
-        previousTime = 0;
-        accumulator = 0;
+      if (!world) return;
+
+      if (document.hidden) {
         return;
       }
 
-      const delta = Math.min(33.34, time - (previousTime || time - 16.67));
-      previousTime = time;
-      accumulator = Math.min(1000 / 30, accumulator + delta);
-
-      while (accumulator >= 1000 / 60) {
-        world.step();
-        accumulator -= 1000 / 60;
-      }
-
+      world.step(time);
       draw();
 
-      const isQuiet = !world.drag && !world.busy && world.energy < 0.045;
-      quietFrames = isQuiet ? quietFrames + 1 : 0;
-
-      if (quietFrames < 45) {
-        rafRef.current = requestAnimationFrame(frame);
-      } else {
-        world.sleep();
-        previousTime = 0;
-        accumulator = 0;
-      }
+      // Continuous space floating loop (runs smoothly whenever tab is active)
+      rafRef.current = requestAnimationFrame(frame);
     };
 
     const wake = () => {
-      quietFrames = 0;
-      if (!rafRef.current && !document.hidden) {
-        previousTime = 0;
-        rafRef.current = requestAnimationFrame(frame);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
       }
+      rafRef.current = requestAnimationFrame(frame);
     };
     wakeRef.current = wake;
+    window.__wake = wake;
 
     const handleResize = () => {
       const rect = container.getBoundingClientRect();
       const nextW = Math.max(280, Math.round(rect.width));
-      const nextH = Math.max(320, Math.round(rect.height || nextW * 0.36));
+      const nextH = Math.max(480, Math.round(rect.height || nextW * 0.55));
       const nextR = Math.min(window.devicePixelRatio || 1, 2);
 
       if (width === nextW && height === nextH && ratio === nextR) return;
@@ -815,7 +849,6 @@ export default function InteractiveBrandLettering({
       wake();
     };
 
-    // Fluid pointer move: ONLY updates drag target without running synchronous physics
     const onPointerMove = (event) => {
       if (activePointerRef.current !== null && event.pointerId !== activePointerRef.current) return;
       const point = pointAt(event);
@@ -827,8 +860,8 @@ export default function InteractiveBrandLettering({
         if (recentPositionsRef.current.length > 6) recentPositionsRef.current.shift();
 
         if (world.drag) {
-          world.drag.x = clamp(point.x, 6, width - 6);
-          world.drag.y = clamp(point.y, 6, height - 6);
+          world.drag.x = clamp(point.x, 8, width - 8);
+          world.drag.y = clamp(point.y, 8, height - 8);
           world.energy = 1;
           wake();
         }
@@ -859,7 +892,7 @@ export default function InteractiveBrandLettering({
         const currentPt = recents[recents.length - 1] || { x: press.startX, y: press.startY };
         const dist = Math.hypot(currentPt.x - press.startX, currentPt.y - press.startY);
         if (elapsed < 260 && dist < 12) {
-          world.puff(press.glyph, 1.42, true);
+          world.puff(press.glyph, 1.45, true);
         }
       }
 
@@ -897,6 +930,20 @@ export default function InteractiveBrandLettering({
       }
     };
 
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
+        rafRef.current = 0;
+        previousTime = 0;
+        accumulator = 0;
+      } else {
+        wake();
+      }
+    };
+
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointermove", onPointerMove);
     canvas.addEventListener("dblclick", onDoubleClick);
@@ -904,14 +951,29 @@ export default function InteractiveBrandLettering({
     window.addEventListener("pointerup", releasePointer);
     window.addEventListener("pointercancel", releasePointer);
     window.addEventListener("blur", releasePointer);
+    window.addEventListener("focus", wake);
+    window.addEventListener("scroll", wake, { passive: true });
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     const observer = new ResizeObserver(handleResize);
     observer.observe(container);
+
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) wake();
+      }
+    }, { threshold: 0.05 });
+    io.observe(container);
+
     handleResize();
 
     return () => {
       observer.disconnect();
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      io.disconnect();
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("dblclick", onDoubleClick);
@@ -919,6 +981,9 @@ export default function InteractiveBrandLettering({
       window.removeEventListener("pointerup", releasePointer);
       window.removeEventListener("pointercancel", releasePointer);
       window.removeEventListener("blur", releasePointer);
+      window.removeEventListener("focus", wake);
+      window.removeEventListener("scroll", wake);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       if (audioCtxRef.current) {
         try {
           audioCtxRef.current.close();
@@ -927,7 +992,7 @@ export default function InteractiveBrandLettering({
         }
       }
     };
-  }, [word, color, haloColor]);
+  }, [color, haloColor]);
 
   const handleResetBaseline = (e) => {
     e?.preventDefault();
@@ -947,7 +1012,7 @@ export default function InteractiveBrandLettering({
       world.puff(g, 1.45, true);
       playPop(g.radius);
     } else {
-      const step = 20;
+      const step = 24;
       const map = { left: [-step, 0], right: [step, 0], up: [0, -step], down: [0, step] };
       const [dx, dy] = map[dir] || [0, 0];
       world.nudge(index, dx, dy);
@@ -965,7 +1030,6 @@ export default function InteractiveBrandLettering({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        marginBottom: "2.5rem",
         overflow: "hidden",
       }}
     >
@@ -989,12 +1053,12 @@ export default function InteractiveBrandLettering({
         }}
       />
 
-      {/* Control bar: interactive hint and reset baseline action */}
+      {/* Floating telemetry pills */}
       <div
         className="interactive-brand-hud"
         style={{
           position: "absolute",
-          bottom: "14px",
+          bottom: "16px",
           left: "24px",
           right: "24px",
           display: "flex",
@@ -1013,14 +1077,14 @@ export default function InteractiveBrandLettering({
             fontWeight: 600,
             letterSpacing: "0.08em",
             textTransform: "uppercase",
-            color: "rgba(8, 8, 7, 0.5)",
-            background: "rgba(255, 255, 255, 0.85)",
+            color: "rgba(8, 8, 7, 0.55)",
+            background: "rgba(255, 255, 255, 0.88)",
             backdropFilter: "blur(12px)",
             WebkitBackdropFilter: "blur(12px)",
             padding: "6px 14px",
             borderRadius: "9999px",
             border: "1px solid rgba(8, 8, 7, 0.08)",
-            opacity: hintVisible ? 1 : 0.65,
+            opacity: hintVisible ? 1 : 0.6,
             transition: "opacity 0.3s ease",
             pointerEvents: "auto",
           }}
@@ -1035,7 +1099,7 @@ export default function InteractiveBrandLettering({
             }}
             aria-hidden="true"
           />
-          <span>GRAB &amp; THROW LETTERS · BOUNCE</span>
+          <span>ZERO-GRAVITY SPACE BUBBLES · GRAB &amp; THROW</span>
         </div>
 
         <button
@@ -1077,13 +1141,13 @@ export default function InteractiveBrandLettering({
         </button>
       </div>
 
-      {/* Accessible off-screen letter buttons for keyboard navigation */}
+      {/* Accessible controls for keyboard navigation */}
       <div className="sr-only" role="region" aria-label="Interactive letter controls">
-        {[...word].map((char, idx) => (
+        {["Y", "A", "S", "H", "M", "E", "E", "N"].map((char, idx) => (
           <div key={idx}>
             <button
               type="button"
-              aria-label={`Letter ${char} (${idx + 1} of ${word.length}). Click to inflate or press arrow keys to bounce.`}
+              aria-label={`Letter ${char} (${idx + 1} of 8). Click to inflate or press arrow keys to bounce.`}
               onClick={() => handleKeyNudge(idx, "puff")}
               onKeyDown={(e) => {
                 if (e.key === "ArrowLeft") handleKeyNudge(idx, "left");

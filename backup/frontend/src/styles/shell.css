@@ -570,21 +570,24 @@
 }
 
 .interactive-brand-monument {
-  margin-bottom: clamp(2rem, 4vw, 3.5rem);
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
   width: 100%;
-  height: clamp(380px, 40vw, 540px);
+  height: clamp(500px, 56vw, 740px);
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
-  background: rgba(8, 8, 7, 0.015);
-  border: 1px dashed rgba(8, 8, 7, 0.12);
+  background: transparent;
+  border: none;
 }
 
 .interactive-brand-monument canvas {
   width: 100%;
   height: 100%;
   cursor: grab;
-  border-radius: 8px;
+  display: block;
+}
+
+.interactive-brand-monument canvas:active {
+  cursor: grabbing;
 }
 
 /* Footer Bottom Bar */

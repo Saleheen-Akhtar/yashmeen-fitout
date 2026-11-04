@@ -225,6 +225,7 @@ class World {
     this.energy = 1;
     this.reducedMotion = false;
     this.returning = 0;
+    this.time = 0;
     this.nodes.forEach((n, i) => (n.id = i));
 
     this.neighbors = new Set();
@@ -244,7 +245,6 @@ class World {
     }
     for (let i = 0; i < 25; i++) this.solve();
     for (const g of glyphs) g.update();
-    this.sleep();
   }
 
   grab(g, p) {
@@ -262,10 +262,10 @@ class World {
       const g = this.drag.glyph;
       const speed = Math.hypot(vx, vy);
       for (const n of g.nodes) {
-        n.vx = clamp(vx * 1.12, -50, 50);
-        n.vy = clamp(vy * 1.12, -50, 50);
+        n.vx = clamp(vx * 1.25, -55, 55);
+        n.vy = clamp(vy * 1.25, -55, 55);
       }
-      if (speed > 5) {
+      if (speed > 4) {
         this.puff(g, 1.25, true);
       }
     }
@@ -302,7 +302,6 @@ class World {
         n.vy = 0;
       }
       for (const g of this.glyphs) g.update();
-      this.sleep();
     }
   }
 
@@ -452,19 +451,19 @@ class World {
               b.x -= nx * k;
               b.y -= ny * k;
 
-              // Elastic bubble bounce impulse between distinct letters
+              // Elastic bubble bounce impulse between distinct letters (88% restitution)
               if (a.body !== b.body) {
                 const normalSpeed = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
                 if (normalSpeed < 0) {
-                  const impulse = -normalSpeed * 0.85;
+                  const impulse = -normalSpeed * 0.88;
                   a.vx += nx * impulse;
                   a.vy += ny * impulse;
                   b.vx -= nx * impulse;
                   b.vy -= ny * impulse;
 
-                  if (Math.abs(impulse) > 1.2 && !a.body.puff && !b.body.puff) {
-                    this.puff(a.body, 1.12, true);
-                    this.puff(b.body, 1.12, true);
+                  if (Math.abs(impulse) > 1.0 && !a.body.puff && !b.body.puff) {
+                    this.puff(a.body, 1.15, true);
+                    this.puff(b.body, 1.15, true);
                   }
                 }
               }
@@ -480,7 +479,7 @@ class World {
     for (const n of this.nodes) this.confine(n);
   }
 
-  // Energetic perimeter bounce: bouncy bubble reflection off container edges
+  // Energetic perimeter bounce: 88% elastic bubble reflection off container edges
   confine(n) {
     const pad = 4;
     const minX = n.rx + pad;
@@ -488,19 +487,19 @@ class World {
     const minY = n.ry + pad;
     const maxY = this.height - n.ry - pad;
 
-    const restitution = 0.82;
+    const restitution = 0.88;
 
     if (n.x < minX) {
       n.x = minX;
       if (n.vx < 0) {
         n.vx = -n.vx * restitution;
-        if (Math.abs(n.vx) > 3 && !n.body.puff) this.puff(n.body, 1.1, true);
+        if (Math.abs(n.vx) > 3 && !n.body.puff) this.puff(n.body, 1.12, true);
       }
     } else if (n.x > maxX) {
       n.x = maxX;
       if (n.vx > 0) {
         n.vx = -n.vx * restitution;
-        if (Math.abs(n.vx) > 3 && !n.body.puff) this.puff(n.body, 1.1, true);
+        if (Math.abs(n.vx) > 3 && !n.body.puff) this.puff(n.body, 1.12, true);
       }
     }
 
@@ -508,34 +507,46 @@ class World {
       n.y = minY;
       if (n.vy < 0) {
         n.vy = -n.vy * restitution;
-        if (Math.abs(n.vy) > 3 && !n.body.puff) this.puff(n.body, 1.1, true);
+        if (Math.abs(n.vy) > 3 && !n.body.puff) this.puff(n.body, 1.12, true);
       }
     } else if (n.y > maxY) {
       n.y = maxY;
       if (n.vy > 0) {
         n.vy = -n.vy * restitution;
-        if (Math.abs(n.vy) > 3 && !n.body.puff) this.puff(n.body, 1.1, true);
+        if (Math.abs(n.vy) > 3 && !n.body.puff) this.puff(n.body, 1.12, true);
       }
     }
   }
 
-  step() {
+  step(time = 0) {
+    this.time = time;
     this.followResize();
     this.followPuffs();
     this.followHome();
 
     const old = this.nodes.map((n) => [n.x, n.y]);
 
-    // Gentle baseline anchor pull: ensures letters settle peacefully on baseline when not dragged
-    for (const g of this.glyphs) {
-      if (this.drag && this.drag.glyph === g) continue;
-      for (const n of g.nodes) {
-        n.vx += (n.homeX - n.x) * 0.0035;
-        n.vy += (n.homeY - n.y) * 0.0035;
+    // 1. Perpetual Zero-Gravity Space Float ("Floating Even if We Leave the Words")
+    // Every letter gently drifts, bobs, and floats along zero-gravity space curves in real time.
+    // Whisper celestial anchor (0.0022) ensures letters preserve single-row YASHMEEN baseline formation.
+    if (!this.reducedMotion && this.returning <= 0) {
+      const t = time * 0.001;
+      for (const g of this.glyphs) {
+        if (this.drag && this.drag.glyph === g) continue;
+        const phase = g.index * 1.57;
+        const driftX = Math.sin(t * 0.75 + phase) * 0.042;
+        const driftY = Math.cos(t * 0.95 + phase * 1.25) * 0.048;
+        for (const n of g.nodes) {
+          n.vx += driftX;
+          n.vy += driftY;
+          // Whisper celestial anchor (0.0022) preserves single-row YASHMEEN baseline
+          n.vx += (n.homeX - n.x) * 0.0022;
+          n.vy += (n.homeY - n.y) * 0.0022;
+        }
       }
     }
 
-    // Soft jelly shape recovery around moving center
+    // 2. Soft jelly shape recovery around moving center
     for (const g of this.glyphs) {
       g.update();
       const meanX = g.nodes.reduce((s, n) => s + n.ox, 0) / g.nodes.length;
@@ -543,12 +554,12 @@ class World {
       for (const n of g.nodes) {
         const tx = g.cx + (n.ox - meanX);
         const ty = g.cy + (n.oy - meanY);
-        n.vx += (tx - n.x) * 0.026;
-        n.vy += (ty - n.y) * 0.026;
+        n.vx += (tx - n.x) * 0.024;
+        n.vy += (ty - n.y) * 0.024;
       }
     }
 
-    // Pointer drag physics: carries the whole letter along with the cursor
+    // 3. Pointer drag physics: carries the whole letter along with the cursor
     const move = this.nodes.map((n) => [n.vx, n.vy]);
     let held = null;
     if (this.drag) {
@@ -591,12 +602,12 @@ class World {
       }
     }
 
-    // Fluid air glide friction: bouncy and responsive without dying instantly
-    const friction = this.drag ? 0.94 : 0.965;
+    // 4. Fluid air glide friction: bouncy and responsive zero-gravity drift
+    const friction = this.drag ? 0.94 : 0.982;
     let e = 0;
     this.nodes.forEach((n, i) => {
-      n.vx = clamp((n.x - old[i][0]) * friction, -42, 42);
-      n.vy = clamp((n.y - old[i][1]) * friction, -42, 42);
+      n.vx = clamp((n.x - old[i][0]) * friction, -48, 48);
+      n.vy = clamp((n.y - old[i][1]) * friction, -48, 48);
       e += n.vx * n.vx + n.vy * n.vy;
     });
     this.energy = Math.sqrt(e / this.nodes.length);
@@ -780,22 +791,18 @@ export default function InteractiveBrandLettering({
       }
     };
 
-    const loop = () => {
+    const loop = (time) => {
+      rafRef.current = 0;
       const world = worldRef.current;
       if (document.hidden || !world) {
-        rafRef.current = 0;
         return;
       }
 
-      world.step();
+      world.step(time);
       draw();
 
-      if (world.drag || world.busy || world.energy > 0.035) {
-        rafRef.current = requestAnimationFrame(loop);
-      } else {
-        world.sleep();
-        rafRef.current = 0;
-      }
+      // Perpetual zero-gravity space float: continuously floats in real time
+      rafRef.current = requestAnimationFrame(loop);
     };
 
     const wake = () => {
@@ -965,12 +972,25 @@ export default function InteractiveBrandLettering({
     window.addEventListener("pointercancel", releasePointer);
     window.addEventListener("blur", releasePointer);
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = 0;
+        }
+      } else {
+        wake();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     const observer = new ResizeObserver(handleResize);
     observer.observe(container);
     handleResize();
 
     return () => {
       observer.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);

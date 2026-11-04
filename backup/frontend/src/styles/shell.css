@@ -572,7 +572,7 @@
 .interactive-brand-monument {
   margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
   width: 100%;
-  height: clamp(500px, 56vw, 740px);
+  height: clamp(320px, 32vw, 440px);
   position: relative;
   overflow: hidden;
   background: transparent;

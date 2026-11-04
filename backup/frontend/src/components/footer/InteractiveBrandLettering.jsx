@@ -160,10 +160,10 @@ class Glyph {
     this.update();
   }
 
-  // Generous, bulbous bubble stroke radius matching Cole Derochie reference
+  // Authentic single-row bubble typography ratio matching Image 1
   static strokeRadius(c, w, h) {
-    const ratioMap = { E: 0.19, S: 0.18, M: 0.18, H: 0.19, A: 0.19, Y: 0.19, N: 0.19 };
-    return Math.max(14, Math.min(w * 0.25, h * (ratioMap[c] || 0.19)));
+    const ratioMap = { E: 0.15, S: 0.14, M: 0.14, H: 0.15, A: 0.15, Y: 0.15, N: 0.15 };
+    return Math.max(10, Math.min(w * 0.24, h * (ratioMap[c] || 0.15)));
   }
 
   link(a, b) {
@@ -667,49 +667,29 @@ export default function InteractiveBrandLettering({
     let previousTime = 0;
     let accumulator = 0;
 
-    // 2-Row Monumental Packing: YASH on top, MEEN on bottom (matches COLEDEROCHIE reference)
+    // 1-Row Authentic Brand Typography: Y A S H M E E N (Image 1 Typography)
     const createLayout = (w, h) => {
-      const rows = [
-        ["Y", "A", "S", "H"],
-        ["M", "E", "E", "N"],
-      ];
-
-      const paddingX = Math.max(16, w * 0.02);
-      const paddingY = Math.max(16, h * 0.025);
+      const chars = ["Y", "A", "S", "H", "M", "E", "E", "N"];
+      const count = chars.length;
+      const paddingX = Math.max(16, w * 0.025);
       const innerW = w - paddingX * 2;
-      const innerH = h - paddingY * 2;
+      const colW = innerW / count;
+      const glyphH = Math.min(h * 0.76, colW * 1.6);
+      const glyphW = Math.min(colW * 0.94, glyphH * 0.78);
 
-      // Two balanced bands
-      const rowH = innerH / 2;
-      const colW = innerW / 4;
+      const angles = [-0.03, 0.03, -0.04, 0.04, -0.03, 0.04, -0.03, 0.03];
+      const yOffsets = [-0.015, 0.015, -0.01, 0.015, -0.015, 0.01, -0.015, 0.015];
 
-      const glyphW = colW * 0.94;
-      const glyphH = rowH * 0.92;
+      const poses = chars.map((char, i) => ({
+        x: paddingX + colW * (i + 0.5),
+        y: h * 0.5 + (yOffsets[i % yOffsets.length] || 0) * h,
+        w: glyphW,
+        h: glyphH,
+        angle: angles[i % angles.length] || 0,
+        packingScale: 1.08,
+      }));
 
-      const angles = [
-        [-0.04, 0.03, -0.05, 0.04],
-        [-0.03, 0.04, -0.04, 0.03],
-      ];
-
-      const glyphs = [];
-      let globalIdx = 0;
-
-      for (let r = 0; r < 2; r++) {
-        const chars = rows[r];
-        for (let c = 0; c < 4; c++) {
-          const char = chars[c];
-          const pose = {
-            x: paddingX + colW * (c + 0.5),
-            y: paddingY + rowH * (r + 0.5),
-            w: glyphW,
-            h: glyphH,
-            angle: angles[r][c],
-            packingScale: 1.15,
-          };
-          glyphs.push(new Glyph(char, pose, globalIdx++));
-        }
-      }
-
+      const glyphs = chars.map((c, i) => new Glyph(c, poses[i], i));
       return new World(w, h, glyphs);
     };
 
@@ -782,7 +762,7 @@ export default function InteractiveBrandLettering({
     const handleResize = () => {
       const rect = container.getBoundingClientRect();
       const nextW = Math.max(280, Math.round(rect.width));
-      const nextH = Math.max(480, Math.round(rect.height || nextW * 0.55));
+      const nextH = Math.max(280, Math.round(rect.height || nextW * 0.28));
       const nextR = Math.min(window.devicePixelRatio || 1, 2);
 
       if (width === nextW && height === nextH && ratio === nextR) return;

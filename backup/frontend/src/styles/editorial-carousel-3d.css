@@ -1,0 +1,184 @@
+/* Editorial 3D Carousel - Dark Luxury Gallery */
+.editorial-carousel-wrapper {
+  position: relative;
+  width: 100%;
+  background: #000000;
+  color: #f4ece8;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
+}
+
+.editorial-carousel-stage {
+  position: relative;
+  width: 100%;
+  height: clamp(620px, 92vh, 880px);
+  background: #000000;
+  overflow: hidden;
+  outline: none;
+  touch-action: pan-y;
+  cursor: grab;
+  /* Perspective and origin set dynamically or via style attribute */
+  perspective: 900px;
+  -webkit-perspective: 900px;
+  /* Default edge mask: desktop */
+  mask-image: linear-gradient(to right, transparent 0%, #000 20%, #000 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 20%, #000 80%, transparent 100%);
+}
+
+.editorial-carousel-stage.is-dragging {
+  cursor: grabbing;
+}
+
+.editorial-carousel-stage:focus-visible {
+  outline: 1px solid rgba(244, 236, 232, 0.35);
+  outline-offset: -4px;
+}
+
+@media (max-width: 640px) {
+  .editorial-carousel-stage {
+    height: clamp(520px, 86vh, 720px);
+    mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  }
+}
+
+.editorial-carousel-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.editorial-card {
+  position: absolute;
+  left: 50%;
+  border-radius: 4px;
+  background-color: #1a0203;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.85);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  will-change: transform, filter, opacity;
+}
+
+.editorial-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #1a0203;
+  border-radius: 4px;
+}
+
+.editorial-card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  background-color: #1a0203;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Vertical shade: clear top half, reaching rgba(10,0,0,0.75) at bottom */
+.editorial-overlay-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 0, 0, 0) 0%, rgba(10, 0, 0, 0) 50%, rgba(10, 0, 0, 0.75) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Soft radial vignette darkening outside edges */
+.editorial-overlay-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0, 0, 0, 0) 40%, rgba(10, 0, 0, 0.55) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Lower text container: above both overlays */
+.editorial-card-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: clamp(14px, 2.4vw, 24px);
+  box-sizing: border-box;
+  pointer-events: none;
+  font-family: var(--font-body, "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  color: #f4ece8;
+  will-change: opacity, transform;
+}
+
+.editorial-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 80%;
+}
+
+.editorial-card-category {
+  font-size: clamp(9px, 1.1vw, 11px);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(244, 236, 232, 0.6);
+  line-height: 1.2;
+}
+
+.editorial-card-title {
+  font-size: clamp(17px, 2.2vw, 26px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: #f4ece8;
+  margin: 0;
+}
+
+.editorial-card-number {
+  font-size: clamp(9px, 1.1vw, 11px);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
+  color: #f4ece8;
+  margin-left: 12px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+  .editorial-card-title {
+    font-size: 15px;
+  }
+  .editorial-card-category,
+  .editorial-card-number {
+    font-size: 8px;
+  }
+}
+
+/* Screen reader only utility */
+.editorial-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

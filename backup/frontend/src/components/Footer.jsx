@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import InteractiveBrandLettering from "./footer/InteractiveBrandLettering";
 import "../styles/shell.css";
 
 const NAV_LINKS = [
@@ -123,10 +124,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Monumental Brand Typography Spanning Across Base */}
-        <div className="footer-monument" aria-hidden="true">
-          YASHMEEN
-        </div>
+        {/* Cole Derochie Inspired Soft-Body Interactive Inflatable Brand Monument */}
+        <InteractiveBrandLettering word="YASHMEEN" color="#080807" haloColor="#fcfcfc" />
 
         {/* Footer Bottom Bar */}
         <div className="footer-bottom-bar">

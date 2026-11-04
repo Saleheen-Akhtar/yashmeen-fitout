@@ -36,6 +36,7 @@ export default function MotionProvider() {
       syncTouch: false,
     });
     lenisInstance = lenis;
+    window.__lenis = lenis;
 
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (time) => lenis.raf(time * 1000);
@@ -103,11 +104,11 @@ export default function MotionProvider() {
         if (isCleanedUp) return;
 
         /* A. HERO ENTRANCE & PARALLAX SCRUB */
-        const heroStageImgs = document.querySelectorAll(".hero-stage-img, .hero-media-wrap img");
-        const heroSection = document.querySelector(".hero-master-section, .hero-editorial");
-        const telemetryBar = document.querySelector(".hero-master-telemetry-bar, .hero-telemetry-bar");
-        const heroBadges = document.querySelectorAll(".hero-stage-badge, .hero-commission-tabs, .hero-layer-toggle-btn");
-        const scrollCue = document.querySelector(".hero-scroll-down-cue, .hero-scroll-cue");
+        const heroStageImgs = document.querySelectorAll(".hero-fullbleed-img, .hero-stage-img, .hero-media-wrap img");
+        const heroSection = document.querySelector(".hero-fullbleed-wrap, .hero-master-section, .hero-editorial");
+        const telemetryBar = document.querySelector(".hero-telemetry-pill-strip, .hero-master-telemetry-bar, .hero-telemetry-bar");
+        const heroBadges = document.querySelectorAll(".hero-corner-tag, .hero-stage-badge, .hero-commission-tabs, .hero-layer-toggle-btn");
+        const scrollCue = document.querySelector(".hero-scroll-prompt, .hero-scroll-down-cue, .hero-scroll-cue");
 
         if (heroStageImgs.length && heroSection) {
           // Entrance Animation
@@ -136,23 +137,11 @@ export default function MotionProvider() {
               { yPercent: 0, opacity: 1, duration: 1.0 },
               "-=0.9"
             );
-
-          // Parallax Scroll Scrub on the active image
-          gsap.to(".hero-stage-img", {
-            yPercent: 10,
-            ease: "none",
-            scrollTrigger: {
-              trigger: heroSection,
-              start: "top top",
-              end: "bottom top",
-              scrub: true,
-            },
-          });
         }
 
         /* B. SPLIT-TEXT LINE REVEALS (OH Architecture Masked Baseline) */
         const splitTargets = document.querySelectorAll(
-          ".u-text-display, .u-text-h2, .hero-philosophy, .hero-manifesto-statement, .process-display-statement, .testimonial-quote-text, h1:not(.no-split), [data-lines-split]"
+          ".u-text-display, .u-text-h2, .hero-manifesto-quote, .hero-philosophy, .hero-manifesto-statement, .process-display-statement, .testimonial-quote-text, h1:not(.no-split), [data-lines-split]"
         );
 
         splitTargets.forEach((el) => {
@@ -169,7 +158,7 @@ export default function MotionProvider() {
             activeSplits.push(parentSplit, childSplit);
             el.dataset.splitInitialized = "true";
 
-            const isHero = el.closest(".hero-master-section, .hero-editorial");
+            const isHero = el.closest(".hero-fullbleed-wrap, .hero-master-section, .hero-editorial");
 
             gsap.from(childSplit.lines, {
               yPercent: 120,

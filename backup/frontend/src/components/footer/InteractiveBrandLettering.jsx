@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Spongy Interactive Soft-Body Lettering Component
+ * Super-Smooth Bouncy Bubble Soft-Body Lettering Component
  * Inspired by Cole Derochie (colederochie.com)
  * Features:
- * - Truly grabable, spongy, movable letters that you can throw and push around
- * - Full 2D translation and elastic stretching/squishing under pointer pressure
- * - Spatially hashed multi-body particle collision resolution (letters bump and squash each other)
- * - Momentum & fling physics on release
- * - Procedural Web Audio pop tone on click or high-velocity impact
- * - Re-align baseline trigger to spring all letters back to rest
- * - Zero idle CPU usage when letters come to rest
+ * - Fluid bubble physics with elastic restitution and zero stickiness
+ * - Letters bounce off walls and each other like soft inflated bubbles
+ * - Jelly wobble and squish on impact and throw
+ * - Fixed delta-time accumulator physics for silky 60fps/120fps motion
+ * - Throw and fling momentum with fluid air glide
+ * - Procedural Web Audio synthesized bubble-pop sound
+ * - Smooth [RE-ALIGN] baseline return action
  */
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -179,13 +179,13 @@ class Glyph {
 
   hitTest(p) {
     const inBounds =
-      p.x >= this.bounds.minX - 20 &&
-      p.x <= this.bounds.maxX + 20 &&
-      p.y >= this.bounds.minY - 20 &&
-      p.y <= this.bounds.maxY + 20;
+      p.x >= this.bounds.minX - 25 &&
+      p.x <= this.bounds.maxX + 25 &&
+      p.y >= this.bounds.minY - 25 &&
+      p.y <= this.bounds.maxY + 25;
     if (!inBounds) return false;
     return this.nodes.some(
-      (n) => ((p.x - n.x) / (n.rx * 1.45)) ** 2 + ((p.y - n.y) / (n.ry * 1.45)) ** 2 <= 1.5
+      (n) => ((p.x - n.x) / (n.rx * 1.5)) ** 2 + ((p.y - n.y) / (n.ry * 1.5)) ** 2 <= 1.6
     );
   }
 }
@@ -229,13 +229,19 @@ class World {
     this.drag = { glyph: g, node, x: p.x, y: p.y, dx: node.x - p.x, dy: node.y - p.y };
     this.returning = 0;
     this.energy = 1;
+    this.puff(g, 1.15, true);
   }
 
   release(vx = 0, vy = 0) {
     if (this.drag) {
-      for (const n of this.drag.glyph.nodes) {
-        n.vx = clamp(vx * 0.75, -40, 40);
-        n.vy = clamp(vy * 0.75, -40, 40);
+      const g = this.drag.glyph;
+      const speed = Math.hypot(vx, vy);
+      for (const n of g.nodes) {
+        n.vx = clamp(vx * 1.1, -48, 48);
+        n.vy = clamp(vy * 1.1, -48, 48);
+      }
+      if (speed > 6) {
+        this.puff(g, 1.25, true);
       }
     }
     this.drag = null;
@@ -243,26 +249,34 @@ class World {
   }
 
   returnHome() {
-    this.returning = 140;
+    this.returning = 150;
     this.energy = 1;
+    for (const g of this.glyphs) {
+      this.puff(g, 1.2, true);
+    }
   }
 
   followHome() {
     if (this.returning <= 0) return;
-    const pull = 0.048 * Math.min(1, this.returning / 70);
+    const progress = 1 - this.returning / 150;
+    const pull = 0.048 * Math.sin(progress * Math.PI * 0.5);
     this.returning--;
     for (const n of this.nodes) {
       if (this.drag && n.body === this.drag.glyph) continue;
       n.vx += (n.homeX - n.x) * pull;
       n.vy += (n.homeY - n.y) * pull;
+      n.vx *= 0.96;
+      n.vy *= 0.96;
     }
   }
 
   nudge(index, x, y) {
     if (!this.glyphs[index]) return;
-    for (const n of this.glyphs[index].nodes) {
+    const g = this.glyphs[index];
+    for (const n of g.nodes) {
       n.vx += x; n.vy += y;
     }
+    this.puff(g, 1.2, true);
     this.energy = 1;
   }
 
@@ -316,12 +330,13 @@ class World {
     for (const g of this.glyphs) {
       const p = g.puff;
       if (!p) continue;
-      const k = p.elastic ? 220 : 260, c = p.elastic ? 8 : 28;
+      // High-elastic bubble oscillation spring (k = 260, c = 8.5)
+      const k = p.elastic ? 260 : 300, c = p.elastic ? 8.5 : 22;
       p.v += ((p.target - p.size) * k - p.v * c) / 60;
-      const next = Math.max(0.6, p.size + p.v / 60);
+      const next = Math.max(0.65, p.size + p.v / 60);
       this.scaleGlyph(g, next / p.size);
       p.size = next;
-      if (p.target === 1 && Math.abs(p.size - 1) < 0.001 && Math.abs(p.v) < 0.01) {
+      if (p.target === 1 && Math.abs(p.size - 1) < 0.002 && Math.abs(p.v) < 0.02) {
         this.scaleGlyph(g, 1 / p.size);
         g.puff = null;
       }
@@ -329,11 +344,12 @@ class World {
   }
 
   solve() {
+    // 1. Elastic structural distance constraints along the glyph strokes
     for (const g of this.glyphs) {
       for (const l of g.links) {
         const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y, d = Math.hypot(dx, dy) || 1;
         const rest = Math.hypot(l.b.ox - l.a.ox, l.b.oy - l.a.oy);
-        const k = ((d - rest) / d) * 0.26;
+        const k = ((d - rest) / d) * 0.24;
         l.a.x += dx * k; l.a.y += dy * k;
         l.b.x -= dx * k; l.b.y -= dy * k;
       }
@@ -345,8 +361,8 @@ class World {
           const n = nodes[i],
             a = nodes[(i - 1 + nodes.length) % nodes.length],
             b = nodes[(i + 1) % nodes.length];
-          const dx = ((a.x + b.x) / 2 - n.x + (n.ox - (a.ox + b.ox) / 2)) * 0.20;
-          const dy = ((a.y + b.y) / 2 - n.y + (n.oy - (a.oy + b.oy) / 2)) * 0.20;
+          const dx = ((a.x + b.x) / 2 - n.x + (n.ox - (a.ox + b.ox) / 2)) * 0.18;
+          const dy = ((a.y + b.y) / 2 - n.y + (n.oy - (a.oy + b.oy) / 2)) * 0.18;
           n.x += dx; n.y += dy;
           a.x -= dx / 2; a.y -= dy / 2;
           b.x -= dx / 2; b.y -= dy / 2;
@@ -354,6 +370,7 @@ class World {
       }
     }
 
+    // 2. Multi-contact spatial hash collision resolution with bubble bounce
     const cell = Math.max(16, ...this.nodes.map((n) => Math.max(n.rx, n.ry) * 2 + 4));
     const grid = new Map();
     for (const a of this.nodes) {
@@ -366,11 +383,27 @@ class World {
             const nx = dx / d, ny = dy / d;
             const ra = Math.hypot(a.rx * nx, a.ry * ny);
             const rb = Math.hypot(b.rx * nx, b.ry * ny);
-            const overlap = ra + rb + 2.5 - d;
+            const overlap = ra + rb + 2.8 - d;
             if (overlap > 0) {
-              const k = overlap * 0.52;
+              const k = overlap * 0.54;
               a.x += nx * k; a.y += ny * k;
               b.x -= nx * k; b.y -= ny * k;
+
+              // Elastic bubble bounce impulse between different letters
+              if (a.body !== b.body) {
+                const bounceForce = Math.min(overlap * 0.42, 10);
+                a.vx += nx * bounceForce;
+                a.vy += ny * bounceForce;
+                b.vx -= nx * bounceForce;
+                b.vy -= ny * bounceForce;
+
+                // Micro wobble puff on energetic collision
+                const relSpeed = Math.hypot(a.vx - b.vx, a.vy - b.vy);
+                if (relSpeed > 8 && !a.body.puff && !b.body.puff) {
+                  this.puff(a.body, 1.12, true);
+                  this.puff(b.body, 1.12, true);
+                }
+              }
             }
           }
         }
@@ -383,9 +416,31 @@ class World {
     for (const n of this.nodes) this.confine(n);
   }
 
+  // Bouncy bubble perimeter walls: bounces inward with restitution instead of dead-sticking
   confine(n) {
-    n.x = clamp(n.x, n.rx + 2, this.width - n.rx - 2);
-    n.y = clamp(n.y, n.ry + 2, this.height - n.ry - 2);
+    const pad = 4;
+    const minX = n.rx + pad;
+    const maxX = this.width - n.rx - pad;
+    const minY = n.ry + pad;
+    const maxY = this.height - n.ry - pad;
+
+    const restitution = 0.82;
+
+    if (n.x < minX) {
+      n.x = minX;
+      if (n.vx < 0) n.vx = -n.vx * restitution;
+    } else if (n.x > maxX) {
+      n.x = maxX;
+      if (n.vx > 0) n.vx = -n.vx * restitution;
+    }
+
+    if (n.y < minY) {
+      n.y = minY;
+      if (n.vy < 0) n.vy = -n.vy * restitution;
+    } else if (n.y > maxY) {
+      n.y = maxY;
+      if (n.vy > 0) n.vy = -n.vy * restitution;
+    }
   }
 
   step() {
@@ -395,7 +450,7 @@ class World {
 
     const old = this.nodes.map((n) => [n.x, n.y]);
 
-    // Shape recovery around wherever each letter currently is
+    // Soft jelly shape recovery around the moving center of mass
     for (const g of this.glyphs) {
       g.update();
       const meanX = g.nodes.reduce((s, n) => s + n.ox, 0) / g.nodes.length;
@@ -403,27 +458,25 @@ class World {
       for (const n of g.nodes) {
         const tx = g.cx + (n.ox - meanX);
         const ty = g.cy + (n.oy - meanY);
-        n.vx += (tx - n.x) * 0.026;
-        n.vy += (ty - n.y) * 0.026;
+        n.vx += (tx - n.x) * 0.024;
+        n.vy += (ty - n.y) * 0.024;
       }
     }
 
-    // Pointer drag physics: carries the whole letter along with the cursor
+    // Weightless drag physics: carries the whole letter softly with the cursor
     const move = this.nodes.map((n) => [n.vx, n.vy]);
     let held = null;
     if (this.drag) {
       const d = this.drag;
       const n = d.node;
-      const targetX = d.x + d.dx;
-      const targetY = d.y + d.dy;
-      const mx = clamp(targetX - n.x, -140, 140);
-      const my = clamp(targetY - n.y, -140, 140);
+      const mx = clamp(d.x + d.dx - n.x, -70, 70);
+      const my = clamp(d.y + d.dy - n.y, -70, 70);
 
       for (const m of d.glyph.nodes) {
-        move[m.id][0] += mx * 0.72;
-        move[m.id][1] += my * 0.72;
+        move[m.id][0] += mx * 0.38;
+        move[m.id][1] += my * 0.38;
       }
-      held = { n, x0: n.x, y0: n.y, x: targetX, y: targetY };
+      held = { n, x0: n.x, y0: n.y, x: n.x + mx, y: n.y + my };
     }
 
     let far = 0, thin = Infinity;
@@ -432,7 +485,7 @@ class World {
     if (held) far = Math.max(far, Math.hypot(held.x - held.x0, held.y - held.y0));
 
     const steps = clamp(Math.ceil(far / (thin * 0.5)), 1, 8);
-    const passes = Math.ceil(8 / steps);
+    const passes = Math.ceil(6 / steps);
 
     for (let s = 1; s <= steps; s++) {
       this.nodes.forEach((n, i) => {
@@ -443,17 +496,19 @@ class World {
         this.solve();
         if (held) {
           const t = s / steps;
-          held.n.x = held.x0 + (held.n.x - held.x0) * t;
+          held.n.x = held.x0 + (held.x - held.x0) * t;
           held.n.y = held.y0 + (held.n.y - held.y0) * t;
           this.confine(held.n);
         }
       }
     }
 
+    // Super-smooth fluid air glide friction (0.978 floating, 0.95 dragged)
+    const friction = this.drag ? 0.95 : (this.reducedMotion ? 0.85 : 0.978);
     let e = 0;
     this.nodes.forEach((n, i) => {
-      n.vx = clamp((n.x - old[i][0]) * 0.94, -38, 38);
-      n.vy = clamp((n.y - old[i][1]) * 0.94, -38, 38);
+      n.vx = clamp((n.x - old[i][0]) * friction, -42, 42);
+      n.vy = clamp((n.y - old[i][1]) * friction, -42, 42);
       e += n.vx * n.vx + n.vy * n.vy;
     });
     this.energy = Math.sqrt(e / this.nodes.length);
@@ -531,6 +586,7 @@ export default function InteractiveBrandLettering({
   const wakeRef = useRef(null);
   const [hintVisible, setHintVisible] = useState(true);
 
+  // Synthesized bubble pop sound with acoustic click burst
   const playPop = (radius) => {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -543,18 +599,30 @@ export default function InteractiveBrandLettering({
       }
       const ctx = audioCtxRef.current;
       const now = ctx.currentTime;
-      const pitch = 580 * Math.sqrt(28 / Math.max(12, radius));
+      const pitch = 680 * Math.sqrt(28 / Math.max(12, radius));
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
       osc.frequency.setValueAtTime(pitch, now);
-      osc.frequency.exponentialRampToValueAtTime(pitch * 0.25, now + 0.12);
-      gain.gain.setValueAtTime(0.001, now);
-      gain.gain.exponentialRampToValueAtTime(0.18, now + 0.005);
+      osc.frequency.exponentialRampToValueAtTime(pitch * 0.22, now + 0.12);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.24, now + 0.005);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
       osc.connect(gain).connect(ctx.destination);
       osc.start(now);
       osc.stop(now + 0.19);
+
+      // Organic acoustic click burst
+      const clickBuf = ctx.createBuffer(1, Math.round(ctx.sampleRate * 0.012), ctx.sampleRate);
+      const data = clickBuf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        data[i] = (Math.random() * 2 - 1) * (1 - i / data.length) ** 2 * 0.15;
+      }
+      const burst = ctx.createBufferSource();
+      burst.buffer = clickBuf;
+      burst.connect(ctx.destination);
+      burst.start(now);
     } catch {
       // AudioContext unavailable
     }
@@ -567,17 +635,20 @@ export default function InteractiveBrandLettering({
 
     const ctx = canvas.getContext("2d");
     let width = 0, height = 0, ratio = 1;
+    let previousTime = 0;
+    let accumulator = 0;
+    let quietFrames = 0;
 
     const createLayout = (w, h) => {
       const chars = [...word];
       const count = chars.length;
-      const paddingX = Math.max(20, w * 0.025);
+      const paddingX = Math.max(22, w * 0.035);
       const innerW = w - paddingX * 2;
       const colW = innerW / count;
-      const glyphH = Math.min(h * 0.62, colW * 1.55);
-      const glyphW = Math.min(colW * 0.94, glyphH * 0.82);
+      const glyphH = Math.min(h * 0.58, colW * 1.5);
+      const glyphW = Math.min(colW * 0.90, glyphH * 0.82);
 
-      const angles = [-0.04, 0.03, -0.05, 0.04, -0.03, 0.04, -0.04, 0.03];
+      const angles = [-0.03, 0.03, -0.04, 0.04, -0.03, 0.04, -0.03, 0.03];
       const yOffsets = [-0.02, 0.02, -0.015, 0.02, -0.02, 0.015, -0.02, 0.02];
 
       const poses = chars.map((char, i) => ({
@@ -613,48 +684,71 @@ export default function InteractiveBrandLettering({
         const band = (halo * 2) / Math.sqrt(drawing.rx * drawing.ry);
         const outer = glyph.radius * 2 + band;
 
-        // Separation halo
+        // 1. Crisp separation halo
         ctx.strokeStyle = haloColor;
         ctx.lineWidth = outer;
         for (const path of drawing.paths) ctx.stroke(path);
 
-        // Core spongy obsidian inflatable stroke
+        // 2. Core inflatable bubble stroke
         ctx.strokeStyle = color;
         ctx.lineWidth = glyph.radius * 2;
+        for (const path of drawing.paths) ctx.stroke(path);
+
+        // 3. Subtle glossy bubble highlight sheen
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+        ctx.lineWidth = Math.max(2, glyph.radius * 0.42);
         for (const path of drawing.paths) ctx.stroke(path);
 
         ctx.restore();
       }
     };
 
-    const loop = () => {
+    // Fixed-timestep accumulator physics loop for buttery smoothness
+    const frame = (time) => {
+      rafRef.current = 0;
       const world = worldRef.current;
       if (document.hidden || !world) {
-        rafRef.current = 0;
+        previousTime = 0;
+        accumulator = 0;
         return;
       }
 
-      world.step();
+      const delta = Math.min(33.34, time - (previousTime || time - 16.67));
+      previousTime = time;
+      accumulator = Math.min(1000 / 30, accumulator + delta);
+
+      while (accumulator >= 1000 / 60) {
+        world.step();
+        accumulator -= 1000 / 60;
+      }
+
       draw();
 
-      if (world.drag || world.busy || world.energy > 0.035) {
-        rafRef.current = requestAnimationFrame(loop);
+      const isQuiet = !world.drag && !world.busy && world.energy < 0.045;
+      quietFrames = isQuiet ? quietFrames + 1 : 0;
+
+      if (quietFrames < 45) {
+        rafRef.current = requestAnimationFrame(frame);
       } else {
         world.sleep();
-        rafRef.current = 0;
+        previousTime = 0;
+        accumulator = 0;
       }
     };
 
     const wake = () => {
+      quietFrames = 0;
       if (!rafRef.current && !document.hidden) {
-        rafRef.current = requestAnimationFrame(loop);
+        previousTime = 0;
+        rafRef.current = requestAnimationFrame(frame);
       }
     };
     wakeRef.current = wake;
 
     const handleResize = () => {
-      const nextW = Math.max(280, container.clientWidth);
-      const nextH = Math.max(340, Math.min(560, Math.round(nextW * 0.36)));
+      const rect = container.getBoundingClientRect();
+      const nextW = Math.max(280, Math.round(rect.width));
+      const nextH = Math.max(320, Math.round(rect.height || nextW * 0.36));
       const nextR = Math.min(window.devicePixelRatio || 1, 2);
 
       if (width === nextW && height === nextH && ratio === nextR) return;
@@ -703,7 +797,7 @@ export default function InteractiveBrandLettering({
 
       event.preventDefault();
       activePointerRef.current = event.pointerId;
-      recentPositionsRef.current = [{ x: point.x, y: point.y, time: Date.now() }];
+      recentPositionsRef.current = [{ x: point.x, y: point.y, time: performance.now() }];
 
       try {
         canvas.setPointerCapture(event.pointerId);
@@ -718,26 +812,24 @@ export default function InteractiveBrandLettering({
       playPop(glyph.radius);
       setHintVisible(false);
       canvas.style.cursor = "grabbing";
-      worldRef.current.step();
-      draw();
       wake();
     };
 
+    // Fluid pointer move: ONLY updates drag target without running synchronous physics
     const onPointerMove = (event) => {
+      if (activePointerRef.current !== null && event.pointerId !== activePointerRef.current) return;
       const point = pointAt(event);
       const world = worldRef.current;
       if (!world || !point) return;
 
-      if (activePointerRef.current !== null && event.pointerId === activePointerRef.current) {
-        recentPositionsRef.current.push({ x: point.x, y: point.y, time: Date.now() });
-        if (recentPositionsRef.current.length > 5) recentPositionsRef.current.shift();
+      if (activePointerRef.current !== null) {
+        recentPositionsRef.current.push({ x: point.x, y: point.y, time: performance.now() });
+        if (recentPositionsRef.current.length > 6) recentPositionsRef.current.shift();
 
         if (world.drag) {
-          world.drag.x = clamp(point.x, 8, width - 8);
-          world.drag.y = clamp(point.y, 8, height - 8);
+          world.drag.x = clamp(point.x, 6, width - 6);
+          world.drag.y = clamp(point.y, 6, height - 6);
           world.energy = 1;
-          world.step();
-          draw();
           wake();
         }
       } else {
@@ -757,8 +849,8 @@ export default function InteractiveBrandLettering({
         const pFirst = recents[0];
         const pLast = recents[recents.length - 1];
         const dt = Math.max(16, pLast.time - pFirst.time);
-        vx = ((pLast.x - pFirst.x) / dt) * 16;
-        vy = ((pLast.y - pFirst.y) / dt) * 16;
+        vx = ((pLast.x - pFirst.x) / dt) * 16.67;
+        vy = ((pLast.y - pFirst.y) / dt) * 16.67;
       }
 
       if (pressRef.current && world) {
@@ -766,8 +858,8 @@ export default function InteractiveBrandLettering({
         const elapsed = Date.now() - press.time;
         const currentPt = recents[recents.length - 1] || { x: press.startX, y: press.startY };
         const dist = Math.hypot(currentPt.x - press.startX, currentPt.y - press.startY);
-        if (elapsed < 280 && dist < 10) {
-          world.puff(press.glyph, 1.45, true);
+        if (elapsed < 260 && dist < 12) {
+          world.puff(press.glyph, 1.42, true);
         }
       }
 
@@ -855,7 +947,7 @@ export default function InteractiveBrandLettering({
       world.puff(g, 1.45, true);
       playPop(g.radius);
     } else {
-      const step = 16;
+      const step = 20;
       const map = { left: [-step, 0], right: [step, 0], up: [0, -step], down: [0, step] };
       const [dx, dy] = map[dir] || [0, 0];
       world.nudge(index, dx, dy);
@@ -899,106 +991,111 @@ export default function InteractiveBrandLettering({
 
       {/* Control bar: interactive hint and reset baseline action */}
       <div
+        className="interactive-brand-hud"
         style={{
           position: "absolute",
-          bottom: "10px",
-          left: "14px",
-          right: "14px",
+          bottom: "14px",
+          left: "24px",
+          right: "24px",
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
+          justifyContent: "space-between",
           pointerEvents: "none",
+          zIndex: 4,
         }}
       >
         <div
-          className="brand-play-hint"
-          aria-hidden="true"
           style={{
-            fontSize: "11px",
-            fontFamily: "var(--font-sans)",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "var(--muted)",
-            display: "flex",
+            display: "inline-flex",
             alignItems: "center",
-            gap: "6px",
-            opacity: hintVisible ? 0.9 : 0.4,
-            transition: "opacity 0.4s ease",
+            gap: "8px",
+            fontSize: "0.6875rem",
+            fontWeight: 600,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "rgba(8, 8, 7, 0.5)",
+            background: "rgba(255, 255, 255, 0.85)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            padding: "6px 14px",
+            borderRadius: "9999px",
+            border: "1px solid rgba(8, 8, 7, 0.08)",
+            opacity: hintVisible ? 1 : 0.65,
+            transition: "opacity 0.3s ease",
+            pointerEvents: "auto",
           }}
         >
-          <span style={{ fontSize: "14px" }}>🖐</span> GRAB, SQUISH &amp; THROW LETTERS
+          <span
+            style={{
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background: "#b5892b",
+              display: "inline-block",
+            }}
+            aria-hidden="true"
+          />
+          <span>GRAB &amp; THROW LETTERS · BOUNCE</span>
         </div>
 
         <button
           type="button"
           onClick={handleResetBaseline}
+          aria-label="Re-align letters to baseline"
           style={{
-            pointerEvents: "auto",
-            background: "rgba(8, 8, 7, 0.06)",
-            border: "1px solid rgba(8, 8, 7, 0.12)",
-            borderRadius: "999px",
-            padding: "5px 12px",
-            fontSize: "10px",
-            fontFamily: "var(--font-sans)",
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-            color: "var(--ink)",
-            cursor: "pointer",
-            display: "flex",
+            display: "inline-flex",
             alignItems: "center",
-            gap: "5px",
+            gap: "6px",
+            fontSize: "0.6875rem",
+            fontWeight: 600,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "rgba(8, 8, 7, 0.7)",
+            background: "rgba(255, 255, 255, 0.92)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            padding: "6px 14px",
+            borderRadius: "9999px",
+            border: "1px solid rgba(8, 8, 7, 0.12)",
+            cursor: "pointer",
+            pointerEvents: "auto",
             transition: "all 0.2s ease",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(8, 8, 7, 0.12)";
+            e.currentTarget.style.color = "#080807";
+            e.currentTarget.style.background = "#ffffff";
+            e.currentTarget.style.borderColor = "rgba(8, 8, 7, 0.25)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(8, 8, 7, 0.06)";
+            e.currentTarget.style.color = "rgba(8, 8, 7, 0.7)";
+            e.currentTarget.style.background = "rgba(255, 255, 255, 0.92)";
+            e.currentTarget.style.borderColor = "rgba(8, 8, 7, 0.12)";
           }}
-          title="Reset letters back into neat alignment"
         >
-          <span>Re-align</span>
-          <span style={{ fontSize: "12px" }}>↺</span>
+          <span>RE-ALIGN</span>
+          <span aria-hidden="true" style={{ fontSize: "0.8125rem" }}>↺</span>
         </button>
       </div>
 
-      {/* Accessible keyboard controls */}
-      <div
-        className="letter-keyboard-controls"
-        style={{
-          position: "absolute",
-          opacity: 0,
-          pointerEvents: "none",
-          height: 0,
-          overflow: "hidden",
-        }}
-      >
-        {[...word].map((char, i) => (
-          <button
-            key={i}
-            type="button"
-            aria-label={`${char}, letter ${i + 1} of ${word}. Press Enter to bounce, arrow keys to nudge.`}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleKeyNudge(i, "puff");
-              } else if (e.key === "ArrowLeft") {
-                e.preventDefault();
-                handleKeyNudge(i, "left");
-              } else if (e.key === "ArrowRight") {
-                e.preventDefault();
-                handleKeyNudge(i, "right");
-              } else if (e.key === "ArrowUp") {
-                e.preventDefault();
-                handleKeyNudge(i, "up");
-              } else if (e.key === "ArrowDown") {
-                e.preventDefault();
-                handleKeyNudge(i, "down");
-              }
-            }}
-          >
-            {char}
-          </button>
+      {/* Accessible off-screen letter buttons for keyboard navigation */}
+      <div className="sr-only" role="region" aria-label="Interactive letter controls">
+        {[...word].map((char, idx) => (
+          <div key={idx}>
+            <button
+              type="button"
+              aria-label={`Letter ${char} (${idx + 1} of ${word.length}). Click to inflate or press arrow keys to bounce.`}
+              onClick={() => handleKeyNudge(idx, "puff")}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowLeft") handleKeyNudge(idx, "left");
+                else if (e.key === "ArrowRight") handleKeyNudge(idx, "right");
+                else if (e.key === "ArrowUp") handleKeyNudge(idx, "up");
+                else if (e.key === "ArrowDown") handleKeyNudge(idx, "down");
+                else if (e.key === "Enter" || e.key === " ") handleKeyNudge(idx, "puff");
+              }}
+            >
+              {char}
+            </button>
+          </div>
         ))}
       </div>
     </div>

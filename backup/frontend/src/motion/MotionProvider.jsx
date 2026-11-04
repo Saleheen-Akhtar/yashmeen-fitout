@@ -103,17 +103,18 @@ export default function MotionProvider() {
         if (isCleanedUp) return;
 
         /* A. HERO ENTRANCE & PARALLAX SCRUB */
-        const heroImg = document.querySelector(".hero-media-wrap img");
-        const heroWrap = document.querySelector(".hero-editorial");
-        const telemetryBar = document.querySelector(".hero-telemetry-bar");
-        const scrollCue = document.querySelector(".hero-scroll-cue");
+        const heroStageImgs = document.querySelectorAll(".hero-stage-img, .hero-media-wrap img");
+        const heroSection = document.querySelector(".hero-master-section, .hero-editorial");
+        const telemetryBar = document.querySelector(".hero-master-telemetry-bar, .hero-telemetry-bar");
+        const heroBadges = document.querySelectorAll(".hero-stage-badge, .hero-commission-tabs, .hero-layer-toggle-btn");
+        const scrollCue = document.querySelector(".hero-scroll-down-cue, .hero-scroll-cue");
 
-        if (heroImg && heroWrap) {
+        if (heroStageImgs.length && heroSection) {
           // Entrance Animation
           const heroTl = gsap.timeline({ defaults: { ease: "ease-secondary" } });
           heroTl
             .fromTo(
-              heroImg,
+              heroStageImgs,
               { scale: 1.15, filter: "blur(8px)" },
               { scale: 1.0, filter: "blur(0px)", duration: 1.8 }
             )
@@ -124,18 +125,24 @@ export default function MotionProvider() {
               "-=1.2"
             )
             .fromTo(
+              heroBadges,
+              { y: -20, opacity: 0 },
+              { y: 0, opacity: 1, duration: 0.9, stagger: 0.08 },
+              "-=1.0"
+            )
+            .fromTo(
               scrollCue,
               { yPercent: 100, opacity: 0 },
               { yPercent: 0, opacity: 1, duration: 1.0 },
               "-=0.9"
             );
 
-          // Parallax Scroll Scrub
-          gsap.to(heroImg, {
-            yPercent: 12,
+          // Parallax Scroll Scrub on the active image
+          gsap.to(".hero-stage-img", {
+            yPercent: 10,
             ease: "none",
             scrollTrigger: {
-              trigger: heroWrap,
+              trigger: heroSection,
               start: "top top",
               end: "bottom top",
               scrub: true,
@@ -145,7 +152,7 @@ export default function MotionProvider() {
 
         /* B. SPLIT-TEXT LINE REVEALS (OH Architecture Masked Baseline) */
         const splitTargets = document.querySelectorAll(
-          ".u-text-display, .u-text-h2, .hero-philosophy, .process-display-statement, .testimonial-quote-text, h1:not(.no-split), [data-lines-split]"
+          ".u-text-display, .u-text-h2, .hero-philosophy, .hero-manifesto-statement, .process-display-statement, .testimonial-quote-text, h1:not(.no-split), [data-lines-split]"
         );
 
         splitTargets.forEach((el) => {
@@ -162,7 +169,7 @@ export default function MotionProvider() {
             activeSplits.push(parentSplit, childSplit);
             el.dataset.splitInitialized = "true";
 
-            const isHero = el.closest(".hero-editorial");
+            const isHero = el.closest(".hero-master-section, .hero-editorial");
 
             gsap.from(childSplit.lines, {
               yPercent: 120,

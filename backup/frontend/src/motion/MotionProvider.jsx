@@ -104,11 +104,11 @@ export default function MotionProvider() {
         if (isCleanedUp) return;
 
         /* A. HERO ENTRANCE & PARALLAX SCRUB */
-        const heroStageImgs = document.querySelectorAll(".hero-fullbleed-img, .hero-stage-img, .hero-media-wrap img");
-        const heroSection = document.querySelector(".hero-fullbleed-wrap, .hero-master-section, .hero-editorial");
-        const telemetryBar = document.querySelector(".hero-telemetry-pill-strip, .hero-master-telemetry-bar, .hero-telemetry-bar");
-        const heroBadges = document.querySelectorAll(".hero-corner-tag, .hero-stage-badge, .hero-commission-tabs, .hero-layer-toggle-btn");
-        const scrollCue = document.querySelector(".hero-scroll-prompt, .hero-scroll-down-cue, .hero-scroll-cue");
+        const heroStageImgs = document.querySelectorAll(".hero-scrubber-img, .hero-fullbleed-img, .hero-stage-img, .hero-media-wrap img");
+        const heroSection = document.querySelector(".hero-scrubber-stage, .hero-fullbleed-wrap, .hero-master-section, .hero-editorial");
+        const telemetryBar = document.querySelector(".hero-hud-bottom, .hero-telemetry-pill-strip, .hero-master-telemetry-bar, .hero-telemetry-bar");
+        const heroBadges = document.querySelectorAll(".hero-hud-pill, .hero-hud-coords, .hero-corner-tag, .hero-stage-badge, .hero-commission-tabs, .hero-layer-toggle-btn");
+        const scrollCue = document.querySelector(".hero-scroll-cue-link, .hero-scroll-prompt, .hero-scroll-down-cue, .hero-scroll-cue");
 
         if (heroStageImgs.length && heroSection) {
           // Entrance Animation
@@ -158,7 +158,7 @@ export default function MotionProvider() {
             activeSplits.push(parentSplit, childSplit);
             el.dataset.splitInitialized = "true";
 
-            const isHero = el.closest(".hero-fullbleed-wrap, .hero-master-section, .hero-editorial");
+            const isHero = el.closest(".hero-scrubber-stage, .hero-fullbleed-wrap, .hero-master-section, .hero-editorial");
 
             gsap.from(childSplit.lines, {
               yPercent: 120,

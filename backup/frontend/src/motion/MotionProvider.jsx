@@ -30,11 +30,11 @@ export default function MotionProvider() {
      -------------------------------------------------------------------------- */
   useEffect(() => {
     const lenis = new Lenis({
-      lerp: 0.075,
+      lerp: 0.055,
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
-      wheelMultiplier: 1.0,
+      wheelMultiplier: 0.92,
       touchMultiplier: 1.2,
       infinite: false,
       autoResize: true,
@@ -111,6 +111,8 @@ export default function MotionProvider() {
         /* A. HERO ENTRANCE & PARALLAX SCRUB */
         const heroStageImgs = document.querySelectorAll(".hero-provocative-img, .hero-minimal-img, .hero-scrubber-img, .hero-fullbleed-img, .hero-stage-img, .hero-media-wrap img");
         const heroSection = document.querySelector(".hero-provocative-stage, .hero-minimal-stage, .hero-scrubber-stage, .hero-fullbleed-wrap, .hero-master-section, .hero-editorial");
+        const heroCanvas = document.querySelector(".hero-provocative-canvas, .hero-media-wrap");
+        const heroContent = document.querySelector(".hero-provocative-content, .hero-editorial-content");
         const telemetryBar = document.querySelector(".hero-provocative-baseline, .hero-minimal-baseline, .hero-hud-bottom, .hero-telemetry-pill-strip, .hero-master-telemetry-bar, .hero-telemetry-bar");
         const heroBadges = document.querySelectorAll(".hero-baseline-numbers, .hero-minimal-numbers, .hero-hud-pill, .hero-hud-coords, .hero-corner-tag, .hero-stage-badge, .hero-commission-tabs, .hero-layer-toggle-btn");
         const scrollCue = document.querySelector(".hero-minimal-scroll, .hero-scroll-cue-link, .hero-scroll-prompt, .hero-scroll-down-cue, .hero-scroll-cue");
@@ -142,6 +144,49 @@ export default function MotionProvider() {
               { yPercent: 0, opacity: 1, duration: 1.0 },
               "-=0.9"
             );
+
+          // Continuous Hero Parallax Depth Scrub
+          if (heroCanvas) {
+            gsap.to(heroCanvas, {
+              yPercent: 22,
+              scale: 1.06,
+              ease: "none",
+              scrollTrigger: {
+                trigger: heroSection,
+                start: "top top",
+                end: "bottom top",
+                scrub: 0.8,
+              },
+            });
+          }
+
+          if (heroContent) {
+            gsap.to(heroContent, {
+              y: -70,
+              opacity: 0.25,
+              ease: "none",
+              scrollTrigger: {
+                trigger: heroSection,
+                start: "top top",
+                end: "85% top",
+                scrub: 0.8,
+              },
+            });
+          }
+
+          if (telemetryBar) {
+            gsap.to(telemetryBar, {
+              y: 35,
+              opacity: 0,
+              ease: "none",
+              scrollTrigger: {
+                trigger: heroSection,
+                start: "top top",
+                end: "65% top",
+                scrub: 0.8,
+              },
+            });
+          }
         }
 
         /* B. SPLIT-TEXT LINE REVEALS (OH Architecture Masked Baseline) */
@@ -289,6 +334,104 @@ export default function MotionProvider() {
               yTo(0);
             });
           });
+        }
+
+        /* G. DIMENSIONAL ARCHITECTURAL PARALLAX SCROLLING */
+        // 1. Works Bento Grid Differential Column Float
+        const offsetCards = document.querySelectorAll(".works-card.offset-top");
+        offsetCards.forEach((card) => {
+          gsap.fromTo(
+            card,
+            { y: 35 },
+            {
+              y: -35,
+              ease: "none",
+              scrollTrigger: {
+                trigger: card,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 0.85,
+              },
+            }
+          );
+        });
+
+        const standardCards = document.querySelectorAll(".works-card:not(.offset-top)");
+        standardCards.forEach((card) => {
+          gsap.fromTo(
+            card,
+            { y: -18 },
+            {
+              y: 18,
+              ease: "none",
+              scrollTrigger: {
+                trigger: card,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 0.85,
+              },
+            }
+          );
+        });
+
+        // 2. Studio Inset Photograph Window Parallax
+        const studioWrap = document.querySelector(".studio-inset-image-wrap");
+        const studioImg = studioWrap?.querySelector("img");
+        if (studioWrap && studioImg) {
+          gsap.fromTo(
+            studioImg,
+            { yPercent: -8 },
+            {
+              yPercent: 8,
+              ease: "none",
+              scrollTrigger: {
+                trigger: studioWrap,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 0.8,
+              },
+            }
+          );
+        }
+
+        // 3. Testimonial Blockquote Elevation Float
+        const testimonialQuote = document.querySelector(".testimonial-quote-text");
+        const testimonialSec = document.querySelector(".testimonial-editorial-section");
+        if (testimonialQuote && testimonialSec) {
+          gsap.fromTo(
+            testimonialQuote,
+            { y: 25 },
+            {
+              y: -25,
+              ease: "none",
+              scrollTrigger: {
+                trigger: testimonialSec,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 0.85,
+              },
+            }
+          );
+        }
+
+        // 4. Process Detailing Photo Window Parallax
+        const processPhotoWrap = document.querySelector(".process-photo-wrap");
+        const processPhotoImg = processPhotoWrap?.querySelector("img");
+        if (processPhotoWrap && processPhotoImg) {
+          gsap.fromTo(
+            processPhotoImg,
+            { yPercent: -10 },
+            {
+              yPercent: 10,
+              ease: "none",
+              scrollTrigger: {
+                trigger: processPhotoWrap,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 0.8,
+              },
+            }
+          );
         }
 
         ScrollTrigger.refresh();

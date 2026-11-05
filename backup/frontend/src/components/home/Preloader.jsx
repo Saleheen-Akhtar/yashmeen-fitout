@@ -7,63 +7,38 @@ export default function Preloader({ onComplete }) {
   const [progress, setProgress] = useState(0);
 
   const loaderRef = useRef(null);
-  const wordmarkRef = useRef(null);
-  const subtitleRef = useRef(null);
-  const trackRef = useRef(null);
-  const numRef = useRef(null);
+  const contentRef = useRef(null);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     const ctx = gsap.context(() => {
-      // Smooth 0 to 100% progress counter
       const counterState = { val: 0 };
       const tl = gsap.timeline();
 
-      // Entrance animation of minimalist brandmark
+      // Gentle entrance
       gsap.fromTo(
-        wordmarkRef.current,
+        contentRef.current,
         { opacity: 0, y: 12 },
-        { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }
-      );
-      gsap.fromTo(
-        subtitleRef.current,
-        { opacity: 0, y: 8 },
-        { opacity: 1, y: 0, duration: 0.5, delay: 0.15, ease: "power2.out" }
-      );
-      gsap.fromTo(
-        [trackRef.current, numRef.current],
-        { opacity: 0 },
-        { opacity: 1, duration: 0.4, delay: 0.25, ease: "power2.out" }
+        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
       );
 
-      // Progress animation (0 to 100 over 1.0s)
+      // Smooth progress count 0 to 100% in 0.9s
       tl.to(
         counterState,
         {
           val: 100,
-          duration: 1.0,
+          duration: 0.9,
           ease: "power2.inOut",
           onUpdate: () => {
             setProgress(Math.round(counterState.val));
           },
         },
-        0.2
+        0.15
       );
 
-      // Graceful exit transition: smooth fade and subtle lift
-      tl.to(
-        [wordmarkRef.current, subtitleRef.current, trackRef.current, numRef.current],
-        {
-          opacity: 0,
-          y: -10,
-          duration: 0.35,
-          ease: "power2.in",
-        },
-        1.25
-      );
-
+      // Smooth fade out
       tl.to(
         loaderRef.current,
         {
@@ -76,7 +51,7 @@ export default function Preloader({ onComplete }) {
             setIsVisible(false);
           },
         },
-        1.45
+        1.15
       );
     }, loaderRef);
 
@@ -103,40 +78,29 @@ export default function Preloader({ onComplete }) {
     <div
       id="loader"
       ref={loaderRef}
-      className="minimal-loader"
-      aria-label="Yashmeen Atelier Loading"
+      className="site-preloader"
+      aria-label="Yashmeen Future Building Loading"
     >
-      <div className="minimal-loader-center">
-        {/* Minimal Wordmark */}
-        <h1 ref={wordmarkRef} className="minimal-loader-wordmark">
-          YASHMEEN
-        </h1>
-
-        {/* Minimal Subtitle */}
-        <p ref={subtitleRef} className="minimal-loader-sub">
-          DUBAI · FIT-OUT &amp; JOINERY ATELIER
-        </p>
-
-        {/* Minimalist 1px Hairline Progress Bar */}
-        <div ref={trackRef} className="minimal-loader-track">
+      <div ref={contentRef} className="site-preloader-inner">
+        <span className="eyebrow">(YASHMEEN FUTURE BUILDING)</span>
+        <h1 className="preloader-brand">YASHMEEN</h1>
+        <div className="preloader-track">
           <div
-            className="minimal-loader-fill"
+            className="preloader-fill"
             style={{ width: `${progress}%` }}
           />
         </div>
-
-        {/* Minimal Numeric Counter */}
-        <div ref={numRef} className="minimal-loader-num">
-          {progress < 10 ? `0${progress}%` : `${progress}%`}
+        <div className="preloader-meta">
+          <span>DUBAI · 35,000 SQ. FT. ATELIER</span>
+          <span className="preloader-num">{progress < 10 ? `0${progress}%` : `${progress}%`}</span>
         </div>
       </div>
 
-      {/* Top Right Skip Button */}
       <button
         type="button"
-        className="minimal-loader-skip"
+        className="preloader-skip-btn"
         onClick={() => setIsVisible(false)}
-        aria-label="Skip introduction"
+        aria-label="Skip preloader"
       >
         SKIP [ESC]
       </button>

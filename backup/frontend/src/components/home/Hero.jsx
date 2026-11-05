@@ -1,86 +1,220 @@
-import { Link } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import gsap from "gsap";
 
 export default function Hero() {
-  const openEnquiry = (e) => {
-    if (e) e.preventDefault();
-    window.dispatchEvent(
-      new CustomEvent("open-questionnaire", {
-        detail: { initialScope: "Turnkey Architecture & Interior Fit-Out" },
-      })
-    );
+  const [dubaiTime, setDubaiTime] = useState("23:12");
+
+  const heroRef = useRef(null);
+  const leftWordRef = useRef(null);
+  const rightWordWrapRef = useRef(null);
+  const apertureSlotRef = useRef(null);
+  const poweredRef = useRef(null);
+  const buttonRef = useRef(null);
+  const descRef = useRef(null);
+  const topBarRef = useRef(null);
+
+  const hasAnimatedRef = useRef(false);
+
+  // Live Dubai GST clock
+  useEffect(() => {
+    const updateTime = () => {
+      try {
+        const timeStr = new Date().toLocaleTimeString("en-US", {
+          timeZone: "Asia/Dubai",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
+        setDubaiTime(timeStr);
+      } catch (e) {
+        setDubaiTime("23:12");
+      }
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Smooth scroll down to Studio section
+  const scrollToNextSection = () => {
+    const target =
+      document.getElementById("manifesto") ||
+      document.querySelector(".studio-manifesto-section");
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollBy({ top: window.innerHeight, behavior: "smooth" });
+    }
   };
 
+  // GSAP Entrance Timeline: triggers as preloader finishes
+  useEffect(() => {
+    const playHeroEntrance = () => {
+      if (hasAnimatedRef.current) return;
+      hasAnimatedRef.current = true;
+
+      const isMobile = window.innerWidth < 768;
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      if (isMobile) {
+        tl.fromTo(
+          leftWordRef.current,
+          { opacity: 0, y: -40 },
+          { opacity: 1, y: 0, duration: 1.1 },
+          0
+        );
+        tl.fromTo(
+          apertureSlotRef.current,
+          { opacity: 0, scale: 0.9 },
+          { opacity: 1, scale: 1, duration: 1.1 },
+          0.1
+        );
+        tl.fromTo(
+          rightWordWrapRef.current,
+          { opacity: 0, y: 40 },
+          { opacity: 1, y: 0, duration: 1.1 },
+          0.2
+        );
+      } else {
+        tl.fromTo(
+          leftWordRef.current,
+          { opacity: 0, x: -320 },
+          { opacity: 1, x: 0, duration: 1.3 },
+          0
+        );
+        tl.fromTo(
+          apertureSlotRef.current,
+          { opacity: 0, scale: 0.9 },
+          { opacity: 1, scale: 1, duration: 1.25 },
+          0.05
+        );
+        tl.fromTo(
+          rightWordWrapRef.current,
+          { opacity: 0, x: 320 },
+          { opacity: 1, x: 0, duration: 1.3 },
+          0
+        );
+      }
+
+      if (poweredRef.current) {
+        tl.fromTo(
+          poweredRef.current,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.8, ease: "linear" },
+          0.35
+        );
+      }
+
+      if (buttonRef.current) {
+        tl.fromTo(
+          buttonRef.current,
+          { opacity: 0, y: 22 },
+          { opacity: 1, y: 0, duration: 0.85, ease: "power2.out" },
+          0.4
+        );
+      }
+
+      if (descRef.current) {
+        tl.fromTo(
+          descRef.current,
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.9, ease: "linear" },
+          0.5
+        );
+      }
+    };
+
+    window.addEventListener("preloader-complete", playHeroEntrance);
+
+    // Fallback: if preloader was already dismissed or skipped before listener
+    const timer = setTimeout(() => {
+      playHeroEntrance();
+    }, 1100);
+
+    return () => {
+      window.removeEventListener("preloader-complete", playHeroEntrance);
+      clearTimeout(timer);
+    };
+  }, []);
+
   return (
-    <section className="hero-editorial-section wrap" id="hero" aria-label="Hero Section">
-      {/* 1. Eyebrow Row & Monumental Display Title */}
-      <div className="hero-headline-block">
-        <div className="hero-eyebrow-row">
-          <span className="eyebrow">(OUR ATELIER · DUBAI)</span>
-          <span className="hero-facility-badge">EST. 35,000 SQ. FT. AL QUOZ BENCH</span>
+    <section
+      ref={heroRef}
+      id="hero"
+      className="colonia-hero-section"
+      aria-label="Yashmeen Fit-Out Atelier"
+    >
+      {/* 1. Top Telemetry Bar */}
+      <header ref={topBarRef} className="hero-top-telemetry">
+        <div className="hero-telemetry-left">
+          <span className="hero-pulse-dot" aria-hidden="true" />
+          <span className="hero-brand-name">YASHMEEN ATELIER</span>
+          <span className="hero-sep">/</span>
+          <span className="hero-time">{dubaiTime} GST</span>
+          <span className="hero-coords">25.2048 N, 55.2708 E</span>
         </div>
-        <h1 className="u-text-display">
-          TURNKEY FIT-OUT
+
+        <div className="hero-telemetry-right">
+          <span className="hero-lang-tag">[EN / AR]</span>
+          <button
+            type="button"
+            className="hero-skip-pill"
+            onClick={scrollToNextSection}
+            aria-label="Skip to studio section"
+          >
+            SKIP [ESC]
+          </button>
+        </div>
+      </header>
+
+      {/* 2. Main Monolithic Composition (Exact Replica of Reference) */}
+      <div className="hero-monolith-stage">
+        <div className="hero-title-row">
+          {/* Left word: YASHMEEN as a single intact word */}
+          <div ref={leftWordRef} className="hero-word hero-word-left">
+            <span>YASHMEEN</span>
+          </div>
+
+          {/* Center Aperture Window */}
+          <div ref={apertureSlotRef} className="hero-aperture-slot">
+            <div className="hero-aperture-frame">
+              <img
+                src="/static/hero.jpg"
+                alt="Yashmeen Luxury Turnkey Fit-Out Atelier"
+                className="hero-aperture-img"
+              />
+            </div>
+          </div>
+
+          {/* Right word: FIT-OUT with badge above */}
+          <div ref={rightWordWrapRef} className="hero-word hero-word-right-wrap">
+            <div ref={poweredRef} className="hero-powered-badge">
+              [EST. DUBAI • <b>35,000 SQ. FT. ATELIER</b>]
+            </div>
+            <span className="hero-word-right">FIT-OUT</span>
+          </div>
+        </div>
+
+        {/* 3. Tactile Black Pill Button with sliding target circle */}
+        <button
+          ref={buttonRef}
+          type="button"
+          className="button-with-circle"
+          onClick={scrollToNextSection}
+          aria-label="Discover Yashmeen Fit-Out Atelier"
+        >
+          <span>Discover</span>
+          <div className="button-circle-w" aria-hidden="true">
+            <div className="button-circle" />
+          </div>
+        </button>
+
+        {/* 4. Literary Serif Description */}
+        <p ref={descRef} className="hero-literary-desc">
+          Yashmeen is more than just spaces. Activate vision
           <br />
-          &amp; BESPOKE JOINERY
-        </h1>
-      </div>
-
-      {/* 2. Centered Inset Architectural Photograph (Matching Studio Section) */}
-      <div className="hero-inset-image-wrap">
-        <img
-          src="/static/hero.jpg"
-          alt="Bespoke architectural joinery and turnkey fit-out in Dubai"
-          loading="eager"
-        />
-        <div className="hero-caption-bar">
-          <span className="hero-caption-left">
-            01 / AL QUOZ MANUFACTURING ATELIER · 35,000 SQ. FT. IN-HOUSE JOINERY
-          </span>
-          <span className="hero-caption-coords">25.2048 N, 55.2708 E</span>
-        </div>
-      </div>
-
-      {/* 3. 2-Column Editorial Narrative Grid (Identical to Studio Section) */}
-      <div className="hero-narrative-grid">
-        <div>
-          <p className="u-text-lead">
-            <strong>Yashmeen Future Building</strong> delivers complete turnkey architectural fit-out
-            and precision joinery for luxury residential villas, commercial headquarters, and hospitality
-            commissions across Dubai.
-          </p>
-        </div>
-
-        <div>
-          <p>
-            Operating an in-house 35,000 sq.ft Al Quoz manufacturing atelier, we unite design,
-            structural millwork, MEP engineering, and Dubai authority approvals under one accountable
-            contract. Zero sub-contractor risk, guaranteed delivery schedules, and snag-free execution.
-          </p>
-
-          {/* Action Button Row */}
-          <div className="hero-actions-row">
-            <a href="#works" className="btn-pill btn-pill-dark">
-              <span>EXPLORE COMMISSIONS</span>
-              <span className="g-circle" aria-hidden="true" />
-            </a>
-            <button
-              type="button"
-              className="btn-pill btn-pill-light"
-              onClick={openEnquiry}
-            >
-              <span>INQUIRE [RFQ]</span>
-            </button>
-          </div>
-
-          {/* Trust Authority Baseline */}
-          <div className="hero-trust-row">
-            <span className="hero-trust-item">150+ COMPLETED COMMISSIONS</span>
-            <span className="hero-trust-sep">·</span>
-            <span className="hero-trust-item">DM &amp; CIVIL DEFENCE APPROVED</span>
-            <span className="hero-trust-sep">·</span>
-            <span className="hero-trust-item">ZERO SUB-CONTRACTOR RISK</span>
-          </div>
-        </div>
+          for the full experience.
+        </p>
       </div>
     </section>
   );

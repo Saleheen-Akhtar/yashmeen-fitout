@@ -90,7 +90,7 @@ export default function Preloader({ onComplete }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Set up 120fps hardware-accelerated mouse tracking using gsap.quickTo
+  // Set up 120fps hardware-accelerated mouse tracking and mobile gyro
   useEffect(() => {
     if (!apertureCardRef.current) return;
 
@@ -117,8 +117,24 @@ export default function Preloader({ onComplete }) {
       }
     };
 
+    const handleOrientation = (e) => {
+      if (isFinishedRef.current || !xQuickTo.current || !yQuickTo.current) return;
+      const gamma = e.gamma || 0;
+      const beta = e.beta || 0;
+      const clampedGamma = Math.max(-25, Math.min(25, gamma));
+      const clampedBeta = Math.max(-25, Math.min(25, beta - 45));
+      xQuickTo.current((clampedGamma / 25) * 12);
+      yQuickTo.current(-(clampedBeta / 25) * 12);
+    };
+
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener("deviceorientation", handleOrientation, { passive: true });
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("deviceorientation", handleOrientation);
+    };
   }, [replayKey]);
 
   // Expose replay for DevTools or live demonstration
@@ -149,6 +165,8 @@ export default function Preloader({ onComplete }) {
       if (isFinishedRef.current) return;
       isFinishedRef.current = true;
 
+      const isMobile = window.innerWidth <= 768;
+
       const exitTl = gsap.timeline({
         onComplete: () => {
           document.body.style.overflow = originalOverflow || "";
@@ -157,30 +175,61 @@ export default function Preloader({ onComplete }) {
         },
       });
 
-      // 1. Split words slide gently outward and dissolve
-      if (logoLeftRef.current && logoRightRef.current) {
-        exitTl.to(
-          logoLeftRef.current,
-          {
-            x: -50,
-            opacity: 0,
-            filter: "blur(8px)",
-            duration: 0.65,
-            ease: "power3.inOut",
-          },
-          0
-        );
-        exitTl.to(
-          logoRightRef.current,
-          {
-            x: 50,
-            opacity: 0,
-            filter: "blur(8px)",
-            duration: 0.65,
-            ease: "power3.inOut",
-          },
-          0
-        );
+      // 1. Split words slide outward and dissolve
+      if (isMobile) {
+        if (logoLeftRef.current) {
+          exitTl.to(
+            logoLeftRef.current,
+            {
+              y: -30,
+              opacity: 0,
+              filter: "blur(6px)",
+              duration: 0.65,
+              ease: "power3.inOut",
+            },
+            0
+          );
+        }
+        if (logoRightRef.current) {
+          exitTl.to(
+            logoRightRef.current,
+            {
+              y: 30,
+              opacity: 0,
+              filter: "blur(6px)",
+              duration: 0.65,
+              ease: "power3.inOut",
+            },
+            0
+          );
+        }
+      } else {
+        if (logoLeftRef.current) {
+          exitTl.to(
+            logoLeftRef.current,
+            {
+              x: -50,
+              opacity: 0,
+              filter: "blur(8px)",
+              duration: 0.65,
+              ease: "power3.inOut",
+            },
+            0
+          );
+        }
+        if (logoRightRef.current) {
+          exitTl.to(
+            logoRightRef.current,
+            {
+              x: 50,
+              opacity: 0,
+              filter: "blur(8px)",
+              duration: 0.65,
+              ease: "power3.inOut",
+            },
+            0
+          );
+        }
       }
 
       // 2. Central aperture blooms slightly and dissolves
@@ -234,12 +283,13 @@ export default function Preloader({ onComplete }) {
       }
     };
 
-    // Calculate responsive slot expansion width & margins
-    const isMobile = window.innerWidth < 768;
-    const targetSlotWidth = isMobile
-      ? Math.min(160, Math.floor(window.innerWidth * 0.32))
-      : Math.min(240, Math.max(170, Math.floor(window.innerWidth * 0.175)));
-    const targetMargin = isMobile ? 12 : 32;
+    // Calculate responsive slot expansion dimensions
+    const isMobile = window.innerWidth <= 768;
+    const targetCardWidth = Math.min(240, Math.max(170, Math.floor(window.innerWidth * 0.175)));
+    const targetCardHeight = apertureCardRef.current && apertureCardRef.current.offsetHeight > 0
+      ? apertureCardRef.current.offsetHeight
+      : 270;
+    const targetMargin = isMobile ? 20 : 32;
 
     const ctx = gsap.context(() => {
       // 1. Reset all elements to clean starting states
@@ -248,15 +298,27 @@ export default function Preloader({ onComplete }) {
       gsap.set(bottomBarRef.current, { opacity: 1, y: 0 });
       gsap.set([logoLeftRef.current, logoRightRef.current], {
         x: 0,
+        y: 0,
         opacity: 1,
         filter: "blur(0px)",
       });
-      gsap.set(apertureSlotRef.current, {
-        width: 0,
-        marginLeft: 0,
-        marginRight: 0,
-        opacity: 0,
-      });
+
+      if (isMobile) {
+        gsap.set(apertureSlotRef.current, {
+          height: 0,
+          marginTop: 0,
+          marginBottom: 0,
+          opacity: 0,
+        });
+      } else {
+        gsap.set(apertureSlotRef.current, {
+          width: 0,
+          marginLeft: 0,
+          marginRight: 0,
+          opacity: 0,
+        });
+      }
+
       if (apertureCardRef.current) {
         gsap.set(apertureCardRef.current, {
           scale: 1,
@@ -284,26 +346,40 @@ export default function Preloader({ onComplete }) {
       const masterTl = gsap.timeline();
       timelineRef.current = masterTl;
 
-      // Small introductory rest
       masterTl.to({}, { duration: 0.25 });
 
-      // Phase 1: Smoothly expand aperture slot between YASH and MEEN
-      // Flexbox naturally glides YASH left and MEEN right with guaranteed 32px negative space
-      masterTl.to(
-        apertureSlotRef.current,
-        {
-          width: targetSlotWidth,
-          marginLeft: targetMargin,
-          marginRight: targetMargin,
-          opacity: 1,
-          duration: 1.05,
-          ease: "power3.inOut",
-        },
-        0.25
-      );
+      // Phase 1: Expand aperture slot
+      // Mobile: expands vertically between YASH (top) and MEEN (bottom)
+      // Desktop: expands horizontally between YASH (left) and MEEN (right)
+      if (isMobile) {
+        masterTl.to(
+          apertureSlotRef.current,
+          {
+            height: targetCardHeight,
+            marginTop: targetMargin,
+            marginBottom: targetMargin,
+            opacity: 1,
+            duration: 1.05,
+            ease: "power3.inOut",
+          },
+          0.25
+        );
+      } else {
+        masterTl.to(
+          apertureSlotRef.current,
+          {
+            width: targetCardWidth,
+            marginLeft: targetMargin,
+            marginRight: targetMargin,
+            opacity: 1,
+            duration: 1.05,
+            ease: "power3.inOut",
+          },
+          0.25
+        );
+      }
 
       // Phase 2: Counter progression and hardware-accelerated card flipping
-      // Using direct DOM manipulation (0 React re-renders) for 60fps/120fps locked motion
       const counterState = { p: 0 };
       let lastCardIndex = 0;
 
@@ -430,7 +506,7 @@ export default function Preloader({ onComplete }) {
       {/* 2. Center Stage: Split Monolith Typography & Expanding Zero-Overlap Aperture */}
       <div ref={stageRef} className="preloader-center-stage">
         <div className="preloader-monolith-row">
-          {/* Left Half: YASH */}
+          {/* Top/Left Half: YASH */}
           <div ref={logoLeftRef} className="preloader-logo-half preloader-logo-left">
             YASH
           </div>
@@ -462,7 +538,7 @@ export default function Preloader({ onComplete }) {
             </div>
           </div>
 
-          {/* Right Half: MEEN */}
+          {/* Bottom/Right Half: MEEN */}
           <div ref={logoRightRef} className="preloader-logo-half preloader-logo-right">
             MEEN
           </div>

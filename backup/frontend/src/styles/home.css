@@ -17,7 +17,9 @@
 
 /* Central Monolithic Spine Container */
 .glide-hero-container {
+  width: 100%;
   max-width: 1200px;
+  min-width: 0;
   margin: 0 auto;
   padding: 0 1.5rem;
   display: flex;
@@ -25,6 +27,7 @@
   align-items: center;
   text-align: center;
   gap: 1.75rem;
+  box-sizing: border-box;
 }
 
 /* 1. Top Whisper Announcement Pill Badge */
@@ -122,6 +125,8 @@
 .glide-prompt-card {
   width: 100%;
   max-width: 660px;
+  min-width: 0;
+  box-sizing: border-box;
   margin: 0.75rem auto 0;
   background: rgba(18, 18, 17, 0.82);
   border-radius: 28px;
@@ -149,6 +154,9 @@
 }
 
 .glide-prompt-top {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 18px 22px 14px;
   display: flex;
   flex-direction: column;
@@ -297,6 +305,8 @@
 .glide-stage-wrap {
   width: 100%;
   max-width: 1360px;
+  min-width: 0;
+  box-sizing: border-box;
   margin: clamp(2.5rem, 5vw, 4.5rem) auto 0;
   position: relative;
   z-index: 10;
@@ -313,6 +323,8 @@
   align-items: center;
   width: 100%;
   max-width: 1100px;
+  min-width: 0;
+  box-sizing: border-box;
   margin-bottom: 1.25rem;
   flex-wrap: wrap;
   gap: 14px;
@@ -691,22 +703,194 @@
 
 @media (max-width: 768px) {
   .glide-hero-section.is-dark {
-    padding-top: 5.5rem;
+    padding-top: 5rem;
+    padding-bottom: 3.5rem;
   }
-  .glide-stage-viewport {
-    aspect-ratio: 4 / 3;
-    border-radius: 16px;
+
+  .glide-hero-headline {
+    font-size: clamp(2.1rem, 9.2vw, 3.8rem);
+    line-height: 1.05;
+    margin-bottom: 1.25rem;
   }
+
+  .glide-hero-sub {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    margin-bottom: 2rem;
+  }
+
+  /* Mobile-First Prompt Terminal */
   .glide-prompt-card {
-    border-radius: 20px;
+    border-radius: 18px;
   }
-  .glide-stage-capsule {
-    flex-direction: column;
-    align-items: flex-start;
+
+  .glide-prompt-top {
+    padding: 14px 16px 10px;
+    gap: 10px;
   }
+
+  .glide-prompt-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    width: 100%;
+  }
+  .glide-prompt-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .glide-prompt-chip {
+    flex-shrink: 0;
+    font-size: 0.6875rem;
+    padding: 4px 10px;
+  }
+
+  .glide-prompt-bottom {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .glide-prompt-build-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 11px 0;
+  }
+
+  .glide-prompt-upload-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Mobile-First Stage Showcase Foundation */
+  .glide-stage-wrap {
+    padding: 0 1rem;
+    margin-top: 2.25rem;
+  }
+
   .glide-stage-header-row {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .glide-stage-tabs-bar {
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 1.25rem;
+    padding-bottom: 4px;
+  }
+  .glide-stage-tabs-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .glide-stage-tab {
+    flex-shrink: 0;
+  }
+
+  .glide-stage-viewport {
+    aspect-ratio: 4 / 3.4;
+    border-radius: 16px;
+  }
+
+  .glide-stage-capsule {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .glide-capsule-meta {
+    gap: 6px;
+    font-size: 0.75rem;
+  }
+
+  .glide-capsule-location {
+    font-size: 0.75rem;
+  }
+
+  .glide-capsule-scope {
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .glide-capsule-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 14px;
+  }
+
+  /* Mobile-First Technical CAD Ledger Cards */
+  .glide-cad-ledger-header {
+    display: none;
+  }
+
+  .glide-cad-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 14px 16px;
+    gap: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glide-cad-cell.is-num {
+    font-size: 0.6875rem;
+    color: rgba(255, 255, 255, 0.45);
+    letter-spacing: 0.08em;
+  }
+
+  .glide-cad-cell.is-project {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #ffffff;
+  }
+
+  .glide-cad-cell.is-location {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .glide-cad-cell.is-permits,
+  .glide-cad-cell.is-bench {
+    display: block;
+    font-size: 0.6875rem;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .glide-cad-cell.is-action {
+    width: 100%;
+    margin-top: 6px;
+  }
+
+  .glide-cad-inspect-btn {
+    width: 100%;
+    padding: 8px 0;
+    text-align: center;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Trust baseline */
+  .glide-trust-logos {
+    gap: 8px 12px;
+  }
+  .glide-trust-item {
+    font-size: 0.6875rem;
   }
 }
 

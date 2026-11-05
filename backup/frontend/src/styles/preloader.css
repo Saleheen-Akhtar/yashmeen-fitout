@@ -1,6 +1,6 @@
 /* Yashmeen Architectural Monolith Preloader
    Inspired by monolith.nyc
-   Zero-overlap Flex Aperture, 60fps GPU Hardware Motion, and Seamless Hero Dissolve. */
+   Mobile-First Architecture, Zero-Overlap Flex Aperture, 60fps GPU Hardware Motion, and Seamless Hero Dissolve. */
 
 .monolith-preloader {
   position: fixed;
@@ -13,7 +13,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(1.5rem, 3.5vw, 3rem);
+  padding: clamp(1.25rem, 3.5vw, 3rem);
   user-select: none;
   overflow: hidden;
   will-change: opacity;
@@ -148,7 +148,7 @@
   justify-content: center;
   flex-shrink: 0;
   perspective: 1000px;
-  will-change: width, margin, opacity;
+  will-change: width, height, margin, opacity;
 }
 
 /* 3D Perspective Card Container */
@@ -311,39 +311,77 @@
   will-change: width;
 }
 
-/* Mobile & Tablet Optimizations */
-@media (max-width: 900px) {
+/* ==========================================================================
+   MOBILE-FIRST ADAPTIVE ARCHITECTURE (<= 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .monolith-preloader {
+    padding: 1.25rem 1rem;
+  }
+
   .preloader-center-stage {
     padding: 0 1rem;
   }
+
+  /* Vertical Monolith Stack on Mobile */
+  .preloader-monolith-row {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
   .preloader-logo-half {
-    font-size: clamp(2.2rem, 9.5vw, 4.5rem);
+    font-size: clamp(2.2rem, 11vw, 4rem);
+    text-align: center;
+    line-height: 1;
+    letter-spacing: -0.03em;
   }
+
+  .preloader-logo-left,
+  .preloader-logo-right {
+    text-align: center;
+    padding: 0;
+  }
+
+  .preloader-aperture-slot {
+    width: clamp(160px, 48vw, 210px);
+    height: 0px;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+
   .preloader-aperture-card {
-    width: clamp(130px, 26vw, 180px);
-    border-radius: 10px;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    border-radius: 12px;
   }
+
   .preloader-card-badge {
-    padding: 4px 6px;
-    bottom: 6px;
-    left: 6px;
-    right: 6px;
+    padding: 5px 8px;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
   }
+
   .preloader-card-caption {
     font-size: 0.5625rem;
   }
-}
 
-@media (max-width: 600px) {
   .preloader-top-bar {
     font-size: 0.6875rem;
   }
+
   .preloader-coords-val {
     display: none;
   }
+
   .preloader-status-text {
     font-size: 0.6875rem;
   }
+
   .preloader-counter-wrap {
     min-width: 110px;
   }

@@ -196,6 +196,32 @@
   }
 }
 
+@media (max-width: 768px) {
+  .site-header {
+    height: 64px;
+  }
+  .header-btn-enquire {
+    display: none;
+  }
+  .site-brand-text {
+    font-size: 1.05rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-brand-city {
+    display: none;
+  }
+  .site-header-inner {
+    padding: 0 16px;
+  }
+  .header-btn-menu {
+    height: 36px;
+    padding: 0 14px;
+    font-size: 0.6875rem;
+  }
+}
+
 /* ==========================================================================
    2. FULLSCREEN CURTAIN OBSIDIAN MENU OVERLAY
    ========================================================================== */

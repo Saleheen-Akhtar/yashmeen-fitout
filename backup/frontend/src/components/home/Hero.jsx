@@ -87,7 +87,9 @@ export default function Hero() {
 
   const heroRef = useRef(null);
   const stageViewportRef = useRef(null);
+  const tabsBarRef = useRef(null);
   const slidesRef = useRef([]);
+  const tabRefs = useRef([]);
   const progressTimerRef = useRef(null);
   const placeholderTimerRef = useRef(null);
 
@@ -100,6 +102,16 @@ export default function Hero() {
     }
     setActiveIdx(nextIdx);
   }, []);
+
+  // Auto-scroll active stage tab into center inside its horizontal bar ONLY
+  useEffect(() => {
+    const bar = tabsBarRef.current;
+    const tab = tabRefs.current[activeIdx];
+    if (bar && tab) {
+      const scrollTarget = tab.offsetLeft - (bar.clientWidth / 2) + (tab.clientWidth / 2);
+      bar.scrollTo({ left: scrollTarget, behavior: "smooth" });
+    }
+  }, [activeIdx]);
 
   // Cycle placeholder text gently
   useEffect(() => {
@@ -352,10 +364,11 @@ export default function Hero() {
           </div>
 
           {/* Architectural Process Stage OS Tabs */}
-          <div className="glide-stage-tabs-bar" role="tablist" aria-label="Craftsmanship lifecycle stages">
+          <div ref={tabsBarRef} className="glide-stage-tabs-bar" role="tablist" aria-label="Craftsmanship lifecycle stages">
             {STAGES.map((stage, idx) => (
               <button
                 key={stage.id}
+                ref={(el) => (tabRefs.current[idx] = el)}
                 type="button"
                 role="tab"
                 aria-selected={idx === activeIdx}

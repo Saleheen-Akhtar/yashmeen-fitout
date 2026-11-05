@@ -62,6 +62,9 @@ export default function Hero() {
 
   const stageRef = useRef(null);
   const cursorRef = useRef(null);
+  const xToRef = useRef(null);
+  const yToRef = useRef(null);
+  const stageRectRef = useRef(null);
   const slidesRef = useRef([]);
   const headlineRef = useRef(null);
   const baselineRef = useRef(null);
@@ -85,27 +88,27 @@ export default function Hero() {
     if (!currentSlide) return;
     const currentImg = currentSlide.querySelector("img");
 
-    // Fade in active slide
+    // Fade in active slide and ensure visibility
     gsap.to(currentSlide, {
-      opacity: 1,
-      duration: 0.9,
+      autoAlpha: 1,
+      duration: 0.8,
       ease: "power2.out",
     });
 
     if (currentImg) {
       gsap.fromTo(
         currentImg,
-        { scale: 1.06, filter: "blur(8px)" },
-        { scale: 1.0, filter: "blur(0px)", duration: 1.4, ease: "cubic-bezier(0.16, 1, 0.35, 1)" }
+        { scale: 1.04 },
+        { scale: 1.0, duration: 1.2, ease: "power2.out" }
       );
     }
 
-    // Fade out sibling slides
+    // Fade out and cull sibling slides to liberate GPU memory
     slidesRef.current.forEach((slide, idx) => {
       if (slide && idx !== activeIdx) {
         gsap.to(slide, {
-          opacity: 0,
-          duration: 0.8,
+          autoAlpha: 0,
+          duration: 0.6,
           ease: "power2.out",
         });
       }
@@ -116,7 +119,7 @@ export default function Hero() {
       gsap.fromTo(
         baselineRef.current,
         { opacity: 0.4 },
-        { opacity: 1, duration: 0.6, ease: "power2.out" }
+        { opacity: 1, duration: 0.5, ease: "power2.out" }
       );
     }
   }, [activeIdx]);
@@ -144,34 +147,47 @@ export default function Hero() {
       );
     }
 
-    // Initial cursor placement in floating center
-    if (stageRef.current && cursorRef.current) {
+    // High-performance quickTo cursor puck initialization
+    if (cursorRef.current && stageRef.current) {
+      gsap.set(cursorRef.current, { xPercent: -50, yPercent: -50 });
+      xToRef.current = gsap.quickTo(cursorRef.current, "x", { duration: 0.18, ease: "power2.out" });
+      yToRef.current = gsap.quickTo(cursorRef.current, "y", { duration: 0.18, ease: "power2.out" });
+
       const rect = stageRef.current.getBoundingClientRect();
+      stageRectRef.current = rect;
       gsap.set(cursorRef.current, {
         x: rect.width * 0.52,
         y: rect.height * 0.48,
       });
     }
+
+    const handleResize = () => {
+      if (stageRef.current) {
+        stageRectRef.current = stageRef.current.getBoundingClientRect();
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Interactive mousemove cursor puck
+  // Frictionless, zero-layout-thrash mousemove cursor puck
   const handleMouseMove = (e) => {
-    if (!stageRef.current) return;
-    const rect = stageRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    if (cursorRef.current) {
-      gsap.to(cursorRef.current, {
-        x,
-        y,
-        duration: 0.28,
-        ease: "power2.out",
-      });
+    if (!xToRef.current || !yToRef.current) return;
+    if (!stageRectRef.current && stageRef.current) {
+      stageRectRef.current = stageRef.current.getBoundingClientRect();
     }
+    const rect = stageRectRef.current;
+    if (!rect) return;
+    xToRef.current(e.clientX - rect.left);
+    yToRef.current(e.clientY - rect.top);
   };
 
-  const handleMouseEnter = () => setCursorPos((p) => ({ ...p, visible: true }));
+  const handleMouseEnter = () => {
+    if (stageRef.current) {
+      stageRectRef.current = stageRef.current.getBoundingClientRect();
+    }
+    setCursorPos((p) => ({ ...p, visible: true }));
+  };
   const handleMouseLeave = () => {
     setCursorPos((p) => ({ ...p, visible: true }));
     setIsPaused(false);

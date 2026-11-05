@@ -118,13 +118,13 @@ export default function MotionProvider() {
         const scrollCue = document.querySelector(".hero-minimal-scroll, .hero-scroll-cue-link, .hero-scroll-prompt, .hero-scroll-down-cue, .hero-scroll-cue");
 
         if (heroStageImgs.length && heroSection) {
-          // Entrance Animation
+          // Entrance Animation with GPU-accelerated transforms (zero filter:blur overhead)
           const heroTl = gsap.timeline({ defaults: { ease: "ease-secondary" } });
           heroTl
             .fromTo(
               heroStageImgs,
-              { scale: 1.15, filter: "blur(8px)" },
-              { scale: 1.0, filter: "blur(0px)", duration: 1.8 }
+              { scale: 1.05, opacity: 0 },
+              { scale: 1.0, opacity: 1, duration: 1.4 }
             )
             .fromTo(
               telemetryBar,
@@ -145,17 +145,16 @@ export default function MotionProvider() {
               "-=0.9"
             );
 
-          // Continuous Hero Parallax Depth Scrub
+          // Continuous Hero Parallax Depth Scrub (clean translate without scale reflow)
           if (heroCanvas) {
             gsap.to(heroCanvas, {
-              yPercent: 22,
-              scale: 1.06,
+              yPercent: 18,
               ease: "none",
               scrollTrigger: {
                 trigger: heroSection,
                 start: "top top",
                 end: "bottom top",
-                scrub: 0.8,
+                scrub: 0.6,
               },
             });
           }

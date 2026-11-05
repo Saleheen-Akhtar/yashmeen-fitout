@@ -1,7 +1,11 @@
 /* Yashmeen Architectural Monolith Preloader
-   Inspired by coloniazacamil.com + monolith.nyc
-   Unified Brand "YASHMEEN", Business Identifier "FIT-OUT",
-   Expanding Center Aperture Portal, and Zacamil-style Interactive Threshold. */
+   Exact Architectural Replica of coloniazacamil.com
+   - Canvas: Warm limestone gallery canvas (#ebe6e0 / rgb(235, 230, 224))
+   - Monumental Typography: Tall condensed uppercase display gothic ('Bebas Neue')
+   - Center Aperture: Wide horizontal panorama pill (aspect-ratio: 1080 / 220)
+   - Badge: Monospace identifier [35,000 SQ. FT. ATELIER] above FIT-OUT
+   - Tactile Control: Authentic black button with concentric target circle
+   - Editorial Description: High-contrast literary serif ('Cormorant Garamond') */
 
 .monolith-preloader {
   position: fixed;
@@ -9,15 +13,15 @@
   width: 100vw;
   height: 100vh;
   z-index: 9999;
-  background-color: #080807;
-  color: #ffffff;
+  background-color: #ebe6e0;
+  color: #000000;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(1.25rem, 3.5vw, 3rem);
+  padding: clamp(1.25rem, 3.2vw, 2.75rem);
   user-select: none;
   overflow: hidden;
-  will-change: opacity;
+  will-change: opacity, transform;
 }
 
 /* 1. Top Telemetry Row with Live GST Time */
@@ -26,12 +30,14 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  font-family: "Roboto Mono", monospace;
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(0, 0, 0, 0.75);
   will-change: opacity, transform;
+  z-index: 10;
 }
 
 .preloader-brand-label {
@@ -55,42 +61,55 @@
 }
 
 .preloader-brand-text {
-  color: #ffffff;
+  color: #000000;
   font-weight: 600;
 }
 
 .preloader-time-sep {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(0, 0, 0, 0.35);
 }
 
 .preloader-time-val {
-  color: rgba(255, 255, 255, 0.85);
+  color: #000000;
   font-feature-settings: 'tnum' on;
 }
 
 .preloader-coords-val {
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(0, 0, 0, 0.55);
   font-size: 0.6875rem;
+}
+
+.preloader-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.preloader-lang-tag {
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
 }
 
 .preloader-skip-btn {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 9999px;
   padding: 5px 15px;
+  font-family: "Roboto Mono", monospace;
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.75);
+  color: #000000;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 .preloader-skip-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.45);
+  background: #000000;
+  color: #ebe6e0;
+  border-color: #000000;
 }
 
-/* 2. Center Monolith Stage: YASHMEEN [PORTAL] FIT-OUT */
+/* 2. Center Introduction Stage (Exact Replica of Colonia Zacamil) */
 .preloader-center-stage {
   position: absolute;
   top: 50%;
@@ -102,69 +121,99 @@
   justify-content: center;
   width: 100%;
   max-width: 1560px;
-  padding: 0 clamp(1rem, 3vw, 2.5rem);
+  padding: 0 clamp(1rem, 2.5vw, 2.5rem);
   pointer-events: none;
+  z-index: 5;
 }
 
+/* Title Row: YASHMEEN [WIDE HORIZONTAL PANORAMA PILL] FIT-OUT */
 .preloader-monolith-row {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: clamp(20px, 2.8vw, 44px);
   width: 100%;
   pointer-events: auto;
 }
 
-/* Monumental Typography: YASHMEEN on left, FIT-OUT on right */
+/* Monumental Condensed Display Gothic Typography */
 .preloader-logo-half {
-  font-family: var(--font-sans);
-  font-size: clamp(2.2rem, 5.6vw, 6.4rem);
-  font-weight: 700;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
+  font-family: "Bebas Neue", "Heathergreen", sans-serif;
+  font-size: clamp(4rem, 7.8vw, 7.2rem);
+  line-height: 0.9;
+  font-weight: 400;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: #ffffff;
+  color: #000000;
   display: inline-block;
   white-space: nowrap;
   user-select: none;
   flex-shrink: 0;
   will-change: transform, opacity, filter;
-  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
 }
 
 .preloader-logo-left {
   text-align: right;
 }
 
+.preloader-logo-right-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
 .preloader-logo-right {
   text-align: left;
 }
 
-/* Expanding Center Aperture Portal */
+/* Powered/Atelier Badge above right wordmark (Exact replica of [powered by CMS]) */
+.preloader-powered-badge {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 3px;
+  font-family: "Roboto Mono", monospace;
+  font-size: min(11px, 1.3vh);
+  line-height: min(14px, 1.6vh);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.75);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.preloader-powered-badge b {
+  color: #000000;
+  font-weight: 700;
+}
+
+/* Center Horizontal Aperture Slot */
 .preloader-aperture-slot {
-  width: 0px;
-  margin-left: 0px;
-  margin-right: 0px;
+  width: clamp(240px, 32vw, 460px);
+  aspect-ratio: 16 / 5.6;
+  margin-left: 0;
+  margin-right: 0;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  perspective: 1000px;
-  will-change: width, height, margin, opacity;
+  border-radius: 20px;
+  background-color: #121210;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16);
+  position: relative;
+  will-change: transform, opacity, width, height, clip-path;
 }
 
 /* 3D Perspective Card Container */
 .preloader-aperture-card {
-  width: clamp(170px, 17vw, 230px);
-  aspect-ratio: 3 / 4;
-  border-radius: 14px;
-  background-color: #121210;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.12);
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
   overflow: hidden;
   position: relative;
-  flex-shrink: 0;
   transform-style: preserve-3d;
-  will-change: transform, opacity, filter;
+  will-change: transform, opacity;
 }
 
 /* Hardware-Accelerated Image Stack */
@@ -196,6 +245,11 @@
   object-fit: cover;
   object-position: center;
   display: block;
+  transform: scale(1.02);
+  transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.preloader-craft-card:hover .preloader-craft-img {
+  transform: scale(1.06);
 }
 
 .preloader-craft-scrim {
@@ -203,8 +257,8 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(8, 8, 7, 0) 45%,
-    rgba(8, 8, 7, 0.82) 100%
+    rgba(8, 8, 7, 0) 50%,
+    rgba(8, 8, 7, 0.65) 100%
   );
   pointer-events: none;
 }
@@ -213,22 +267,23 @@
 .preloader-card-badge {
   position: absolute;
   bottom: 10px;
-  left: 10px;
-  right: 10px;
-  background: rgba(12, 12, 11, 0.82);
+  left: 12px;
+  right: 12px;
+  background: rgba(18, 18, 16, 0.78);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  padding: 6px 9px;
+  padding: 5px 10px;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   pointer-events: none;
 }
 
 .preloader-card-tag {
-  font-family: var(--font-mono, monospace);
+  font-family: "Roboto Mono", monospace;
   font-size: 0.5625rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -241,7 +296,7 @@
   font-size: 0.625rem;
   font-weight: 500;
   letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -249,62 +304,84 @@
 
 /* Zacamil-Style Interactive Threshold Controls */
 .preloader-threshold-wrap {
-  margin-top: clamp(1.25rem, 2.5vw, 2.25rem);
+  margin-top: clamp(1.5rem, 3.2vh, 2.75rem);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   pointer-events: auto;
   will-change: opacity, transform;
 }
 
+/* Authentic Colonia Zacamil Black Button with Concentric Circle */
 .preloader-enter-btn {
-  background: rgba(24, 24, 22, 0.88);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background-color: #000000;
+  color: #ebe6e0;
+  border: 0;
   border-radius: 9999px;
-  padding: 8px 18px 8px 22px;
+  height: 42px;
+  padding: 0 10px 0 26px;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  color: #ffffff;
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  gap: 14px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.22s var(--ease);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
 }
 .preloader-enter-btn:hover {
-  background: #ffffff;
-  color: #080807;
-  border-color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+  background-color: #141412;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
-.preloader-enter-dot {
-  width: 7px;
-  height: 7px;
+.preloader-btn-circle-w {
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background-color: var(--accent-red, #d30000);
-  transition: transform 0.2s ease;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.preloader-enter-btn:hover .preloader-enter-dot {
-  transform: scale(1.25);
+.preloader-enter-btn:hover .preloader-btn-circle-w {
+  transform: scale(1.1);
 }
 
-.preloader-threshold-sub {
-  font-family: var(--font-sans);
-  font-size: clamp(0.6875rem, 1vw, 0.8125rem);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
-  font-weight: 500;
+.preloader-btn-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #ebe6e0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preloader-btn-circle::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #000000;
+}
+
+/* Literary Editorial Description Subtitle (Exact replica of Reckless Neue description) */
+.preloader-description-text {
+  font-family: "Cormorant Garamond", "Reckless Neue", serif;
+  font-size: clamp(1.2rem, 1.8vw, 1.55rem);
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: #000000;
   text-align: center;
+  max-width: 540px;
   margin: 0;
 }
 
@@ -314,54 +391,54 @@
   justify-content: space-between;
   align-items: flex-end;
   width: 100%;
+  font-family: "Roboto Mono", monospace;
   will-change: opacity, transform;
+  z-index: 10;
 }
 
 .preloader-meta-wrap {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .preloader-meta-label {
-  font-family: var(--font-mono, monospace);
   font-size: 0.6875rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(0, 0, 0, 0.55);
 }
 
 .preloader-status-text {
-  font-family: var(--font-mono, monospace);
   font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #ffffff;
+  color: #000000;
 }
 
 .preloader-counter-wrap {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
-  min-width: 160px;
+  gap: 6px;
+  min-width: 150px;
 }
 
 .preloader-counter-number {
-  font-family: var(--font-sans);
-  font-size: clamp(2.4rem, 4vw, 3.8rem);
-  font-weight: 700;
+  font-family: "Bebas Neue", "Heathergreen", sans-serif;
+  font-size: clamp(2.4rem, 3.8vw, 3.6rem);
+  font-weight: 400;
   line-height: 0.9;
-  letter-spacing: -0.03em;
-  color: #ffffff;
+  letter-spacing: 0.02em;
+  color: #000000;
   font-feature-settings: 'tnum' on;
 }
 
 .preloader-progress-track {
   width: 100%;
   height: 2px;
-  background-color: rgba(255, 255, 255, 0.14);
+  background-color: rgba(0, 0, 0, 0.16);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -369,62 +446,72 @@
 .preloader-progress-fill {
   height: 100%;
   width: 0%;
-  background-color: #ffffff;
+  background-color: #000000;
   border-radius: 2px;
   will-change: width;
 }
 
 /* ==========================================================================
-   MOBILE-FIRST ADAPTIVE ARCHITECTURE (<= 768px)
+   MOBILE-FIRST ADAPTIVE ARCHITECTURE (<= 767px)
+   Matches exact Colonia Zacamil mobile vertical rhythm:
+   YASHMEEN (top) -> 330/150 Panorama Pill -> [DUBAI ATELIER] FIT-OUT -> Button
    ========================================================================== */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .monolith-preloader {
-    padding: 1.25rem 1rem;
+    padding: 1.15rem 1rem;
   }
 
   .preloader-center-stage {
     padding: 0 1rem;
+    width: 100%;
   }
 
-  /* Vertical Monolith Stack on Mobile: YASHMEEN (top) -> [PORTAL] -> FIT-OUT (bottom) */
+  /* Vertical Monolith Stack on Mobile */
   .preloader-monolith-row {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0;
+    gap: 14px;
   }
 
   .preloader-logo-half {
-    font-size: clamp(1.9rem, 9.2vw, 3.4rem);
+    font-size: min(18vw, 76px);
+    line-height: 0.95;
     text-align: center;
-    line-height: 1;
-    letter-spacing: -0.03em;
   }
 
-  .preloader-logo-left,
+  .preloader-logo-left {
+    text-align: center;
+  }
+
+  .preloader-logo-right-wrap {
+    align-items: center;
+    margin-top: 4px;
+  }
+
   .preloader-logo-right {
     text-align: center;
-    padding: 0;
+  }
+
+  .preloader-powered-badge {
+    position: static;
+    font-size: 0.625rem;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    text-align: center;
   }
 
   .preloader-aperture-slot {
-    width: clamp(160px, 48vw, 210px);
-    height: 0px;
-    margin-left: 0;
-    margin-right: 0;
-    margin-top: 0px;
-    margin-bottom: 0px;
-  }
-
-  .preloader-aperture-card {
-    width: 100%;
-    aspect-ratio: 3 / 4;
-    border-radius: 12px;
+    width: min(88vw, 330px);
+    aspect-ratio: 330 / 150;
+    max-width: 330px;
+    border-radius: 14px;
+    flex-basis: auto;
   }
 
   .preloader-card-badge {
-    padding: 5px 8px;
-    bottom: 8px;
+    padding: 4px 8px;
+    bottom: 6px;
     left: 8px;
     right: 8px;
   }
@@ -434,25 +521,44 @@
   }
 
   .preloader-threshold-wrap {
-    margin-top: 1rem;
-    gap: 6px;
+    margin-top: 14px;
+    gap: 8px;
   }
 
   .preloader-enter-btn {
-    padding: 7px 16px 7px 18px;
-    font-size: 0.6875rem;
+    height: 38px;
+    padding: 0 8px 0 20px;
+    font-size: 0.75rem;
+    gap: 10px;
   }
 
-  .preloader-threshold-sub {
-    font-size: 0.6875rem;
-    padding: 0 10px;
+  .preloader-btn-circle-w {
+    width: 22px;
+    height: 22px;
+  }
+
+  .preloader-btn-circle {
+    width: 22px;
+    height: 22px;
+  }
+
+  .preloader-btn-circle::before {
+    width: 6px;
+    height: 6px;
+  }
+
+  .preloader-description-text {
+    font-size: 1.05rem;
+    line-height: 1.25;
+    max-width: 310px;
   }
 
   .preloader-top-bar {
     font-size: 0.6875rem;
   }
 
-  .preloader-coords-val {
+  .preloader-coords-val,
+  .preloader-lang-tag {
     display: none;
   }
 
@@ -461,6 +567,10 @@
   }
 
   .preloader-counter-wrap {
-    min-width: 110px;
+    min-width: 90px;
+  }
+
+  .preloader-counter-number {
+    font-size: 2.2rem;
   }
 }

@@ -50,24 +50,25 @@ const CRAFT_CARDS = [
 export default function Preloader({ onComplete }) {
   const [isVisible, setIsVisible] = useState(true);
   const [replayKey, setReplayKey] = useState(0);
-  const [dubaiTime, setDubaiTime] = useState("18:00");
+  const [dubaiTime, setDubaiTime] = useState("20:00");
 
   const preloaderRef = useRef(null);
   const topBarRef = useRef(null);
   const stageRef = useRef(null);
   const logoLeftRef = useRef(null);
   const logoRightRef = useRef(null);
+  const logoRightWrapRef = useRef(null);
   const apertureSlotRef = useRef(null);
   const apertureCardRef = useRef(null);
   const cardsRef = useRef([]);
+  const thresholdRef = useRef(null);
   const bottomBarRef = useRef(null);
   const percentTextRef = useRef(null);
   const progressFillRef = useRef(null);
   const materialTextRef = useRef(null);
-  const thresholdRef = useRef(null);
-  const finishPreloaderRef = useRef(null);
 
   const isFinishedRef = useRef(false);
+  const finishPreloaderRef = useRef(null);
   const timelineRef = useRef(null);
   const xQuickTo = useRef(null);
   const yQuickTo = useRef(null);
@@ -92,7 +93,7 @@ export default function Preloader({ onComplete }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Set up 120fps hardware-accelerated mouse tracking and mobile gyro
+  // 120fps hardware-accelerated 3D mouse tracking & mobile gyro
   useEffect(() => {
     if (!apertureCardRef.current) return;
 
@@ -114,8 +115,8 @@ export default function Preloader({ onComplete }) {
       const dy = (clientY - cy) / cy;
 
       if (xQuickTo.current && yQuickTo.current) {
-        xQuickTo.current(dx * 12);
-        yQuickTo.current(-dy * 12);
+        xQuickTo.current(dx * 10);
+        yQuickTo.current(-dy * 10);
       }
     };
 
@@ -123,10 +124,10 @@ export default function Preloader({ onComplete }) {
       if (isFinishedRef.current || !xQuickTo.current || !yQuickTo.current) return;
       const gamma = e.gamma || 0;
       const beta = e.beta || 0;
-      const clampedGamma = Math.max(-25, Math.min(25, gamma));
-      const clampedBeta = Math.max(-25, Math.min(25, beta - 45));
-      xQuickTo.current((clampedGamma / 25) * 12);
-      yQuickTo.current(-(clampedBeta / 25) * 12);
+      const clampedGamma = Math.max(-20, Math.min(20, gamma));
+      const clampedBeta = Math.max(-20, Math.min(20, beta - 45));
+      xQuickTo.current((clampedGamma / 20) * 10);
+      yQuickTo.current(-(clampedBeta / 20) * 10);
     };
 
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
@@ -139,7 +140,7 @@ export default function Preloader({ onComplete }) {
     };
   }, [replayKey]);
 
-  // Expose replay for DevTools or live demonstration
+  // Expose replay for DevTools demonstration
   useEffect(() => {
     window.__replayPreloader = () => {
       isFinishedRef.current = false;
@@ -156,7 +157,7 @@ export default function Preloader({ onComplete }) {
   }, []);
 
   useEffect(() => {
-    // Lock scrolling on mount
+    // Lock scrolling during preloader
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -170,7 +171,7 @@ export default function Preloader({ onComplete }) {
         timelineRef.current.pause();
       }
 
-      const isMobile = window.innerWidth <= 768;
+      const isMobile = window.innerWidth <= 767;
 
       const exitTl = gsap.timeline({
         onComplete: () => {
@@ -186,7 +187,7 @@ export default function Preloader({ onComplete }) {
           exitTl.to(
             logoLeftRef.current,
             {
-              y: -30,
+              y: -40,
               opacity: 0,
               filter: "blur(6px)",
               duration: 0.65,
@@ -195,11 +196,11 @@ export default function Preloader({ onComplete }) {
             0
           );
         }
-        if (logoRightRef.current) {
+        if (logoRightWrapRef.current) {
           exitTl.to(
-            logoRightRef.current,
+            logoRightWrapRef.current,
             {
-              y: 30,
+              y: 40,
               opacity: 0,
               filter: "blur(6px)",
               duration: 0.65,
@@ -213,23 +214,23 @@ export default function Preloader({ onComplete }) {
           exitTl.to(
             logoLeftRef.current,
             {
-              x: -60,
+              x: -90,
               opacity: 0,
               filter: "blur(8px)",
-              duration: 0.65,
+              duration: 0.7,
               ease: "power3.inOut",
             },
             0
           );
         }
-        if (logoRightRef.current) {
+        if (logoRightWrapRef.current) {
           exitTl.to(
-            logoRightRef.current,
+            logoRightWrapRef.current,
             {
-              x: 60,
+              x: 90,
               opacity: 0,
               filter: "blur(8px)",
-              duration: 0.65,
+              duration: 0.7,
               ease: "power3.inOut",
             },
             0
@@ -237,29 +238,29 @@ export default function Preloader({ onComplete }) {
         }
       }
 
-      // Threshold button & descriptor fade out
+      // Threshold button & description subtitle fade out
       if (thresholdRef.current) {
         exitTl.to(
           thresholdRef.current,
           {
             opacity: 0,
-            y: 12,
-            duration: 0.45,
-            ease: "power2.out",
+            y: 20,
+            duration: 0.5,
+            ease: "power2.in",
           },
           0
         );
       }
 
-      // 2. Central aperture blooms slightly and dissolves
-      if (apertureCardRef.current) {
+      // 2. Central aperture pill zooms/blooms into full view
+      if (apertureSlotRef.current) {
         exitTl.to(
-          apertureCardRef.current,
+          apertureSlotRef.current,
           {
-            scale: 1.08,
+            scale: 1.25,
             opacity: 0,
-            filter: "blur(8px)",
-            duration: 0.65,
+            filter: "blur(10px)",
+            duration: 0.75,
             ease: "power3.inOut",
           },
           0
@@ -280,7 +281,7 @@ export default function Preloader({ onComplete }) {
         );
       }
 
-      // 4. Trigger hero entrance while preloader dissolves into the same dark background
+      // 4. Trigger hero entrance while preloader dissolves
       exitTl.add(() => {
         if (!heroTriggered) {
           heroTriggered = true;
@@ -294,7 +295,7 @@ export default function Preloader({ onComplete }) {
           preloaderRef.current,
           {
             opacity: 0,
-            duration: 0.6,
+            duration: 0.65,
             ease: "power2.inOut",
           },
           0.2
@@ -304,42 +305,35 @@ export default function Preloader({ onComplete }) {
 
     finishPreloaderRef.current = finishPreloader;
 
-    // Calculate responsive slot expansion dimensions
-    const isMobile = window.innerWidth <= 768;
-    const targetCardWidth = Math.min(240, Math.max(170, Math.floor(window.innerWidth * 0.175)));
-    const targetCardHeight = apertureCardRef.current && apertureCardRef.current.offsetHeight > 0
-      ? apertureCardRef.current.offsetHeight
-      : 270;
-    const targetMargin = isMobile ? 20 : 32;
+    const isMobile = window.innerWidth <= 767;
 
     const ctx = gsap.context(() => {
-      // 1. Reset all elements to clean starting states
+      // 1. Clean starting states
       gsap.set(preloaderRef.current, { opacity: 1, visibility: "visible" });
       gsap.set(topBarRef.current, { opacity: 1, y: 0 });
       gsap.set(bottomBarRef.current, { opacity: 1, y: 0 });
       if (thresholdRef.current) {
         gsap.set(thresholdRef.current, { opacity: 1, y: 0 });
       }
-      gsap.set([logoLeftRef.current, logoRightRef.current], {
+
+      gsap.set(logoLeftRef.current, {
+        x: 0,
+        y: 0,
+        opacity: 1,
+        filter: "blur(0px)",
+      });
+      gsap.set(logoRightWrapRef.current, {
         x: 0,
         y: 0,
         opacity: 1,
         filter: "blur(0px)",
       });
 
-      if (isMobile) {
+      if (apertureSlotRef.current) {
         gsap.set(apertureSlotRef.current, {
-          height: 0,
-          marginTop: 0,
-          marginBottom: 0,
-          opacity: 0,
-        });
-      } else {
-        gsap.set(apertureSlotRef.current, {
-          width: 0,
-          marginLeft: 0,
-          marginRight: 0,
-          opacity: 0,
+          scale: 1,
+          opacity: 1,
+          filter: "blur(0px)",
         });
       }
 
@@ -349,7 +343,6 @@ export default function Preloader({ onComplete }) {
           opacity: 1,
           rotationX: 0,
           rotationY: 0,
-          filter: "blur(0px)",
         });
       }
 
@@ -370,38 +363,48 @@ export default function Preloader({ onComplete }) {
       const masterTl = gsap.timeline();
       timelineRef.current = masterTl;
 
-      masterTl.to({}, { duration: 0.25 });
-
-      // Phase 1: Expand aperture slot
-      // Mobile: expands vertically between YASH (top) and MEEN (bottom)
-      // Desktop: expands horizontally between YASH (left) and MEEN (right)
+      // Subtle entrance glide
       if (isMobile) {
-        masterTl.to(
-          apertureSlotRef.current,
-          {
-            height: targetCardHeight,
-            marginTop: targetMargin,
-            marginBottom: targetMargin,
-            opacity: 1,
-            duration: 1.05,
-            ease: "power3.inOut",
-          },
-          0.25
+        masterTl.fromTo(
+          logoLeftRef.current,
+          { y: -20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
+          0
+        );
+        masterTl.fromTo(
+          logoRightWrapRef.current,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
+          0
         );
       } else {
-        masterTl.to(
-          apertureSlotRef.current,
-          {
-            width: targetCardWidth,
-            marginLeft: targetMargin,
-            marginRight: targetMargin,
-            opacity: 1,
-            duration: 1.05,
-            ease: "power3.inOut",
-          },
-          0.25
+        masterTl.fromTo(
+          logoLeftRef.current,
+          { x: -30, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
+          0
+        );
+        masterTl.fromTo(
+          logoRightWrapRef.current,
+          { x: 30, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
+          0
         );
       }
+
+      masterTl.fromTo(
+        apertureSlotRef.current,
+        { scale: 0.94, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.7, ease: "power2.out" },
+        0.1
+      );
+
+      masterTl.fromTo(
+        thresholdRef.current,
+        { y: 15, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
+        0.2
+      );
 
       // Phase 2: Counter progression and hardware-accelerated card flipping
       const counterState = { p: 0 };
@@ -411,7 +414,7 @@ export default function Preloader({ onComplete }) {
         counterState,
         {
           p: 100,
-          duration: 2.3,
+          duration: 2.4,
           ease: "power2.inOut",
           onUpdate: () => {
             const num = Math.round(counterState.p);
@@ -437,13 +440,13 @@ export default function Preloader({ onComplete }) {
               if (prevCardEl && nextCardEl) {
                 gsap.to(prevCardEl, {
                   opacity: 0,
-                  scale: 0.96,
+                  scale: 0.98,
                   duration: 0.32,
                   ease: "power2.out",
                 });
                 gsap.fromTo(
                   nextCardEl,
-                  { opacity: 0, scale: 1.04 },
+                  { opacity: 0, scale: 1.02 },
                   {
                     opacity: 1,
                     scale: 1,
@@ -467,7 +470,7 @@ export default function Preloader({ onComplete }) {
             finishPreloader();
           },
         },
-        0.55
+        0.45
       );
     }, preloaderRef);
 
@@ -482,6 +485,7 @@ export default function Preloader({ onComplete }) {
     return () => {
       document.body.style.overflow = originalOverflow || "";
       window.removeEventListener("keydown", handleKeyDown);
+      finishPreloaderRef.current = null;
       ctx.revert();
     };
   }, [onComplete, replayKey]);
@@ -503,25 +507,28 @@ export default function Preloader({ onComplete }) {
           <span className="preloader-time-val">{dubaiTime} GST</span>
           <span className="preloader-coords-val">25.2048° N, 55.2708° E</span>
         </div>
-        <button
-          type="button"
-          onClick={() => finishPreloaderRef.current?.()}
-          className="preloader-skip-btn"
-          aria-label="Skip introduction animation"
-        >
-          SKIP [ESC]
-        </button>
+        <div className="preloader-top-actions">
+          <span className="preloader-lang-tag">[EN / AR]</span>
+          <button
+            type="button"
+            onClick={() => finishPreloaderRef.current?.()}
+            className="preloader-skip-btn"
+            aria-label="Skip introduction animation"
+          >
+            SKIP [ESC]
+          </button>
+        </div>
       </div>
 
-      {/* 2. Center Stage: Monolith Typography & Expanding Aperture Portal */}
+      {/* 2. Center Stage: Monolith Typography & Expanding Horizontal Aperture (Colonia Zacamil Exact Replica) */}
       <div ref={stageRef} className="preloader-center-stage">
         <div className="preloader-monolith-row">
-          {/* Top/Left Half: YASHMEEN (Intact single word) */}
+          {/* Left Wordmark: YASHMEEN (Intact single word) */}
           <div ref={logoLeftRef} className="preloader-logo-half preloader-logo-left">
             YASHMEEN
           </div>
 
-          {/* Center Expanding Aperture Slot (Flex layout guarantees ZERO overlap) */}
+          {/* Center Aperture Panorama Slot: Aspect Ratio 1080 / 220 */}
           <div ref={apertureSlotRef} className="preloader-aperture-slot">
             <div ref={apertureCardRef} className="preloader-aperture-card">
               <div className="preloader-cards-stack">
@@ -548,13 +555,18 @@ export default function Preloader({ onComplete }) {
             </div>
           </div>
 
-          {/* Bottom/Right Half: FIT-OUT (Clear Business Identifier) */}
-          <div ref={logoRightRef} className="preloader-logo-half preloader-logo-right">
-            FIT-OUT
+          {/* Right Wordmark: FIT-OUT with [35,000 SQ. FT. ATELIER] Badge */}
+          <div ref={logoRightWrapRef} className="preloader-logo-right-wrap">
+            <div className="preloader-powered-badge">
+              [35,000 SQ. FT. <b>ATELIER</b>]
+            </div>
+            <div ref={logoRightRef} className="preloader-logo-half preloader-logo-right">
+              FIT-OUT
+            </div>
           </div>
         </div>
 
-        {/* Colonia Zacamil-Style Interactive Threshold Controls */}
+        {/* Colonia Zacamil-Style Interactive Threshold Button & Literary Description */}
         <div ref={thresholdRef} className="preloader-threshold-wrap">
           <button
             type="button"
@@ -563,10 +575,14 @@ export default function Preloader({ onComplete }) {
             aria-label="Enter Yashmeen Atelier"
           >
             <span>ENTER ATELIER</span>
-            <span className="preloader-enter-dot" aria-hidden="true" />
+            <div className="preloader-btn-circle-w" aria-hidden="true">
+              <div className="preloader-btn-circle" />
+            </div>
           </button>
-          <p className="preloader-threshold-sub">
-            DUBAI TURNKEY CONTRACTING &amp; BESPOKE JOINERY
+          <p className="preloader-description-text">
+            Yashmeen is more than just blueprints.
+            <br />
+            Dubai turnkey contracting &amp; bespoke joinery.
           </p>
         </div>
       </div>

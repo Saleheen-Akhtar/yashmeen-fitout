@@ -145,16 +145,33 @@ export default function Hero() {
     return () => clearInterval(timer);
   }, [activeIdx, isPaused, userHasInteracted, goToStage]);
 
-  // Entrance animation on mount
+  // Seamless Docking entrance animation when preloader finishes or on mount
   useEffect(() => {
-    if (heroRef.current) {
-      const items = heroRef.current.querySelectorAll(".glide-hero-anim");
-      gsap.fromTo(
-        items,
-        { y: 28, opacity: 0 },
-        { y: 0, opacity: 1, duration: 1.0, stagger: 0.1, ease: "power2.out", delay: 0.1 }
-      );
-    }
+    const runEntrance = () => {
+      if (heroRef.current) {
+        const items = heroRef.current.querySelectorAll(".glide-hero-anim");
+        gsap.fromTo(
+          items,
+          { y: 32, opacity: 0 },
+          { y: 0, opacity: 1, duration: 1.1, stagger: 0.12, ease: "power3.out", delay: 0.05 }
+        );
+      }
+    };
+
+    // Listen for preloader docking event
+    window.addEventListener("preloader-docked", runEntrance);
+
+    // Fallback if preloader is not rendered or already finished
+    const fallbackTimer = setTimeout(() => {
+      if (!document.querySelector(".monolith-preloader")) {
+        runEntrance();
+      }
+    }, 200);
+
+    return () => {
+      window.removeEventListener("preloader-docked", runEntrance);
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   const handleChipClick = (chip) => {

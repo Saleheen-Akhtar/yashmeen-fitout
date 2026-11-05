@@ -1,0 +1,275 @@
+/* Yashmeen Architectural Monolith Preloader
+   Inspired by monolith.nyc
+   Split Monumental Typography, Mechanical Craft Aperture, and Seamless Hero Docking. */
+
+.monolith-preloader {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background-color: #080807;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.5rem, 3.5vw, 3rem);
+  user-select: none;
+  overflow: hidden;
+  will-change: transform;
+}
+
+/* Top Telemetry Row */
+.preloader-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.preloader-brand-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preloader-red-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--accent-red, #d30000);
+  animation: preloaderPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes preloaderPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.preloader-skip-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  padding: 4px 12px;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.preloader-skip-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Center Monolith Stage: Split Typography & Shutter Aperture */
+.preloader-center-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1400px;
+  padding: 0 1rem;
+}
+
+.preloader-wordmark-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+/* Monumental Split Typography */
+.preloader-logo-half {
+  font-size: clamp(3.2rem, 9.8vw, 10rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: #ffffff;
+  display: inline-block;
+  will-change: transform;
+  z-index: 10;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+}
+
+.preloader-logo-left {
+  text-align: right;
+  padding-right: clamp(4px, 1vw, 16px);
+}
+
+.preloader-logo-right {
+  text-align: left;
+  padding-left: clamp(4px, 1vw, 16px);
+}
+
+/* Center Mechanical Craft Aperture (Image Rotator) */
+.preloader-aperture-wrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(140px, 18vw, 240px);
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 12px;
+  background-color: #121210;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+  z-index: 5;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* Parting Vault Mask Doors */
+.preloader-mask-door {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 52%;
+  height: 100%;
+  background-color: #080807;
+  z-index: 20;
+  will-change: transform;
+}
+.preloader-mask-door.is-left {
+  left: 0;
+}
+.preloader-mask-door.is-right {
+  right: 0;
+}
+
+/* Rapid Craft Image Stack */
+.preloader-cards-stack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.preloader-craft-card {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity 0.15s ease-out;
+  will-change: transform, opacity;
+}
+.preloader-craft-card.is-active {
+  opacity: 1;
+}
+
+.preloader-craft-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transform: scale(1.04);
+  transition: transform 0.6s ease-out;
+}
+.preloader-craft-card.is-active .preloader-craft-img {
+  transform: scale(1);
+}
+
+/* Card Subtle Overlay & Caption */
+.preloader-card-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 10px;
+  background: linear-gradient(180deg, transparent 0%, rgba(8, 8, 7, 0.85) 100%);
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bottom Telemetry Datum Bar */
+.preloader-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.preloader-meta-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.preloader-status-text {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+/* Monospaced Precision Counter */
+.preloader-counter-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.preloader-counter-number {
+  font-family: var(--font-sans);
+  font-size: clamp(1.25rem, 2.5vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  font-feature-settings: 'tnum' on;
+  line-height: 1;
+}
+
+.preloader-progress-track {
+  width: clamp(100px, 16vw, 180px);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 1px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.preloader-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: #ffffff;
+  transition: width 0.05s linear;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .preloader-logo-half {
+    font-size: clamp(2.5rem, 13vw, 4.5rem);
+  }
+  .preloader-aperture-wrap {
+    width: 110px;
+  }
+  .preloader-status-text {
+    font-size: 0.6875rem;
+  }
+}

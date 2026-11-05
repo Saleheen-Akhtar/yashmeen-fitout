@@ -66,10 +66,10 @@ function letterStrokes(c) {
       ];
     case "E":
       return [
-        line([-0.28, -0.36], [-0.28, 0.36]),
-        line([-0.28, -0.36], [0.28, -0.36]),
-        line([-0.28, 0], [0.18, 0]),
-        line([-0.28, 0.36], [0.28, 0.36]),
+        line([-0.26, -0.36], [-0.26, 0.36]),
+        line([-0.26, -0.36], [0.24, -0.36]),
+        line([-0.26, 0], [0.14, 0]),
+        line([-0.26, 0.36], [0.24, 0.36]),
       ];
     case "N":
       return [
@@ -96,9 +96,6 @@ class Glyph {
     this.cy = pose.y;
     this.homeCx = pose.x;
     this.homeCy = pose.y;
-    this.floatCx = pose.x;
-    this.floatCy = pose.y;
-    this.touched = false;
     this.radius = Glyph.strokeRadius(this.char, this.w, this.h);
     const co = Math.cos(this.angle),
       si = Math.sin(this.angle);
@@ -158,17 +155,20 @@ class Glyph {
       this.paths.push({ nodes: path, closed: !!stroke.closed });
     }
 
-    const owners = new Map(this.nodes.map((n) => [n, new Set()]));
-    this.paths.forEach((p, i) => p.nodes.forEach((n) => owners.get(n).add(i)));
-    for (const a of this.nodes) {
-      for (const b of this.nodes) {
-        if (
-          a === b ||
-          this.nodes.indexOf(a) > this.nodes.indexOf(b) ||
-          [...owners.get(a)].some((i) => owners.get(b).has(i))
-        )
-          continue;
-        if (Math.hypot(a.ox - b.ox, a.oy - b.oy) < this.radius * 2.2) this.link(a, b);
+    // Structural internal cross-struts to prevent folding, collapsing, or noodle distortion
+    for (let i = 0; i < this.nodes.length; i++) {
+      for (let j = i + 1; j < this.nodes.length; j++) {
+        const a = this.nodes[i];
+        const b = this.nodes[j];
+        const d = Math.hypot(a.ox - b.ox, a.oy - b.oy);
+        if (d < this.radius * 2.5) {
+          const alreadyLinked = this.links.some(
+            (l) => (l.a === a && l.b === b) || (l.a === b && l.b === a)
+          );
+          if (!alreadyLinked) {
+            this.link(a, b);
+          }
+        }
       }
     }
     this.update();
@@ -177,8 +177,8 @@ class Glyph {
   // Exact plump bubble typography ratios from reference image
   static strokeRadius(c, w, h) {
     if (c === "I") return Math.max(9, h * 0.14);
-    const ratioMap = { E: 0.14, S: 0.13, M: 0.13, H: 0.14, A: 0.14, Y: 0.14, N: 0.14 };
-    return Math.max(9, Math.min(w * 0.24, h * (ratioMap[c] || 0.15)));
+    const ratioMap = { E: 0.12, S: 0.13, M: 0.13, H: 0.14, A: 0.14, Y: 0.14, N: 0.14 };
+    return Math.max(9, Math.min(w * 0.24, h * (ratioMap[c] || 0.14)));
   }
 
   link(a, b) {
@@ -251,7 +251,6 @@ class World {
   }
 
   grab(g, p) {
-    g.touched = true;
     const node = g.nodes.reduce((a, b) =>
       Math.hypot(a.x - p.x, a.y - p.y) < Math.hypot(b.x - p.x, b.y - p.y) ? a : b
     );
@@ -271,15 +270,12 @@ class World {
   release(vx = 0, vy = 0) {
     if (this.drag) {
       const g = this.drag.glyph;
-      g.touched = true;
       const speed = Math.hypot(vx, vy);
       for (const n of g.nodes) {
-        n.vx = clamp(vx * 1.15, -45, 45);
-        n.vy = clamp(vy * 1.15, -45, 45);
+        n.vx = clamp(vx * 1.25, -55, 55);
+        n.vy = clamp(vy * 1.25, -55, 55);
       }
-      g.floatCx = g.cx;
-      g.floatCy = g.cy;
-      if (speed > 5) {
+      if (speed > 4) {
         this.puff(g, 2.8);
       }
     }
@@ -292,9 +288,6 @@ class World {
     this.returning = 50;
     this.energy = 1;
     for (const g of this.glyphs) {
-      g.touched = false;
-      g.floatCx = g.homeCx;
-      g.floatCy = g.homeCy;
       this.puff(g, 2.2);
     }
   }
@@ -320,9 +313,6 @@ class World {
         n.vy = 0;
       }
       for (const g of this.glyphs) {
-        g.touched = false;
-        g.floatCx = g.homeCx;
-        g.floatCy = g.homeCy;
         g.update();
       }
     }
@@ -331,7 +321,6 @@ class World {
   nudge(index, x, y) {
     if (!this.glyphs[index]) return;
     const g = this.glyphs[index];
-    g.touched = true;
     for (const n of g.nodes) {
       n.vx += x;
       n.vy += y;
@@ -405,14 +394,14 @@ class World {
   }
 
   solve() {
-    // 1. Structural spring constraints
+    // 1. Structural spring constraints with firm bubble elasticity
     for (const g of this.glyphs) {
       for (const l of g.links) {
         const dx = l.b.x - l.a.x,
           dy = l.b.y - l.a.y,
           d = Math.hypot(dx, dy) || 1;
         const rest = Math.hypot(l.b.ox - l.a.ox, l.b.oy - l.a.oy);
-        const k = ((d - rest) / d) * 0.24;
+        const k = ((d - rest) / d) * 0.28;
         l.a.x += dx * k;
         l.a.y += dy * k;
         l.b.x -= dx * k;
@@ -426,8 +415,8 @@ class World {
           const n = nodes[i],
             a = nodes[(i - 1 + nodes.length) % nodes.length],
             b = nodes[(i + 1) % nodes.length];
-          const dx = ((a.x + b.x) / 2 - n.x + (n.ox - (a.ox + b.ox) / 2)) * 0.18;
-          const dy = ((a.y + b.y) / 2 - n.y + (n.oy - (a.oy + b.oy) / 2)) * 0.18;
+          const dx = ((a.x + b.x) / 2 - n.x + (n.ox - (a.ox + b.ox) / 2)) * 0.20;
+          const dy = ((a.y + b.y) / 2 - n.y + (n.oy - (a.oy + b.oy) / 2)) * 0.20;
           n.x += dx;
           n.y += dy;
           a.x -= dx / 2;
@@ -463,7 +452,7 @@ class World {
             const rb = Math.hypot(b.rx * nx, b.ry * ny);
             const overlap = ra + rb - d;
             if (overlap > 0) {
-              const k = overlap * 0.35;
+              const k = overlap * 0.38;
               if (!this.drag || a.body !== this.drag.glyph) {
                 a.x += nx * k;
                 a.y += ny * k;
@@ -473,11 +462,11 @@ class World {
                 b.y -= ny * k;
               }
 
-              // Elastic bubble bounce impulse between distinct letters (82% restitution)
+              // Elastic bubble bounce impulse between distinct letters (88% restitution)
               if (a.body !== b.body) {
                 const normalSpeed = (a.vx - b.vx) * nx + (a.vy - b.vy) * ny;
                 if (normalSpeed < 0) {
-                  const impulse = -normalSpeed * 0.82;
+                  const impulse = -normalSpeed * 0.88;
                   a.vx += nx * impulse;
                   a.vy += ny * impulse;
                   b.vx -= nx * impulse;
@@ -529,38 +518,45 @@ class World {
     this.followHome();
 
     const old = this.nodes.map((n) => [n.x, n.y]);
-    const t = (time || performance.now()) * 0.0016;
+    const t = (time || performance.now()) * 0.001;
 
-    // 1. Fluid Harmonic Zero-Gravity Space Float ("Floating Even if We Leave the Words")
-    // Applies gentle Lissajous levitation waves across each letter
-    if (this.returning <= 0) {
+    // 1. Perpetual Zero-Gravity Space Float ("Floating Even if We Leave the Words")
+    // Every letter gently drifts, bobs, and floats along zero-gravity space curves in real time.
+    // Whisper celestial anchor (0.0022) ensures letters preserve single-row YASHMEEN baseline formation over time.
+    if (!this.reducedMotion && this.returning <= 0) {
       for (let i = 0; i < this.glyphs.length; i++) {
         const g = this.glyphs[i];
         if (this.drag && this.drag.glyph === g) continue;
 
-        const phase = i * 0.78;
-        const waveY = Math.sin(t * 1.35 + phase) * 16;
-        const waveX = Math.cos(t * 0.95 + phase * 1.1) * 10;
-        const waveAngle = Math.sin(t * 1.1 + phase * 0.7) * 0.045;
-        const co = Math.cos(waveAngle);
-        const si = Math.sin(waveAngle);
+        const phase = i * 1.57;
+        const driftX = Math.sin(t * 0.75 + phase) * 0.045;
+        const driftY = Math.cos(t * 0.95 + phase * 1.25) * 0.052;
 
-        const targetCx = (g.floatCx || g.homeCx) + waveX;
-        const targetCy = (g.floatCy || g.homeCy) + waveY;
+        // Whisper celestial anchor (0.0022) preserves single-row YASHMEEN baseline
+        const anchorX = (g.homeCx - g.cx) * 0.0022;
+        const anchorY = (g.homeCy - g.cy) * 0.0022;
 
         for (const n of g.nodes) {
-          const rotX = n.ox * co - n.oy * si;
-          const rotY = n.ox * si + n.oy * co;
-          const goalX = targetCx + rotX;
-          const goalY = targetCy + rotY;
-
-          n.vx += (goalX - n.x) * 0.045;
-          n.vy += (goalY - n.y) * 0.045;
+          n.vx += driftX + anchorX;
+          n.vy += driftY + anchorY;
         }
       }
     }
 
-    // 2. Soft-body drag motion: held node follows pointer, rest of letter follows elastically
+    // 2. Soft jelly Cole Derochie shape recovery around moving center
+    for (const g of this.glyphs) {
+      g.update();
+      const meanX = g.nodes.reduce((s, n) => s + n.ox, 0) / g.nodes.length;
+      const meanY = g.nodes.reduce((s, n) => s + n.oy, 0) / g.nodes.length;
+      for (const n of g.nodes) {
+        const tx = g.cx + (n.ox - meanX);
+        const ty = g.cy + (n.oy - meanY);
+        n.vx += (tx - n.x) * 0.045;
+        n.vy += (ty - n.y) * 0.045;
+      }
+    }
+
+    // 3. Pointer drag physics: held node follows pointer, rest of letter follows elastically
     const move = this.nodes.map((n) => [n.vx, n.vy]);
     let held = null;
     if (this.drag) {
@@ -569,13 +565,13 @@ class World {
       const mx = clamp(d.x + d.dx - n.x, -70, 70);
       const my = clamp(d.y + d.dy - n.y, -70, 70);
       for (const m of d.glyph.nodes) {
-        move[m.id][0] += mx * 0.22;
-        move[m.id][1] += my * 0.22;
+        move[m.id][0] += mx * 0.28;
+        move[m.id][1] += my * 0.28;
       }
       held = { n, x0: n.x, y0: n.y, x: n.x + mx, y: n.y + my };
     }
 
-    // 3. Sub-step position integration and constraint solving
+    // 4. Sub-step position integration and constraint solving
     let far = 0,
       thin = Infinity;
     for (const n of this.nodes) thin = Math.min(thin, n.rx, n.ry);
@@ -600,23 +596,16 @@ class World {
       }
     }
 
-    // 4. Stable velocity derivation with bouncy rubber ball restitution
-    const friction = this.drag ? 0.92 : 0.96;
+    // 5. Stable velocity derivation with bouncy rubber ball restitution & zero-gravity air glide
+    const friction = this.drag ? 0.94 : 0.982;
     for (let i = 0; i < this.nodes.length; i++) {
       const n = this.nodes[i];
-      n.vx = clamp((n.x - old[i][0]) * friction, -36, 36);
-      n.vy = clamp((n.y - old[i][1]) * friction, -36, 36);
+      n.vx = clamp((n.x - old[i][0]) * friction, -48, 48);
+      n.vy = clamp((n.y - old[i][1]) * friction, -48, 48);
     }
 
     for (const g of this.glyphs) {
       g.update();
-      if (g.touched && !this.drag) {
-        const speed = Math.hypot(g.nodes[0].vx, g.nodes[0].vy);
-        if (speed > 1.2) {
-          g.floatCx = g.cx;
-          g.floatCy = g.cy;
-        }
-      }
     }
   }
 }
@@ -741,23 +730,46 @@ export default function InteractiveBrandLettering({
     const createLayout = (w, h) => {
       const chars = [...word];
       const count = chars.length;
-      const paddingX = Math.max(20, w * 0.025);
-      const innerW = w - paddingX * 2;
-      const colW = innerW / count;
-      const glyphH = Math.min(h * 0.62, colW * 1.55);
-      const glyphW = Math.min(colW * 0.94, glyphH * 0.82);
+      const aspectMap = { Y: 0.72, A: 0.76, S: 0.64, H: 0.72, M: 0.86, E: 0.62, N: 0.72 };
 
-      const angles = [-0.04, 0.03, -0.05, 0.04, -0.03, 0.04, -0.04, 0.03];
-      const yOffsets = [-0.02, 0.02, -0.015, 0.02, -0.02, 0.015, -0.02, 0.02];
+      let glyphH = Math.min(h * 0.64, 250);
+      let letterWidths = chars.map((c) => glyphH * (aspectMap[c] || 0.72));
+      let sumWidths = letterWidths.reduce((a, b) => a + b, 0);
+      const minPadding = Math.max(24, w * 0.04);
+      const availW = w - minPadding * 2;
 
-      const poses = chars.map((char, i) => ({
-        x: paddingX + colW * (i + 0.5),
-        y: h * 0.5 + (yOffsets[i % yOffsets.length] || 0) * h,
-        w: glyphW,
-        h: glyphH,
-        angle: angles[i % angles.length] || 0,
-        packingScale: 1.05,
-      }));
+      // If the word exceeds container width, scale glyphH down proportionally
+      const estGaps = (count - 1) * 16;
+      if (sumWidths + estGaps > availW) {
+        const scale = (availW - estGaps) / sumWidths;
+        glyphH *= Math.max(0.4, scale);
+        letterWidths = chars.map((c) => glyphH * (aspectMap[c] || 0.72));
+        sumWidths = letterWidths.reduce((a, b) => a + b, 0);
+      }
+
+      // Calculate uniform optical gap between letters
+      const totalGapSpace = availW - sumWidths;
+      const gap = clamp(totalGapSpace / (count - 1), 10, 26);
+      const totalWordW = sumWidths + (count - 1) * gap;
+      const startX = (w - totalWordW) / 2;
+
+      const angles = [-0.03, 0.02, -0.04, 0.03, -0.02, 0.03, -0.03, 0.02];
+      const yOffsets = [-0.012, 0.012, -0.008, 0.012, -0.012, 0.008, -0.012, 0.012];
+
+      let curX = startX;
+      const poses = chars.map((char, i) => {
+        const lw = letterWidths[i];
+        const pose = {
+          x: curX + lw * 0.5,
+          y: h * 0.5 + (yOffsets[i % yOffsets.length] || 0) * h,
+          w: lw,
+          h: glyphH,
+          angle: angles[i % angles.length] || 0,
+          packingScale: 1.0,
+        };
+        curX += lw + gap;
+        return pose;
+      });
 
       const glyphs = chars.map((c, i) => new Glyph(c, poses[i], i));
       return new World(w, h, glyphs);

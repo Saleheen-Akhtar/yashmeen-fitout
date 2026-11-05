@@ -30,10 +30,14 @@ export default function MotionProvider() {
      -------------------------------------------------------------------------- */
   useEffect(() => {
     const lenis = new Lenis({
-      lerp: 0.08,
-      wheelMultiplier: 0.92,
+      lerp: 0.075,
+      orientation: "vertical",
+      gestureOrientation: "vertical",
       smoothWheel: true,
-      syncTouch: false,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.2,
+      infinite: false,
+      autoResize: true,
     });
     lenisInstance = lenis;
     window.__lenis = lenis;

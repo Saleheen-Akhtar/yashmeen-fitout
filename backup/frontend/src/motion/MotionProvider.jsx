@@ -38,6 +38,7 @@ export default function MotionProvider() {
       touchMultiplier: 1.2,
       infinite: false,
       autoResize: true,
+      respectReducedMotion: false,
     });
     lenisInstance = lenis;
     window.__lenis = lenis;

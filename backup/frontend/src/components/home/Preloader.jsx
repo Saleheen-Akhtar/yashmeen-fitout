@@ -60,6 +60,7 @@ export default function Preloader({ onComplete }) {
   const logoRightWrapRef = useRef(null);
   const apertureSlotRef = useRef(null);
   const apertureCardRef = useRef(null);
+  const clipPortalRef = useRef(null);
   const cardsRef = useRef([]);
   const thresholdRef = useRef(null);
   const bottomBarRef = useRef(null);
@@ -163,7 +164,7 @@ export default function Preloader({ onComplete }) {
 
     let heroTriggered = false;
 
-    // Fluid Dissolve Exit Sequence (Seamlessly Reveals Hero)
+    // Exact Colonia Zacamil Clip-Path Morph Exit Sequence into Fullscreen Hero
     const finishPreloader = () => {
       if (isFinishedRef.current) return;
       isFinishedRef.current = true;
@@ -187,10 +188,10 @@ export default function Preloader({ onComplete }) {
           exitTl.to(
             logoLeftRef.current,
             {
-              y: -40,
+              y: -50,
               opacity: 0,
               filter: "blur(6px)",
-              duration: 0.65,
+              duration: 0.7,
               ease: "power3.inOut",
             },
             0
@@ -200,10 +201,10 @@ export default function Preloader({ onComplete }) {
           exitTl.to(
             logoRightWrapRef.current,
             {
-              y: 40,
+              y: 50,
               opacity: 0,
               filter: "blur(6px)",
-              duration: 0.65,
+              duration: 0.7,
               ease: "power3.inOut",
             },
             0
@@ -214,10 +215,10 @@ export default function Preloader({ onComplete }) {
           exitTl.to(
             logoLeftRef.current,
             {
-              x: -90,
+              x: -120,
               opacity: 0,
               filter: "blur(8px)",
-              duration: 0.7,
+              duration: 0.75,
               ease: "power3.inOut",
             },
             0
@@ -227,10 +228,10 @@ export default function Preloader({ onComplete }) {
           exitTl.to(
             logoRightWrapRef.current,
             {
-              x: 90,
+              x: 120,
               opacity: 0,
               filter: "blur(8px)",
-              duration: 0.7,
+              duration: 0.75,
               ease: "power3.inOut",
             },
             0
@@ -244,7 +245,7 @@ export default function Preloader({ onComplete }) {
           thresholdRef.current,
           {
             opacity: 0,
-            y: 20,
+            y: 30,
             duration: 0.5,
             ease: "power2.in",
           },
@@ -252,16 +253,43 @@ export default function Preloader({ onComplete }) {
         );
       }
 
-      // 2. Central aperture pill zooms/blooms into full view
-      if (apertureSlotRef.current) {
-        exitTl.to(
-          apertureSlotRef.current,
+      // 2. Central aperture pill seamlessly expands into fullscreen 100vw x 100vh hero
+      if (apertureSlotRef.current && clipPortalRef.current) {
+        const r = apertureSlotRef.current.getBoundingClientRect();
+        const initialClip = {
+          top: r.top,
+          right: Math.max(0, window.innerWidth - r.right),
+          bottom: Math.max(0, window.innerHeight - r.bottom),
+          left: r.left,
+          round: 20,
+        };
+
+        if (apertureCardRef.current) {
+          gsap.set(apertureCardRef.current, { opacity: 0 });
+        }
+
+        exitTl.fromTo(
+          initialClip,
           {
-            scale: 1.25,
-            opacity: 0,
-            filter: "blur(10px)",
-            duration: 0.75,
+            top: initialClip.top,
+            right: initialClip.right,
+            bottom: initialClip.bottom,
+            left: initialClip.left,
+            round: 20,
+          },
+          {
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            round: 0,
+            duration: 0.95,
             ease: "power3.inOut",
+            onUpdate: () => {
+              if (clipPortalRef.current) {
+                clipPortalRef.current.style.clipPath = `inset(${initialClip.top}px ${initialClip.right}px ${initialClip.bottom}px ${initialClip.left}px round ${initialClip.round}px)`;
+              }
+            },
           },
           0
         );
@@ -287,7 +315,7 @@ export default function Preloader({ onComplete }) {
           heroTriggered = true;
           window.dispatchEvent(new CustomEvent("preloader-docked"));
         }
-      }, 0.22);
+      }, 0.25);
 
       // 5. Complete preloader backdrop dissolve
       if (preloaderRef.current) {
@@ -298,7 +326,7 @@ export default function Preloader({ onComplete }) {
             duration: 0.65,
             ease: "power2.inOut",
           },
-          0.2
+          0.35
         );
       }
     };
@@ -345,6 +373,18 @@ export default function Preloader({ onComplete }) {
           rotationY: 0,
         });
       }
+
+      // Initialize clip-path of portal canvas to match aperture slot precisely
+      setTimeout(() => {
+        if (apertureSlotRef.current && clipPortalRef.current) {
+          const r = apertureSlotRef.current.getBoundingClientRect();
+          const top = r.top;
+          const right = Math.max(0, window.innerWidth - r.right);
+          const bottom = Math.max(0, window.innerHeight - r.bottom);
+          const left = r.left;
+          clipPortalRef.current.style.clipPath = `inset(${top}px ${right}px ${bottom}px ${left}px round 20px)`;
+        }
+      }, 50);
 
       // Reset cards stack
       cardsRef.current.forEach((el, idx) => {
@@ -498,7 +538,17 @@ export default function Preloader({ onComplete }) {
       className="monolith-preloader"
       aria-label="Yashmeen Atelier Initializing"
     >
-      {/* 1. Top Telemetry Bar with Live Dubai GST Time */}
+      {/* 1. Inset Portal Canvas: Fullscreen image clipped to aperture pill, expanding to 100vw x 100vh on exit */}
+      <div ref={clipPortalRef} className="preloader-portal-canvas">
+        <img
+          src={CRAFT_CARDS[0].img}
+          alt="Yashmeen Atelier Turnkey Architectural Space"
+          className="preloader-portal-bg-img"
+          loading="eager"
+        />
+      </div>
+
+      {/* 2. Top Telemetry Bar with Live Dubai GST Time */}
       <div ref={topBarRef} className="preloader-top-bar">
         <div className="preloader-brand-label">
           <span className="preloader-red-dot" aria-hidden="true" />
@@ -520,7 +570,7 @@ export default function Preloader({ onComplete }) {
         </div>
       </div>
 
-      {/* 2. Center Stage: Monolith Typography & Expanding Horizontal Aperture (Colonia Zacamil Exact Replica) */}
+      {/* 3. Center Stage: Monolith Typography & Expanding Horizontal Aperture (Colonia Zacamil Exact Replica) */}
       <div ref={stageRef} className="preloader-center-stage">
         <div className="preloader-monolith-row">
           {/* Left Wordmark: YASHMEEN (Intact single word) */}
@@ -528,7 +578,7 @@ export default function Preloader({ onComplete }) {
             YASHMEEN
           </div>
 
-          {/* Center Aperture Panorama Slot: Aspect Ratio 1080 / 220 */}
+          {/* Center Aperture Panorama Slot: Aspect Ratio 16 / 5.6 */}
           <div ref={apertureSlotRef} className="preloader-aperture-slot">
             <div ref={apertureCardRef} className="preloader-aperture-card">
               <div className="preloader-cards-stack">
@@ -587,7 +637,7 @@ export default function Preloader({ onComplete }) {
         </div>
       </div>
 
-      {/* 3. Bottom Telemetry Datum Bar */}
+      {/* 4. Bottom Telemetry Datum Bar */}
       <div ref={bottomBarRef} className="preloader-bottom-bar">
         <div className="preloader-meta-wrap">
           <div className="preloader-meta-label">ATELIER SPECIFICATION</div>

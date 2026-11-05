@@ -202,7 +202,27 @@
   background-color: #121210;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16);
   position: relative;
-  will-change: transform, opacity, width, height, clip-path;
+  will-change: transform, opacity;
+}
+
+/* Fullscreen Inset Portal Canvas (Exact Colonia Zacamil .background-w inset replica) */
+.preloader-portal-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 4;
+  overflow: hidden;
+  will-change: clip-path, opacity;
+}
+
+.preloader-portal-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 /* 3D Perspective Card Container */

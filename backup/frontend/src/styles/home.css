@@ -3,8 +3,641 @@
    Pacing, Monolithic Spine, Smoked Glass Prompt Card, Dual-Mode Space Showcase, and Trust Datum. */
 
 /* ==========================================================================
-   1. MONOLITHIC DARK LUXURY HERO & CAD SHOWCASE
+   0. COLONIA ZACAMIL EXACT ARCHITECTURAL HERO REPLICA
+   - 100vh Fullscreen Architectural Canvas
+   - Hotspot Pins (Interactive Technical Drawers)
+   - Floating Stage Navigation Pills (Header & Footer)
+   - Day / Night Lighting Mode Toggle
    ========================================================================== */
+.zacamil-hero-section {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+  background-color: #080807;
+  color: #ffffff;
+  user-select: none;
+}
+
+.zacamil-hero-viewport {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.zacamil-hero-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  overflow: hidden;
+  will-change: opacity, transform;
+}
+
+.zacamil-hero-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transform: scale(1.02);
+  will-change: transform;
+}
+
+.zacamil-hero-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: background 0.5s ease;
+}
+
+.zacamil-hero-section.is-night .zacamil-hero-scrim {
+  background: linear-gradient(
+    180deg,
+    rgba(8, 8, 7, 0.45) 0%,
+    rgba(8, 8, 7, 0.15) 35%,
+    rgba(8, 8, 7, 0.2) 65%,
+    rgba(8, 8, 7, 0.8) 100%
+  );
+}
+
+.zacamil-hero-section.is-day .zacamil-hero-scrim {
+  background: linear-gradient(
+    180deg,
+    rgba(235, 230, 224, 0.35) 0%,
+    rgba(235, 230, 224, 0.05) 40%,
+    rgba(8, 8, 7, 0.55) 100%
+  );
+}
+
+/* Hotspot Pins Layer */
+.zacamil-pins-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.zacamil-pin {
+  position: absolute;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zacamil-pin-hitbox {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+}
+
+.zacamil-pin-svg-w {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zacamil-pin-ring {
+  animation: zacamilPinPulse 2.4s infinite ease-in-out;
+  transform-origin: 18px 18px;
+}
+
+@keyframes zacamilPinPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 0.4; }
+}
+
+.zacamil-pin-title {
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: rgba(14, 14, 12, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+.zacamil-pin:hover .zacamil-pin-title,
+.zacamil-pin.is-active .zacamil-pin-title {
+  background: #ffffff;
+  color: #080807;
+  border-color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.zacamil-pin-card {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  background: rgba(14, 14, 12, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.75);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 25;
+}
+
+.zacamil-pin-card-tag {
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-red, #d30000);
+  font-weight: 600;
+}
+
+.zacamil-pin-card-name {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.zacamil-pin-card-desc {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.zacamil-pin-inquire-btn {
+  margin-top: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.zacamil-pin-inquire-btn:hover {
+  background: #ffffff;
+  color: #080807;
+  border-color: #ffffff;
+}
+
+/* Floating Top Navigation Pills (Colonia Zacamil Header) */
+.zacamil-top-nav {
+  position: absolute;
+  top: clamp(4.75rem, 8.5vh, 5.75rem);
+  left: clamp(1rem, 3vw, 2.5rem);
+  right: clamp(1rem, 3vw, 2.5rem);
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  z-index: 15;
+  pointer-events: none;
+}
+.zacamil-top-nav > * {
+  pointer-events: auto;
+}
+
+.zacamil-nav-pill {
+  background: rgba(14, 14, 12, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+  height: 38px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+.zacamil-nav-pill:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.zacamil-play-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-red, #d30000);
+}
+
+.zacamil-stages-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+}
+
+.zacamil-stage-tab {
+  background: transparent;
+  border: none;
+  border-radius: 9999px;
+  padding: 5px 12px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.zacamil-stage-tab.is-active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-weight: 600;
+}
+.zacamil-stage-tab:hover {
+  color: #ffffff;
+}
+
+.zacamil-top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.zacamil-inquire-pill {
+  background: #ffffff;
+  color: #080807;
+  font-weight: 600;
+  border-color: #ffffff;
+}
+.zacamil-inquire-pill:hover {
+  background: #ebe6e0;
+  color: #080807;
+}
+
+.zacamil-light-toggle {
+  width: 38px;
+  padding: 0;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+/* Floating Bottom Bar Navigation (Exact Zacamil < [STAGE] > Replica) */
+.zacamil-bottom-bar {
+  position: absolute;
+  bottom: clamp(1.25rem, 3.2vh, 2.5rem);
+  left: clamp(1rem, 3vw, 2.5rem);
+  right: clamp(1rem, 3vw, 2.5rem);
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  z-index: 15;
+  pointer-events: none;
+}
+.zacamil-bottom-bar > * {
+  pointer-events: auto;
+}
+
+.zacamil-bottom-left-meta {
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.zacamil-meta-client {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.zacamil-stage-selector-w {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(14, 14, 12, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  padding: 4px 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.zacamil-nav-arrow {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.zacamil-nav-arrow:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.zacamil-stage-current-capsule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 10px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+}
+
+.zacamil-current-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.zacamil-build-toggle {
+  background: rgba(24, 24, 22, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  gap: 8px;
+}
+.zacamil-red-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-red, #d30000);
+  animation: preloaderPulse 1.8s infinite ease-in-out;
+}
+
+/* Scope Drawer Modal */
+.zacamil-scope-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.zacamil-scope-drawer.is-open {
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+}
+
+.zacamil-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 8, 7, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.zacamil-drawer-content {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: 840px;
+  background: #121210;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  padding: 2rem;
+  box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.8);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.zacamil-scope-drawer.is-open .zacamil-drawer-content {
+  transform: translateX(-50%) translateY(0);
+}
+
+.zacamil-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.zacamil-drawer-tag {
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-red, #d30000);
+  font-weight: 600;
+}
+
+.zacamil-drawer-title {
+  font-family: var(--font-sans);
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  margin: 4px 0 0;
+}
+
+.zacamil-drawer-close {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.zacamil-drawer-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.zacamil-drawer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.zacamil-prompt-input-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.zacamil-cursor {
+  color: var(--accent-red, #d30000);
+  font-weight: 700;
+}
+
+.zacamil-prompt-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+}
+
+.zacamil-prompt-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.zacamil-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  padding: 6px 14px;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.zacamil-chip.is-active,
+.zacamil-chip:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.zacamil-drawer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.zacamil-upload-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  padding: 10px 18px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.zacamil-upload-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.zacamil-submit-btn {
+  background: #ffffff;
+  color: #080807;
+  border: none;
+  border-radius: 9999px;
+  padding: 10px 24px;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+.zacamil-submit-btn:hover {
+  background: #ebe6e0;
+}
+
+.zacamil-btn-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-red, #d30000);
+}
+
+/* Mobile Responsive Overrides */
+@media (max-width: 767px) {
+  .zacamil-top-nav {
+    top: 1rem;
+    width: calc(100% - 1.5rem);
+  }
+  .zacamil-stages-pill {
+    display: none;
+  }
+  .zacamil-bottom-bar {
+    bottom: 1rem;
+    width: calc(100% - 1.5rem);
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .zacamil-bottom-left-meta {
+    display: none;
+  }
+  .zacamil-pin-title {
+    font-size: 0.625rem;
+  }
+}
+
+
 .glide-hero-section.is-dark {
   position: relative;
   width: 100%;

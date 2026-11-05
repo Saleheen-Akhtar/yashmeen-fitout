@@ -24,11 +24,16 @@ export default function Header() {
     setMenuOpen(false);
   }, [pathname]);
 
-  // Listen for global open-questionnaire events from CTAs across the site
+  // Listen for global open-questionnaire and open-menu events
   useEffect(() => {
     const handleOpenEnquiry = () => setQuestionnaireOpen(true);
+    const handleOpenMenu = () => setMenuOpen(true);
     window.addEventListener("open-questionnaire", handleOpenEnquiry);
-    return () => window.removeEventListener("open-questionnaire", handleOpenEnquiry);
+    window.addEventListener("open-menu", handleOpenMenu);
+    return () => {
+      window.removeEventListener("open-questionnaire", handleOpenEnquiry);
+      window.removeEventListener("open-menu", handleOpenMenu);
+    };
   }, []);
 
   // Scroll detection for floating bar
@@ -48,10 +53,12 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const isHomePage = pathname === "/";
+
   return (
     <>
       <header
-        className={`site-header ${scrolled ? "is-scrolled" : ""} ${hidden ? "is-hidden" : ""}`}
+        className={`site-header ${scrolled ? "is-scrolled" : ""} ${hidden ? "is-hidden" : ""} ${isHomePage && !scrolled ? "is-homepage-top" : ""}`}
       >
         <div className="site-header-inner">
           {/* Brand Left */}

@@ -85,6 +85,13 @@
   transform: translateY(-100%);
 }
 
+.site-header.is-homepage-top {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-100%);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
 /* Header Brand / Logo */
 .site-brand {
   display: flex;

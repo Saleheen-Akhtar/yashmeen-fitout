@@ -3,650 +3,496 @@
    Pacing, Monolithic Spine, Smoked Glass Prompt Card, Dual-Mode Space Showcase, and Trust Datum. */
 
 /* ==========================================================================
-   0. COLONIA ZACAMIL EXACT ARCHITECTURAL HERO REPLICA
-   - 100vh Fullscreen Architectural Canvas
-   - Hotspot Pins (Interactive Technical Drawers)
-   - Floating Stage Navigation Pills (Header & Footer)
-   - Day / Night Lighting Mode Toggle
+   0. COLONIA ZACAMIL MONUMENTAL HERO SECTION
+   - Warm Limestone Canvas: #ebe6e0
+   - Tall Condensed Gothic Display: 'Bebas Neue'
+   - Center Aperture Window with Luxury Photography
+   - Monospace Badges & Telemetry: 'Roboto Mono'
+   - Tactile Black Pill Button with sliding target circle
+   - Literary Serif Description: 'Cormorant Garamond'
+   - 100% Mobile 1st & Section 9.G Compliant (0 em/en-dashes)
    ========================================================================== */
-.zacamil-hero-section {
+.colonia-hero-section {
   position: relative;
   width: 100vw;
-  height: 100vh;
   min-height: 100vh;
-  overflow: hidden;
-  background-color: #080807;
-  color: #ffffff;
+  height: 100vh;
+  background-color: #ebe6e0;
+  color: #000000;
   user-select: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: clamp(16px, 2.5vh, 28px) clamp(20px, 3.5vw, 44px);
 }
 
-.zacamil-hero-viewport {
-  position: absolute;
-  inset: 0;
+/* 1. Top Telemetry Row */
+.hero-top-telemetry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1560px;
+  margin: 0 auto;
+  z-index: 10;
+  font-family: "Roboto Mono", monospace;
+  font-size: clamp(11px, 1.15vw, 13px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.75);
+}
+
+.hero-telemetry-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #d30000;
+  animation: heroDotPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes heroDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.8); }
+}
+
+.hero-brand-name {
+  color: #000000;
+  font-weight: 600;
+}
+
+.hero-sep {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.hero-time {
+  color: #000000;
+  font-feature-settings: 'tnum' on;
+}
+
+.hero-coords {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 11px;
+}
+
+/* Center Anchor Navigation */
+.hero-nav-anchors {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hero-anchor-link {
+  color: rgba(0, 0, 0, 0.65);
+  text-decoration: none;
+  font-family: "Roboto Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  transition: color 0.2s ease;
+}
+.hero-anchor-link:hover {
+  color: #000000;
+}
+
+.hero-anchor-sep {
+  color: rgba(0, 0, 0, 0.25);
+}
+
+/* Right Actions */
+.hero-telemetry-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hero-lang-tag {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 11px;
+}
+
+.hero-rfq-pill-btn {
+  background: #000000;
+  color: #ebe6e0;
+  border: 1px solid #000000;
+  border-radius: 9999px;
+  padding: 5px 16px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+.hero-rfq-pill-btn:hover {
+  background: #222220;
+  transform: translateY(-1px);
+}
+.hero-rfq-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d30000;
+}
+
+.hero-menu-pill-btn {
+  background: #000000;
+  color: #ebe6e0;
+  border: 1px solid #000000;
+  border-radius: 9999px;
+  padding: 5px 16px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.hero-menu-pill-btn:hover {
+  background: #222220;
+  transform: translateY(-1px);
+}
+
+/* 2. Main Monolithic Stage */
+.hero-monolith-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1560px;
+  margin: auto;
+  position: relative;
+  z-index: 5;
+  padding-bottom: clamp(16px, 3vh, 36px);
+}
+
+/* Title Row: [ YASHMEEN ] [ Center Aperture ] [ FIT-OUT ] */
+.hero-title-row {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .hero-title-row {
+    flex-direction: row;
+    gap: clamp(24px, 3.2vw, 48px);
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.hero-word {
+  align-items: center;
+  display: flex;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(3.4rem, 8.5vw, 7.8rem);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #000000;
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.hero-word-left {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.hero-word-right-wrap {
+  position: relative;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+@media (max-width: 767px) {
+  .hero-word {
+    justify-content: center;
+    text-align: center;
+    font-size: clamp(3rem, 15vw, 4.8rem);
+    line-height: 1;
+    width: 100%;
+  }
+  .hero-word-right-wrap {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* Center Aperture Window */
+.hero-aperture-slot {
+  aspect-ratio: 16 / 7;
+  width: clamp(240px, 30vw, 460px);
+  max-width: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.16);
+  background-color: #121210;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.hero-aperture-slot:hover {
+  transform: scale(1.02);
+}
+
+@media (max-width: 767px) {
+  .hero-aperture-slot {
+    width: min(300px, 80vw);
+    aspect-ratio: 16 / 8.5;
+    margin: 4px 0;
+  }
+}
+
+.hero-aperture-frame {
+  position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
+  border-radius: inherit;
 }
 
-.zacamil-hero-slide {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  overflow: hidden;
-  will-change: opacity, transform;
-}
-
-.zacamil-hero-bg-img {
+.hero-aperture-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   display: block;
-  transform: scale(1.02);
-  will-change: transform;
+  transform: scale(1.03);
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.hero-aperture-slot:hover .hero-aperture-img {
+  transform: scale(1.08);
 }
 
-.zacamil-hero-scrim {
+.hero-aperture-scrim {
   position: absolute;
   inset: 0;
-  pointer-events: none;
-  transition: background 0.5s ease;
-}
-
-.zacamil-hero-section.is-night .zacamil-hero-scrim {
-  background: linear-gradient(
-    180deg,
-    rgba(8, 8, 7, 0.45) 0%,
-    rgba(8, 8, 7, 0.15) 35%,
-    rgba(8, 8, 7, 0.2) 65%,
-    rgba(8, 8, 7, 0.8) 100%
-  );
-}
-
-.zacamil-hero-section.is-day .zacamil-hero-scrim {
-  background: linear-gradient(
-    180deg,
-    rgba(235, 230, 224, 0.35) 0%,
-    rgba(235, 230, 224, 0.05) 40%,
-    rgba(8, 8, 7, 0.55) 100%
-  );
-}
-
-/* Hotspot Pins Layer */
-.zacamil-pins-layer {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 8;
-}
-
-.zacamil-pin {
-  position: absolute;
-  pointer-events: auto;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.zacamil-pin-hitbox {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px;
-}
-
-.zacamil-pin-svg-w {
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.zacamil-pin-ring {
-  animation: zacamilPinPulse 2.4s infinite ease-in-out;
-  transform-origin: 18px 18px;
-}
-
-@keyframes zacamilPinPulse {
-  0%, 100% { transform: scale(1); opacity: 0.9; }
-  50% { transform: scale(1.15); opacity: 0.4; }
-}
-
-.zacamil-pin-title {
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #ffffff;
-  background: rgba(14, 14, 12, 0.75);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 4px 10px;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-}
-.zacamil-pin:hover .zacamil-pin-title,
-.zacamil-pin.is-active .zacamil-pin-title {
-  background: #ffffff;
-  color: #080807;
-  border-color: #ffffff;
-  transform: translateY(-1px);
-}
-
-.zacamil-pin-card {
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 280px;
-  background: rgba(14, 14, 12, 0.94);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  padding: 14px 16px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.75);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  z-index: 25;
-}
-
-.zacamil-pin-card-tag {
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.625rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--accent-red, #d30000);
-  font-weight: 600;
-}
-
-.zacamil-pin-card-name {
-  font-family: var(--font-sans);
-  font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: #ffffff;
-}
-
-.zacamil-pin-card-desc {
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.75);
-}
-
-.zacamil-pin-inquire-btn {
-  margin-top: 6px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 6px;
-  padding: 6px 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.08em;
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.zacamil-pin-inquire-btn:hover {
-  background: #ffffff;
-  color: #080807;
-  border-color: #ffffff;
-}
-
-/* Floating Top Navigation Pills (Colonia Zacamil Header) */
-.zacamil-top-nav {
-  position: absolute;
-  top: clamp(4.75rem, 8.5vh, 5.75rem);
-  left: clamp(1rem, 3vw, 2.5rem);
-  right: clamp(1rem, 3vw, 2.5rem);
-  max-width: 1440px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  z-index: 15;
+  background: linear-gradient(180deg, rgba(8, 8, 7, 0) 45%, rgba(8, 8, 7, 0.6) 100%);
   pointer-events: none;
 }
-.zacamil-top-nav > * {
-  pointer-events: auto;
-}
 
-.zacamil-nav-pill {
+.hero-aperture-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  right: 10px;
   background: rgba(14, 14, 12, 0.78);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 9999px;
-  height: 38px;
-  padding: 0 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: #ffffff;
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
-}
-.zacamil-nav-pill:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.35);
-  transform: translateY(-1px);
-}
-
-.zacamil-play-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent-red, #d30000);
-}
-
-.zacamil-stages-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 6px;
-}
-
-.zacamil-stage-tab {
-  background: transparent;
-  border: none;
-  border-radius: 9999px;
-  padding: 5px 12px;
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.65);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-.zacamil-stage-tab.is-active {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  font-weight: 600;
-}
-.zacamil-stage-tab:hover {
-  color: #ffffff;
-}
-
-.zacamil-top-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.zacamil-inquire-pill {
-  background: #ffffff;
-  color: #080807;
-  font-weight: 600;
-  border-color: #ffffff;
-}
-.zacamil-inquire-pill:hover {
-  background: #ebe6e0;
-  color: #080807;
-}
-
-.zacamil-light-toggle {
-  width: 38px;
-  padding: 0;
-  justify-content: center;
-  font-size: 1rem;
-}
-
-/* Floating Bottom Bar Navigation (Exact Zacamil < [STAGE] > Replica) */
-.zacamil-bottom-bar {
-  position: absolute;
-  bottom: clamp(1.25rem, 3.2vh, 2.5rem);
-  left: clamp(1rem, 3vw, 2.5rem);
-  right: clamp(1rem, 3vw, 2.5rem);
-  max-width: 1440px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  z-index: 15;
-  pointer-events: none;
-}
-.zacamil-bottom-bar > * {
-  pointer-events: auto;
-}
-
-.zacamil-bottom-left-meta {
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.7);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.zacamil-meta-client {
-  color: #ffffff;
-  font-weight: 600;
-}
-
-.zacamil-stage-selector-w {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(14, 14, 12, 0.85);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 9999px;
-  padding: 4px 8px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-}
-
-.zacamil-nav-arrow {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.65);
-  cursor: pointer;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-.zacamil-nav-arrow:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.zacamil-stage-current-capsule {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 2px 10px;
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: #ffffff;
-}
-
-.zacamil-current-thumb {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  object-fit: cover;
-}
-
-.zacamil-build-toggle {
-  background: rgba(24, 24, 22, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  gap: 8px;
-}
-.zacamil-red-pulse {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-red, #d30000);
-  animation: preloaderPulse 1.8s infinite ease-in-out;
-}
-
-/* Scope Drawer Modal */
-.zacamil-scope-drawer {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-.zacamil-scope-drawer.is-open {
-  pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
-}
-
-.zacamil-drawer-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(8, 8, 7, 0.75);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-}
-
-.zacamil-drawer-content {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%) translateY(100%);
-  width: 100%;
-  max-width: 840px;
-  background: #121210;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-bottom: none;
-  border-radius: 20px 20px 0 0;
-  padding: 2rem;
-  box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.8);
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-.zacamil-scope-drawer.is-open .zacamil-drawer-content {
-  transform: translateX(-50%) translateY(0);
-}
-
-.zacamil-drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.zacamil-drawer-tag {
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--accent-red, #d30000);
-  font-weight: 600;
-}
-
-.zacamil-drawer-title {
-  font-family: var(--font-sans);
-  font-size: 1.35rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: #ffffff;
-  margin: 4px 0 0;
-}
-
-.zacamil-drawer-close {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  color: #ffffff;
-  font-size: 0.875rem;
-  cursor: pointer;
+  border-radius: 6px;
+  padding: 4px 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-.zacamil-drawer-close:hover {
-  background: rgba(255, 255, 255, 0.25);
+  gap: 6px;
 }
 
-.zacamil-drawer-body {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+.hero-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d30000;
 }
 
-.zacamil-prompt-input-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 12px 16px;
+.hero-badge-text {
+  font-family: "Roboto Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: #ebe6e0;
+  text-transform: uppercase;
 }
 
-.zacamil-cursor {
-  color: var(--accent-red, #d30000);
+/* Powered Badge above right word */
+.hero-powered-badge {
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 2px;
+  font-family: "Roboto Mono", monospace;
+  font-size: clamp(10px, 1.1vh, 12px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.hero-powered-badge b {
+  color: #000000;
   font-weight: 700;
 }
 
-.zacamil-prompt-textarea {
-  flex: 1;
+@media (max-width: 767px) {
+  .hero-powered-badge {
+    position: static;
+    margin-bottom: 4px;
+    font-size: 10px;
+  }
+}
+
+/* 3. Tactile Black Pill Button with sliding target circle */
+.colonia-hero-section .button-with-circle {
+  margin-top: clamp(18px, 3vh, 36px);
+  z-index: 10;
+  background: #000000;
+  color: #ebe6e0;
+  border-radius: 9999px;
+  border: none;
+  height: 48px;
+  padding: 0 44px 0 24px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  overflow: hidden;
+  --width: 175px;
+  width: var(--width);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+  user-select: none;
+}
+.colonia-hero-section .button-with-circle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+}
+.colonia-hero-section .button-with-circle span {
+  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+  color: #ebe6e0;
+}
+.colonia-hero-section .button-with-circle .button-circle-w {
+  bottom: 0px;
+  height: max-content;
+  margin: auto 0px;
+  position: absolute;
+  right: 6px;
+  top: 0px;
+  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.colonia-hero-section .button-with-circle .button-circle {
+  aspect-ratio: 1 / 1;
+  background: #ebe6e0;
+  border-radius: 50%;
+  height: 26px;
+  width: 26px;
+  position: relative;
+  transition: transform 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+}
+.colonia-hero-section .button-with-circle .button-circle::before {
+  background: #000000;
+  border-radius: 50%;
+  content: "";
+  height: 8px;
+  width: 8px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate3d(-50%, -50%, 0px);
+  transition: transform 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .colonia-hero-section .button-with-circle:hover .button-circle-w,
+  .colonia-hero-section .button-with-circle:focus .button-circle-w {
+    transform: translate(calc(var(--width) * -1 + 38px));
+  }
+  .colonia-hero-section .button-with-circle:hover .button-circle::before,
+  .colonia-hero-section .button-with-circle:focus .button-circle::before {
+    transform: scale3d(1.4, 1.4, 1) translate3d(-35%, -35%, 0px);
+  }
+  .colonia-hero-section .button-with-circle:hover span,
+  .colonia-hero-section .button-with-circle:focus span {
+    transform: translate(22px);
+  }
+}
+
+/* 4. Literary Serif Description */
+.hero-literary-desc {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(16px, 1.8vw, 22px);
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: rgba(0, 0, 0, 0.85);
+  max-width: 440px;
+  width: calc(100% - 48px);
+  text-align: center;
+  margin: clamp(14px, 2vh, 22px) 0 0;
+  user-select: none;
+}
+
+/* 5. Scroll Down Invite */
+.hero-scroll-invite {
   background: transparent;
   border: none;
-  color: #ffffff;
-  font-family: var(--font-sans);
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  resize: none;
-  outline: none;
-}
-
-.zacamil-prompt-chips {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-
-.zacamil-chip {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 9999px;
-  padding: 6px 14px;
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  white-space: nowrap;
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
+  margin-top: clamp(14px, 2vh, 24px);
+  color: rgba(0, 0, 0, 0.55);
+  transition: color 0.2s ease, transform 0.2s ease;
 }
-.zacamil-chip.is-active,
-.zacamil-chip:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.3);
+.hero-scroll-invite:hover {
+  color: #000000;
+  transform: translateY(2px);
 }
-
-.zacamil-drawer-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
+.hero-scroll-label {
+  font-family: "Roboto Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
-
-.zacamil-upload-btn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 9999px;
-  padding: 10px 18px;
-  color: rgba(255, 255, 255, 0.85);
-  font-family: var(--font-sans);
-  font-size: 0.8125rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.hero-scroll-arrow {
+  animation: heroScrollBounce 2s infinite ease-in-out;
 }
-.zacamil-upload-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+@keyframes heroScrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
 }
 
-.zacamil-submit-btn {
-  background: #ffffff;
-  color: #080807;
-  border: none;
-  border-radius: 9999px;
-  padding: 10px 24px;
-  font-family: var(--font-sans);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-}
-.zacamil-submit-btn:hover {
-  background: #ebe6e0;
-}
-
-.zacamil-btn-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-red, #d30000);
-}
-
-/* Mobile Responsive Overrides */
 @media (max-width: 767px) {
-  .zacamil-top-nav {
-    top: 1rem;
-    width: calc(100% - 1.5rem);
-  }
-  .zacamil-stages-pill {
+  .hero-nav-anchors,
+  .hero-coords {
     display: none;
   }
-  .zacamil-bottom-bar {
-    bottom: 1rem;
-    width: calc(100% - 1.5rem);
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
+  .colonia-hero-section {
+    padding: 16px 16px 24px;
+    height: auto;
+    min-height: 100vh;
   }
-  .zacamil-bottom-left-meta {
-    display: none;
+  .hero-monolith-stage {
+    padding-top: 24px;
+    padding-bottom: 16px;
   }
-  .zacamil-pin {
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-  }
-  .zacamil-pin-title {
-    font-size: 0.625rem;
-    padding: 3px 8px;
-    max-width: 135px;
-    white-space: normal;
-    text-align: center;
-    line-height: 1.25;
+  .hero-literary-desc {
+    font-size: 15px;
+    line-height: 1.3;
+    max-width: 320px;
   }
 }
-
 
 .glide-hero-section.is-dark {
   position: relative;

@@ -72,19 +72,19 @@ export default function Preloader({ onComplete }) {
       } else {
         const isMobile = window.innerWidth < 768;
         if (isMobile) {
-          const w = Math.min(300, window.innerWidth * 0.8);
-          const h = w / (16 / 8.5);
-          const top = (window.innerHeight - h) / 2;
-          const left = (window.innerWidth - w) / 2;
+          const w = Math.min(300, window.innerWidth * 0.82);
+          const h = w / 0.75;
+          const top = Math.max(20, (window.innerHeight - h) / 2);
+          const left = Math.max(0, (window.innerWidth - w) / 2);
           backgroundWRef.current.style.setProperty(
             "--inset",
             `${top}px ${left}px ${top}px ${left}px`
           );
         } else {
-          const w = Math.min(460, window.innerWidth * 0.3);
-          const h = w / (16 / 7);
-          const top = (window.innerHeight - h) / 2;
-          const left = (window.innerWidth - w) / 2;
+          const w = Math.min(360, window.innerWidth * 0.25);
+          const h = w / 0.75;
+          const top = Math.max(40, (window.innerHeight - h) / 2);
+          const left = Math.max(0, (window.innerWidth - w) / 2);
           backgroundWRef.current.style.setProperty(
             "--inset",
             `${top}px ${left}px ${top}px ${left}px`
@@ -193,10 +193,10 @@ export default function Preloader({ onComplete }) {
       {/* 1. Background Inset Canvas (starts 100% fullscreen, then contracts into Hero aperture) */}
       <div ref={backgroundWRef} className="background-w">
         <picture className="background">
-          <source media="(min-width: 768px)" srcSet="/static/hero.jpg" />
+          <source media="(min-width: 768px)" srcSet="/static/atelier-render.jpg" />
           <img
             ref={bgImgRef}
-            src="/static/hero.jpg"
+            src="/static/atelier-render.jpg"
             alt="Yashmeen Luxury Fit-Out Interior"
           />
         </picture>

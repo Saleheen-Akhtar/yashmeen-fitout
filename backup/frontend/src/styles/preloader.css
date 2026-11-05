@@ -1,13 +1,13 @@
 /* Colonia Zacamil Exact Architectural Monolith Preloader
    Yashmeen Luxury Fit-Out Contracting Atelier
-   - Limestone warm canvas: #ebe6e0 (rgb(235, 230, 224))
-   - Monumental Display: 'Bebas Neue', sans-serif (tall condensed uppercase)
-   - Badge: Monospace 'Roboto Mono'
-   - Description: Serif 'Cormorant Garamond'
+   - Canvas: Deep Obsidian #080807 (matches Hero section 100%)
+   - Fullscreen inset contracts into portrait aperture slot
+   - Monospace Badges & Telemetry: 'Roboto Mono'
+   - Minimalist Counter & Progress Bar: 'Plus Jakarta Sans'
    - 100% Mobile 1st & Section 9.G Compliant (0 em/en-dashes) */
 
 #loader.colonia-loader {
-  background: #ebe6e0;
+  background: #080807;
   inset: 0px;
   pointer-events: all;
   position: fixed;
@@ -20,11 +20,12 @@
   flex-direction: column;
   justify-content: space-between;
   box-sizing: border-box;
+  color: #ffffff;
 }
 
 /* 1. Fullscreen Inset Background (Exact Colonia Zacamil .background-w) */
 #loader .background-w {
-  clip-path: inset(0px);
+  clip-path: inset(0px round 0px);
   height: 100%;
   left: 0px;
   position: absolute;
@@ -37,7 +38,7 @@
 }
 
 #loader .background-w.animate {
-  clip-path: inset(var(--inset, 25% 25% 25% 25%) round 18px);
+  clip-path: inset(var(--inset, 25% 25% 25% 25%) round 20px);
 }
 
 #loader .background-w picture,
@@ -55,7 +56,7 @@
 }
 
 #loader .background-w.animate img {
-  transform: scale3d(0.85, 0.85, 1);
+  transform: scale3d(0.88, 0.88, 1);
 }
 
 /* 2. Top Telemetry Bar */
@@ -73,7 +74,7 @@
   font-size: clamp(11px, 1.2vw, 13px);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.7);
+  color: rgba(255, 255, 255, 0.72);
   pointer-events: auto;
 }
 
@@ -88,6 +89,7 @@
   height: 7px;
   border-radius: 50%;
   background-color: #d30000;
+  box-shadow: 0 0 8px rgba(211, 0, 0, 0.8);
   animation: coloniaPulse 1.8s infinite ease-in-out;
 }
 
@@ -97,21 +99,21 @@
 }
 
 #loader .colonia-brand-title {
-  color: #000000;
+  color: #ffffff;
   font-weight: 600;
 }
 
 #loader .colonia-time-sep {
-  color: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.3);
 }
 
 #loader .colonia-time-val {
-  color: #000000;
+  color: #ffffff;
   font-feature-settings: 'tnum' on;
 }
 
 #loader .colonia-coords {
-  color: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 0.45);
   font-size: 11px;
 }
 
@@ -128,289 +130,31 @@
 }
 
 #loader .colonia-lang {
-  color: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 0.45);
   font-size: 11px;
 }
 
 #loader .colonia-skip-btn {
-  background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 9999px;
   padding: 4px 14px;
   font-family: "Roboto Mono", monospace;
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: #000000;
+  color: #ffffff;
   cursor: pointer;
+  backdrop-filter: blur(8px);
   transition: all 0.2s ease;
 }
 
 #loader .colonia-skip-btn:hover {
-  background: #000000;
-  color: #ebe6e0;
-  border-color: #000000;
+  background: #ffffff;
+  color: #080807;
+  border-color: #ffffff;
 }
 
-/* 3. Introduction Stage (Exact Colonia Zacamil .introduction) */
-#loader .introduction {
-  align-items: center;
-  color: #000000;
-  display: flex;
-  flex-direction: column;
-  inset: 0px;
-  justify-content: center;
-  padding-bottom: 12vh;
-  padding-left: clamp(16px, 3vw, 40px);
-  padding-right: clamp(16px, 3vw, 40px);
-  pointer-events: all;
-  position: absolute;
-  z-index: 5;
-  box-sizing: border-box;
-}
-
-/* Title Container: Flex Layout that guarantees zero overlap */
-#loader .introduction .title {
-  width: 100%;
-  max-width: 1440px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  box-sizing: border-box;
-}
-
-@media (min-width: 768px) {
-  #loader .introduction .title {
-    flex-direction: row;
-    gap: clamp(24px, 3vw, 48px);
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-/* Monolithic condensed gothic words: YASHMEEN & FIT-OUT */
-#loader .introduction .title-left,
-#loader .introduction .title-right {
-  align-items: center;
-  display: flex;
-  font-family: "Bebas Neue", sans-serif;
-  font-size: clamp(3.4rem, 8.5vw, 7.8rem);
-  font-weight: 400;
-  line-height: 0.95;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: #000000;
-  user-select: none;
-  white-space: nowrap;
-  flex-shrink: 0;
-  box-sizing: border-box;
-  will-change: transform, opacity;
-}
-
-#loader .introduction .title-left {
-  justify-content: flex-end;
-  text-align: right;
-}
-
-#loader .introduction .title-right {
-  position: relative;
-  justify-content: flex-start;
-  text-align: left;
-}
-
-@media (max-width: 767px) {
-  #loader .introduction .title-left,
-  #loader .introduction .title-right {
-    justify-content: center;
-    text-align: center;
-    font-size: clamp(3rem, 15vw, 4.8rem);
-    line-height: 1;
-    width: 100%;
-  }
-}
-
-/* Center Aperture Placeholder (.picture-w) */
-/* Defines the exact slot where .background-w contracts into */
-#loader .introduction .title .picture-w {
-  aspect-ratio: 16 / 7;
-  width: clamp(240px, 30vw, 460px);
-  max-width: 100%;
-  position: relative;
-  overflow: hidden;
-  border-radius: 18px;
-  flex-shrink: 0;
-  background: transparent;
-  pointer-events: none;
-}
-
-@media (max-width: 767px) {
-  #loader .introduction .title .picture-w {
-    width: min(300px, 80vw);
-    aspect-ratio: 16 / 8.5;
-    margin: 4px 0;
-  }
-}
-
-/* Powered Badge above right word: [EST. DUBAI • 35,000 SQ. FT. ATELIER] */
-#loader .introduction .powered {
-  position: absolute;
-  bottom: calc(100% + 5px);
-  left: 2px;
-  font-family: "Roboto Mono", monospace;
-  font-size: clamp(10px, 1.1vh, 12px);
-  font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.7);
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-#loader .introduction .powered b {
-  color: #000000;
-  font-weight: 700;
-}
-
-@media (max-width: 767px) {
-  #loader .introduction .powered {
-    position: static;
-    margin-bottom: 4px;
-    font-size: 10px;
-    letter-spacing: 0.06em;
-  }
-  #loader .introduction .title-right {
-    flex-direction: column;
-    align-items: center;
-  }
-}
-
-/* 4. Tactile Black Pill Button with sliding target circle (Exact Colonia Zacamil) */
-#loader .introduction .button-with-circle {
-  position: absolute;
-  bottom: clamp(72px, 11vh, 96px);
-  z-index: 10;
-  background: #000000;
-  color: #ebe6e0;
-  border-radius: 9999px;
-  border: none;
-  height: 48px;
-  padding: 0 44px 0 24px;
-  font-family: "Roboto Mono", monospace;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-  overflow: hidden;
-  --width: 175px;
-  width: var(--width);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
-  user-select: none;
-  will-change: transform, opacity;
-}
-
-@media (min-width: 768px) {
-  #loader .introduction .button-with-circle {
-    bottom: 24vh;
-  }
-}
-
-#loader .introduction .button-with-circle:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
-}
-
-#loader .introduction .button-with-circle span {
-  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
-  color: #ebe6e0;
-}
-
-#loader .introduction .button-with-circle .button-circle-w {
-  bottom: 0px;
-  height: max-content;
-  margin: auto 0px;
-  position: absolute;
-  right: 6px;
-  top: 0px;
-  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
-}
-
-#loader .introduction .button-with-circle .button-circle {
-  aspect-ratio: 1 / 1;
-  background: #ebe6e0;
-  border-radius: 50%;
-  height: 26px;
-  width: 26px;
-  position: relative;
-  transition: transform 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19);
-}
-
-#loader .introduction .button-with-circle .button-circle::before {
-  background: #000000;
-  border-radius: 50%;
-  content: "";
-  height: 8px;
-  width: 8px;
-  left: 50%;
-  position: absolute;
-  top: 50%;
-  transform: translate3d(-50%, -50%, 0px);
-  transition: transform 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
-}
-
-/* Hover sliding target animation (Exact Colonia Zacamil) */
-@media (hover: hover) and (pointer: fine) {
-  #loader .introduction .button-with-circle:hover .button-circle-w,
-  #loader .introduction .button-with-circle:focus .button-circle-w {
-    transform: translate(calc(var(--width) * -1 + 38px));
-  }
-  #loader .introduction .button-with-circle:hover .button-circle::before,
-  #loader .introduction .button-with-circle:focus .button-circle::before {
-    transform: scale3d(1.4, 1.4, 1) translate3d(-35%, -35%, 0px);
-  }
-  #loader .introduction .button-with-circle:hover span,
-  #loader .introduction .button-with-circle:focus span {
-    transform: translate(22px);
-  }
-}
-
-/* 5. Literary Serif Description */
-#loader .introduction .description {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translate(-50%);
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: clamp(15px, 1.8vw, 22px);
-  font-weight: 400;
-  line-height: 1.35;
-  letter-spacing: -0.01em;
-  color: rgba(0, 0, 0, 0.85);
-  max-width: 440px;
-  width: calc(100% - 48px);
-  text-align: center;
-  margin: 0;
-  user-select: none;
-}
-
-@media (max-width: 767px) {
-  #loader .introduction {
-    padding-bottom: 16vh;
-  }
-  #loader .introduction .description {
-    bottom: 18px;
-    font-size: 14px;
-    line-height: 1.3;
-    max-width: 320px;
-  }
-}
-
-
-/* Minimalist Center Loading Counter */
+/* 3. Minimalist Center Loading Counter */
 .colonia-loader-counter-wrap {
   position: absolute;
   top: 50%;
@@ -419,24 +163,25 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   z-index: 10;
   pointer-events: none;
 }
 
 .colonia-loader-counter-num {
-  font-family: "Bebas Neue", sans-serif;
-  font-size: clamp(3.5rem, 9vw, 6.5rem);
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(3.8rem, 10vw, 7rem);
+  font-weight: 800;
   line-height: 0.9;
-  color: #000000;
-  letter-spacing: 0.04em;
+  color: #ffffff;
+  letter-spacing: -0.03em;
   font-feature-settings: 'tnum' on;
 }
 
 .colonia-loader-track {
-  width: 200px;
+  width: 220px;
   height: 2px;
-  background: rgba(0, 0, 0, 0.14);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
   overflow: hidden;
   position: relative;
@@ -444,24 +189,25 @@
 
 .colonia-loader-fill {
   height: 100%;
-  background: #000000;
+  background: linear-gradient(90deg, #c5a059, #e5cf9c);
   transition: width 0.08s linear;
+  box-shadow: 0 0 10px rgba(197, 160, 89, 0.7);
 }
 
 .colonia-loader-tag {
   font-family: "Roboto Mono", monospace;
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 255, 255, 0.65);
   white-space: nowrap;
 }
 
 @media (max-width: 767px) {
   .colonia-loader-tag {
-    font-size: 8.5px;
+    font-size: 9px;
   }
   .colonia-loader-track {
-    width: 160px;
+    width: 170px;
   }
 }

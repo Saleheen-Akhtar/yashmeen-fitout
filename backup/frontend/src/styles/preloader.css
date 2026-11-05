@@ -1,6 +1,6 @@
 /* Yashmeen Architectural Monolith Preloader
    Inspired by monolith.nyc
-   Split Monumental Typography, Mechanical Craft Aperture, and Seamless Hero Docking. */
+   Split Monumental Typography, 3D Tilt Craft Aperture, and Continuous Hero Docking. */
 
 .monolith-preloader {
   position: fixed;
@@ -19,7 +19,7 @@
   will-change: transform;
 }
 
-/* Top Telemetry Row */
+/* Top Telemetry Row with Live GST Time */
 .preloader-top-bar {
   display: flex;
   justify-content: space-between;
@@ -27,15 +27,16 @@
   width: 100%;
   font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .preloader-brand-label {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .preloader-red-dot {
@@ -48,14 +49,33 @@
 
 @keyframes preloaderPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
+  50% { opacity: 0.35; transform: scale(0.85); }
+}
+
+.preloader-brand-text {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.preloader-time-sep {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.preloader-time-val {
+  color: rgba(255, 255, 255, 0.85);
+  font-feature-settings: 'tnum' on;
+}
+
+.preloader-coords-val {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.6875rem;
 }
 
 .preloader-skip-btn {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 9999px;
-  padding: 4px 12px;
+  padding: 4px 14px;
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
   color: rgba(255, 255, 255, 0.75);
@@ -68,7 +88,7 @@
   border-color: rgba(255, 255, 255, 0.4);
 }
 
-/* Center Monolith Stage: Split Typography & Shutter Aperture */
+/* Center Monolith Stage: Split Typography & 3D Shutter Aperture */
 .preloader-center-stage {
   position: absolute;
   top: 50%;
@@ -114,7 +134,7 @@
   padding-left: clamp(4px, 1vw, 16px);
 }
 
-/* Center Mechanical Craft Aperture (Image Rotator) */
+/* Center Mechanical Craft Aperture (3D Tilt Image Rotator) */
 .preloader-aperture-wrap {
   position: absolute;
   top: 50%;
@@ -123,12 +143,13 @@
   width: clamp(140px, 18vw, 240px);
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 14px;
   background-color: #121210;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
   z-index: 5;
   perspective: 1000px;
   transform-style: preserve-3d;
+  will-change: transform;
 }
 
 /* Parting Vault Mask Doors */
@@ -184,19 +205,33 @@
   transform: scale(1);
 }
 
-/* Card Subtle Overlay & Caption */
-.preloader-card-caption {
+/* Card Subtle Badge & Caption */
+.preloader-card-badge {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 8px 10px;
-  background: linear-gradient(180deg, transparent 0%, rgba(8, 8, 7, 0.85) 100%);
+  padding: 10px 10px 8px;
+  background: linear-gradient(180deg, transparent 0%, rgba(8, 8, 7, 0.9) 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.preloader-card-tag {
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.preloader-card-caption {
   font-size: 0.5625rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.8);
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -214,18 +249,21 @@
 }
 
 .preloader-meta-label {
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   color: rgba(255, 255, 255, 0.45);
   text-transform: uppercase;
   margin-bottom: 4px;
 }
 
 .preloader-status-text {
-  font-size: 0.8125rem;
-  font-weight: 500;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   color: #ffffff;
+  text-transform: uppercase;
 }
 
 /* Monospaced Precision Counter */
@@ -268,6 +306,9 @@
   }
   .preloader-aperture-wrap {
     width: 110px;
+  }
+  .preloader-coords-val {
+    display: none;
   }
   .preloader-status-text {
     font-size: 0.6875rem;

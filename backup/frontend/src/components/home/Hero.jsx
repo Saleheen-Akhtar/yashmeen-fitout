@@ -24,6 +24,8 @@ const STAGES = [
     location: "DIFC Gate Precinct, Dubai",
     scope: "DDA, Civil Defence & Authority Approvals",
     area: "18,000 SQ. FT.",
+    permits: "DIFC / Dubai Civil Defence Sign-Off",
+    bench: "CAD Blueprint Engineering",
     img: "/static/hero.jpg",
     alt: "DIFC modern commercial interior fit-out with glass partitions and polished concrete",
     description: "End-to-end statutory approvals from Dubai Municipality, Civil Defence, and free zone authorities.",
@@ -36,6 +38,8 @@ const STAGES = [
     location: "Al Quoz Industrial Atelier, Dubai",
     scope: "Bespoke Millwork Direct from the Bench",
     area: "35,000 SQ. FT. Bench",
+    permits: "Al Quoz Industrial Atelier License",
+    bench: "5-Axis CNC & Bookmatched Veneers",
     img: "/static/work-clifton.jpg",
     alt: "Bespoke luxury office fit-out with fluted desk and warm architectural lighting",
     description: "Precision CNC timber routing, artisanal book-matched veneers, and custom metalwork crafted under one roof.",
@@ -48,6 +52,8 @@ const STAGES = [
     location: "Emirates Hills Residence, Dubai",
     scope: "Structural Engineering & Turnkey Architecture",
     area: "14,500 SQ. FT.",
+    permits: "Dubai Municipality Building Permit",
+    bench: "Architectural Fit-Out & Joinery",
     img: "/static/pages-bg.webp",
     alt: "Emirates Hills luxury architectural residence and landscape in Dubai",
     description: "Coordinated MEP installations, acoustic partitions, and white-glove site delivery managed by dedicated site engineers.",
@@ -60,6 +66,8 @@ const STAGES = [
     location: "Palm Jumeirah Waterfront, Dubai",
     scope: "Curved Joinery & White-Glove Handover",
     area: "11,800 SQ. FT.",
+    permits: "Trakhees Complete Handover Sign-Off",
+    bench: "Custom Furniture & Millwork",
     img: "/static/work-myrtle.jpg",
     alt: "Palm Jumeirah luxury villa interior joinery and custom sculptural furniture",
     description: "Zero-defect snagging, complete operation manuals, and post-occupancy warranty support across Dubai.",
@@ -75,6 +83,7 @@ export default function Hero() {
   const [placeholderIdx, setPlaceholderIdx] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
+  const [viewMode, setViewMode] = useState("gallery"); // "gallery" | "cad"
 
   const heroRef = useRef(null);
   const stageViewportRef = useRef(null);
@@ -104,6 +113,7 @@ export default function Hero() {
 
   // Stage cross-fade animation with GSAP
   useEffect(() => {
+    if (viewMode !== "gallery") return;
     const currentSlide = slidesRef.current[activeIdx];
     if (!currentSlide) return;
     const currentImg = currentSlide.querySelector("img");
@@ -131,7 +141,7 @@ export default function Hero() {
         });
       }
     });
-  }, [activeIdx]);
+  }, [activeIdx, viewMode]);
 
   // Autoplay progression timer
   useEffect(() => {
@@ -158,10 +168,8 @@ export default function Hero() {
       }
     };
 
-    // Listen for preloader docking event
     window.addEventListener("preloader-docked", runEntrance);
 
-    // Fallback if preloader is not rendered or already finished
     const fallbackTimer = setTimeout(() => {
       if (!document.querySelector(".monolith-preloader")) {
         runEntrance();
@@ -197,7 +205,7 @@ export default function Hero() {
   return (
     <section
       ref={heroRef}
-      className="glide-hero-section"
+      className="glide-hero-section is-dark"
       aria-label="Yashmeen Turnkey Fit-Out & Bespoke Joinery Atelier"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -242,7 +250,7 @@ export default function Hero() {
           Yashmeen is Dubai&apos;s turnkey fit-out contractor and bespoke joinery atelier. We turn architectural concepts and authority approvals into built reality, direct from our 35,000 sq.ft factory floor.
         </p>
 
-        {/* 2. The Floating Interactive Space Prompt Card (The Glide Box) */}
+        {/* 2. The Smoked Obsidian Space Prompt Card (Glide Power + Monolith Luxury) */}
         <div className="glide-prompt-card glide-hero-anim">
           <div className="glide-prompt-top">
             <div className="glide-prompt-input-row">
@@ -309,73 +317,134 @@ export default function Hero() {
               className="glide-prompt-build-btn"
             >
               <span>Build Your Space</span>
-              <span className="g-circle is-light" aria-hidden="true" />
+              <span className="g-circle is-red" aria-hidden="true" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* 3. Physical Architectural Space Showcase Foundation (Overlapped by Prompt Card) */}
+      {/* 3. Physical Architectural Space Showcase Foundation */}
       <div className="glide-stage-wrap">
-        {/* Architectural Process Stage OS Tabs (Glide Walkthrough Steps) */}
-        <div className="glide-stage-tabs-bar" role="tablist" aria-label="Craftsmanship lifecycle stages">
-          {STAGES.map((stage, idx) => (
+        {/* Stage Controls: Mode Switcher (Gallery vs CAD Spec Ledger) & Walkthrough Tabs */}
+        <div className="glide-stage-header-row">
+          {/* Monolith-Style View Toggle: IMG / TXT */}
+          <div className="glide-view-mode-toggle" role="group" aria-label="Display View Mode">
             <button
-              key={stage.id}
               type="button"
-              role="tab"
-              aria-selected={idx === activeIdx}
-              className={`glide-stage-tab ${idx === activeIdx ? "is-active" : ""}`}
-              onClick={() => goToStage(idx, true)}
+              className={`glide-view-toggle-btn ${viewMode === "gallery" ? "is-active" : ""}`}
+              onClick={() => setViewMode("gallery")}
             >
-              <span className="glide-tab-header">
-                <span className="glide-tab-num">{stage.num}</span>
-                <span className="glide-tab-title">{stage.title}</span>
-              </span>
-              <span className="glide-tab-line" />
+              GALLERY [IMG]
             </button>
-          ))}
-        </div>
-
-        {/* The Architectural 3D Space Viewport Window */}
-        <div ref={stageViewportRef} className="glide-stage-viewport">
-          {STAGES.map((stage, idx) => (
-            <div
-              key={stage.id}
-              ref={(el) => (slidesRef.current[idx] = el)}
-              className={`glide-stage-slide ${idx === activeIdx ? "is-active" : ""}`}
-              style={{ zIndex: idx === activeIdx ? 2 : 1 }}
+            <span className="glide-view-toggle-sep">/</span>
+            <button
+              type="button"
+              className={`glide-view-toggle-btn ${viewMode === "cad" ? "is-active" : ""}`}
+              onClick={() => setViewMode("cad")}
             >
-              <img
-                src={stage.img}
-                alt={stage.alt}
-                className="glide-stage-img"
-                loading={idx === 0 ? "eager" : "lazy"}
-              />
-              <div className="glide-stage-scrim" />
+              CAD LEDGER [TXT]
+            </button>
+          </div>
 
-              {/* Stage Context Capsule */}
-              <div className="glide-stage-capsule">
-                <div className="glide-capsule-meta">
-                  <span className="glide-capsule-tag">{stage.stepName}</span>
-                  <span className="glide-capsule-location">{stage.location}</span>
-                  <span className="glide-capsule-sep">·</span>
-                  <span className="glide-capsule-scope">{stage.scope}</span>
-                  <span className="glide-capsule-sep">·</span>
-                  <span className="glide-capsule-area">{stage.area}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={openEnquiry}
-                  className="glide-capsule-btn"
-                >
-                  <span>Explore Space</span>
-                  <span aria-hidden="true">→</span>
-                </button>
-              </div>
-            </div>
-          ))}
+          {/* Architectural Process Stage OS Tabs */}
+          <div className="glide-stage-tabs-bar" role="tablist" aria-label="Craftsmanship lifecycle stages">
+            {STAGES.map((stage, idx) => (
+              <button
+                key={stage.id}
+                type="button"
+                role="tab"
+                aria-selected={idx === activeIdx}
+                className={`glide-stage-tab ${idx === activeIdx ? "is-active" : ""}`}
+                onClick={() => goToStage(idx, true)}
+              >
+                <span className="glide-tab-header">
+                  <span className="glide-tab-num">{stage.num}</span>
+                  <span className="glide-tab-title">{stage.title}</span>
+                </span>
+                <span className="glide-tab-line" />
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Dynamic Display Mode */}
+        {viewMode === "gallery" ? (
+          /* The Architectural 3D Space Viewport Window */
+          <div ref={stageViewportRef} className="glide-stage-viewport">
+            {STAGES.map((stage, idx) => (
+              <div
+                key={stage.id}
+                ref={(el) => (slidesRef.current[idx] = el)}
+                className={`glide-stage-slide ${idx === activeIdx ? "is-active" : ""}`}
+                style={{ zIndex: idx === activeIdx ? 2 : 1 }}
+              >
+                <img
+                  src={stage.img}
+                  alt={stage.alt}
+                  className="glide-stage-img"
+                  loading={idx === 0 ? "eager" : "lazy"}
+                />
+                <div className="glide-stage-scrim" />
+
+                {/* Stage Context Capsule */}
+                <div className="glide-stage-capsule">
+                  <div className="glide-capsule-meta">
+                    <span className="glide-capsule-tag">{stage.stepName}</span>
+                    <span className="glide-capsule-location">{stage.location}</span>
+                    <span className="glide-capsule-sep">·</span>
+                    <span className="glide-capsule-scope">{stage.scope}</span>
+                    <span className="glide-capsule-sep">·</span>
+                    <span className="glide-capsule-area">{stage.area}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={openEnquiry}
+                    className="glide-capsule-btn"
+                  >
+                    <span>Explore Project</span>
+                    <span aria-hidden="true">→</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* Monolith-Style CAD Specification Ledger Table */
+          <div className="glide-cad-ledger-viewport">
+            <div className="glide-cad-ledger-header">
+              <span className="glide-cad-col is-num">NUMBER</span>
+              <span className="glide-cad-col is-project">COMMISSION</span>
+              <span className="glide-cad-col is-location">DUBAI LOCATION</span>
+              <span className="glide-cad-col is-permits">STATUTORY PERMITS</span>
+              <span className="glide-cad-col is-bench">ATELIER PRODUCTION</span>
+              <span className="glide-cad-col is-action">ACTION</span>
+            </div>
+            <div className="glide-cad-ledger-body">
+              {STAGES.map((item, idx) => (
+                <div
+                  key={item.id}
+                  className={`glide-cad-row ${idx === activeIdx ? "is-active" : ""}`}
+                  onClick={() => goToStage(idx, true)}
+                >
+                  <span className="glide-cad-cell is-num">{item.num} / M_0{idx + 1}</span>
+                  <span className="glide-cad-cell is-project">{item.title}</span>
+                  <span className="glide-cad-cell is-location">{item.location}</span>
+                  <span className="glide-cad-cell is-permits">{item.permits}</span>
+                  <span className="glide-cad-cell is-bench">{item.bench}</span>
+                  <span className="glide-cad-cell is-action">
+                    <button
+                      type="button"
+                      onClick={openEnquiry}
+                      className="glide-cad-inspect-btn"
+                    >
+                      [ INQUIRE ]
+                    </button>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 4. Monochrome Authority & Client Trust Baseline */}
         <div className="glide-trust-baseline">

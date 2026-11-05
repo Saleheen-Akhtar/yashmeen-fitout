@@ -1,22 +1,60 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import gsap from "gsap";
 import "../../styles/preloader.css";
 
 const CRAFT_CARDS = [
-  { id: "01", caption: "01 / 35,000 SQ. FT. JOINERY BENCH", img: "/static/work-clifton.jpg" },
-  { id: "02", caption: "02 / DUBAI AUTHORITY CAD SIGN-OFF", img: "/static/hero.jpg" },
-  { id: "03", caption: "03 / CALACATTA & TRAVERTINE MARBLE", img: "/static/pages-bg.webp" },
-  { id: "04", caption: "04 / BESPOKE CURVED MILLWORK", img: "/static/work-myrtle.jpg" },
-  { id: "05", caption: "05 / CNC PRECISION TIMBER ROUTING", img: "/static/work-clifton.jpg" },
-  { id: "06", caption: "06 / WHITE-GLOVE TURNKEY HANDOVER", img: "/static/work-myrtle.jpg" },
+  {
+    id: "01",
+    tag: "MATERIAL SPECIFICATION",
+    caption: "01 / AMERICAN WALNUT · 35,000 SQ. FT. BENCH",
+    material: "MAT: AMERICAN_WALNUT_FLUTED_CNC",
+    img: "/static/work-clifton.jpg",
+  },
+  {
+    id: "02",
+    tag: "AUTHORITY APPROVAL",
+    caption: "02 / STATUTORY CAD · DUBAI MUNICIPALITY SIGN-OFF",
+    material: "SPEC: DM_CIVIL_DEFENCE_PERMIT_08",
+    img: "/static/hero.jpg",
+  },
+  {
+    id: "03",
+    tag: "NATURAL STONE",
+    caption: "03 / BOOKMATCHED CALACATTA & TRAVERTINE",
+    material: "MAT: CALACATTA_GOLD_HONED_MARBLE",
+    img: "/static/pages-bg.webp",
+  },
+  {
+    id: "04",
+    tag: "BESPOKE JOINERY",
+    caption: "04 / CURVED ARCHITECTURAL MILLWORK",
+    material: "MAT: CURVED_TIMBER_PALM_WATERFRONT",
+    img: "/static/work-myrtle.jpg",
+  },
+  {
+    id: "05",
+    tag: "ATELIER FABRICATION",
+    caption: "05 / 5-AXIS CNC PRECISION MILLING",
+    material: "SPEC: 35,000_SQFT_INHOUSE_FABRICATION",
+    img: "/static/work-clifton.jpg",
+  },
+  {
+    id: "06",
+    tag: "TURNKEY HANDOVER",
+    caption: "06 / WHITE-GLOVE RESIDENTIAL HANDOVER",
+    material: "SPEC: ZERO_DEFECT_EXECUTIVE_SUITE",
+    img: "/static/work-myrtle.jpg",
+  },
 ];
 
 export default function Preloader({ onComplete }) {
   const [activeCard, setActiveCard] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [replayKey, setReplayKey] = useState(0);
+  const [dubaiTime, setDubaiTime] = useState("18:00");
 
   const preloaderRef = useRef(null);
+  const stageRef = useRef(null);
   const logoLeftRef = useRef(null);
   const logoRightRef = useRef(null);
   const leftMaskRef = useRef(null);
@@ -28,6 +66,50 @@ export default function Preloader({ onComplete }) {
   const isFinishedRef = useRef(false);
   const timelineRef = useRef(null);
 
+  // Live Dubai GST clock
+  useEffect(() => {
+    const updateTime = () => {
+      try {
+        const timeStr = new Date().toLocaleTimeString("en-US", {
+          timeZone: "Asia/Dubai",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
+        setDubaiTime(timeStr);
+      } catch (e) {
+        setDubaiTime("20:00");
+      }
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // 3D Mouse Parallax on Aperture Window
+  const handleMouseMove = useCallback((e) => {
+    if (!apertureRef.current || isFinishedRef.current) return;
+    const { clientX, clientY } = e;
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    const dx = (clientX - cx) / cx;
+    const dy = (clientY - cy) / cy;
+
+    gsap.to(apertureRef.current, {
+      rotateY: dx * 14,
+      rotateX: -dy * 14,
+      transformPerspective: 1000,
+      ease: "power2.out",
+      duration: 0.45,
+    });
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [handleMouseMove]);
+
+  // Expose replay for DevTools or live demonstration
   useEffect(() => {
     window.__replayPreloader = () => {
       isFinishedRef.current = false;
@@ -44,7 +126,6 @@ export default function Preloader({ onComplete }) {
   }, []);
 
   useEffect(() => {
-    console.log("[PRELOADER] Main useEffect ran, replayKey:", replayKey);
     // Lock scrolling on mount
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -52,26 +133,25 @@ export default function Preloader({ onComplete }) {
     let heroTriggered = false;
 
     const finishPreloader = () => {
-      console.log("[PRELOADER] finishPreloader invoked");
       if (isFinishedRef.current) return;
       isFinishedRef.current = true;
 
-      // Animate split logo halves together
+      // Animate split logo halves smoothly
       if (logoLeftRef.current && logoRightRef.current) {
         gsap.to([logoLeftRef.current, logoRightRef.current], {
           x: "0%",
-          duration: 0.6,
+          duration: 0.65,
           ease: "power3.inOut",
         });
       }
 
-      // Shrink and fade the center aperture
+      // Smooth bloom of the aperture into the hero space
       if (apertureRef.current) {
         gsap.to(apertureRef.current, {
-          scale: 0.88,
+          scale: 1.15,
           opacity: 0,
-          duration: 0.4,
-          ease: "power2.in",
+          duration: 0.65,
+          ease: "power3.inOut",
         });
       }
 
@@ -79,20 +159,20 @@ export default function Preloader({ onComplete }) {
       if (bottomBarRef.current) {
         gsap.to(bottomBarRef.current, {
           opacity: 0,
-          y: 12,
+          y: 14,
           duration: 0.35,
         });
       }
 
-      // Smooth curtain wipe up revealing hero
+      // Fluid curtain wipe up revealing hero
       if (preloaderRef.current) {
         gsap.to(preloaderRef.current, {
           yPercent: -100,
           duration: 1.05,
           ease: "power4.inOut",
-          delay: 0.15,
+          delay: 0.1,
           onUpdate: function () {
-            // At 40% curtain lift, trigger hero entrance for seamless docking
+            // At 40% curtain lift, trigger hero entrance
             if (this.progress() > 0.4 && !heroTriggered) {
               heroTriggered = true;
               document.body.style.overflow = originalOverflow || "";
@@ -113,24 +193,24 @@ export default function Preloader({ onComplete }) {
       gsap.set(preloaderRef.current, { yPercent: 0, opacity: 1, visibility: "visible" });
       gsap.set([logoLeftRef.current, logoRightRef.current], { x: "0%" });
       gsap.set([leftMaskRef.current, rightMaskRef.current], { x: "0%" });
-      if (apertureRef.current) gsap.set(apertureRef.current, { scale: 1, opacity: 1 });
+      if (apertureRef.current) gsap.set(apertureRef.current, { scale: 1, opacity: 1, rotateX: 0, rotateY: 0 });
       if (bottomBarRef.current) gsap.set(bottomBarRef.current, { opacity: 1, y: 0 });
 
       const tl = gsap.timeline();
       timelineRef.current = tl;
 
-      // Gentle pause before split
-      tl.to({}, { duration: 0.25 });
+      // Initial pause
+      tl.to({}, { duration: 0.2 });
 
       // Split "YASH" left, "MEEN" right, open center masks
       tl.add(() => {
         gsap.to(logoLeftRef.current, {
-          x: "-24%",
+          x: "-25%",
           duration: 0.9,
           ease: "power3.inOut",
         });
         gsap.to(logoRightRef.current, {
-          x: "20%",
+          x: "22%",
           duration: 0.9,
           ease: "power3.inOut",
         });
@@ -198,17 +278,22 @@ export default function Preloader({ onComplete }) {
 
   if (!isVisible) return null;
 
+  const currentMaterial = CRAFT_CARDS[activeCard]?.material || "";
+
   return (
     <div
       ref={preloaderRef}
       className="monolith-preloader"
       aria-label="Yashmeen Atelier Initializing"
     >
-      {/* 1. Top Telemetry Bar */}
+      {/* 1. Top Telemetry Bar with Live Dubai GST Time */}
       <div className="preloader-top-bar">
         <div className="preloader-brand-label">
           <span className="preloader-red-dot" aria-hidden="true" />
-          <span>YASHMEEN · DUBAI</span>
+          <span className="preloader-brand-text">YASHMEEN · DUBAI</span>
+          <span className="preloader-time-sep">/</span>
+          <span className="preloader-time-val">{dubaiTime} GST</span>
+          <span className="preloader-coords-val">25.2048° N, 55.2708° E</span>
         </div>
         <button
           type="button"
@@ -216,7 +301,7 @@ export default function Preloader({ onComplete }) {
             if (preloaderRef.current) {
               gsap.to(preloaderRef.current, {
                 yPercent: -100,
-                duration: 0.6,
+                duration: 0.55,
                 ease: "power3.inOut",
                 onComplete: () => {
                   document.body.style.overflow = "";
@@ -234,8 +319,8 @@ export default function Preloader({ onComplete }) {
         </button>
       </div>
 
-      {/* 2. Center Stage: Split Monolith Typography & Craft Aperture */}
-      <div className="preloader-center-stage">
+      {/* 2. Center Stage: Split Monolith Typography & 3D Shutter Aperture */}
+      <div ref={stageRef} className="preloader-center-stage">
         <div className="preloader-wordmark-container">
           {/* Left Half: YASH */}
           <div ref={logoLeftRef} className="preloader-logo-half preloader-logo-left">
@@ -259,7 +344,10 @@ export default function Preloader({ onComplete }) {
                     className="preloader-craft-img"
                     loading="eager"
                   />
-                  <div className="preloader-card-caption">{card.caption}</div>
+                  <div className="preloader-card-badge">
+                    <span className="preloader-card-tag">{card.tag}</span>
+                    <span className="preloader-card-caption">{card.caption}</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -275,9 +363,9 @@ export default function Preloader({ onComplete }) {
       {/* 3. Bottom Telemetry Datum Bar */}
       <div ref={bottomBarRef} className="preloader-bottom-bar">
         <div className="preloader-meta-wrap">
-          <div className="preloader-meta-label">INITIALIZING WORKSPACE</div>
+          <div className="preloader-meta-label">ATELIER SPECIFICATION</div>
           <div className="preloader-status-text">
-            (DUBAI_TURNKEY_FITOUT_ATELIER_04)
+            {currentMaterial}
           </div>
         </div>
 

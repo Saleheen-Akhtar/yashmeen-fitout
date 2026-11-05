@@ -36,45 +36,49 @@
   border-bottom: 1px solid var(--line);
 }
 
-/* Floating header over light architectural paper hero */
+/* Floating header over dark architectural monolithic hero */
 .site-header:not(.is-scrolled) {
-  background: rgba(252, 252, 252, 0.75);
-  backdrop-filter: saturate(160%) blur(12px);
-  -webkit-backdrop-filter: saturate(160%) blur(12px);
-  border-bottom: 1px solid rgba(8, 8, 7, 0.06);
+  background: rgba(8, 8, 7, 0.55);
+  backdrop-filter: saturate(160%) blur(16px);
+  -webkit-backdrop-filter: saturate(160%) blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .site-header:not(.is-scrolled) .site-brand-text {
-  color: #080807;
+  color: #ffffff;
 }
 .site-header:not(.is-scrolled) .site-brand-city {
-  color: rgba(8, 8, 7, 0.6);
-  border-left-color: rgba(8, 8, 7, 0.2);
+  color: rgba(255, 255, 255, 0.6);
+  border-left-color: rgba(255, 255, 255, 0.2);
 }
 .site-header:not(.is-scrolled) .site-nav-link {
-  color: rgba(8, 8, 7, 0.78);
+  color: rgba(255, 255, 255, 0.75);
 }
 .site-header:not(.is-scrolled) .site-nav-link:hover {
-  color: #080807;
+  color: #ffffff;
 }
 .site-header:not(.is-scrolled) .site-nav-sep {
-  color: rgba(8, 8, 7, 0.3);
+  color: rgba(255, 255, 255, 0.25);
 }
 .site-header:not(.is-scrolled) .header-btn-enquire {
-  background: #ffffff;
-  color: #080807;
-  border: 1px solid rgba(8, 8, 7, 0.14);
-  box-shadow: 0 1px 3px rgba(8, 8, 7, 0.05);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+.site-header:not(.is-scrolled) .header-btn-enquire:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 .site-header:not(.is-scrolled) .header-btn-enquire .g-circle {
   background: var(--accent-red);
 }
 .site-header:not(.is-scrolled) .header-btn-menu {
-  background: #080807;
-  color: #ffffff;
-  border-color: #080807;
+  background: #ffffff;
+  color: #080807;
+  border-color: #ffffff;
 }
 .site-header:not(.is-scrolled) .header-btn-menu:hover {
-  background: #222220;
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .site-header.is-hidden {

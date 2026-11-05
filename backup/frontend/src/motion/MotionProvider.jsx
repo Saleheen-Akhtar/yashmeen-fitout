@@ -126,24 +126,30 @@ export default function MotionProvider() {
               { scale: 1.05, opacity: 0 },
               { scale: 1.0, opacity: 1, duration: 1.4 }
             )
-            .fromTo(
+          if (telemetryBar) {
+            heroTl.fromTo(
               telemetryBar,
               { yPercent: 120, opacity: 0 },
               { yPercent: 0, opacity: 1, duration: 1.2 },
               "-=1.2"
-            )
-            .fromTo(
+            );
+          }
+          if (heroBadges && heroBadges.length) {
+            heroTl.fromTo(
               heroBadges,
               { y: -20, opacity: 0 },
               { y: 0, opacity: 1, duration: 0.9, stagger: 0.08 },
               "-=1.0"
-            )
-            .fromTo(
+            );
+          }
+          if (scrollCue) {
+            heroTl.fromTo(
               scrollCue,
               { yPercent: 100, opacity: 0 },
               { yPercent: 0, opacity: 1, duration: 1.0 },
               "-=0.9"
             );
+          }
 
           // Continuous Hero Parallax Depth Scrub (clean translate without scale reflow)
           if (heroCanvas) {

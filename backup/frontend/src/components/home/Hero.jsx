@@ -67,7 +67,6 @@ export default function Hero() {
   const stageRectRef = useRef(null);
   const slidesRef = useRef([]);
   const headlineRef = useRef(null);
-  const baselineRef = useRef(null);
   const progressTimerRef = useRef(null);
   const dragStartXRef = useRef(null);
   const isDraggingRef = useRef(false);
@@ -113,15 +112,6 @@ export default function Hero() {
         });
       }
     });
-
-    // Subtle baseline update animation
-    if (baselineRef.current) {
-      gsap.fromTo(
-        baselineRef.current,
-        { opacity: 0.4 },
-        { opacity: 1, duration: 0.5, ease: "power2.out" }
-      );
-    }
   }, [activeIdx]);
 
   // Autoplay progression timer (pauses if user hovers or interacts)
@@ -314,81 +304,6 @@ export default function Hero() {
               <span aria-hidden="true">→</span>
             </a>
           </div>
-        </div>
-      </div>
-
-      {/* Bottom Architectural Scrubber Baseline & Telemetry Strip */}
-      <div className="hero-provocative-baseline" ref={baselineRef}>
-        {/* Active Commission Header Row */}
-        <div className="hero-baseline-meta-row">
-          <div className="hero-baseline-project">
-            <span className="hero-baseline-idx">{activeCommission.index}</span>
-            <span className="hero-baseline-sep">·</span>
-            <span className="hero-baseline-loc">{activeCommission.location}</span>
-            <span className="hero-baseline-sep">·</span>
-            <span className="hero-baseline-name">{activeCommission.title}</span>
-            <span className="hero-baseline-sep">·</span>
-            <span className="hero-baseline-scope">{activeCommission.scope}</span>
-          </div>
-
-          <div className="hero-baseline-actions">
-            <button
-              type="button"
-              onClick={openEnquiry}
-              className="btn-pill btn-pill-light hero-baseline-pill-btn"
-            >
-              <span>EXPLORE SPACE</span>
-              <span className="g-circle is-dark" aria-hidden="true" />
-            </button>
-
-            <a href="#manifesto" className="hero-minimal-scroll" aria-label="Scroll down to studio manifesto">
-              <span>(SCROLL DOWN)</span>
-              <span className="hero-minimal-arrow" aria-hidden="true">↓</span>
-            </a>
-          </div>
-        </div>
-
-        {/* 4-Item Architectural Interactive Scrubber Track (Image 2) */}
-        <div
-          className="hero-interactive-scrubber-bar"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          role="tablist"
-          aria-label="Commission Navigator"
-        >
-          {COMMISSIONS.map((item, idx) => {
-            const isActive = idx === activeIdx;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  goToCommission(idx, true);
-                }}
-                onMouseEnter={() => {
-                  goToCommission(idx, true);
-                }}
-                className={`hero-scrubber-tab ${isActive ? "is-active" : ""}`}
-              >
-                <div className="hero-tab-progress-line">
-                  <div
-                    className="hero-tab-progress-fill"
-                    style={{
-                      width: isActive && !isPaused && !userHasInteracted ? "100%" : isActive ? "100%" : "0%",
-                      transition: isActive && !isPaused && !userHasInteracted ? `width ${AUTOPLAY_DURATION}ms linear` : "none",
-                    }}
-                  />
-                </div>
-                <div className="hero-tab-content">
-                  <span className="hero-tab-num">{item.id}</span>
-                  <span className="hero-tab-title">{item.shortTitle}</span>
-                </div>
-              </button>
-            );
-          })}
         </div>
       </div>
     </section>

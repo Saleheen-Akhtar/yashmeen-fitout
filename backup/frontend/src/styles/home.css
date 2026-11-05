@@ -12,56 +12,32 @@
    - Literary Serif Description: 'Cormorant Garamond'
    - 100% Mobile 1st & Section 9.G Compliant (0 em/en-dashes)
    ========================================================================== */
-.yashmeen-monolith-hero,
-.colonia-hero-section {
+/* ==========================================================================
+   MINIMALIST ARCHITECTURAL HERO SECTION
+   Yashmeen Future Building & Fit-Out Contracting L.L.C.
+   - Clean, quiet luxury architectural editorial
+   - Monumental single-word brandmark: YASHMEEN
+   - Grand cinematic architectural showcase viewport
+   - 100% Mobile First & Section 9.G Compliant (0 em/en-dashes)
+   ========================================================================== */
+
+.minimal-hero {
   position: relative;
   width: 100vw;
   min-height: 100vh;
-  height: 100vh;
   background-color: #080807;
   color: #ffffff;
-  user-select: none;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-sizing: border-box;
   padding: clamp(16px, 2.5vh, 28px) clamp(20px, 3.5vw, 44px);
-}
-
-/* Ambient Architectural Glow Vignette */
-.hero-ambient-glow {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 45%, rgba(197, 160, 89, 0.08) 0%, rgba(32, 26, 20, 0.35) 40%, rgba(8, 8, 7, 0.98) 75%);
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* CAD Grid Crosshairs */
-.hero-cad-grid {
-  position: absolute;
-  inset: clamp(12px, 2vw, 24px);
-  pointer-events: none;
-  z-index: 2;
-}
-
-.cad-crosshair {
-  position: absolute;
-  font-family: "Roboto Mono", monospace;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.16);
+  overflow-x: hidden;
   user-select: none;
-  line-height: 1;
 }
 
-.cad-top-left { top: 0; left: 0; }
-.cad-top-right { top: 0; right: 0; }
-.cad-bottom-left { bottom: 0; left: 0; }
-.cad-bottom-right { bottom: 0; right: 0; }
-
-/* 1. Top Telemetry Row */
-.hero-top-telemetry {
+/* 1. Minimal Top Telemetry Header */
+.minimal-hero-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -70,95 +46,88 @@
   margin: 0 auto;
   z-index: 10;
   font-family: "Roboto Mono", monospace;
-  font-size: clamp(11px, 1.15vw, 13px);
+  font-size: clamp(11px, 1.1vw, 12.5px);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.hero-telemetry-left {
+.minimal-hero-top-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
 }
 
-.hero-pulse-dot {
-  width: 7px;
-  height: 7px;
+.minimal-status-dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background-color: #d30000;
   box-shadow: 0 0 8px rgba(211, 0, 0, 0.8);
-  animation: heroDotPulse 1.8s infinite ease-in-out;
+  animation: minimalPulse 1.8s infinite ease-in-out;
 }
 
-@keyframes heroDotPulse {
+@keyframes minimalPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.35; transform: scale(0.8); }
 }
 
-.hero-brand-name {
+.minimal-brand-title {
+  font-weight: 700;
   color: #ffffff;
-  font-weight: 600;
+  letter-spacing: 0.12em;
 }
 
-.hero-sep {
-  color: rgba(255, 255, 255, 0.28);
+.minimal-sep {
+  color: rgba(255, 255, 255, 0.25);
 }
 
-.hero-time {
+.minimal-meta {
+  color: #ffffff;
+}
+
+.minimal-time {
   color: #ffffff;
   font-feature-settings: 'tnum' on;
 }
 
-.hero-coords {
-  color: rgba(255, 255, 255, 0.45);
+.minimal-coords {
+  color: rgba(255, 255, 255, 0.4);
   font-size: 11px;
 }
 
-.hero-facility-tag {
-  color: #c5a059;
-  font-size: 11px;
-}
-
-/* Center Anchor Navigation */
-.hero-nav-anchors {
+.minimal-hero-nav {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-.hero-anchor-link {
-  color: rgba(255, 255, 255, 0.65);
+.minimal-nav-link {
+  color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
-  font-family: "Roboto Mono", monospace;
   font-size: 11px;
   letter-spacing: 0.08em;
   transition: color 0.2s ease;
 }
-.hero-anchor-link:hover {
+
+.minimal-nav-link:hover {
   color: #ffffff;
 }
 
-.hero-anchor-sep {
-  color: rgba(255, 255, 255, 0.22);
+.minimal-nav-sep {
+  color: rgba(255, 255, 255, 0.2);
 }
 
-/* Right Actions */
-.hero-telemetry-right {
+.minimal-hero-top-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
-.hero-lang-tag {
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 11px;
-}
-
-.hero-rfq-pill-btn {
-  background: rgba(255, 255, 255, 0.08);
+.minimal-btn-rfq {
+  background: rgba(255, 255, 255, 0.06);
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 9999px;
   padding: 5px 16px;
   font-family: "Roboto Mono", monospace;
@@ -170,14 +139,16 @@
   align-items: center;
   gap: 8px;
   backdrop-filter: blur(8px);
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
 }
-.hero-rfq-pill-btn:hover {
+
+.minimal-btn-rfq:hover {
   background: #ffffff;
   color: #080807;
   transform: translateY(-1px);
 }
-.hero-rfq-dot {
+
+.minimal-btn-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
@@ -185,7 +156,7 @@
   box-shadow: 0 0 6px rgba(211, 0, 0, 0.8);
 }
 
-.hero-menu-pill-btn {
+.minimal-btn-menu {
   background: transparent;
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -196,249 +167,172 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   cursor: pointer;
-  transition: all 0.25s ease;
-}
-.hero-menu-pill-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #ffffff;
-  transform: translateY(-1px);
+  transition: all 0.2s ease;
 }
 
-/* 2. Main Monolithic Stage */
-.hero-monolith-stage {
+.minimal-btn-menu:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #ffffff;
+}
+
+/* 2. Monumental Minimalist Stage */
+.minimal-hero-stage {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 1560px;
+  max-width: 1360px;
   margin: auto;
   position: relative;
   z-index: 5;
-  padding-bottom: clamp(16px, 3vh, 32px);
-  gap: clamp(12px, 2vh, 22px);
+  padding-top: clamp(18px, 3vh, 36px);
+  padding-bottom: clamp(16px, 2.5vh, 28px);
+  gap: clamp(10px, 1.8vh, 18px);
+  text-align: center;
 }
 
-/* Brand Classification Tag */
-.hero-brand-descriptor {
+.minimal-hero-tag {
   font-family: "Roboto Mono", monospace;
-  font-size: clamp(10px, 1.1vw, 12px);
+  font-size: clamp(10px, 1.05vw, 12px);
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: #c5a059;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  user-select: none;
-  margin-bottom: -4px;
 }
 
-.descriptor-bracket {
-  color: rgba(197, 160, 89, 0.4);
-}
-
-.descriptor-core {
-  color: #ffffff;
-  letter-spacing: 0.14em;
-}
-
-.descriptor-sep {
-  color: rgba(197, 160, 89, 0.5);
-}
-
-.descriptor-facility {
-  color: #c5a059;
-}
-
-/* Title Row: [ YASH ] - [ Portrait Aperture ] [ MEEN ] */
-.hero-title-row {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  gap: clamp(18px, 3.2vw, 40px);
-  box-sizing: border-box;
-}
-
-.hero-center-dash {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+.minimal-hero-wordmark {
   font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: clamp(3rem, 7vw, 6rem);
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.12);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.hero-word {
-  align-items: center;
-  display: flex;
-  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: clamp(4.2rem, 11vw, 9.8rem);
+  font-size: clamp(3.6rem, 11vw, 9.5rem);
   font-weight: 800;
   line-height: 0.88;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   text-transform: uppercase;
   color: #ffffff;
+  margin: 0;
   user-select: none;
-  white-space: nowrap;
-  flex-shrink: 0;
-  box-sizing: border-box;
-  z-index: 2;
 }
 
-.hero-word-left {
-  justify-content: flex-end;
-  text-align: right;
+.minimal-hero-manifesto {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(16px, 1.7vw, 22px);
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.78);
+  max-width: 640px;
+  margin: 0;
 }
 
-.hero-word-right {
-  justify-content: flex-start;
-  text-align: left;
-}
-
-/* Center Aperture Window (Portrait 3:4 aspect ratio matching Reference) */
-.hero-aperture-slot {
-  aspect-ratio: 3 / 4;
-  width: clamp(260px, 23vw, 360px);
-  max-width: 100%;
-  position: relative;
-  overflow: hidden;
-  border-radius: 20px;
-  flex-shrink: 0;
-  z-index: 3;
-  box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.92), 0 0 40px rgba(197, 160, 89, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background-color: #121110;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
-}
-.hero-aperture-slot:hover {
-  transform: scale(1.02);
-  box-shadow: 0 36px 90px -10px rgba(0, 0, 0, 0.95), 0 0 50px rgba(197, 160, 89, 0.22);
-}
-
-.hero-aperture-frame {
-  position: relative;
+/* 3. Grand Cinematic Showcase Viewport */
+.minimal-showcase-frame {
   width: 100%;
-  height: 100%;
+  max-width: 1240px;
+  height: clamp(240px, 38vh, 380px);
+  border-radius: 14px;
   overflow: hidden;
-  border-radius: inherit;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.85);
+  margin-top: 4px;
+  background-color: #121110;
 }
 
-.hero-aperture-img {
+.minimal-showcase-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   display: block;
-  transform: scale(1.03);
-  transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.hero-aperture-slot:hover .hero-aperture-img {
-  transform: scale(1.08);
+  transition: opacity 0.4s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.hero-aperture-scrim {
+.minimal-showcase-frame:hover .minimal-showcase-img {
+  transform: scale(1.03);
+}
+
+.minimal-showcase-scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(8, 8, 7, 0) 30%, rgba(8, 8, 7, 0.85) 85%, rgba(8, 8, 7, 0.98) 100%);
+  background: linear-gradient(180deg, rgba(8, 8, 7, 0) 35%, rgba(8, 8, 7, 0.82) 85%, rgba(8, 8, 7, 0.98) 100%);
   pointer-events: none;
 }
 
-/* Top Badge on Aperture */
-.hero-aperture-top-badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: rgba(8, 8, 7, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 4px 10px;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  font-family: "Roboto Mono", monospace;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.85);
-  text-transform: uppercase;
-  z-index: 4;
-}
-
-.hero-badge-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #d30000;
-  box-shadow: 0 0 6px rgba(211, 0, 0, 0.8);
-}
-
-.hero-badge-tag {
-  font-weight: 500;
-}
-
-/* Bottom Inset Specification Box */
-.hero-aperture-spec-box {
+.minimal-showcase-info {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 14px 14px 12px;
-  background: linear-gradient(180deg, rgba(8, 8, 7, 0) 0%, rgba(8, 8, 7, 0.92) 28%, #080807 100%);
+  padding: clamp(14px, 2.2vw, 24px);
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  z-index: 4;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  z-index: 5;
+  text-align: left;
 }
 
-.hero-spec-header {
+.minimal-info-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 60%;
+}
+
+.minimal-info-badge {
   font-family: "Roboto Mono", monospace;
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #c5a059;
 }
 
-.hero-spec-value {
-  font-family: "Roboto Mono", monospace;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+.minimal-info-title {
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(15px, 1.6vw, 20px);
+  font-weight: 700;
   color: #ffffff;
-  line-height: 1.35;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
-/* Interactive Switcher Dots */
-.hero-aperture-dots {
+.minimal-info-spec {
+  font-family: "Roboto Mono", monospace;
+  font-size: clamp(10px, 1.05vw, 11.5px);
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.minimal-project-tabs {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-.aperture-dot-btn {
-  background: transparent;
-  border: none;
-  padding: 2px 4px;
+.minimal-tab-btn {
+  background: rgba(8, 8, 7, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9999px;
+  padding: 5px 12px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  color: rgba(255, 255, 255, 0.4);
-  font-family: "Roboto Mono", monospace;
-  font-size: 10px;
+  gap: 6px;
+  backdrop-filter: blur(8px);
   transition: all 0.2s ease;
 }
 
-.aperture-dot-btn .dot-circle {
+.minimal-tab-btn .tab-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
@@ -446,250 +340,136 @@
   transition: all 0.2s ease;
 }
 
-.aperture-dot-btn:hover {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.aperture-dot-btn.is-active {
+.minimal-tab-btn:hover {
   color: #ffffff;
-  font-weight: 600;
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-.aperture-dot-btn.is-active .dot-circle {
-  background: #c5a059;
-  transform: scale(1.3);
-  box-shadow: 0 0 6px rgba(197, 160, 89, 0.8);
-}
-
-/* 3. Tactile White/Black Pill Button with sliding target circle */
-.button-with-circle {
-  margin-top: 4px;
-  z-index: 10;
+.minimal-tab-btn.is-active {
   background: #ffffff;
   color: #080807;
-  border-radius: 9999px;
-  border: none;
-  height: 48px;
-  padding: 0 46px 0 24px;
-  font-family: "Roboto Mono", monospace;
-  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  border-color: #ffffff;
+}
+
+.minimal-tab-btn.is-active .tab-dot {
+  background: #c5a059;
+}
+
+/* 4. Minimalist Action & Trust Band */
+.minimal-hero-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.minimal-explore-btn {
+  background: #ffffff;
+  color: #080807;
+  border: 1px solid #ffffff;
+  border-radius: 9999px;
+  padding: 10px 24px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
-  cursor: pointer;
-  overflow: hidden;
-  white-space: nowrap;
-  --width: 215px;
-  width: var(--width);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 255, 255, 0.12);
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
-  user-select: none;
-  position: relative;
+  gap: 8px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
 }
-.button-with-circle:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7), 0 0 30px rgba(197, 160, 89, 0.3);
-}
-.button-with-circle span {
-  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
-  color: #080807;
-  white-space: nowrap;
-}
-.button-with-circle .button-circle-w {
-  bottom: 0px;
-  height: max-content;
-  margin: auto 0px;
-  position: absolute;
-  right: 6px;
-  top: 0px;
-  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
-}
-.button-with-circle .button-circle {
-  aspect-ratio: 1 / 1;
+
+.minimal-explore-btn:hover {
   background: #080807;
-  border-radius: 50%;
-  height: 28px;
-  width: 28px;
-  position: relative;
-  transition: transform 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19);
-}
-.button-with-circle .button-circle::before {
-  background: #c5a059;
-  border-radius: 50%;
-  content: "";
-  height: 8px;
-  width: 8px;
-  left: 50%;
-  position: absolute;
-  top: 50%;
-  transform: translate3d(-50%, -50%, 0px);
-  transition: transform 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .button-with-circle:hover .button-circle-w,
-  .button-with-circle:focus .button-circle-w {
-    transform: translate(calc(var(--width) * -1 + 42px));
-  }
-  .button-with-circle:hover .button-circle::before,
-  .button-with-circle:focus .button-circle::before {
-    background: #d30000;
-    transform: scale3d(1.4, 1.4, 1) translate3d(-35%, -35%, 0px);
-  }
-  .button-with-circle:hover span,
-  .button-with-circle:focus span {
-    transform: translate(26px);
-  }
+.explore-arrow {
+  transition: transform 0.2s ease;
 }
 
-/* 4. Literary Serif Description */
-.hero-literary-desc {
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: clamp(16px, 1.7vw, 21px);
-  font-weight: 400;
-  line-height: 1.4;
-  letter-spacing: -0.01em;
-  color: rgba(255, 255, 255, 0.75);
-  max-width: 580px;
-  width: calc(100% - 48px);
-  text-align: center;
-  margin: 0;
-  user-select: none;
+.minimal-explore-btn:hover .explore-arrow {
+  transform: translateY(2px);
 }
 
-/* 5. Trust Credentials Band */
-.hero-trust-datum {
+.minimal-trust-chips {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   gap: clamp(8px, 1.8vw, 16px);
   font-family: "Roboto Mono", monospace;
-  font-size: clamp(10px, 1.05vw, 11.5px);
+  font-size: clamp(10px, 1.05vw, 11px);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.72);
-  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
-.hero-trust-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 9999px;
+.trust-chip {
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.trust-chip-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #c5a059;
-}
-
-.hero-trust-sep {
+.trust-sep {
   color: rgba(255, 255, 255, 0.25);
 }
 
-/* 6. Scroll Down Invite */
-.hero-scroll-invite {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  margin-top: 2px;
-  color: rgba(255, 255, 255, 0.5);
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-.hero-scroll-invite:hover {
-  color: #ffffff;
-  transform: translateY(2px);
-}
-.hero-scroll-label {
-  font-family: "Roboto Mono", monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.hero-scroll-arrow {
-  animation: heroScrollBounce 2s infinite ease-in-out;
-}
-
-@keyframes heroScrollBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(4px); }
-}
-
-/* Mobile 1st Responsive Adjustments */
+/* Mobile 1st Responsive */
 @media (max-width: 767px) {
-  .hero-nav-anchors,
-  .hero-coords,
-  .hero-facility-tag,
-  .hero-lang-tag {
+  .minimal-hero-nav,
+  .minimal-coords {
     display: none;
   }
-  .yashmeen-monolith-hero,
-  .colonia-hero-section {
+  .minimal-hero {
     padding: 16px 16px 24px;
     height: auto;
     min-height: 100vh;
   }
-  .hero-monolith-stage {
+  .minimal-hero-stage {
     padding-top: 14px;
-    padding-bottom: 16px;
+    padding-bottom: 14px;
     gap: 12px;
   }
-  .hero-brand-descriptor {
-    flex-direction: column;
-    gap: 4px;
-    text-align: center;
-    font-size: 9.5px;
+  .minimal-hero-wordmark {
+    font-size: clamp(2.8rem, 15vw, 4.4rem);
   }
-  .descriptor-sep {
-    display: none;
-  }
-  .hero-title-row {
-    flex-direction: column;
-    gap: 6px;
-    align-items: center;
-    justify-content: center;
-  }
-  .hero-center-dash {
-    display: none;
-  }
-  .hero-word {
-    font-size: clamp(3rem, 15vw, 4.4rem);
-    text-align: center !important;
-    justify-content: center !important;
-    width: 100%;
-  }
-  .hero-word-left,
-  .hero-word-right {
-    text-align: center !important;
-    justify-content: center !important;
-  }
-  .hero-aperture-slot {
-    width: min(280px, 78vw);
-    aspect-ratio: 3 / 3.8;
-    margin: 2px auto;
-  }
-  .hero-literary-desc {
-    font-size: 14px;
-    line-height: 1.35;
+  .minimal-hero-manifesto {
+    font-size: 15px;
+    line-height: 1.4;
     max-width: 320px;
   }
-  .hero-trust-datum {
+  .minimal-showcase-frame {
+    height: 240px;
+    border-radius: 10px;
+    margin-top: 8px;
+  }
+  .minimal-showcase-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+  .minimal-info-left {
+    max-width: 100%;
+  }
+  .minimal-project-tabs {
+    justify-content: flex-start;
     gap: 6px;
   }
-  .hero-trust-chip {
+  .minimal-tab-btn {
     font-size: 9.5px;
-    padding: 3px 8px;
+    padding: 4px 9px;
+  }
+  .minimal-trust-chips {
+    gap: 6px;
+    font-size: 9.5px;
   }
 }
 

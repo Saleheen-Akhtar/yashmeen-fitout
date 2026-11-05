@@ -1,213 +1,102 @@
-/* Colonia Zacamil Exact Architectural Monolith Preloader
-   Yashmeen Luxury Fit-Out Contracting Atelier
-   - Canvas: Deep Obsidian #080807 (matches Hero section 100%)
-   - Fullscreen inset contracts into portrait aperture slot
-   - Monospace Badges & Telemetry: 'Roboto Mono'
-   - Minimalist Counter & Progress Bar: 'Plus Jakarta Sans'
-   - 100% Mobile 1st & Section 9.G Compliant (0 em/en-dashes) */
+/* ==========================================================================
+   MINIMALIST ARCHITECTURAL PRELOADER
+   Yashmeen Future Building & Fit-Out Contracting L.L.C.
+   - Pure obsidian canvas: #080807
+   - Delicate geometric wordmark with wide tracking
+   - Hairline progress track with gold gradient fill
+   - 100% Mobile First & Section 9.G Compliant (0 em/en-dashes)
+   ========================================================================== */
 
-#loader.colonia-loader {
-  background: #080807;
-  inset: 0px;
-  pointer-events: all;
+#loader.minimal-loader {
   position: fixed;
-  z-index: 10000;
+  inset: 0;
   width: 100vw;
   height: 100vh;
+  background-color: #080807;
+  color: #ffffff;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   user-select: none;
+  box-sizing: border-box;
+}
+
+.minimal-loader-center {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  box-sizing: border-box;
-  color: #ffffff;
-}
-
-/* 1. Fullscreen Inset Background (Exact Colonia Zacamil .background-w) */
-#loader .background-w {
-  clip-path: inset(0px round 0px);
-  height: 100%;
-  left: 0px;
-  position: absolute;
-  top: 0px;
-  width: 100%;
-  pointer-events: none;
-  z-index: 1;
-  will-change: clip-path;
-  transition: clip-path 1.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-}
-
-#loader .background-w.animate {
-  clip-path: inset(var(--inset, 25% 25% 25% 25%) round 20px);
-}
-
-#loader .background-w picture,
-#loader .background-w img {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-
-#loader .background-w img {
-  transition: transform 1.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-  will-change: transform;
-}
-
-#loader .background-w.animate img {
-  transform: scale3d(0.88, 0.88, 1);
-}
-
-/* 2. Top Telemetry Bar */
-#loader .colonia-top-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: clamp(14px, 2.4vw, 24px) clamp(18px, 3.2vw, 36px);
-  z-index: 10;
-  font-family: "Roboto Mono", monospace;
-  font-size: clamp(11px, 1.2vw, 13px);
-  letter-spacing: 0.08em;
+  text-align: center;
+  gap: 12px;
+  max-width: 90vw;
+}
+
+.minimal-loader-wordmark {
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(2.2rem, 5.5vw, 4.2rem);
+  font-weight: 800;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.72);
-  pointer-events: auto;
-}
-
-#loader .colonia-brand-status {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-#loader .colonia-status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: #d30000;
-  box-shadow: 0 0 8px rgba(211, 0, 0, 0.8);
-  animation: coloniaPulse 1.8s infinite ease-in-out;
-}
-
-@keyframes coloniaPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.35; transform: scale(0.8); }
-}
-
-#loader .colonia-brand-title {
   color: #ffffff;
-  font-weight: 600;
+  margin: 0;
+  line-height: 1;
 }
 
-#loader .colonia-time-sep {
-  color: rgba(255, 255, 255, 0.3);
+.minimal-loader-sub {
+  font-family: "Roboto Mono", monospace;
+  font-size: clamp(10px, 1.1vw, 12px);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #c5a059;
+  margin: 0 0 8px;
 }
 
-#loader .colonia-time-val {
-  color: #ffffff;
+.minimal-loader-track {
+  width: clamp(160px, 20vw, 220px);
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+  margin: 6px 0;
+}
+
+.minimal-loader-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c5a059, #f0d599);
+  transition: width 0.08s linear;
+  box-shadow: 0 0 10px rgba(197, 160, 89, 0.6);
+}
+
+.minimal-loader-num {
+  font-family: "Roboto Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.5);
   font-feature-settings: 'tnum' on;
 }
 
-#loader .colonia-coords {
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 11px;
-}
-
-@media (max-width: 640px) {
-  #loader .colonia-coords {
-    display: none;
-  }
-}
-
-#loader .colonia-top-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-#loader .colonia-lang {
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 11px;
-}
-
-#loader .colonia-skip-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+.minimal-loader-skip {
+  position: absolute;
+  top: clamp(16px, 2.5vh, 28px);
+  right: clamp(20px, 3.5vw, 44px);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 9999px;
-  padding: 4px 14px;
+  padding: 5px 14px;
   font-family: "Roboto Mono", monospace;
   font-size: 11px;
   letter-spacing: 0.08em;
-  color: #ffffff;
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   backdrop-filter: blur(8px);
   transition: all 0.2s ease;
 }
 
-#loader .colonia-skip-btn:hover {
+.minimal-loader-skip:hover {
   background: #ffffff;
   color: #080807;
   border-color: #ffffff;
-}
-
-/* 3. Minimalist Center Loading Counter */
-.colonia-loader-counter-wrap {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.colonia-loader-counter-num {
-  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: clamp(3.8rem, 10vw, 7rem);
-  font-weight: 800;
-  line-height: 0.9;
-  color: #ffffff;
-  letter-spacing: -0.03em;
-  font-feature-settings: 'tnum' on;
-}
-
-.colonia-loader-track {
-  width: 220px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 9999px;
-  overflow: hidden;
-  position: relative;
-}
-
-.colonia-loader-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #c5a059, #e5cf9c);
-  transition: width 0.08s linear;
-  box-shadow: 0 0 10px rgba(197, 160, 89, 0.7);
-}
-
-.colonia-loader-tag {
-  font-family: "Roboto Mono", monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.65);
-  white-space: nowrap;
-}
-
-@media (max-width: 767px) {
-  .colonia-loader-tag {
-    font-size: 9px;
-  }
-  .colonia-loader-track {
-    width: 170px;
-  }
 }

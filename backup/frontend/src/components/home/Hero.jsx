@@ -268,41 +268,51 @@ export default function Hero() {
         <span className="hero-cursor-arrows">⇄</span>
       </div>
 
-      {/* Center-Left Provocative Hook Content */}
+      {/* Center-Left Monumental Editorial Content */}
       <div className="hero-provocative-content wrap">
         <div className="hero-provocative-inner" ref={headlineRef}>
-          {/* Eyebrow Tag */}
-          <div className="hero-provocative-eyebrow">
-            <span className="g-circle is-red" aria-hidden="true" />
-            <span>DUBAI TURNKEY FIT-OUT &amp; BESPOKE JOINERY</span>
+          {/* Monumental Display Headline */}
+          <div className="hero-monumental-block">
+            <h1 className="hero-provocative-headline no-split">
+              <span className="hero-headline-line">WE BUILD WHAT</span>
+              <span className="hero-headline-line">
+                <span className="hero-accent-serif font-serif">Others</span> ONLY DRAW<span className="hero-accent-dot">.</span>
+              </span>
+            </h1>
           </div>
 
-          {/* Monumental Provocative Headline */}
-          <h1 className="hero-provocative-headline no-split">
-            WE BUILD WHAT<br />OTHERS ONLY DRAW
-          </h1>
+          {/* Architectural Specification & Action Footer Grid */}
+          <div className="hero-editorial-footer-grid">
+            <div className="hero-editorial-specs">
+              <div className="hero-spec-item">
+                <span className="hero-spec-label">[ 01 · SPECIFICATION ]</span>
+                <p className="hero-spec-text">Turnkey Commercial &amp; Luxury Residential Fit-Out</p>
+              </div>
 
-          {/* Subtitle Value Proposition */}
-          <p className="hero-provocative-sub">
-            Complete turnkey commercial &amp; luxury residential fit-out, Dubai authority approvals,
-            and 35,000 sq.ft in-house factory joinery direct from the bench.
-          </p>
+              <div className="hero-spec-divider" aria-hidden="true" />
 
-          {/* Magnetic Action Triggers */}
-          <div className="hero-provocative-actions">
-            <button
-              type="button"
-              onClick={openEnquiry}
-              className="btn-pill btn-pill-light hero-cta-pill"
-            >
-              <span>EXPLORE SPACE</span>
-              <span className="g-circle is-dark" aria-hidden="true" />
-            </button>
+              <div className="hero-spec-item">
+                <span className="hero-spec-label">[ 02 · ATELIER ]</span>
+                <p className="hero-spec-text">35,000 SQ. FT. In-House Joinery Bench &amp; Approvals</p>
+              </div>
+            </div>
 
-            <a href="#manifesto" className="hero-secondary-link">
-              <span>OUR CRAFT PHILOSOPHY</span>
-              <span aria-hidden="true">→</span>
-            </a>
+            {/* Magnetic Action Triggers */}
+            <div className="hero-provocative-actions">
+              <button
+                type="button"
+                onClick={openEnquiry}
+                className="btn-pill btn-pill-light hero-cta-pill"
+              >
+                <span>EXPLORE SPACE</span>
+                <span className="g-circle is-dark" aria-hidden="true" />
+              </button>
+
+              <a href="#manifesto" className="hero-secondary-link">
+                <span>OUR CRAFT PHILOSOPHY</span>
+                <span aria-hidden="true">→</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>

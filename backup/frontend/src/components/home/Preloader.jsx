@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import gsap from "gsap";
 import "../../styles/preloader.css";
 
@@ -48,23 +48,27 @@ const CRAFT_CARDS = [
 ];
 
 export default function Preloader({ onComplete }) {
-  const [activeCard, setActiveCard] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [replayKey, setReplayKey] = useState(0);
   const [dubaiTime, setDubaiTime] = useState("18:00");
 
   const preloaderRef = useRef(null);
+  const topBarRef = useRef(null);
   const stageRef = useRef(null);
   const logoLeftRef = useRef(null);
   const logoRightRef = useRef(null);
-  const leftMaskRef = useRef(null);
-  const rightMaskRef = useRef(null);
-  const apertureRef = useRef(null);
+  const apertureSlotRef = useRef(null);
+  const apertureCardRef = useRef(null);
+  const cardsRef = useRef([]);
+  const bottomBarRef = useRef(null);
   const percentTextRef = useRef(null);
   const progressFillRef = useRef(null);
-  const bottomBarRef = useRef(null);
+  const materialTextRef = useRef(null);
+
   const isFinishedRef = useRef(false);
   const timelineRef = useRef(null);
+  const xQuickTo = useRef(null);
+  const yQuickTo = useRef(null);
 
   // Live Dubai GST clock
   useEffect(() => {
@@ -86,28 +90,36 @@ export default function Preloader({ onComplete }) {
     return () => clearInterval(interval);
   }, []);
 
-  // 3D Mouse Parallax on Aperture Window
-  const handleMouseMove = useCallback((e) => {
-    if (!apertureRef.current || isFinishedRef.current) return;
-    const { clientX, clientY } = e;
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
-    const dx = (clientX - cx) / cx;
-    const dy = (clientY - cy) / cy;
-
-    gsap.to(apertureRef.current, {
-      rotateY: dx * 14,
-      rotateX: -dy * 14,
-      transformPerspective: 1000,
-      ease: "power2.out",
-      duration: 0.45,
-    });
-  }, []);
-
+  // Set up 120fps hardware-accelerated mouse tracking using gsap.quickTo
   useEffect(() => {
+    if (!apertureCardRef.current) return;
+
+    xQuickTo.current = gsap.quickTo(apertureCardRef.current, "rotateY", {
+      duration: 0.5,
+      ease: "power2.out",
+    });
+    yQuickTo.current = gsap.quickTo(apertureCardRef.current, "rotateX", {
+      duration: 0.5,
+      ease: "power2.out",
+    });
+
+    const handleMouseMove = (e) => {
+      if (isFinishedRef.current) return;
+      const { clientX, clientY } = e;
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      const dx = (clientX - cx) / cx;
+      const dy = (clientY - cy) / cy;
+
+      if (xQuickTo.current && yQuickTo.current) {
+        xQuickTo.current(dx * 12);
+        yQuickTo.current(-dy * 12);
+      }
+    };
+
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [handleMouseMove]);
+  }, [replayKey]);
 
   // Expose replay for DevTools or live demonstration
   useEffect(() => {
@@ -132,136 +144,234 @@ export default function Preloader({ onComplete }) {
 
     let heroTriggered = false;
 
+    // Fluid Dissolve Exit Sequence (Seamlessly Reveals Hero)
     const finishPreloader = () => {
       if (isFinishedRef.current) return;
       isFinishedRef.current = true;
 
-      // Animate split logo halves smoothly
+      const exitTl = gsap.timeline({
+        onComplete: () => {
+          document.body.style.overflow = originalOverflow || "";
+          if (onComplete) onComplete();
+          setIsVisible(false);
+        },
+      });
+
+      // 1. Split words slide gently outward and dissolve
       if (logoLeftRef.current && logoRightRef.current) {
-        gsap.to([logoLeftRef.current, logoRightRef.current], {
-          x: "0%",
-          duration: 0.65,
-          ease: "power3.inOut",
-        });
+        exitTl.to(
+          logoLeftRef.current,
+          {
+            x: -50,
+            opacity: 0,
+            filter: "blur(8px)",
+            duration: 0.65,
+            ease: "power3.inOut",
+          },
+          0
+        );
+        exitTl.to(
+          logoRightRef.current,
+          {
+            x: 50,
+            opacity: 0,
+            filter: "blur(8px)",
+            duration: 0.65,
+            ease: "power3.inOut",
+          },
+          0
+        );
       }
 
-      // Smooth bloom of the aperture into the hero space
-      if (apertureRef.current) {
-        gsap.to(apertureRef.current, {
-          scale: 1.15,
-          opacity: 0,
-          duration: 0.65,
-          ease: "power3.inOut",
-        });
+      // 2. Central aperture blooms slightly and dissolves
+      if (apertureCardRef.current) {
+        exitTl.to(
+          apertureCardRef.current,
+          {
+            scale: 1.08,
+            opacity: 0,
+            filter: "blur(8px)",
+            duration: 0.65,
+            ease: "power3.inOut",
+          },
+          0
+        );
       }
 
-      // Fade bottom telemetry
-      if (bottomBarRef.current) {
-        gsap.to(bottomBarRef.current, {
-          opacity: 0,
-          y: 14,
-          duration: 0.35,
-        });
+      // 3. Telemetry bars fade out
+      if (topBarRef.current && bottomBarRef.current) {
+        exitTl.to(
+          [topBarRef.current, bottomBarRef.current],
+          {
+            opacity: 0,
+            y: 8,
+            duration: 0.45,
+            ease: "power2.out",
+          },
+          0
+        );
       }
 
-      // Fluid curtain wipe up revealing hero
+      // 4. Trigger hero entrance while preloader dissolves into the same dark background
+      exitTl.add(() => {
+        if (!heroTriggered) {
+          heroTriggered = true;
+          window.dispatchEvent(new CustomEvent("preloader-docked"));
+        }
+      }, 0.22);
+
+      // 5. Complete preloader backdrop dissolve
       if (preloaderRef.current) {
-        gsap.to(preloaderRef.current, {
-          yPercent: -100,
-          duration: 1.05,
-          ease: "power4.inOut",
-          delay: 0.1,
-          onUpdate: function () {
-            // At 40% curtain lift, trigger hero entrance
-            if (this.progress() > 0.4 && !heroTriggered) {
-              heroTriggered = true;
-              document.body.style.overflow = originalOverflow || "";
-              if (onComplete) onComplete();
-              window.dispatchEvent(new CustomEvent("preloader-docked"));
-            }
+        exitTl.to(
+          preloaderRef.current,
+          {
+            opacity: 0,
+            duration: 0.6,
+            ease: "power2.inOut",
           },
-          onComplete: () => {
-            setIsVisible(false);
-          },
-        });
+          0.2
+        );
       }
     };
 
-    // Phase 1: Reset elements, split typography and open vault masks
+    // Calculate responsive slot expansion width & margins
+    const isMobile = window.innerWidth < 768;
+    const targetSlotWidth = isMobile
+      ? Math.min(160, Math.floor(window.innerWidth * 0.32))
+      : Math.min(240, Math.max(170, Math.floor(window.innerWidth * 0.175)));
+    const targetMargin = isMobile ? 12 : 32;
+
     const ctx = gsap.context(() => {
-      // Ensure clean initial positions
-      gsap.set(preloaderRef.current, { yPercent: 0, opacity: 1, visibility: "visible" });
-      gsap.set([logoLeftRef.current, logoRightRef.current], { x: "0%" });
-      gsap.set([leftMaskRef.current, rightMaskRef.current], { x: "0%" });
-      if (apertureRef.current) gsap.set(apertureRef.current, { scale: 1, opacity: 1, rotateX: 0, rotateY: 0 });
-      if (bottomBarRef.current) gsap.set(bottomBarRef.current, { opacity: 1, y: 0 });
+      // 1. Reset all elements to clean starting states
+      gsap.set(preloaderRef.current, { opacity: 1, visibility: "visible" });
+      gsap.set(topBarRef.current, { opacity: 1, y: 0 });
+      gsap.set(bottomBarRef.current, { opacity: 1, y: 0 });
+      gsap.set([logoLeftRef.current, logoRightRef.current], {
+        x: 0,
+        opacity: 1,
+        filter: "blur(0px)",
+      });
+      gsap.set(apertureSlotRef.current, {
+        width: 0,
+        marginLeft: 0,
+        marginRight: 0,
+        opacity: 0,
+      });
+      if (apertureCardRef.current) {
+        gsap.set(apertureCardRef.current, {
+          scale: 1,
+          opacity: 1,
+          rotateX: 0,
+          rotateY: 0,
+          filter: "blur(0px)",
+        });
+      }
 
-      const tl = gsap.timeline();
-      timelineRef.current = tl;
-
-      // Initial pause
-      tl.to({}, { duration: 0.2 });
-
-      // Split "YASH" left, "MEEN" right, open center masks
-      tl.add(() => {
-        gsap.to(logoLeftRef.current, {
-          x: "-25%",
-          duration: 0.9,
-          ease: "power3.inOut",
-        });
-        gsap.to(logoRightRef.current, {
-          x: "22%",
-          duration: 0.9,
-          ease: "power3.inOut",
-        });
-        gsap.to(leftMaskRef.current, {
-          x: "-100%",
-          duration: 0.9,
-          ease: "power3.inOut",
-        });
-        gsap.to(rightMaskRef.current, {
-          x: "100%",
-          duration: 0.9,
-          ease: "power3.inOut",
-        });
+      // Reset cards stack
+      cardsRef.current.forEach((el, idx) => {
+        if (el) {
+          gsap.set(el, { opacity: idx === 0 ? 1 : 0, scale: 1 });
+        }
       });
 
-      // Phase 2: Animate progress counter and flip craft cards
-      const counterObj = { p: 0 };
-      tl.to(counterObj, {
-        p: 99,
-        duration: 2.6,
-        ease: "power4.inOut",
-        onUpdate: () => {
-          const num = Math.round(counterObj.p);
-          const formatted = num < 10 ? `0${num}%` : `${num}%`;
-          if (percentTextRef.current) {
-            percentTextRef.current.innerText = formatted;
-          }
-          if (progressFillRef.current) {
-            progressFillRef.current.style.width = `${num}%`;
-          }
-          // Compute card shuffle index based on percentage
-          const cardIdx = Math.min(
-            CRAFT_CARDS.length - 1,
-            Math.floor((num / 100) * CRAFT_CARDS.length)
-          );
-          setActiveCard(cardIdx);
+      if (percentTextRef.current) percentTextRef.current.innerText = "00%";
+      if (progressFillRef.current) progressFillRef.current.style.width = "0%";
+      if (materialTextRef.current) {
+        materialTextRef.current.innerText = CRAFT_CARDS[0].material;
+      }
+
+      // Master Animation Timeline
+      const masterTl = gsap.timeline();
+      timelineRef.current = masterTl;
+
+      // Small introductory rest
+      masterTl.to({}, { duration: 0.25 });
+
+      // Phase 1: Smoothly expand aperture slot between YASH and MEEN
+      // Flexbox naturally glides YASH left and MEEN right with guaranteed 32px negative space
+      masterTl.to(
+        apertureSlotRef.current,
+        {
+          width: targetSlotWidth,
+          marginLeft: targetMargin,
+          marginRight: targetMargin,
+          opacity: 1,
+          duration: 1.05,
+          ease: "power3.inOut",
         },
-        onComplete: () => {
-          if (percentTextRef.current) {
-            percentTextRef.current.innerText = "100%";
-          }
-          if (progressFillRef.current) {
-            progressFillRef.current.style.width = "100%";
-          }
-          // Phase 3: Morph & dock into hero
-          finishPreloader();
+        0.25
+      );
+
+      // Phase 2: Counter progression and hardware-accelerated card flipping
+      // Using direct DOM manipulation (0 React re-renders) for 60fps/120fps locked motion
+      const counterState = { p: 0 };
+      let lastCardIndex = 0;
+
+      masterTl.to(
+        counterState,
+        {
+          p: 100,
+          duration: 2.3,
+          ease: "power2.inOut",
+          onUpdate: () => {
+            const num = Math.round(counterState.p);
+            const formatted = num < 10 ? `0${num}%` : `${num}%`;
+
+            if (percentTextRef.current) {
+              percentTextRef.current.innerText = formatted;
+            }
+            if (progressFillRef.current) {
+              progressFillRef.current.style.width = `${num}%`;
+            }
+
+            // Flip craft cards directly via GPU opacity & scale
+            const nextCardIndex = Math.min(
+              CRAFT_CARDS.length - 1,
+              Math.floor((num / 100) * CRAFT_CARDS.length)
+            );
+
+            if (nextCardIndex !== lastCardIndex) {
+              const prevCardEl = cardsRef.current[lastCardIndex];
+              const nextCardEl = cardsRef.current[nextCardIndex];
+
+              if (prevCardEl && nextCardEl) {
+                gsap.to(prevCardEl, {
+                  opacity: 0,
+                  scale: 0.96,
+                  duration: 0.32,
+                  ease: "power2.out",
+                });
+                gsap.fromTo(
+                  nextCardEl,
+                  { opacity: 0, scale: 1.04 },
+                  {
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.32,
+                    ease: "power2.out",
+                  }
+                );
+              }
+
+              if (materialTextRef.current && CRAFT_CARDS[nextCardIndex]) {
+                materialTextRef.current.innerText =
+                  CRAFT_CARDS[nextCardIndex].material;
+              }
+
+              lastCardIndex = nextCardIndex;
+            }
+          },
+          onComplete: () => {
+            if (percentTextRef.current) percentTextRef.current.innerText = "100%";
+            if (progressFillRef.current) progressFillRef.current.style.width = "100%";
+            finishPreloader();
+          },
         },
-      });
+        0.55
+      );
     }, preloaderRef);
 
-    // Keyboard shortcut (ESC) to skip
+    // Keyboard shortcut (ESC) to skip instantly
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
         finishPreloader();
@@ -278,8 +388,6 @@ export default function Preloader({ onComplete }) {
 
   if (!isVisible) return null;
 
-  const currentMaterial = CRAFT_CARDS[activeCard]?.material || "";
-
   return (
     <div
       ref={preloaderRef}
@@ -287,7 +395,7 @@ export default function Preloader({ onComplete }) {
       aria-label="Yashmeen Atelier Initializing"
     >
       {/* 1. Top Telemetry Bar with Live Dubai GST Time */}
-      <div className="preloader-top-bar">
+      <div ref={topBarRef} className="preloader-top-bar">
         <div className="preloader-brand-label">
           <span className="preloader-red-dot" aria-hidden="true" />
           <span className="preloader-brand-text">YASHMEEN · DUBAI</span>
@@ -300,9 +408,9 @@ export default function Preloader({ onComplete }) {
           onClick={() => {
             if (preloaderRef.current) {
               gsap.to(preloaderRef.current, {
-                yPercent: -100,
-                duration: 0.55,
-                ease: "power3.inOut",
+                opacity: 0,
+                duration: 0.45,
+                ease: "power2.inOut",
                 onComplete: () => {
                   document.body.style.overflow = "";
                   if (onComplete) onComplete();
@@ -319,37 +427,38 @@ export default function Preloader({ onComplete }) {
         </button>
       </div>
 
-      {/* 2. Center Stage: Split Monolith Typography & 3D Shutter Aperture */}
+      {/* 2. Center Stage: Split Monolith Typography & Expanding Zero-Overlap Aperture */}
       <div ref={stageRef} className="preloader-center-stage">
-        <div className="preloader-wordmark-container">
+        <div className="preloader-monolith-row">
           {/* Left Half: YASH */}
           <div ref={logoLeftRef} className="preloader-logo-half preloader-logo-left">
             YASH
           </div>
 
-          {/* Center Aperture with Vault Mask Doors & Rapid Card Stack */}
-          <div ref={apertureRef} className="preloader-aperture-wrap">
-            <div ref={leftMaskRef} className="preloader-mask-door is-left" aria-hidden="true" />
-            <div ref={rightMaskRef} className="preloader-mask-door is-right" aria-hidden="true" />
-
-            <div className="preloader-cards-stack">
-              {CRAFT_CARDS.map((card, idx) => (
-                <div
-                  key={card.id}
-                  className={`preloader-craft-card ${idx === activeCard ? "is-active" : ""}`}
-                >
-                  <img
-                    src={card.img}
-                    alt={card.caption}
-                    className="preloader-craft-img"
-                    loading="eager"
-                  />
-                  <div className="preloader-card-badge">
-                    <span className="preloader-card-tag">{card.tag}</span>
-                    <span className="preloader-card-caption">{card.caption}</span>
+          {/* Center Expanding Aperture Slot (Flex layout guarantees ZERO overlap) */}
+          <div ref={apertureSlotRef} className="preloader-aperture-slot">
+            <div ref={apertureCardRef} className="preloader-aperture-card">
+              <div className="preloader-cards-stack">
+                {CRAFT_CARDS.map((card, idx) => (
+                  <div
+                    key={card.id}
+                    ref={(el) => (cardsRef.current[idx] = el)}
+                    className={`preloader-craft-card ${idx === 0 ? "is-initial" : ""}`}
+                  >
+                    <img
+                      src={card.img}
+                      alt={card.caption}
+                      className="preloader-craft-img"
+                      loading="eager"
+                    />
+                    <div className="preloader-craft-scrim" />
+                    <div className="preloader-card-badge">
+                      <span className="preloader-card-tag">{card.tag}</span>
+                      <span className="preloader-card-caption">{card.caption}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
@@ -364,8 +473,8 @@ export default function Preloader({ onComplete }) {
       <div ref={bottomBarRef} className="preloader-bottom-bar">
         <div className="preloader-meta-wrap">
           <div className="preloader-meta-label">ATELIER SPECIFICATION</div>
-          <div className="preloader-status-text">
-            {currentMaterial}
+          <div ref={materialTextRef} className="preloader-status-text">
+            {CRAFT_CARDS[0].material}
           </div>
         </div>
 

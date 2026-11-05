@@ -157,13 +157,18 @@ export default function Hero() {
 
   // Seamless Docking entrance animation when preloader finishes or on mount
   useEffect(() => {
+    if (heroRef.current && document.querySelector(".monolith-preloader")) {
+      const items = heroRef.current.querySelectorAll(".glide-hero-anim");
+      gsap.set(items, { y: 28, opacity: 0 });
+    }
+
     const runEntrance = () => {
       if (heroRef.current) {
         const items = heroRef.current.querySelectorAll(".glide-hero-anim");
         gsap.fromTo(
           items,
-          { y: 32, opacity: 0 },
-          { y: 0, opacity: 1, duration: 1.1, stagger: 0.12, ease: "power3.out", delay: 0.05 }
+          { y: 28, opacity: 0 },
+          { y: 0, opacity: 1, duration: 1.05, stagger: 0.1, ease: "power3.out", delay: 0.05 }
         );
       }
     };
@@ -174,7 +179,7 @@ export default function Hero() {
       if (!document.querySelector(".monolith-preloader")) {
         runEntrance();
       }
-    }, 200);
+    }, 300);
 
     return () => {
       window.removeEventListener("preloader-docked", runEntrance);

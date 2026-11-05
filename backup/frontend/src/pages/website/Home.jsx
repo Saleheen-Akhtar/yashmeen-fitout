@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import "../../styles/home.css";
 import Preloader from "../../components/home/Preloader";
 import Hero from "../../components/home/Hero";
@@ -8,6 +9,13 @@ import Testimonial from "../../components/home/Testimonial";
 import CTA from "../../components/home/CTA";
 
 export default function Home() {
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <>
       <Preloader />

@@ -632,8 +632,18 @@
   .zacamil-bottom-left-meta {
     display: none;
   }
+  .zacamil-pin {
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
   .zacamil-pin-title {
     font-size: 0.625rem;
+    padding: 3px 8px;
+    max-width: 135px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
   }
 }
 

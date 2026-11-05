@@ -104,7 +104,7 @@ const HOTSPOT_PINS = [
     name: "Curved Architectural Panels",
     category: "BESPOKE MILLWORK",
     desc: "Precision acoustic fluted timber and executive boardroom casework.",
-    x: 77,
+    x: 62,
     y: 62,
   },
 ];

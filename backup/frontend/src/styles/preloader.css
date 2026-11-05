@@ -1,596 +1,410 @@
-/* Yashmeen Architectural Monolith Preloader
-   Exact Architectural Replica of coloniazacamil.com
-   - Canvas: Warm limestone gallery canvas (#ebe6e0 / rgb(235, 230, 224))
-   - Monumental Typography: Tall condensed uppercase display gothic ('Bebas Neue')
-   - Center Aperture: Wide horizontal panorama pill (aspect-ratio: 1080 / 220)
-   - Badge: Monospace identifier [35,000 SQ. FT. ATELIER] above FIT-OUT
-   - Tactile Control: Authentic black button with concentric target circle
-   - Editorial Description: High-contrast literary serif ('Cormorant Garamond') */
+/* Colonia Zacamil Exact Architectural Monolith Preloader
+   Yashmeen Luxury Fit-Out Contracting Atelier
+   - Limestone warm canvas: #ebe6e0 (rgb(235, 230, 224))
+   - Monumental Display: 'Bebas Neue', sans-serif (tall condensed uppercase)
+   - Badge: Monospace 'Roboto Mono'
+   - Description: Serif 'Cormorant Garamond'
+   - 100% Mobile 1st & Section 9.G Compliant (0 em/en-dashes) */
 
-.monolith-preloader {
+#loader.colonia-loader {
+  background: #ebe6e0;
+  inset: 0px;
+  pointer-events: all;
   position: fixed;
-  inset: 0;
+  z-index: 10000;
   width: 100vw;
   height: 100vh;
-  z-index: 9999;
-  background-color: #ebe6e0;
-  color: #000000;
+  overflow: hidden;
+  user-select: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(1.25rem, 3.2vw, 2.75rem);
-  user-select: none;
-  overflow: hidden;
-  will-change: opacity, transform;
+  box-sizing: border-box;
 }
 
-/* 1. Top Telemetry Row with Live GST Time */
-.preloader-top-bar {
+/* 1. Fullscreen Inset Background (Exact Colonia Zacamil .background-w) */
+#loader .background-w {
+  clip-path: inset(0px);
+  height: 100%;
+  left: 0px;
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  pointer-events: none;
+  z-index: 1;
+  will-change: clip-path;
+  transition: clip-path 1.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+#loader .background-w.animate {
+  clip-path: inset(var(--inset, 25% 25% 25% 25%) round 18px);
+}
+
+#loader .background-w picture,
+#loader .background-w img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+#loader .background-w img {
+  transition: transform 1.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  will-change: transform;
+}
+
+#loader .background-w.animate img {
+  transform: scale3d(0.85, 0.85, 1);
+}
+
+/* 2. Top Telemetry Bar */
+#loader .colonia-top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  padding: clamp(14px, 2.4vw, 24px) clamp(18px, 3.2vw, 36px);
+  z-index: 10;
   font-family: "Roboto Mono", monospace;
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: clamp(11px, 1.2vw, 13px);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.75);
-  will-change: opacity, transform;
-  z-index: 10;
+  color: rgba(0, 0, 0, 0.7);
+  pointer-events: auto;
 }
 
-.preloader-brand-label {
-  display: inline-flex;
+#loader .colonia-brand-status {
+  display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
-.preloader-red-dot {
-  width: 6px;
-  height: 6px;
+#loader .colonia-status-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background-color: var(--accent-red, #d30000);
-  animation: preloaderPulse 1.8s infinite ease-in-out;
+  background-color: #d30000;
+  animation: coloniaPulse 1.8s infinite ease-in-out;
 }
 
-@keyframes preloaderPulse {
+@keyframes coloniaPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 0.35; transform: scale(0.8); }
 }
 
-.preloader-brand-text {
+#loader .colonia-brand-title {
   color: #000000;
   font-weight: 600;
 }
 
-.preloader-time-sep {
-  color: rgba(0, 0, 0, 0.35);
+#loader .colonia-time-sep {
+  color: rgba(0, 0, 0, 0.3);
 }
 
-.preloader-time-val {
+#loader .colonia-time-val {
   color: #000000;
   font-feature-settings: 'tnum' on;
 }
 
-.preloader-coords-val {
-  color: rgba(0, 0, 0, 0.55);
-  font-size: 0.6875rem;
+#loader .colonia-coords {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 11px;
 }
 
-.preloader-top-actions {
+@media (max-width: 640px) {
+  #loader .colonia-coords {
+    display: none;
+  }
+}
+
+#loader .colonia-top-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
-.preloader-lang-tag {
-  color: rgba(0, 0, 0, 0.55);
-  font-size: 0.6875rem;
-  letter-spacing: 0.1em;
+#loader .colonia-lang {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 11px;
 }
 
-.preloader-skip-btn {
+#loader .colonia-skip-btn {
   background: transparent;
   border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 9999px;
-  padding: 5px 15px;
+  padding: 4px 14px;
   font-family: "Roboto Mono", monospace;
-  font-size: 0.6875rem;
+  font-size: 11px;
   letter-spacing: 0.08em;
   color: #000000;
   cursor: pointer;
   transition: all 0.2s ease;
 }
-.preloader-skip-btn:hover {
+
+#loader .colonia-skip-btn:hover {
   background: #000000;
   color: #ebe6e0;
   border-color: #000000;
 }
 
-/* 2. Center Introduction Stage (Exact Replica of Colonia Zacamil) */
-.preloader-center-stage {
+/* 3. Introduction Stage (Exact Colonia Zacamil .introduction) */
+#loader .introduction {
+  align-items: center;
+  color: #000000;
+  display: flex;
+  flex-direction: column;
+  inset: 0px;
+  justify-content: center;
+  padding-bottom: 12vh;
+  padding-left: clamp(16px, 3vw, 40px);
+  padding-right: clamp(16px, 3vw, 40px);
+  pointer-events: all;
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  z-index: 5;
+  box-sizing: border-box;
+}
+
+/* Title Container: Flex Layout that guarantees zero overlap */
+#loader .introduction .title {
+  width: 100%;
+  max-width: 1440px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  max-width: 1560px;
-  padding: 0 clamp(1rem, 2.5vw, 2.5rem);
-  pointer-events: none;
-  z-index: 5;
+  gap: 12px;
+  box-sizing: border-box;
 }
 
-/* Title Row: YASHMEEN [WIDE HORIZONTAL PANORAMA PILL] FIT-OUT */
-.preloader-monolith-row {
-  display: flex;
+@media (min-width: 768px) {
+  #loader .introduction .title {
+    flex-direction: row;
+    gap: clamp(24px, 3vw, 48px);
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Monolithic condensed gothic words: YASHMEEN & FIT-OUT */
+#loader .introduction .title-left,
+#loader .introduction .title-right {
   align-items: center;
-  justify-content: center;
-  gap: clamp(20px, 2.8vw, 44px);
-  width: 100%;
-  pointer-events: auto;
-}
-
-/* Monumental Condensed Display Gothic Typography */
-.preloader-logo-half {
-  font-family: "Bebas Neue", "Heathergreen", sans-serif;
-  font-size: clamp(4rem, 7.8vw, 7.2rem);
-  line-height: 0.9;
+  display: flex;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(3.4rem, 8.5vw, 7.8rem);
   font-weight: 400;
+  line-height: 0.95;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: #000000;
-  display: inline-block;
-  white-space: nowrap;
   user-select: none;
+  white-space: nowrap;
   flex-shrink: 0;
-  will-change: transform, opacity, filter;
+  box-sizing: border-box;
+  will-change: transform, opacity;
 }
 
-.preloader-logo-left {
+#loader .introduction .title-left {
+  justify-content: flex-end;
   text-align: right;
 }
 
-.preloader-logo-right-wrap {
+#loader .introduction .title-right {
   position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  flex-shrink: 0;
-}
-
-.preloader-logo-right {
+  justify-content: flex-start;
   text-align: left;
 }
 
-/* Powered/Atelier Badge above right wordmark (Exact replica of [powered by CMS]) */
-.preloader-powered-badge {
+@media (max-width: 767px) {
+  #loader .introduction .title-left,
+  #loader .introduction .title-right {
+    justify-content: center;
+    text-align: center;
+    font-size: clamp(3rem, 15vw, 4.8rem);
+    line-height: 1;
+    width: 100%;
+  }
+}
+
+/* Center Aperture Placeholder (.picture-w) */
+/* Defines the exact slot where .background-w contracts into */
+#loader .introduction .title .picture-w {
+  aspect-ratio: 16 / 7;
+  width: clamp(240px, 30vw, 460px);
+  max-width: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  flex-shrink: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  #loader .introduction .title .picture-w {
+    width: min(300px, 80vw);
+    aspect-ratio: 16 / 8.5;
+    margin: 4px 0;
+  }
+}
+
+/* Powered Badge above right word: [EST. DUBAI • 35,000 SQ. FT. ATELIER] */
+#loader .introduction .powered {
   position: absolute;
-  bottom: calc(100% + 4px);
-  left: 3px;
+  bottom: calc(100% + 5px);
+  left: 2px;
   font-family: "Roboto Mono", monospace;
-  font-size: min(11px, 1.3vh);
-  line-height: min(14px, 1.6vh);
+  font-size: clamp(10px, 1.1vh, 12px);
   font-weight: 500;
+  line-height: 1.3;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.75);
+  color: rgba(0, 0, 0, 0.7);
   white-space: nowrap;
   pointer-events: none;
 }
-.preloader-powered-badge b {
+
+#loader .introduction .powered b {
   color: #000000;
   font-weight: 700;
 }
 
-/* Center Horizontal Aperture Slot */
-.preloader-aperture-slot {
-  width: clamp(240px, 32vw, 460px);
-  aspect-ratio: 16 / 5.6;
-  margin-left: 0;
-  margin-right: 0;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border-radius: 20px;
-  background-color: #121210;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.16);
-  position: relative;
-  will-change: transform, opacity;
-}
-
-/* Fullscreen Inset Portal Canvas (Exact Colonia Zacamil .background-w inset replica) */
-.preloader-portal-canvas {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 4;
-  overflow: hidden;
-  will-change: clip-path, opacity;
-}
-
-.preloader-portal-bg-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-
-/* 3D Perspective Card Container */
-.preloader-aperture-card {
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  overflow: hidden;
-  position: relative;
-  transform-style: preserve-3d;
-  will-change: transform, opacity;
-}
-
-/* Hardware-Accelerated Image Stack */
-.preloader-cards-stack {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.preloader-craft-card {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  pointer-events: none;
-  overflow: hidden;
-  will-change: transform, opacity;
-}
-
-.preloader-craft-card.is-initial {
-  opacity: 1;
-}
-
-.preloader-craft-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  transform: scale(1.02);
-  transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.preloader-craft-card:hover .preloader-craft-img {
-  transform: scale(1.06);
-}
-
-.preloader-craft-scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(8, 8, 7, 0) 50%,
-    rgba(8, 8, 7, 0.65) 100%
-  );
-  pointer-events: none;
-}
-
-/* Material Specification Badge inside Aperture */
-.preloader-card-badge {
-  position: absolute;
-  bottom: 10px;
-  left: 12px;
-  right: 12px;
-  background: rgba(18, 18, 16, 0.78);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  padding: 5px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  pointer-events: none;
-}
-
-.preloader-card-tag {
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.5625rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--accent-red, #d30000);
-  font-weight: 600;
-}
-
-.preloader-card-caption {
-  font-family: var(--font-sans);
-  font-size: 0.625rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.95);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Zacamil-Style Interactive Threshold Controls */
-.preloader-threshold-wrap {
-  margin-top: clamp(1.5rem, 3.2vh, 2.75rem);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  pointer-events: auto;
-  will-change: opacity, transform;
-}
-
-/* Authentic Colonia Zacamil Black Button with Concentric Circle */
-.preloader-enter-btn {
-  background-color: #000000;
-  color: #ebe6e0;
-  border: 0;
-  border-radius: 9999px;
-  height: 42px;
-  padding: 0 10px 0 26px;
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  font-family: "Roboto Mono", monospace;
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s ease, box-shadow 0.3s ease;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
-}
-.preloader-enter-btn:hover {
-  background-color: #141412;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
-}
-
-.preloader-btn-circle-w {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.preloader-enter-btn:hover .preloader-btn-circle-w {
-  transform: scale(1.1);
-}
-
-.preloader-btn-circle {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: #ebe6e0;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.preloader-btn-circle::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: #000000;
-}
-
-/* Literary Editorial Description Subtitle (Exact replica of Reckless Neue description) */
-.preloader-description-text {
-  font-family: "Cormorant Garamond", "Reckless Neue", serif;
-  font-size: clamp(1.2rem, 1.8vw, 1.55rem);
-  font-weight: 400;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-  color: #000000;
-  text-align: center;
-  max-width: 540px;
-  margin: 0;
-}
-
-/* 3. Bottom Telemetry Datum Bar */
-.preloader-bottom-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  width: 100%;
-  font-family: "Roboto Mono", monospace;
-  will-change: opacity, transform;
-  z-index: 10;
-}
-
-.preloader-meta-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.preloader-meta-label {
-  font-size: 0.6875rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.55);
-}
-
-.preloader-status-text {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #000000;
-}
-
-.preloader-counter-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  min-width: 150px;
-}
-
-.preloader-counter-number {
-  font-family: "Bebas Neue", "Heathergreen", sans-serif;
-  font-size: clamp(2.4rem, 3.8vw, 3.6rem);
-  font-weight: 400;
-  line-height: 0.9;
-  letter-spacing: 0.02em;
-  color: #000000;
-  font-feature-settings: 'tnum' on;
-}
-
-.preloader-progress-track {
-  width: 100%;
-  height: 2px;
-  background-color: rgba(0, 0, 0, 0.16);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.preloader-progress-fill {
-  height: 100%;
-  width: 0%;
-  background-color: #000000;
-  border-radius: 2px;
-  will-change: width;
-}
-
-/* ==========================================================================
-   MOBILE-FIRST ADAPTIVE ARCHITECTURE (<= 767px)
-   Matches exact Colonia Zacamil mobile vertical rhythm:
-   YASHMEEN (top) -> 330/150 Panorama Pill -> [DUBAI ATELIER] FIT-OUT -> Button
-   ========================================================================== */
 @media (max-width: 767px) {
-  .monolith-preloader {
-    padding: 1.15rem 1rem;
+  #loader .introduction .powered {
+    position: static;
+    margin-bottom: 4px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
   }
-
-  .preloader-center-stage {
-    padding: 0 1rem;
-    width: 100%;
-  }
-
-  /* Vertical Monolith Stack on Mobile */
-  .preloader-monolith-row {
+  #loader .introduction .title-right {
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 14px;
   }
+}
 
-  .preloader-logo-half {
-    font-size: min(18vw, 76px);
-    line-height: 0.95;
-    text-align: center;
+/* 4. Tactile Black Pill Button with sliding target circle (Exact Colonia Zacamil) */
+#loader .introduction .button-with-circle {
+  position: absolute;
+  bottom: clamp(72px, 11vh, 96px);
+  z-index: 10;
+  background: #000000;
+  color: #ebe6e0;
+  border-radius: 9999px;
+  border: none;
+  height: 48px;
+  padding: 0 44px 0 24px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  overflow: hidden;
+  --width: 175px;
+  width: var(--width);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+  user-select: none;
+  will-change: transform, opacity;
+}
+
+@media (min-width: 768px) {
+  #loader .introduction .button-with-circle {
+    bottom: 24vh;
   }
+}
 
-  .preloader-logo-left {
-    text-align: center;
+#loader .introduction .button-with-circle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+}
+
+#loader .introduction .button-with-circle span {
+  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+  color: #ebe6e0;
+}
+
+#loader .introduction .button-with-circle .button-circle-w {
+  bottom: 0px;
+  height: max-content;
+  margin: auto 0px;
+  position: absolute;
+  right: 6px;
+  top: 0px;
+  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+#loader .introduction .button-with-circle .button-circle {
+  aspect-ratio: 1 / 1;
+  background: #ebe6e0;
+  border-radius: 50%;
+  height: 26px;
+  width: 26px;
+  position: relative;
+  transition: transform 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+}
+
+#loader .introduction .button-with-circle .button-circle::before {
+  background: #000000;
+  border-radius: 50%;
+  content: "";
+  height: 8px;
+  width: 8px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate3d(-50%, -50%, 0px);
+  transition: transform 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+/* Hover sliding target animation (Exact Colonia Zacamil) */
+@media (hover: hover) and (pointer: fine) {
+  #loader .introduction .button-with-circle:hover .button-circle-w,
+  #loader .introduction .button-with-circle:focus .button-circle-w {
+    transform: translate(calc(var(--width) * -1 + 38px));
   }
-
-  .preloader-logo-right-wrap {
-    align-items: center;
-    margin-top: 4px;
+  #loader .introduction .button-with-circle:hover .button-circle::before,
+  #loader .introduction .button-with-circle:focus .button-circle::before {
+    transform: scale3d(1.4, 1.4, 1) translate3d(-35%, -35%, 0px);
   }
-
-  .preloader-logo-right {
-    text-align: center;
+  #loader .introduction .button-with-circle:hover span,
+  #loader .introduction .button-with-circle:focus span {
+    transform: translate(22px);
   }
+}
 
-  .preloader-powered-badge {
-    position: static;
-    font-size: 0.625rem;
-    line-height: 1.2;
-    margin-bottom: 6px;
-    text-align: center;
+/* 5. Literary Serif Description */
+#loader .introduction .description {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translate(-50%);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(15px, 1.8vw, 22px);
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: rgba(0, 0, 0, 0.85);
+  max-width: 440px;
+  width: calc(100% - 48px);
+  text-align: center;
+  margin: 0;
+  user-select: none;
+}
+
+@media (max-width: 767px) {
+  #loader .introduction {
+    padding-bottom: 16vh;
   }
-
-  .preloader-aperture-slot {
-    width: min(88vw, 330px);
-    aspect-ratio: 330 / 150;
-    max-width: 330px;
-    border-radius: 14px;
-    flex-basis: auto;
-  }
-
-  .preloader-card-badge {
-    padding: 4px 8px;
-    bottom: 6px;
-    left: 8px;
-    right: 8px;
-  }
-
-  .preloader-card-caption {
-    font-size: 0.5625rem;
-  }
-
-  .preloader-threshold-wrap {
-    margin-top: 14px;
-    gap: 8px;
-  }
-
-  .preloader-enter-btn {
-    height: 38px;
-    padding: 0 8px 0 20px;
-    font-size: 0.75rem;
-    gap: 10px;
-  }
-
-  .preloader-btn-circle-w {
-    width: 22px;
-    height: 22px;
-  }
-
-  .preloader-btn-circle {
-    width: 22px;
-    height: 22px;
-  }
-
-  .preloader-btn-circle::before {
-    width: 6px;
-    height: 6px;
-  }
-
-  .preloader-description-text {
-    font-size: 1.05rem;
-    line-height: 1.25;
-    max-width: 310px;
-  }
-
-  .preloader-top-bar {
-    font-size: 0.6875rem;
-  }
-
-  .preloader-coords-val,
-  .preloader-lang-tag {
-    display: none;
-  }
-
-  .preloader-status-text {
-    font-size: 0.6875rem;
-  }
-
-  .preloader-counter-wrap {
-    min-width: 90px;
-  }
-
-  .preloader-counter-number {
-    font-size: 2.2rem;
+  #loader .introduction .description {
+    bottom: 18px;
+    font-size: 14px;
+    line-height: 1.3;
+    max-width: 320px;
   }
 }

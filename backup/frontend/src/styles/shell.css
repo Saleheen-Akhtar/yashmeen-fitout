@@ -36,44 +36,45 @@
   border-bottom: 1px solid var(--line);
 }
 
-/* Transparent floating header over full-bleed hero */
+/* Floating header over light architectural paper hero */
 .site-header:not(.is-scrolled) {
-  background: transparent;
-  border-bottom-color: transparent;
+  background: rgba(252, 252, 252, 0.75);
+  backdrop-filter: saturate(160%) blur(12px);
+  -webkit-backdrop-filter: saturate(160%) blur(12px);
+  border-bottom: 1px solid rgba(8, 8, 7, 0.06);
 }
 .site-header:not(.is-scrolled) .site-brand-text {
-  color: #ffffff;
+  color: #080807;
 }
 .site-header:not(.is-scrolled) .site-brand-city {
-  color: rgba(255, 255, 255, 0.65);
-  border-left-color: rgba(255, 255, 255, 0.25);
+  color: rgba(8, 8, 7, 0.6);
+  border-left-color: rgba(8, 8, 7, 0.2);
 }
 .site-header:not(.is-scrolled) .site-nav-link {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(8, 8, 7, 0.78);
 }
 .site-header:not(.is-scrolled) .site-nav-link:hover {
-  color: #ffffff;
+  color: #080807;
 }
 .site-header:not(.is-scrolled) .site-nav-sep {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(8, 8, 7, 0.3);
 }
 .site-header:not(.is-scrolled) .header-btn-enquire {
   background: #ffffff;
   color: #080807;
+  border: 1px solid rgba(8, 8, 7, 0.14);
+  box-shadow: 0 1px 3px rgba(8, 8, 7, 0.05);
 }
 .site-header:not(.is-scrolled) .header-btn-enquire .g-circle {
   background: var(--accent-red);
 }
 .site-header:not(.is-scrolled) .header-btn-menu {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: #080807;
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: #080807;
 }
 .site-header:not(.is-scrolled) .header-btn-menu:hover {
-  background: #ffffff;
-  color: #080807;
+  background: #222220;
 }
 
 .site-header.is-hidden {

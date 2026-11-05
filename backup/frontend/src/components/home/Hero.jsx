@@ -1,318 +1,382 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import gsap from "gsap";
 
-const COMMISSIONS = [
+const PLACEHOLDERS = [
+  "I need a turnkey commercial office in DIFC with custom acoustic joinery...",
+  "I need a luxury residential fit-out in Emirates Hills with authority permits...",
+  "I need 35,000 sq.ft factory bespoke millwork and fluted timber paneling...",
+  "I need a beachfront luxury villa fit-out on Palm Jumeirah...",
+];
+
+const QUICK_CHIPS = [
+  { icon: "🏢", label: "Commercial HQ", query: "Turnkey commercial office fit-out with Dubai authority approvals" },
+  { icon: "🏡", label: "Luxury Villa", query: "High-end residential architectural fit-out and joinery" },
+  { icon: "🪵", label: "Joinery Atelier", query: "35,000 sq.ft factory bespoke millwork and executive cabinetry" },
+  { icon: "🍽️", label: "Hospitality & Retail", query: "Curved joinery, bespoke lighting, and boutique retail fit-out" },
+];
+
+const STAGES = [
   {
-    id: "01",
-    index: "(01/04)",
-    title: "Emirates Hills Residence",
-    shortTitle: "Emirates Hills",
-    scope: "Turnkey Architecture & Joinery",
-    location: "Emirates Hills, Dubai",
-    year: "2026",
-    area: "14,500 SQ. FT.",
-    img: "/static/pages-bg.webp",
-    alt: "Emirates Hills luxury architectural residence and landscape in Dubai",
-  },
-  {
-    id: "02",
-    index: "(02/04)",
-    title: "Al Quoz Executive Atelier",
-    shortTitle: "Al Quoz Atelier",
-    scope: "Bespoke Millwork & Executive Suite",
-    location: "Al Quoz Design District, Dubai",
-    year: "2026",
-    area: "6,200 SQ. FT.",
-    img: "/static/work-clifton.jpg",
-    alt: "Bespoke luxury office fit-out with fluted desk and warm architectural lighting",
-  },
-  {
-    id: "03",
-    index: "(03/04)",
-    title: "Gate Precinct Commercial HQ",
-    shortTitle: "DIFC Gate Precinct",
-    scope: "Corporate Fit-Out & Authority Approvals",
-    location: "DIFC, Dubai",
-    year: "2025",
+    id: "approvals",
+    num: "01",
+    title: "Approvals & Permits",
+    stepName: "PERMIT SPECIFICATION",
+    location: "DIFC Gate Precinct, Dubai",
+    scope: "DDA, Civil Defence & Authority Approvals",
     area: "18,000 SQ. FT.",
     img: "/static/hero.jpg",
     alt: "DIFC modern commercial interior fit-out with glass partitions and polished concrete",
+    description: "End-to-end statutory approvals from Dubai Municipality, Civil Defence, and free zone authorities.",
   },
   {
-    id: "04",
-    index: "(04/04)",
-    title: "Palm Jumeirah Waterfront Villa",
-    shortTitle: "Palm Jumeirah",
-    scope: "Curved Joinery & Luxury Residential",
-    location: "Palm Jumeirah, Dubai",
-    year: "2026",
+    id: "joinery",
+    num: "02",
+    title: "35,000 SQ. FT. Atelier",
+    stepName: "IN-HOUSE PRODUCTION",
+    location: "Al Quoz Industrial Atelier, Dubai",
+    scope: "Bespoke Millwork Direct from the Bench",
+    area: "35,000 SQ. FT. Bench",
+    img: "/static/work-clifton.jpg",
+    alt: "Bespoke luxury office fit-out with fluted desk and warm architectural lighting",
+    description: "Precision CNC timber routing, artisanal book-matched veneers, and custom metalwork crafted under one roof.",
+  },
+  {
+    id: "turnkey",
+    num: "03",
+    title: "Turnkey MEP & Build",
+    stepName: "ON-SITE EXECUTION",
+    location: "Emirates Hills Residence, Dubai",
+    scope: "Structural Engineering & Turnkey Architecture",
+    area: "14,500 SQ. FT.",
+    img: "/static/pages-bg.webp",
+    alt: "Emirates Hills luxury architectural residence and landscape in Dubai",
+    description: "Coordinated MEP installations, acoustic partitions, and white-glove site delivery managed by dedicated site engineers.",
+  },
+  {
+    id: "handover",
+    num: "04",
+    title: "Handover & Living",
+    stepName: "WHITE-GLOVE DELIVERY",
+    location: "Palm Jumeirah Waterfront, Dubai",
+    scope: "Curved Joinery & White-Glove Handover",
     area: "11,800 SQ. FT.",
     img: "/static/work-myrtle.jpg",
     alt: "Palm Jumeirah luxury villa interior joinery and custom sculptural furniture",
+    description: "Zero-defect snagging, complete operation manuals, and post-occupancy warranty support across Dubai.",
   },
 ];
 
-const AUTOPLAY_DURATION = 7000; // ms per slide
+const AUTOPLAY_DURATION = 6500; // ms per stage
 
 export default function Hero() {
   const [activeIdx, setActiveIdx] = useState(0);
+  const [promptValue, setPromptValue] = useState("");
+  const [activeChip, setActiveChip] = useState(null);
+  const [placeholderIdx, setPlaceholderIdx] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0, visible: true });
 
-  const stageRef = useRef(null);
-  const cursorRef = useRef(null);
-  const xToRef = useRef(null);
-  const yToRef = useRef(null);
-  const stageRectRef = useRef(null);
+  const heroRef = useRef(null);
+  const stageViewportRef = useRef(null);
   const slidesRef = useRef([]);
-  const headlineRef = useRef(null);
   const progressTimerRef = useRef(null);
-  const dragStartXRef = useRef(null);
-  const isDraggingRef = useRef(false);
+  const placeholderTimerRef = useRef(null);
 
-  const activeCommission = COMMISSIONS[activeIdx];
+  const activeStage = STAGES[activeIdx];
 
-  const goToCommission = useCallback((targetIdx, byUser = false) => {
-    const nextIdx = (targetIdx + COMMISSIONS.length) % COMMISSIONS.length;
+  const goToStage = useCallback((targetIdx, byUser = false) => {
+    const nextIdx = (targetIdx + STAGES.length) % STAGES.length;
     if (byUser) {
       setUserHasInteracted(true);
     }
     setActiveIdx(nextIdx);
   }, []);
 
-  // Smooth GreenSock image cross-fade with subtle scale settle
+  // Cycle placeholder text gently
+  useEffect(() => {
+    if (promptValue.length > 0) return;
+    const interval = setInterval(() => {
+      setPlaceholderIdx((prev) => (prev + 1) % PLACEHOLDERS.length);
+    }, 4200);
+    placeholderTimerRef.current = interval;
+    return () => clearInterval(interval);
+  }, [promptValue]);
+
+  // Stage cross-fade animation with GSAP
   useEffect(() => {
     const currentSlide = slidesRef.current[activeIdx];
     if (!currentSlide) return;
     const currentImg = currentSlide.querySelector("img");
 
-    // Fade in active slide and ensure visibility
     gsap.to(currentSlide, {
       autoAlpha: 1,
-      duration: 0.8,
+      duration: 0.75,
       ease: "power2.out",
     });
 
     if (currentImg) {
       gsap.fromTo(
         currentImg,
-        { scale: 1.04 },
-        { scale: 1.0, duration: 1.2, ease: "power2.out" }
+        { scale: 1.03 },
+        { scale: 1.0, duration: 1.1, ease: "power2.out" }
       );
     }
 
-    // Fade out and cull sibling slides to liberate GPU memory
     slidesRef.current.forEach((slide, idx) => {
       if (slide && idx !== activeIdx) {
         gsap.to(slide, {
           autoAlpha: 0,
-          duration: 0.6,
+          duration: 0.55,
           ease: "power2.out",
         });
       }
     });
   }, [activeIdx]);
 
-  // Autoplay progression timer (pauses if user hovers or interacts)
+  // Autoplay progression timer
   useEffect(() => {
     if (isPaused || userHasInteracted) return;
 
     const timer = setInterval(() => {
-      goToCommission(activeIdx + 1, false);
+      goToStage(activeIdx + 1, false);
     }, AUTOPLAY_DURATION);
 
     progressTimerRef.current = timer;
     return () => clearInterval(timer);
-  }, [activeIdx, isPaused, userHasInteracted, goToCommission]);
+  }, [activeIdx, isPaused, userHasInteracted, goToStage]);
 
   // Entrance animation on mount
   useEffect(() => {
-    if (headlineRef.current) {
-      const items = headlineRef.current.children;
+    if (heroRef.current) {
+      const items = heroRef.current.querySelectorAll(".glide-hero-anim");
       gsap.fromTo(
         items,
-        { y: 35, opacity: 0 },
-        { y: 0, opacity: 1, duration: 1.2, stagger: 0.12, ease: "cubic-bezier(0.16, 1, 0.35, 1)", delay: 0.15 }
+        { y: 28, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.0, stagger: 0.1, ease: "power2.out", delay: 0.1 }
       );
     }
-
-    // High-performance quickTo cursor puck initialization
-    if (cursorRef.current && stageRef.current) {
-      gsap.set(cursorRef.current, { xPercent: -50, yPercent: -50 });
-      xToRef.current = gsap.quickTo(cursorRef.current, "x", { duration: 0.18, ease: "power2.out" });
-      yToRef.current = gsap.quickTo(cursorRef.current, "y", { duration: 0.18, ease: "power2.out" });
-
-      const rect = stageRef.current.getBoundingClientRect();
-      stageRectRef.current = rect;
-      gsap.set(cursorRef.current, {
-        x: rect.width * 0.52,
-        y: rect.height * 0.48,
-      });
-    }
-
-    const handleResize = () => {
-      if (stageRef.current) {
-        stageRectRef.current = stageRef.current.getBoundingClientRect();
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Frictionless, zero-layout-thrash mousemove cursor puck
-  const handleMouseMove = (e) => {
-    if (!xToRef.current || !yToRef.current) return;
-    if (!stageRectRef.current && stageRef.current) {
-      stageRectRef.current = stageRef.current.getBoundingClientRect();
+  const handleChipClick = (chip) => {
+    if (activeChip === chip.label) {
+      setActiveChip(null);
+      setPromptValue("");
+    } else {
+      setActiveChip(chip.label);
+      setPromptValue(chip.query);
     }
-    const rect = stageRectRef.current;
-    if (!rect) return;
-    xToRef.current(e.clientX - rect.left);
-    yToRef.current(e.clientY - rect.top);
-  };
-
-  const handleMouseEnter = () => {
-    if (stageRef.current) {
-      stageRectRef.current = stageRef.current.getBoundingClientRect();
-    }
-    setCursorPos((p) => ({ ...p, visible: true }));
-  };
-  const handleMouseLeave = () => {
-    setCursorPos((p) => ({ ...p, visible: true }));
-    setIsPaused(false);
-  };
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "ArrowRight") {
-        goToCommission(activeIdx + 1, true);
-      } else if (e.key === "ArrowLeft") {
-        goToCommission(activeIdx - 1, true);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeIdx, goToCommission]);
-
-  // Drag / Swipe handling
-  const handlePointerDown = (e) => {
-    if (e.target.closest("button") || e.target.closest("a")) return;
-    dragStartXRef.current = e.clientX;
-    isDraggingRef.current = true;
-  };
-
-  const handlePointerUp = (e) => {
-    if (!isDraggingRef.current || dragStartXRef.current === null) return;
-    const diff = e.clientX - dragStartXRef.current;
-    if (Math.abs(diff) > 40) {
-      if (diff < 0) {
-        goToCommission(activeIdx + 1, true);
-      } else {
-        goToCommission(activeIdx - 1, true);
-      }
-    }
-    isDraggingRef.current = false;
-    dragStartXRef.current = null;
   };
 
   const openEnquiry = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    window.dispatchEvent(new CustomEvent("open-questionnaire"));
+    window.dispatchEvent(
+      new CustomEvent("open-questionnaire", {
+        detail: { initialScope: promptValue || activeStage.scope },
+      })
+    );
   };
 
   return (
     <section
-      ref={stageRef}
-      className="hero-provocative-stage"
-      aria-label="Yashmeen Turnkey Fit-Out Atelier"
-      onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
+      ref={heroRef}
+      className="glide-hero-section"
+      aria-label="Yashmeen Turnkey Fit-Out & Bespoke Joinery Atelier"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
     >
-      {/* 100vw x 100vh Full-Bleed Imagery Canvas */}
-      <div className="hero-provocative-canvas">
-        {COMMISSIONS.map((item, idx) => (
-          <div
-            key={item.id}
-            ref={(el) => (slidesRef.current[idx] = el)}
-            className={`hero-provocative-slide ${idx === activeIdx ? "is-active" : ""}`}
-            style={{ zIndex: idx === activeIdx ? 2 : 1 }}
-          >
-            <img
-              src={item.img}
-              alt={item.alt}
-              className="hero-provocative-img"
-              loading={idx === 0 ? "eager" : "lazy"}
-            />
-          </div>
-        ))}
-        {/* Filmic dark vignette scrim for contrast */}
-        <div className="hero-provocative-scrim" />
-      </div>
+      {/* 1. Monolithic Centered Spine Container */}
+      <div className="glide-hero-container">
+        {/* Top Whisper Announcement Pill Badge */}
+        <div className="glide-hero-anim">
+          <a href="#about" className="glide-hero-badge group">
+            <span className="glide-badge-tag">DUBAI ATELIER</span>
+            <span className="glide-badge-text">In-House 35,000 SQ. FT. Bench &amp; Approvals</span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="glide-badge-arrow"
+              aria-hidden="true"
+            >
+              <path
+                d="M9 6L15 12L9 18"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </a>
+        </div>
 
-      {/* Floating Interactive Custom Cursor Puck (Desktop Only) */}
-      <div
-        ref={cursorRef}
-        className={`hero-custom-cursor-puck ${cursorPos.visible ? "is-visible" : ""}`}
-        onClick={openEnquiry}
-        role="button"
-        tabIndex={0}
-        aria-label="Explore active commission space"
-      >
-        <span>EXPLORE</span>
-        <span className="hero-cursor-arrows">⇄</span>
-      </div>
+        {/* Declarative Monumental Headline */}
+        <h1 className="glide-hero-headline glide-hero-anim">
+          <span className="glide-headline-row">Stop settling for blueprints.</span>
+          <span className="glide-headline-row">
+            We build what <span className="glide-accent-serif font-serif">others</span> only draw<span className="glide-accent-dot">.</span>
+          </span>
+        </h1>
 
-      {/* Center-Left Monumental Editorial Content */}
-      <div className="hero-provocative-content wrap">
-        <div className="hero-provocative-inner" ref={headlineRef}>
-          {/* Monumental Display Headline */}
-          <div className="hero-monumental-block">
-            <h1 className="hero-provocative-headline no-split">
-              <span className="hero-headline-line">WE BUILD WHAT</span>
-              <span className="hero-headline-line">
-                <span className="hero-accent-serif font-serif">Others</span> ONLY DRAW<span className="hero-accent-dot">.</span>
-              </span>
-            </h1>
-          </div>
+        {/* Centered Balanced Subtitle */}
+        <p className="glide-hero-sub glide-hero-anim">
+          Yashmeen is Dubai&apos;s turnkey fit-out contractor and bespoke joinery atelier. We turn architectural concepts and authority approvals into built reality, direct from our 35,000 sq.ft factory floor.
+        </p>
 
-          {/* Architectural Specification & Action Footer Grid */}
-          <div className="hero-editorial-footer-grid">
-            <div className="hero-editorial-specs">
-              <div className="hero-spec-item">
-                <span className="hero-spec-label">[ 01 · SPECIFICATION ]</span>
-                <p className="hero-spec-text">Turnkey Commercial &amp; Luxury Residential Fit-Out</p>
-              </div>
-
-              <div className="hero-spec-divider" aria-hidden="true" />
-
-              <div className="hero-spec-item">
-                <span className="hero-spec-label">[ 02 · ATELIER ]</span>
-                <p className="hero-spec-text">35,000 SQ. FT. In-House Joinery Bench &amp; Approvals</p>
-              </div>
+        {/* 2. The Floating Interactive Space Prompt Card (The Glide Box) */}
+        <div className="glide-prompt-card glide-hero-anim">
+          <div className="glide-prompt-top">
+            <div className="glide-prompt-input-row">
+              <span className="glide-prompt-cursor" aria-hidden="true">|</span>
+              <textarea
+                className="glide-prompt-textarea"
+                rows={2}
+                value={promptValue}
+                onChange={(e) => {
+                  setPromptValue(e.target.value);
+                  if (activeChip) setActiveChip(null);
+                }}
+                placeholder={PLACEHOLDERS[placeholderIdx]}
+                aria-label="Describe your space or fit-out requirement"
+              />
             </div>
 
-            {/* Magnetic Action Triggers */}
-            <div className="hero-provocative-actions">
-              <button
-                type="button"
-                onClick={openEnquiry}
-                className="btn-pill btn-pill-light hero-cta-pill"
+            {/* Quick Intent Filter Chips */}
+            <div className="glide-prompt-chips">
+              {QUICK_CHIPS.map((chip) => (
+                <button
+                  key={chip.label}
+                  type="button"
+                  className={`glide-prompt-chip ${activeChip === chip.label ? "is-active" : ""}`}
+                  onClick={() => handleChipClick(chip)}
+                >
+                  <span className="glide-chip-icon">{chip.icon}</span>
+                  <span>{chip.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="glide-prompt-bottom">
+            <button
+              type="button"
+              onClick={openEnquiry}
+              className="glide-prompt-upload-btn"
+              aria-label="Upload CAD floor plans"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="glide-upload-svg"
+                aria-hidden="true"
               >
-                <span>EXPLORE SPACE</span>
-                <span className="g-circle is-dark" aria-hidden="true" />
-              </button>
+                <path
+                  d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span>Upload drawings / CAD</span>
+            </button>
 
-              <a href="#manifesto" className="hero-secondary-link">
-                <span>OUR CRAFT PHILOSOPHY</span>
-                <span aria-hidden="true">→</span>
-              </a>
+            <button
+              type="button"
+              onClick={openEnquiry}
+              className="glide-prompt-build-btn"
+            >
+              <span>Build Your Space</span>
+              <span className="g-circle is-light" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Physical Architectural Space Showcase Foundation (Overlapped by Prompt Card) */}
+      <div className="glide-stage-wrap">
+        {/* Architectural Process Stage OS Tabs (Glide Walkthrough Steps) */}
+        <div className="glide-stage-tabs-bar" role="tablist" aria-label="Craftsmanship lifecycle stages">
+          {STAGES.map((stage, idx) => (
+            <button
+              key={stage.id}
+              type="button"
+              role="tab"
+              aria-selected={idx === activeIdx}
+              className={`glide-stage-tab ${idx === activeIdx ? "is-active" : ""}`}
+              onClick={() => goToStage(idx, true)}
+            >
+              <span className="glide-tab-header">
+                <span className="glide-tab-num">{stage.num}</span>
+                <span className="glide-tab-title">{stage.title}</span>
+              </span>
+              <span className="glide-tab-line" />
+            </button>
+          ))}
+        </div>
+
+        {/* The Architectural 3D Space Viewport Window */}
+        <div ref={stageViewportRef} className="glide-stage-viewport">
+          {STAGES.map((stage, idx) => (
+            <div
+              key={stage.id}
+              ref={(el) => (slidesRef.current[idx] = el)}
+              className={`glide-stage-slide ${idx === activeIdx ? "is-active" : ""}`}
+              style={{ zIndex: idx === activeIdx ? 2 : 1 }}
+            >
+              <img
+                src={stage.img}
+                alt={stage.alt}
+                className="glide-stage-img"
+                loading={idx === 0 ? "eager" : "lazy"}
+              />
+              <div className="glide-stage-scrim" />
+
+              {/* Stage Context Capsule */}
+              <div className="glide-stage-capsule">
+                <div className="glide-capsule-meta">
+                  <span className="glide-capsule-tag">{stage.stepName}</span>
+                  <span className="glide-capsule-location">{stage.location}</span>
+                  <span className="glide-capsule-sep">·</span>
+                  <span className="glide-capsule-scope">{stage.scope}</span>
+                  <span className="glide-capsule-sep">·</span>
+                  <span className="glide-capsule-area">{stage.area}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={openEnquiry}
+                  className="glide-capsule-btn"
+                >
+                  <span>Explore Space</span>
+                  <span aria-hidden="true">→</span>
+                </button>
+              </div>
             </div>
+          ))}
+        </div>
+
+        {/* 4. Monochrome Authority & Client Trust Baseline */}
+        <div className="glide-trust-baseline">
+          <p className="glide-trust-title">
+            DUBAI AUTHORITY ACCREDITED &amp; TRUSTED ACROSS PREMIER ESTATES
+          </p>
+          <div className="glide-trust-logos">
+            <span className="glide-trust-item">DUBAI MUNICIPALITY</span>
+            <span className="glide-trust-dot">·</span>
+            <span className="glide-trust-item">CIVIL DEFENCE</span>
+            <span className="glide-trust-dot">·</span>
+            <span className="glide-trust-item">DIFC GATE PRECINCT</span>
+            <span className="glide-trust-dot">·</span>
+            <span className="glide-trust-item">TECOM DDA</span>
+            <span className="glide-trust-dot">·</span>
+            <span className="glide-trust-item">EMAAR HILLS</span>
+            <span className="glide-trust-dot">·</span>
+            <span className="glide-trust-item">DAMAC LAGOONS</span>
           </div>
         </div>
       </div>

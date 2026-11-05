@@ -64,6 +64,8 @@ export default function Preloader({ onComplete }) {
   const percentTextRef = useRef(null);
   const progressFillRef = useRef(null);
   const materialTextRef = useRef(null);
+  const thresholdRef = useRef(null);
+  const finishPreloaderRef = useRef(null);
 
   const isFinishedRef = useRef(false);
   const timelineRef = useRef(null);
@@ -94,11 +96,11 @@ export default function Preloader({ onComplete }) {
   useEffect(() => {
     if (!apertureCardRef.current) return;
 
-    xQuickTo.current = gsap.quickTo(apertureCardRef.current, "rotateY", {
+    xQuickTo.current = gsap.quickTo(apertureCardRef.current, "rotationY", {
       duration: 0.5,
       ease: "power2.out",
     });
-    yQuickTo.current = gsap.quickTo(apertureCardRef.current, "rotateX", {
+    yQuickTo.current = gsap.quickTo(apertureCardRef.current, "rotationX", {
       duration: 0.5,
       ease: "power2.out",
     });
@@ -164,6 +166,9 @@ export default function Preloader({ onComplete }) {
     const finishPreloader = () => {
       if (isFinishedRef.current) return;
       isFinishedRef.current = true;
+      if (timelineRef.current) {
+        timelineRef.current.pause();
+      }
 
       const isMobile = window.innerWidth <= 768;
 
@@ -175,7 +180,7 @@ export default function Preloader({ onComplete }) {
         },
       });
 
-      // 1. Split words slide outward and dissolve
+      // 1. Typography slides outward and dissolves
       if (isMobile) {
         if (logoLeftRef.current) {
           exitTl.to(
@@ -208,7 +213,7 @@ export default function Preloader({ onComplete }) {
           exitTl.to(
             logoLeftRef.current,
             {
-              x: -50,
+              x: -60,
               opacity: 0,
               filter: "blur(8px)",
               duration: 0.65,
@@ -221,7 +226,7 @@ export default function Preloader({ onComplete }) {
           exitTl.to(
             logoRightRef.current,
             {
-              x: 50,
+              x: 60,
               opacity: 0,
               filter: "blur(8px)",
               duration: 0.65,
@@ -230,6 +235,20 @@ export default function Preloader({ onComplete }) {
             0
           );
         }
+      }
+
+      // Threshold button & descriptor fade out
+      if (thresholdRef.current) {
+        exitTl.to(
+          thresholdRef.current,
+          {
+            opacity: 0,
+            y: 12,
+            duration: 0.45,
+            ease: "power2.out",
+          },
+          0
+        );
       }
 
       // 2. Central aperture blooms slightly and dissolves
@@ -283,6 +302,8 @@ export default function Preloader({ onComplete }) {
       }
     };
 
+    finishPreloaderRef.current = finishPreloader;
+
     // Calculate responsive slot expansion dimensions
     const isMobile = window.innerWidth <= 768;
     const targetCardWidth = Math.min(240, Math.max(170, Math.floor(window.innerWidth * 0.175)));
@@ -296,6 +317,9 @@ export default function Preloader({ onComplete }) {
       gsap.set(preloaderRef.current, { opacity: 1, visibility: "visible" });
       gsap.set(topBarRef.current, { opacity: 1, y: 0 });
       gsap.set(bottomBarRef.current, { opacity: 1, y: 0 });
+      if (thresholdRef.current) {
+        gsap.set(thresholdRef.current, { opacity: 1, y: 0 });
+      }
       gsap.set([logoLeftRef.current, logoRightRef.current], {
         x: 0,
         y: 0,
@@ -323,8 +347,8 @@ export default function Preloader({ onComplete }) {
         gsap.set(apertureCardRef.current, {
           scale: 1,
           opacity: 1,
-          rotateX: 0,
-          rotateY: 0,
+          rotationX: 0,
+          rotationY: 0,
           filter: "blur(0px)",
         });
       }
@@ -481,21 +505,7 @@ export default function Preloader({ onComplete }) {
         </div>
         <button
           type="button"
-          onClick={() => {
-            if (preloaderRef.current) {
-              gsap.to(preloaderRef.current, {
-                opacity: 0,
-                duration: 0.45,
-                ease: "power2.inOut",
-                onComplete: () => {
-                  document.body.style.overflow = "";
-                  if (onComplete) onComplete();
-                  window.dispatchEvent(new CustomEvent("preloader-docked"));
-                  setIsVisible(false);
-                },
-              });
-            }
-          }}
+          onClick={() => finishPreloaderRef.current?.()}
           className="preloader-skip-btn"
           aria-label="Skip introduction animation"
         >
@@ -503,12 +513,12 @@ export default function Preloader({ onComplete }) {
         </button>
       </div>
 
-      {/* 2. Center Stage: Split Monolith Typography & Expanding Zero-Overlap Aperture */}
+      {/* 2. Center Stage: Monolith Typography & Expanding Aperture Portal */}
       <div ref={stageRef} className="preloader-center-stage">
         <div className="preloader-monolith-row">
-          {/* Top/Left Half: YASH */}
+          {/* Top/Left Half: YASHMEEN (Intact single word) */}
           <div ref={logoLeftRef} className="preloader-logo-half preloader-logo-left">
-            YASH
+            YASHMEEN
           </div>
 
           {/* Center Expanding Aperture Slot (Flex layout guarantees ZERO overlap) */}
@@ -538,10 +548,26 @@ export default function Preloader({ onComplete }) {
             </div>
           </div>
 
-          {/* Bottom/Right Half: MEEN */}
+          {/* Bottom/Right Half: FIT-OUT (Clear Business Identifier) */}
           <div ref={logoRightRef} className="preloader-logo-half preloader-logo-right">
-            MEEN
+            FIT-OUT
           </div>
+        </div>
+
+        {/* Colonia Zacamil-Style Interactive Threshold Controls */}
+        <div ref={thresholdRef} className="preloader-threshold-wrap">
+          <button
+            type="button"
+            onClick={() => finishPreloaderRef.current?.()}
+            className="preloader-enter-btn"
+            aria-label="Enter Yashmeen Atelier"
+          >
+            <span>ENTER ATELIER</span>
+            <span className="preloader-enter-dot" aria-hidden="true" />
+          </button>
+          <p className="preloader-threshold-sub">
+            DUBAI TURNKEY CONTRACTING &amp; BESPOKE JOINERY
+          </p>
         </div>
       </div>
 

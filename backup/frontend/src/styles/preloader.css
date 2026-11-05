@@ -1,6 +1,7 @@
 /* Yashmeen Architectural Monolith Preloader
-   Inspired by monolith.nyc
-   Mobile-First Architecture, Zero-Overlap Flex Aperture, 60fps GPU Hardware Motion, and Seamless Hero Dissolve. */
+   Inspired by coloniazacamil.com + monolith.nyc
+   Unified Brand "YASHMEEN", Business Identifier "FIT-OUT",
+   Expanding Center Aperture Portal, and Zacamil-style Interactive Threshold. */
 
 .monolith-preloader {
   position: fixed;
@@ -89,13 +90,14 @@
   border-color: rgba(255, 255, 255, 0.45);
 }
 
-/* 2. Center Monolith Stage: Zero-Overlap Flex Aperture */
+/* 2. Center Monolith Stage: YASHMEEN [PORTAL] FIT-OUT */
 .preloader-center-stage {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
@@ -112,12 +114,12 @@
   pointer-events: auto;
 }
 
-/* Split Monumental Typography */
+/* Monumental Typography: YASHMEEN on left, FIT-OUT on right */
 .preloader-logo-half {
   font-family: var(--font-sans);
-  font-size: clamp(2.8rem, 8.4vw, 8.8rem);
+  font-size: clamp(2.2rem, 5.6vw, 6.4rem);
   font-weight: 700;
-  line-height: 0.9;
+  line-height: 0.95;
   letter-spacing: -0.04em;
   text-transform: uppercase;
   color: #ffffff;
@@ -137,7 +139,7 @@
   text-align: left;
 }
 
-/* Expanding Center Aperture Slot - Guarantees ZERO Overlap */
+/* Expanding Center Aperture Portal */
 .preloader-aperture-slot {
   width: 0px;
   margin-left: 0px;
@@ -153,7 +155,7 @@
 
 /* 3D Perspective Card Container */
 .preloader-aperture-card {
-  width: clamp(160px, 17.5vw, 240px);
+  width: clamp(170px, 17vw, 230px);
   aspect-ratio: 3 / 4;
   border-radius: 14px;
   background-color: #121210;
@@ -245,6 +247,67 @@
   text-overflow: ellipsis;
 }
 
+/* Zacamil-Style Interactive Threshold Controls */
+.preloader-threshold-wrap {
+  margin-top: clamp(1.25rem, 2.5vw, 2.25rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+  will-change: opacity, transform;
+}
+
+.preloader-enter-btn {
+  background: rgba(24, 24, 22, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 9999px;
+  padding: 8px 18px 8px 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.22s var(--ease);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+.preloader-enter-btn:hover {
+  background: #ffffff;
+  color: #080807;
+  border-color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+}
+
+.preloader-enter-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--accent-red, #d30000);
+  transition: transform 0.2s ease;
+}
+.preloader-enter-btn:hover .preloader-enter-dot {
+  transform: scale(1.25);
+}
+
+.preloader-threshold-sub {
+  font-family: var(--font-sans);
+  font-size: clamp(0.6875rem, 1vw, 0.8125rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 500;
+  text-align: center;
+  margin: 0;
+}
+
 /* 3. Bottom Telemetry Datum Bar */
 .preloader-bottom-bar {
   display: flex;
@@ -323,7 +386,7 @@
     padding: 0 1rem;
   }
 
-  /* Vertical Monolith Stack on Mobile */
+  /* Vertical Monolith Stack on Mobile: YASHMEEN (top) -> [PORTAL] -> FIT-OUT (bottom) */
   .preloader-monolith-row {
     flex-direction: column;
     align-items: center;
@@ -332,7 +395,7 @@
   }
 
   .preloader-logo-half {
-    font-size: clamp(2.2rem, 11vw, 4rem);
+    font-size: clamp(1.9rem, 9.2vw, 3.4rem);
     text-align: center;
     line-height: 1;
     letter-spacing: -0.03em;
@@ -368,6 +431,21 @@
 
   .preloader-card-caption {
     font-size: 0.5625rem;
+  }
+
+  .preloader-threshold-wrap {
+    margin-top: 1rem;
+    gap: 6px;
+  }
+
+  .preloader-enter-btn {
+    padding: 7px 16px 7px 18px;
+    font-size: 0.6875rem;
+  }
+
+  .preloader-threshold-sub {
+    font-size: 0.6875rem;
+    padding: 0 10px;
   }
 
   .preloader-top-bar {

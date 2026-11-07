@@ -1,22 +1,198 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
-import { FiArrowRight, FiRotateCcw } from "react-icons/fi";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+import { FiArrowRight, FiRotateCcw, FiExternalLink } from "react-icons/fi";
 import "../../styles/yashmeen-nib.css";
+
+// Register GreenSock ScrollTrigger
+gsap.registerPlugin(ScrollTrigger);
 
 export default function YashmeenNibExperience() {
   const [progress, setProgress] = useState(0);
   const [lang, setLang] = useState("en"); // "en" or "es"
   const [isPreloading, setIsPreloading] = useState(true);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeChapter, setActiveChapter] = useState("00 / INTRO");
+  const [isHeaderDark, setIsHeaderDark] = useState(false);
+
   const containerRef = useRef(null);
   const backdropRef = useRef(null);
   const logoBoxRef = useRef(null);
   const timelineRef = useRef(null);
+  const trackRef = useRef(null);
+  const stripRef = useRef(null);
+  const lenisRef = useRef(null);
+  const horizontalTweenRef = useRef(null);
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 991;
   const initialLogoWidth = isMobile ? "270px" : "390px";
   const initialLogoHeight = isMobile ? "110px" : "155px";
 
+  // Bilingual text definitions (matching normalisboring.es editorial voice)
+  const texts = {
+    en: {
+      line1_a: "CONSIDERED",
+      line1_b: "SPACES",
+      line2_a: "THAT",
+      line2_b: "CHALLENGE",
+      line3_lead: "THE",
+      line3_climax: "ORDINARY",
+      copy: "In a city of rushed handovers and fragmented subcontractors, Yashmeen operates under single-source accountability. Bespoke joinery from our 35,000 sq.ft Al Quoz facility, architectural engineering, and handover certainty.",
+      ctaPrimary: "Request a Quote",
+      ctaSecondary: "View Projects",
+      navPortfolio: "PORTFOLIO",
+      navStudio: "STUDIO",
+      navFacility: "AL QUOZ FACILITY",
+      navEnquiry: "ENQUIRY",
+      copyright: "YASHMEEN FIT-OUT CONTRACTING ©2026",
+
+      // Chapter 01: The Studio
+      studioChapter: "01 / THE STUDIO",
+      studioTitle1: "Spaces that invite",
+      studioTitle2: "you to pause.",
+      studioParagraph: "Yashmeen creates considered environments for the way people live, work, gather and recharge. From first sketch to final handover, one dedicated team carries the detail through every decision.",
+      statAtelier: "35,000 sq.ft Manufacturing",
+      statLocation: "Al Quoz Industrial Area 3",
+      statCertainty: "Guaranteed Turnkey Handover",
+
+      // Chapter 02: The Atelier
+      atelierChapter: "02 / THE METHOD & ATELIER",
+      atelierTitle: "Single-source discipline. Zero subcontractor blame.",
+      belief1Num: "01",
+      belief1Title: "Precision Engineering",
+      belief1Desc: "Every millimeter, junction and joinery detail is fully resolved in-house before components reach the site.",
+      belief2Num: "02",
+      belief2Title: "Material Honesty",
+      belief2Desc: "Natural French oak, porous travertine, brushed bronze and tactile linen composed to endure with quiet dignity.",
+      belief3Num: "03",
+      belief3Title: "Handover Certainty",
+      belief3Desc: "One studio from municipal approvals and bespoke fabrication to pristine site installation and handover.",
+
+      // Chapter 03: Craftsmanship
+      craftChapter: "03 / TACTILE CRAFTSMANSHIP",
+      craftTitle: "Details made to be touched.",
+      craft1Title: "Illuminated Travertine Consoles",
+      craft1Desc: "Monolithic travertine stone with bespoke curved waterfall returns and integrated warm ambient illumination.",
+      craft2Title: "Bespoke Acoustic Fluted Joinery",
+      craft2Desc: "Dark walnut battens precision-milled with champagne gold architectural reveals and concealed acoustic backing.",
+
+      // Chapter 04: Projects
+      workChapter: "04 / SELECTED WORK",
+      workTitle1: "Spaces made",
+      workTitle2: "to be lived in.",
+      workSubtitle: "Quiet architecture. Exacting fit-out. A finished space that feels inevitable.",
+      proj1Name: "Clifton Residence",
+      proj1Type: "Private Luxury Villa / Emirates Hills",
+      proj2Name: "Myrtle House",
+      proj2Type: "Boutique Hospitality / Al Quoz",
+      proj3Name: "OH Workplace",
+      proj3Type: "Executive Headquarters / DIFC",
+      proj4Name: "Al Quoz Atelier",
+      proj4Type: "Industrial Craftsmanship Hub / Dubai",
+      exploreProject: "View Case Study",
+
+      // Chapter 05: Contact Finale
+      contactChapter: "05 / START A CONVERSATION",
+      contactTitle1: "Bring the",
+      contactTitle2: "ordinary",
+      contactTitle3: "to life.",
+      contactParagraph: "Tell us what you are shaping. We bring the people, 35,000 sq.ft facility and precision to make it real.",
+      contactCta: "Start a Project",
+      contactAddress: "Al Quoz Industrial Area 3, Dubai, UAE",
+      contactEmail: "info@yashmeen.ae",
+      contactPhone: "+971 4 000 0000"
+    },
+    es: {
+      line1_a: "ESPACIOS",
+      line1_b: "DE VIDA",
+      line2_a: "QUE",
+      line2_b: "DESAFÍAN",
+      line3_lead: "LO",
+      line3_climax: "ORDINARIO",
+      copy: "En una metrópoli de entregas apresuradas y contratistas fragmentados, Yashmeen asume la responsabilidad integral de principio a fin. Ebanistería a medida en nuestra nave de 35.000 pies cuadrados en Al Quoz, ingeniería arquitectónica y certeza de entrega.",
+      ctaPrimary: "Solicitar Presupuesto",
+      ctaSecondary: "Ver Proyectos",
+      navPortfolio: "PORTAFOLIO",
+      navStudio: "ESTUDIO",
+      navFacility: "INSTALACIÓN AL QUOZ",
+      navEnquiry: "CONTACTO",
+      copyright: "YASHMEEN CONTRATACIÓN DE INTERIORES ©2026",
+
+      // Chapter 01: El Estudio
+      studioChapter: "01 / EL ESTUDIO",
+      studioTitle1: "Espacios que invitan",
+      studioTitle2: "a detenerse.",
+      studioParagraph: "Yashmeen crea entornos cuidados para la forma en que las personas viven, trabajan, se reúnen y descansan. Desde el primer boceto hasta la entrega final, un único equipo traslada el detalle a cada decisión.",
+      statAtelier: "35.000 pies² Fabricación Propia",
+      statLocation: "Zona Industrial Al Quoz 3",
+      statCertainty: "Entrega Llave en Mano Garantizada",
+
+      // Chapter 02: El Método
+      atelierChapter: "02 / EL MÉTODO Y TALLER",
+      atelierTitle: "Disciplina de fuente única. Sin culpar a subcontratas.",
+      belief1Num: "01",
+      belief1Title: "Ingeniería de Precisión",
+      belief1Desc: "Cada milímetro, encuentro y detalle de carpintería se resuelve internamente antes de que las piezas lleguen a la obra.",
+      belief2Num: "02",
+      belief2Title: "Honestidad Material",
+      belief2Desc: "Roble francés natural, travertino poroso, bronce cepillado y lino táctil compuestos para perdurar con silenciosa dignidad.",
+      belief3Num: "03",
+      belief3Title: "Certeza de Entrega",
+      belief3Desc: "Un único estudio desde las aprobaciones municipales y fabricación a medida hasta la instalación impecable en obra.",
+
+      // Chapter 03: Artesanía
+      craftChapter: "03 / ARTESANÍA TÁCTIL",
+      craftTitle: "Detalles hechos para ser tocados.",
+      craft1Title: "Consolas de Travertino Iluminadas",
+      craft1Desc: "Piedra travertino monolítica con frentes curvos tipo cascada e iluminación ambiental cálida integrada.",
+      craft2Title: "Ebanistería Acústica Ranurada a Medida",
+      craft2Desc: "Listones de nogal oscuro fresados con precisión con remates arquitectónicos de oro champán y soporte acústico oculto.",
+
+      // Chapter 04: Proyectos
+      workChapter: "04 / PROYECTOS SELECCIONADOS",
+      workTitle1: "Espacios hechos",
+      workTitle2: "para ser vividos.",
+      workSubtitle: "Arquitectura serena. Ajustes exactos. Un espacio final que parece inevitable.",
+      proj1Name: "Residencia Clifton",
+      proj1Type: "Villa Privada de Lujo / Emirates Hills",
+      proj2Name: "Casa Myrtle",
+      proj2Type: "Hospitalidad Exclusiva / Al Quoz",
+      proj3Name: "Sede Corporativa OH",
+      proj3Type: "Oficinas Ejecutivas / DIFC",
+      proj4Name: "Atelier Al Quoz",
+      proj4Type: "Centro de Fabricación Artesanal / Dubái",
+      exploreProject: "Ver Caso de Estudio",
+
+      // Chapter 05: Contacto
+      contactChapter: "05 / INICIAR CONVERSACIÓN",
+      contactTitle1: "Dar vida a",
+      contactTitle2: "lo ordinario",
+      contactTitle3: "con arte.",
+      contactParagraph: "Cuéntenos qué está proyectando. Aportaremos el equipo, nuestras instalaciones de 35.000 pies² y la precisión necesaria.",
+      contactCta: "Iniciar un Proyecto",
+      contactAddress: "Zona Industrial Al Quoz 3, Dubái, EAU",
+      contactEmail: "info@yashmeen.ae",
+      contactPhone: "+971 4 000 0000"
+    }
+  };
+
+  const currentText = texts[lang];
+
+  // Helper for masking individual characters
+  const renderChars = (str, className = "nib-hero-char") =>
+    str.split("").map((c, i) => (
+      <span key={i} className={`nib-char-mask${c === " " ? " nib-space" : ""}`}>
+        <span className={`nib-char-span ${className}`}>
+          {c === " " ? "\u00A0" : c}
+        </span>
+      </span>
+    ));
+
+  // --------------------------------------------------------------------------
+  // 1. PRELOADER & ENTRANCE SEQUENCE (Continuous expanding logo box)
+  // --------------------------------------------------------------------------
   const runSequence = useCallback(() => {
     setIsPreloading(true);
 
@@ -42,7 +218,7 @@ export default function YashmeenNibExperience() {
 
     setProgress(0);
 
-    // 1. Reset all elements to initial state
+    // Reset initial states
     document.querySelector(".nib-logo__group")?.classList.remove("is-docked");
     if (backdropRef.current) {
       backdropRef.current.style.display = "block";
@@ -57,15 +233,15 @@ export default function YashmeenNibExperience() {
       height: initialLogoHeight
     });
 
-    // Logo letters start masked (slid to the right)
+    // Logo letters start masked
     gsap.set(".nib-char-logo", { xPercent: 120 });
 
-    // Hero title characters start masked (alternating up and down)
+    // Hero title characters start masked (alternating kinematics)
     gsap.set(".nib-title-line-1 .nib-hero-char", { yPercent: 110 });
     gsap.set(".nib-title-line-2 .nib-hero-char", { yPercent: -110 });
     gsap.set(".nib-title-line-3 .nib-hero-char", { yPercent: 110 });
 
-    // Hero content & right column initial states
+    // Hero content & image portal initial states
     gsap.set(".nib-hero__copy", { opacity: 0, y: 35 });
     gsap.set(".nib-hero__actions", { opacity: 0, y: 25 });
     gsap.set(".nib-hero__vert-nav", { opacity: 0, x: -30 });
@@ -73,7 +249,7 @@ export default function YashmeenNibExperience() {
     gsap.set(".nib-hero__image-wrap", { clipPath: "inset(0% 0% 0% 100%)" });
     gsap.set(".nib-hero__image", { scale: 1.18, yPercent: 4 });
 
-    // 2. Entrance wave of letters in the center logo box
+    // Stagger letters into center logo box
     gsap.to(".nib-char-logo", {
       xPercent: 0,
       duration: 0.55,
@@ -82,21 +258,20 @@ export default function YashmeenNibExperience() {
       delay: 0.2
     });
 
-    // 3. Progress countdown 00% -> 100%
+    // Progress counter 00% -> 100%
     const progressObj = { val: 0 };
     gsap.to(progressObj, {
       val: 100,
-      duration: 2.1,
+      duration: 2.0,
       ease: "power2.inOut",
       onUpdate: () => {
         setProgress(Math.round(progressObj.val));
       },
       onComplete: () => {
-        // 4. THE TRADEMARK EXPANSION & HERO REVEAL CEREMONY (exact Normal is Boring formula)
         const masterTl = gsap.timeline();
         timelineRef.current = masterTl;
 
-        // A. Fade telemetry (counter, bar, label)
+        // A. Fade counter and telemetry
         masterTl.to(
           ".nib-preloader-counter, .nib-preloader-bar, .nib-preloader-label",
           {
@@ -107,7 +282,7 @@ export default function YashmeenNibExperience() {
           0
         );
 
-        // B. The Expanding Logo Box: from compact to full viewport bounds!
+        // B. The Expanding Logo Box
         masterTl.to(
           ".nib-header__logo",
           {
@@ -240,7 +415,7 @@ export default function YashmeenNibExperience() {
           0.8
         );
 
-        // H. Architectural Vertical Portal Curtain Unmask (clip-path inset & image scale)
+        // H. Architectural Vertical Portal Curtain Unmask
         masterTl.to(
           ".nib-hero__image-wrap",
           {
@@ -275,74 +450,166 @@ export default function YashmeenNibExperience() {
     };
   }, [runSequence]);
 
+  // --------------------------------------------------------------------------
+  // 2. BUTTERY HORIZONTAL SCROLL ENGINE (exact normalisboring.es formula)
+  // --------------------------------------------------------------------------
   useEffect(() => {
-    const sections = document.querySelectorAll(".nib-story-section");
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) entry.target.classList.add("is-visible");
-        });
-      },
-      { threshold: 0.18 }
-    );
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
+    if (typeof window === "undefined") return;
+
+    const strip = stripRef.current;
+    const track = trackRef.current;
+
+    // Mobile fallback: natural vertical flow
+    if (window.innerWidth <= 991) {
+      if (horizontalTweenRef.current?.scrollTrigger) {
+        horizontalTweenRef.current.scrollTrigger.kill();
+        horizontalTweenRef.current.kill();
+      }
+      return;
+    }
+
+    if (!strip || !track) return;
+
+    // A. Initialize Lenis for momentum wheel scrolling
+    let localLenis = null;
+    let rafCallback = null;
+
+    try {
+      localLenis = new Lenis({
+        lerp: 0.075,
+        smoothWheel: true,
+        wheelMultiplier: 0.95,
+      });
+      lenisRef.current = localLenis;
+
+      localLenis.on("scroll", ScrollTrigger.update);
+      rafCallback = (time) => localLenis.raf(time * 1000);
+      gsap.ticker.add(rafCallback);
+      gsap.ticker.lagSmoothing(0);
+    } catch (e) {
+      console.warn("Lenis initialization skipped:", e);
+    }
+
+    // B. Setup Horizontal Pinning Timeline
+    const getScrollDistance = () => strip.scrollWidth - window.innerWidth;
+
+    const horizontalTween = gsap.to(strip, {
+      x: () => -getScrollDistance(),
+      ease: "none",
+      scrollTrigger: {
+        id: "nib-horizontal-scroll",
+        trigger: track,
+        pin: true,
+        scrub: 1, // Buttery scrub matching normalisboring.es
+        start: "top top",
+        end: () => `+=${getScrollDistance()}`,
+        invalidateOnRefresh: true,
+        anticipatePin: 1,
+        onUpdate: (self) => {
+          const p = self.progress;
+          const pct = Math.round(p * 100);
+          setScrollProgress(pct);
+
+          // Smoothly fade out the inverted logo hallmark once we leave the intro hero
+          const logoGroup = document.querySelector(".nib-logo__group");
+          if (logoGroup) {
+            logoGroup.style.opacity = p > 0.03 ? "0" : "1";
+            logoGroup.style.pointerEvents = p > 0.03 ? "none" : "auto";
+            logoGroup.style.transform = p > 0.03 ? "translateY(15px)" : "translateY(0)";
+          }
+
+          // Exact pixel coordinate detection for header contrast
+          const currentX = self.scroll();
+          const isAtelierUnderLogo = currentX >= 2900 && currentX <= 4250;
+          const isCierreUnderLogo = currentX >= 7400;
+          setIsHeaderDark(isAtelierUnderLogo || isCierreUnderLogo);
+
+          // Update active chapter
+          if (p < 0.16) {
+            setActiveChapter("00 / INTRO");
+          } else if (p < 0.38) {
+            setActiveChapter("01 / STUDIO");
+          } else if (p < 0.58) {
+            setActiveChapter("02 / ATELIER");
+          } else if (p < 0.72) {
+            setActiveChapter("03 / CRAFT");
+          } else if (p < 0.90) {
+            setActiveChapter("04 / WORK");
+          } else {
+            setActiveChapter("05 / CONTACT");
+          }
+        }
+      }
+    });
+
+    horizontalTweenRef.current = horizontalTween;
+
+    // C. Internal Parallax scrubbing for architectural photo layers
+    const parallaxImgs = strip.querySelectorAll("[data-parallax-x]");
+    parallaxImgs.forEach((img) => {
+      gsap.fromTo(
+        img,
+        { xPercent: -15 },
+        {
+          xPercent: 15,
+          ease: "none",
+          scrollTrigger: {
+            trigger: img.closest(".nib-scroll-section"),
+            containerAnimation: horizontalTween,
+            start: "left right",
+            end: "right left",
+            scrub: 0.5
+          }
+        }
+      );
+    });
+
+    ScrollTrigger.refresh();
+
+    return () => {
+      if (horizontalTween.scrollTrigger) {
+        horizontalTween.scrollTrigger.kill();
+      }
+      horizontalTween.kill();
+      if (localLenis && rafCallback) {
+        gsap.ticker.remove(rafCallback);
+        localLenis.destroy();
+      }
+    };
   }, []);
 
-  // Language texts (English & Spanish matching normalisboring.es structure)
-  const texts = {
-    en: {
-      line1_a: "CONSIDERED",
-      line1_b: "SPACES",
-      line2_a: "THAT",
-      line2_b: "CHALLENGE",
-      line3_lead: "THE",
-      line3_climax: "ORDINARY",
-      copy: "In a city of rushed handovers and fragmented subcontractors, Yashmeen operates under single-source accountability. Bespoke joinery from our 35,000 sq.ft Al Quoz facility, architectural engineering, and handover certainty.",
-      ctaPrimary: "Request a Quote",
-      ctaSecondary: "View Projects",
-      navPortfolio: "PORTFOLIO",
-      navStudio: "STUDIO",
-      navFacility: "AL QUOZ FACILITY",
-      navEnquiry: "ENQUIRY",
-      copyright: "YASHMEEN FIT-OUT CONTRACTING ©2026"
-    },
-    es: {
-      line1_a: "ESPACIOS",
-      line1_b: "DE VIDA",
-      line2_a: "QUE",
-      line2_b: "DESAFÍAN",
-      line3_lead: "LO",
-      line3_climax: "ORDINARIO",
-      copy: "En una metrópoli de entregas apresuradas y contratistas fragmentados, Yashmeen asume la responsabilidad integral de principio a fin. Ebanistería a medida en nuestra nave de 35.000 pies cuadrados en Al Quoz, ingeniería arquitectónica y certeza de entrega.",
-      ctaPrimary: "Solicitar Presupuesto",
-      ctaSecondary: "Ver Proyectos",
-      navPortfolio: "PORTAFOLIO",
-      navStudio: "ESTUDIO",
-      navFacility: "INSTALACIÓN AL QUOZ",
-      navEnquiry: "CONTACTO",
-      copyright: "YASHMEEN CONTRATACIÓN DE INTERIORES ©2026"
+  // Jump smoothly to a specific section along the horizontal track
+  const jumpToSection = (index) => {
+    const strip = stripRef.current;
+    if (!strip) return;
+    const sections = strip.querySelectorAll(".nib-scroll-section");
+    if (!sections[index]) return;
+
+    if (window.innerWidth <= 991 || !lenisRef.current) {
+      sections[index].scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    const targetOffset = sections[index].offsetLeft;
+    const totalDist = strip.scrollWidth - window.innerWidth;
+    const trigger = horizontalTweenRef.current?.scrollTrigger;
+    if (trigger && totalDist > 0) {
+      const targetScroll = trigger.start + (targetOffset / totalDist) * (trigger.end - trigger.start);
+      lenisRef.current.scrollTo(targetScroll, { duration: 1.2 });
     }
   };
 
-  const currentText = texts[lang];
-
-  // Helper for masking individual characters
-  const renderChars = (str, className = "nib-hero-char") =>
-    str.split("").map((c, i) => (
-      <span key={i} className={`nib-char-mask${c === " " ? " nib-space" : ""}`}>
-        <span className={`nib-char-span ${className}`}>
-          {c === " " ? "\u00A0" : c}
-        </span>
-      </span>
-    ));
-
   return (
-    <div className={`nib-root ${isPreloading ? "is-preloading" : ""}`} ref={containerRef}>
+    <div
+      className={`nib-root ${isPreloading ? "is-preloading" : ""} ${
+        isHeaderDark ? "theme-dark-active" : ""
+      }`}
+      ref={containerRef}
+    >
       {/* ------------------------------------------------------------------
-          1. FIXED HEADER OVERLAY (Contains the Expanding Logo Box)
+          1. FIXED HEADER OVERLAY (Contains Expanding Logo & Global Controls)
          ------------------------------------------------------------------ */}
-      <header className="nib-header">
+      <header className={`nib-header ${isHeaderDark ? "nib-header--light-text" : ""}`}>
         <div className="nib-header__wrapper">
           {/* Centered logo box: 390x155 in preloader, expands to 100%x100% on exit */}
           <div className="nib-header__logo" ref={logoBoxRef}>
@@ -354,7 +621,7 @@ export default function YashmeenNibExperience() {
               <span className="nib-logo__badge">DUBAI</span>
             </Link>
 
-            {/* Bottom-Right: considered INTERIORS ® (upside-down) */}
+            {/* Bottom-Right: considered INTERIORS ® (inverted hallmark) */}
             <div className="nib-logo__group">
               <div className="nib-logo__is">
                 {renderChars("considered", "nib-char-logo")}
@@ -408,219 +675,427 @@ export default function YashmeenNibExperience() {
       </div>
 
       {/* ------------------------------------------------------------------
-          3. EDITORIAL ASYMMETRIC HERO SECTION (Direct Normal is Boring formula)
+          3. FULL HORIZONTAL SCROLL TRACK (Continuous Side-by-Side Journey)
          ------------------------------------------------------------------ */}
-      <section className="nib-hero">
-        {/* Left Column: Typographic Manifesto & Asymmetric 2-Column Headline Grid */}
-        <div className="nib-hero__left">
-          <div className="nib-hero__wrap-titles">
-            {/* Grid Column 1, Row 1: CONSIDERED / SPACES */}
-            <div className="nib-hero__title-block nib-title-line-1">
-              <div className="nib-line-mask">
-                <div className="nib-line-inner">{renderChars(currentText.line1_a)}</div>
-              </div>
-              <div className="nib-line-mask">
-                <div className="nib-line-inner">{renderChars(currentText.line1_b)}</div>
-              </div>
-            </div>
+      <div className="nib-scroll-track" ref={trackRef}>
+        <div className="nib-scroll-strip" ref={stripRef}>
+          {/* =================================================================
+              SECTION 0: THE INTRO / HERO (Warm White #fbfaf7)
+             ================================================================= */}
+          <section className="nib-scroll-section nib-section-hero bg-warm-white">
+            <div className="nib-hero__left">
+              <div className="nib-hero__wrap-titles">
+                {/* Col 1, Row 1: CONSIDERED / SPACES */}
+                <div className="nib-hero__title-block nib-title-line-1">
+                  <div className="nib-line-mask">
+                    <div className="nib-line-inner">{renderChars(currentText.line1_a)}</div>
+                  </div>
+                  <div className="nib-line-mask">
+                    <div className="nib-line-inner">{renderChars(currentText.line1_b)}</div>
+                  </div>
+                </div>
 
-            {/* Grid Column 2, Row 1: THAT / CHALLENGE (Alternating Reveal) */}
-            <div className="nib-hero__title-block nib-title-line-2">
-              <div className="nib-line-mask">
-                <div className="nib-line-inner">{renderChars(currentText.line2_a)}</div>
-              </div>
-              <div className="nib-line-mask">
-                <div className="nib-line-inner">{renderChars(currentText.line2_b)}</div>
-              </div>
-            </div>
+                {/* Col 2, Row 1: THAT / CHALLENGE (Alternating Reveal) */}
+                <div className="nib-hero__title-block nib-title-line-2">
+                  <div className="nib-line-mask">
+                    <div className="nib-line-inner">{renderChars(currentText.line2_a)}</div>
+                  </div>
+                  <div className="nib-line-mask">
+                    <div className="nib-line-inner">{renderChars(currentText.line2_b)}</div>
+                  </div>
+                </div>
 
-            {/* Grid Column 1, Row 2: THE / ORDINARY • */}
-            <div className="nib-hero__title-block nib-title-line-3">
-              <div className="nib-line-mask">
-                <div className="nib-line-inner nib-hero__h-line3-lead">
-                  {renderChars(currentText.line3_lead)}
+                {/* Col 1, Row 2: THE / ORDINARY • */}
+                <div className="nib-hero__title-block nib-title-line-3">
+                  <div className="nib-line-mask">
+                    <div className="nib-line-inner nib-hero__h-line3-lead">
+                      {renderChars(currentText.line3_lead)}
+                    </div>
+                  </div>
+                  <div className="nib-line-mask">
+                    <div className="nib-line-inner nib-hero__h-line3-climax">
+                      <em>{renderChars(currentText.line3_climax)}</em>
+                      <span className="nib-hero__accent-dot" aria-hidden="true">•</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Col 2, Row 2: Narrative Copy & Call to Action */}
+                <div className="nib-hero__narrative-block">
+                  <p className="nib-hero__copy">{currentText.copy}</p>
+
+                  <div className="nib-hero__actions">
+                    <Link
+                      to="/quote"
+                      className="btn btn-primary"
+                      style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
+                    >
+                      <span>{currentText.ctaPrimary}</span>
+                      <FiArrowRight />
+                    </Link>
+                    <Link to="/projects" className="btn btn-outline">
+                      {currentText.ctaSecondary}
+                    </Link>
+                  </div>
                 </div>
               </div>
-              <div className="nib-line-mask">
-                <div className="nib-line-inner nib-hero__h-line3-climax">
-                  <em>{renderChars(currentText.line3_climax)}</em>
-                  <span className="nib-hero__accent-dot" aria-hidden="true">•</span>
-                </div>
+
+              {/* Bottom Left Copyright */}
+              <div className="nib-hero__copyright">{currentText.copyright}</div>
+            </div>
+
+            {/* Quick Sideways Navigation Strip */}
+            <div className="nib-hero__right">
+              <nav className="nib-hero__vert-nav" aria-label="Quick Navigation">
+                <button type="button" onClick={() => jumpToSection(5)} className="nib-hero__vert-link">
+                  {currentText.navPortfolio}
+                </button>
+                <button type="button" onClick={() => jumpToSection(2)} className="nib-hero__vert-link">
+                  {currentText.navStudio}
+                </button>
+                <button type="button" onClick={() => jumpToSection(3)} className="nib-hero__vert-link">
+                  {currentText.navFacility}
+                </button>
+                <button type="button" onClick={() => jumpToSection(6)} className="nib-hero__vert-link">
+                  {currentText.navEnquiry}
+                </button>
+              </nav>
+
+              <div className="nib-hero__image-wrap">
+                <img
+                  src="/static/hero-editorial.png"
+                  alt="Yashmeen bespoke interior architectural finish overlooking Dubai skyline"
+                  className="nib-hero__image"
+                  loading="eager"
+                />
+                <div className="nib-hero__image-scrim"></div>
+              </div>
+            </div>
+          </section>
+
+          {/* =================================================================
+              SECTION 1: ARCHITECTURAL PORTAL (Primary Media Column)
+             ================================================================= */}
+          <section className="nib-scroll-section nib-section-media-primary bg-warm-white">
+            <div className="nib-media-card-primary">
+              <div className="nib-media-frame">
+                <img
+                  src="/static/studio.jpg"
+                  alt="Yashmeen Architectural Studio"
+                  className="nib-media-img"
+                  data-parallax-x="true"
+                  loading="lazy"
+                />
+              </div>
+              <div className="nib-media-caption">
+                <span className="nib-media-badge">DUBAI, UAE</span>
+                <p>Considered architecture shaped from brief to handover.</p>
               </div>
             </div>
 
-            {/* Grid Column 2, Row 2: Narrative Copy & Call to Action (stacked beneath THAT CHALLENGE) */}
-            <div className="nib-hero__narrative-block">
-              <p className="nib-hero__copy">{currentText.copy}</p>
+            <div className="nib-media-floating-card">
+              <img
+                src="/static/design-desk.jpg"
+                alt="Architectural Material Selection"
+                className="nib-floating-img"
+                loading="lazy"
+              />
+              <span className="nib-floating-tag">MATERIAL LABORATORY</span>
+            </div>
+          </section>
 
-              <div className="nib-hero__actions">
-                <Link
-                  to="/quote"
-                  className="btn btn-primary"
-                  style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
-                >
-                  <span>{currentText.ctaPrimary}</span>
+          {/* =================================================================
+              SECTION 2: THE STUDIO & MANIFESTO (Editorial Typography)
+             ================================================================= */}
+          <section className="nib-scroll-section nib-section-manifesto bg-warm-white">
+            <div className="nib-section-kicker">{currentText.studioChapter}</div>
+            <div className="nib-manifesto-content">
+              <h2 className="nib-manifesto-title">
+                {currentText.studioTitle1}
+                <br />
+                <em>{currentText.studioTitle2}</em>
+              </h2>
+              <p className="nib-manifesto-p">{currentText.studioParagraph}</p>
+
+              <div className="nib-stats-row">
+                <div className="nib-stat-pill">
+                  <strong>35,000 sq.ft</strong>
+                  <span>{currentText.statAtelier}</span>
+                </div>
+                <div className="nib-stat-pill">
+                  <strong>Al Quoz 3</strong>
+                  <span>{currentText.statLocation}</span>
+                </div>
+                <div className="nib-stat-pill">
+                  <strong>60-90 Days</strong>
+                  <span>{currentText.statCertainty}</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* =================================================================
+              SECTION 3: THE ATELIER & METHOD (Inverted Ink Luxury #11100e)
+             ================================================================= */}
+          <section className="nib-scroll-section nib-section-atelier bg-ink c-light">
+            <div className="nib-section-kicker c-gold">{currentText.atelierChapter}</div>
+
+            <div className="nib-atelier-layout">
+              {/* Left Column: Workshop Imagery */}
+              <div className="nib-atelier-visuals">
+                <div className="nib-atelier-main-frame">
+                  <img
+                    src="/static/joinery-bay.jpg"
+                    alt="Al Quoz Joinery Bay"
+                    className="nib-atelier-img"
+                    data-parallax-x="true"
+                    loading="lazy"
+                  />
+                  <div className="nib-atelier-badge">AL QUOZ JOINERY BAY 04</div>
+                </div>
+                <div className="nib-atelier-sub-frame">
+                  <img
+                    src="/static/production-facility.jpg"
+                    alt="Bespoke Metalwork & Stonework"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+
+              {/* Right Column: 3 Core Beliefs Cards */}
+              <div className="nib-atelier-content">
+                <h3 className="nib-atelier-lead">{currentText.atelierTitle}</h3>
+
+                <div className="nib-beliefs-stack">
+                  <div className="nib-belief-row">
+                    <span className="nib-belief-num">{currentText.belief1Num}</span>
+                    <div className="nib-belief-body">
+                      <h4>{currentText.belief1Title}</h4>
+                      <p>{currentText.belief1Desc}</p>
+                    </div>
+                  </div>
+
+                  <div className="nib-belief-row">
+                    <span className="nib-belief-num">{currentText.belief2Num}</span>
+                    <div className="nib-belief-body">
+                      <h4>{currentText.belief2Title}</h4>
+                      <p>{currentText.belief2Desc}</p>
+                    </div>
+                  </div>
+
+                  <div className="nib-belief-row">
+                    <span className="nib-belief-num">{currentText.belief3Num}</span>
+                    <div className="nib-belief-body">
+                      <h4>{currentText.belief3Title}</h4>
+                      <p>{currentText.belief3Desc}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* =================================================================
+              SECTION 4: VERTICAL TYPOGRAPHY TICKER RIBBON
+             ================================================================= */}
+          <section className="nib-scroll-section nib-section-ticker bg-gold c-ink">
+            <div className="nib-ticker-strip">
+              <span className="nib-ticker-text">
+                • 35,000 SQ.FT ATELIER • BESPOKE JOINERY • ARCHITECTURAL CERTAINTY • ISO 9001 CERTIFIED • DUBAI MUNICIPALITY APPROVED • ZERO SUBCONTRACTOR BLAME • HANDOVER CERTAINTY •
+              </span>
+            </div>
+          </section>
+
+          {/* =================================================================
+              SECTION 5: TACTILE MATERIALITY & CRAFT (Warm Limestone #f3efe8)
+             ================================================================= */}
+          <section className="nib-scroll-section nib-section-craft bg-limestone">
+            <div className="nib-section-kicker">{currentText.craftChapter}</div>
+
+            <div className="nib-craft-layout">
+              <div className="nib-craft-header">
+                <h3 className="nib-craft-h3">{currentText.craftTitle}</h3>
+              </div>
+
+              <div className="nib-craft-cards-grid">
+                <div className="nib-craft-card">
+                  <div className="nib-craft-card__media">
+                    <img
+                      src="/static/Custom-Furniture.jpg"
+                      alt="Illuminated Travertine Waterfall Console"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="nib-craft-card__info">
+                    <h4>{currentText.craft1Title}</h4>
+                    <p>{currentText.craft1Desc}</p>
+                  </div>
+                </div>
+
+                <div className="nib-craft-card">
+                  <div className="nib-craft-card__media">
+                    <img
+                      src="/static/Residential-Fit-Out.jpg"
+                      alt="Bespoke Acoustic Fluted Joinery"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="nib-craft-card__info">
+                    <h4>{currentText.craft2Title}</h4>
+                    <p>{currentText.craft2Desc}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* =================================================================
+              SECTION 6: SELECTED WORK (Horizontal Gallery Showcase)
+             ================================================================= */}
+          <section className="nib-scroll-section nib-section-projects bg-warm-white">
+            <div className="nib-section-kicker">{currentText.workChapter}</div>
+
+            <div className="nib-projects-header">
+              <h2 className="nib-projects-h2">
+                {currentText.workTitle1}
+                <br />
+                <em>{currentText.workTitle2}</em>
+              </h2>
+              <p className="nib-projects-sub">{currentText.workSubtitle}</p>
+            </div>
+
+            <div className="nib-projects-track">
+              {[
+                {
+                  img: "/static/work-clifton.jpg",
+                  num: "01",
+                  name: currentText.proj1Name,
+                  type: currentText.proj1Type,
+                  link: "/projects"
+                },
+                {
+                  img: "/static/work-myrtle.jpg",
+                  num: "02",
+                  name: currentText.proj2Name,
+                  type: currentText.proj2Type,
+                  link: "/projects"
+                },
+                {
+                  img: "/static/work-oh-office.jpg",
+                  num: "03",
+                  name: currentText.proj3Name,
+                  type: currentText.proj3Type,
+                  link: "/projects"
+                },
+                {
+                  img: "/static/atelier-render.jpg",
+                  num: "04",
+                  name: currentText.proj4Name,
+                  type: currentText.proj4Type,
+                  link: "/about"
+                }
+              ].map((proj, idx) => (
+                <Link to={proj.link} className="nib-project-tile" key={idx}>
+                  <div className="nib-tile-media">
+                    <img src={proj.img} alt={proj.name} loading="lazy" />
+                    <div className="nib-tile-hover-cue">
+                      <span>{currentText.exploreProject}</span>
+                      <FiExternalLink />
+                    </div>
+                  </div>
+                  <div className="nib-tile-meta">
+                    <span className="nib-tile-num">{proj.num}</span>
+                    <span className="nib-tile-type">{proj.type}</span>
+                  </div>
+                  <h4 className="nib-tile-title">{proj.name}</h4>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* =================================================================
+              SECTION 7: CLOSING FINALE & CONTACT (Inverted Ink Luxury)
+             ================================================================= */}
+          <section className="nib-scroll-section nib-section-cierre bg-ink c-light">
+            <div className="nib-section-kicker c-gold">{currentText.contactChapter}</div>
+
+            <div className="nib-cierre-wrap">
+              <h2 className="nib-cierre-heading">
+                {currentText.contactTitle1}{" "}
+                <em>{currentText.contactTitle2}</em>
+                <br />
+                {currentText.contactTitle3}
+              </h2>
+
+              <p className="nib-cierre-desc">{currentText.contactParagraph}</p>
+
+              <div className="nib-cierre-actions">
+                <Link to="/contact" className="btn btn-gold btn-large">
+                  <span>{currentText.contactCta}</span>
                   <FiArrowRight />
                 </Link>
-                <Link to="/projects" className="btn btn-outline">
-                  {currentText.ctaSecondary}
+                <Link to="/quote" className="btn btn-outline-white">
+                  {currentText.ctaPrimary}
                 </Link>
               </div>
+
+              <div className="nib-cierre-details">
+                <div className="nib-detail-block">
+                  <span className="nib-detail-label">STUDIO & ATELIER</span>
+                  <p>{currentText.contactAddress}</p>
+                </div>
+                <div className="nib-detail-block">
+                  <span className="nib-detail-label">DIRECT ENQUIRY</span>
+                  <p>
+                    <a href={`mailto:${currentText.contactEmail}`}>{currentText.contactEmail}</a>
+                    <br />
+                    <a href="tel:+97140000000">{currentText.contactPhone}</a>
+                  </p>
+                </div>
+              </div>
+
+              <div className="nib-cierre-bottom">
+                <span>YASHMEEN FIT-OUT CONTRACTING CO. L.L.C © 2026</span>
+                <span>DUBAI • UNITED ARAB EMIRATES</span>
+              </div>
             </div>
-          </div>
-
-          {/* Bottom Left Copyright Indicator */}
-          <div className="nib-hero__copyright">
-            {currentText.copyright}
-          </div>
+          </section>
         </div>
-
-        {/* Right Column: Architectural Vertical Portal & Sideways Navigation */}
-        <div className="nib-hero__right">
-          {/* Sideways Vertical Navigation Strip */}
-          <nav className="nib-hero__vert-nav" aria-label="Quick Navigation">
-            <Link to="/projects" className="nib-hero__vert-link">
-              {currentText.navPortfolio}
-            </Link>
-            <Link to="/about" className="nib-hero__vert-link">
-              {currentText.navStudio}
-            </Link>
-            <Link to="/why-us" className="nib-hero__vert-link">
-              {currentText.navFacility}
-            </Link>
-            <Link to="/contact" className="nib-hero__vert-link">
-              {currentText.navEnquiry}
-            </Link>
-          </nav>
-
-          {/* Vertical Architectural Image with Curtain Clip-Path Unmasking */}
-          <div className="nib-hero__image-wrap">
-            <img
-              src="/static/hero-editorial.png"
-              alt="Yashmeen bespoke interior architectural finish overlooking Dubai skyline"
-              className="nib-hero__image"
-              loading="eager"
-            />
-            <div className="nib-hero__image-scrim"></div>
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* ------------------------------------------------------------------
-          4. EDITORIAL STORYTELLING SECTIONS BELOW THE HERO
+          4. HORIZONTAL HEADS-UP DISPLAY (Progress Bar & Chapter Selector)
          ------------------------------------------------------------------ */}
-      <main className="nib-story">
-        <section className="nib-story-section nib-intro-story">
-          <div className="nib-story-kicker">01 / STUDIO</div>
-          <div className="nib-story-grid">
-            <h2>
-              Spaces that invite
-              <br />
-              <em>you to pause.</em>
-            </h2>
-            <div className="nib-story-copy">
-              <p>
-                Yashmeen creates considered environments for the way people live, work, gather and recharge.
-              </p>
-              <p>
-                From first sketch to final handover, one team carries the detail through every decision.
-              </p>
-            </div>
-          </div>
-          <div className="nib-story-image-wrap">
-            <img src="/static/studio.jpg" alt="Yashmeen studio and design workspace" />
-          </div>
-        </section>
+      <div className="nib-horizontal-hud" aria-hidden="true">
+        <div className="nib-hud-chapters">
+          {[
+            { label: "INTRO", idx: 0 },
+            { label: "STUDIO", idx: 2 },
+            { label: "ATELIER", idx: 3 },
+            { label: "CRAFT", idx: 5 },
+            { label: "WORK", idx: 6 },
+            { label: "CONTACT", idx: 7 }
+          ].map((ch) => (
+            <button
+              type="button"
+              key={ch.label}
+              onClick={() => jumpToSection(ch.idx)}
+              className={`nib-hud-chip ${activeChapter.includes(ch.label) ? "is-active" : ""}`}
+            >
+              {ch.label}
+            </button>
+          ))}
+        </div>
 
-        <section className="nib-story-section nib-values-story">
-          <div className="nib-story-kicker">02 / THE METHOD</div>
-          <div className="nib-values-heading">
-            <span>Built on</span>
-            <em>three beliefs.</em>
-          </div>
-          <div className="nib-values-grid">
-            <article>
-              <span>01</span>
-              <h3>Precision</h3>
-              <p>Every junction, material and finish is resolved before it reaches site.</p>
-            </article>
-            <article>
-              <span>02</span>
-              <h3>Materiality</h3>
-              <p>Timber, stone, metal and light are composed to feel calm, tactile and lasting.</p>
-            </article>
-            <article>
-              <span>03</span>
-              <h3>Certainty</h3>
-              <p>A single accountable team keeps design, engineering and delivery moving together.</p>
-            </article>
-          </div>
-          <div className="nib-values-image">
-            <img src="/static/production-facility.jpg" alt="Yashmeen production facility" />
-          </div>
-        </section>
+        <div className="nib-hud-timeline">
+          <div className="nib-hud-bar" style={{ width: `${scrollProgress}%` }}></div>
+        </div>
 
-        <section className="nib-story-section nib-projects-story">
-          <div className="nib-story-kicker">03 / SELECTED WORK</div>
-          <div className="nib-projects-intro">
-            <h2>
-              Spaces made
-              <br />
-              <em>to be lived in.</em>
-            </h2>
-            <p>Quiet architecture. Exacting fit-out. A finished space that feels inevitable.</p>
-          </div>
-          <div className="nib-project-list">
-            {[
-              ["/static/work-clifton.jpg", "01", "Clifton Residence", "Private Residence / Dubai"],
-              ["/static/work-myrtle.jpg", "02", "Myrtle House", "Hospitality / Al Quoz"],
-              ["/static/work-oh-office.jpg", "03", "OH Office", "Workplace / Dubai"]
-            ].map(([image, number, title, type]) => (
-              <Link to="/projects" className="nib-project-card" key={title}>
-                <div className="nib-project-card__image">
-                  <img src={image} alt={title} />
-                </div>
-                <div className="nib-project-card__meta">
-                  <span>{number}</span>
-                  <span>{type}</span>
-                </div>
-                <h3>{title}</h3>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section className="nib-story-section nib-manifesto-story">
-          <div className="nib-story-kicker">04 / THE ORDINARY, RECONSIDERED</div>
-          <h2>
-            Luxury is not loud.
-            <br />
-            <em>It is felt.</em>
-          </h2>
-          <p>
-            We build spaces that resist the disposable. Places with a clear point of view, made with local craft, disciplined engineering and room for life to unfold.
-          </p>
-        </section>
-
-        <section className="nib-story-section nib-contact-story">
-          <div className="nib-story-kicker">05 / START A CONVERSATION</div>
-          <div className="nib-contact-grid">
-            <h2>
-              Bring the
-              <br />
-              <em>ordinary</em>
-              <br />
-              to life.
-            </h2>
-            <div>
-              <p>Tell us what you are shaping. We will bring the people, process and precision to make it real.</p>
-              <Link to="/contact" className="nib-story-button">
-                Start a project <FiArrowRight />
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
+        <div className="nib-hud-metrics">
+          <span className="nib-hud-current-chapter">{activeChapter}</span>
+          <span className="nib-hud-percentage">{String(scrollProgress).padStart(2, "0")}%</span>
+        </div>
+      </div>
     </div>
   );
 }

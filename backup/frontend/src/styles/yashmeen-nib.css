@@ -1,6 +1,6 @@
 /* ==========================================================================
    Yashmeen × Normal is Boring (NIB) Architectural Experience
-   Design System: Light Editorial (Warm White #fbfaf7, Ink #1b1a17, Bronze #8a6a28)
+   Design System: Light Editorial & Horizontal Kinematics
    Reverse-Engineered Exact Kinematics from https://normalisboring.es/
    Fully Responsive for Desktop, Tablet, and Mobile
    ========================================================================== */
@@ -13,6 +13,8 @@
   --nib-muted: #6b665c;
   --nib-hairline: #e6e1d6;
   --nib-paper: #f7f6f2;
+  --nib-limestone: #f3efe8;
+  --nib-dark-bg: #11100e;
   --nib-wrapper-padd: 2rem 2.5rem;
 }
 
@@ -50,6 +52,7 @@
   z-index: 9999;
   pointer-events: none;
   box-sizing: border-box;
+  transition: color 0.4s ease;
 }
 
 .nib-header__wrapper {
@@ -86,6 +89,8 @@
   pointer-events: all;
   user-select: none;
   line-height: 1;
+  z-index: 9999;
+  transition: color 0.35s ease;
 }
 
 .nib-logo__title {
@@ -97,6 +102,7 @@
   color: var(--nib-ink);
   line-height: 0.9;
   display: flex;
+  transition: color 0.35s ease;
 }
 
 .nib-logo__badge {
@@ -106,9 +112,19 @@
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--nib-accent);
+  transition: color 0.35s ease;
 }
 
-/* Bottom-Right of Left Panel: considered INTERIORS ® (upside-down) */
+/* Light text when over dark sections */
+.nib-header--light-text .nib-logo__title {
+  color: #fbfaf7 !important;
+}
+
+.nib-header--light-text .nib-logo__badge {
+  color: var(--nib-gold) !important;
+}
+
+/* Bottom-Right of Left Panel: considered INTERIORS ® (inverted hallmark) */
 .nib-logo__group {
   position: absolute;
   bottom: 2rem;
@@ -121,6 +137,7 @@
   pointer-events: all;
   user-select: none;
   background: transparent;
+  transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .nib-logo__is {
@@ -150,6 +167,27 @@
   font-weight: 400;
   vertical-align: super;
   margin-left: 0.15em;
+}
+
+/* Adaptive Contrast for Dark Sections */
+.nib-header--light-text .nib-logo__title {
+  color: #fbfaf7;
+}
+
+.nib-header--light-text .nib-logo__badge {
+  color: var(--nib-gold);
+}
+
+.nib-header--light-text .nib-menu-pill {
+  background: #fbfaf7;
+  color: #11100e;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.nib-header--light-text .nib-ctrl-btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fbfaf7;
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 /* Character sliding masks */
@@ -283,19 +321,88 @@
 }
 
 /* --------------------------------------------------------------------------
-   3. EDITORIAL HERO SECTION (2-Column Grid matching normalisboring.es)
+   3. HORIZONTAL SCROLL TRACK & STRIP (Desktop Multi-Module Pinning)
    -------------------------------------------------------------------------- */
-.nib-hero {
+.nib-scroll-track {
   position: relative;
   width: 100%;
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: minmax(0, 3.2fr) minmax(280px, 1fr);
-  align-items: stretch;
+  height: 100vh;
+  overflow: hidden;
   background-color: var(--nib-bg);
 }
 
-/* Left Column: Typographic Manifesto & Asymmetric 2-Column Headline Grid */
+.nib-scroll-strip {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  height: 100vh;
+  will-change: transform;
+}
+
+/* Base Horizontal Section */
+.nib-scroll-section {
+  flex: 0 0 auto;
+  height: 100vh;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+/* Background & Contrast Themes */
+.bg-warm-white {
+  background-color: var(--nib-bg);
+  color: var(--nib-ink);
+}
+
+.bg-limestone {
+  background-color: var(--nib-limestone);
+  color: var(--nib-ink);
+}
+
+.bg-ink {
+  background-color: var(--nib-dark-bg);
+  color: #fbfaf7;
+}
+
+.c-light {
+  color: #fbfaf7;
+}
+
+.c-gold {
+  color: var(--nib-gold);
+}
+
+.bg-gold {
+  background-color: var(--nib-gold);
+  color: #11100e;
+}
+
+.nib-section-kicker {
+  position: absolute;
+  top: 3.5rem;
+  left: 4.5rem;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nib-muted);
+  user-select: none;
+}
+
+/* --------------------------------------------------------------------------
+   SECTION 0: THE INTRO / HERO (2-Column Asymmetric Grid)
+   -------------------------------------------------------------------------- */
+.nib-section-hero {
+  width: 100vw;
+  min-width: 1100px;
+  display: grid;
+  grid-template-columns: minmax(0, 3.2fr) minmax(280px, 1fr);
+  align-items: stretch;
+}
+
 .nib-hero__left {
   position: relative;
   display: flex;
@@ -306,7 +413,6 @@
   box-sizing: border-box;
 }
 
-/* Asymmetric 2-Column Headline Grid */
 .nib-hero__wrap-titles {
   display: grid;
   grid-template-columns: auto auto;
@@ -321,7 +427,6 @@
   gap: 0.15rem;
 }
 
-/* Line Overflow Masks for Alternating Up/Down Character Reveals */
 .nib-line-mask {
   display: block;
   overflow: clip;
@@ -333,18 +438,7 @@
   will-change: transform;
 }
 
-/* Title Block 1: CONSIDERED / SPACES */
-.nib-title-line-1 {
-  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
-  font-size: clamp(2.2rem, 3.5vw, 4.25rem);
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--nib-ink);
-  line-height: 0.92;
-}
-
-/* Title Block 2: THAT / CHALLENGE (Offset right column) */
+.nib-title-line-1,
 .nib-title-line-2 {
   font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
   font-size: clamp(2.2rem, 3.5vw, 4.25rem);
@@ -355,7 +449,6 @@
   line-height: 0.92;
 }
 
-/* Title Block 3: THE / ORDINARY • */
 .nib-title-line-3 {
   gap: 0.25rem;
 }
@@ -389,7 +482,6 @@
   display: inline-block;
 }
 
-/* Narrative Copy Block (Column 2 Row 2 beneath THAT CHALLENGE) */
 .nib-hero__narrative-block {
   display: flex;
   flex-direction: column;
@@ -413,7 +505,12 @@
   flex-wrap: wrap;
 }
 
-.nib-hero__actions .btn {
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -421,613 +518,1077 @@
   padding: 0.75rem 1.35rem;
   border-radius: 9999px;
   text-decoration: none;
+  cursor: pointer;
   transition: all 0.25s ease;
+  border: none;
 }
 
-.nib-hero__actions .btn-primary {
+.btn-primary {
   background-color: var(--nib-ink);
   color: #ffffff;
 }
 
-.nib-hero__actions .btn-primary:hover {
+.btn-primary:hover {
   background-color: #000000;
   transform: translateY(-2px);
 }
 
-.nib-hero__actions .btn-outline {
+.btn-outline {
   background-color: transparent;
   color: var(--nib-ink);
   border: 1px solid rgba(27, 26, 23, 0.3);
 }
 
-.nib-hero__actions .btn-outline:hover {
+.btn-outline:hover {
   background-color: var(--nib-ink);
   color: #ffffff;
   transform: translateY(-2px);
 }
 
-/* Bottom Left Copyright */
+.btn-gold {
+  background-color: var(--nib-gold);
+  color: #11100e;
+}
+
+.btn-gold:hover {
+  background-color: #e5be3d;
+  transform: translateY(-2px);
+}
+
+.btn-outline-white {
+  background-color: transparent;
+  color: #fbfaf7;
+  border: 1px solid rgba(251, 250, 247, 0.35);
+}
+
+.btn-outline-white:hover {
+  background-color: #fbfaf7;
+  color: #11100e;
+  transform: translateY(-2px);
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+}
+
 .nib-hero__copyright {
   position: absolute;
-  bottom: 2.25rem;
+  bottom: 2rem;
   left: 4.5rem;
   font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
   font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(27, 26, 23, 0.4);
+  color: var(--nib-muted);
+  user-select: none;
 }
 
 /* Right Column: Architectural Vertical Portal & Sideways Navigation */
 .nib-hero__right {
   position: relative;
-  width: 100%;
+  display: flex;
+  align-items: stretch;
   height: 100vh;
-  min-height: 100%;
-  overflow: hidden;
-  background-color: #0d0d0c;
 }
 
-/* Sideways Vertical Navigation Strip */
 .nib-hero__vert-nav {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 60px;
-  z-index: 30;
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
-  gap: 2.75rem;
-  background: rgba(251, 250, 247, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-right: 1px solid var(--nib-hairline);
+  padding: 5rem 0.75rem;
+  background-color: var(--nib-bg);
+  border-left: 1px solid var(--nib-hairline);
+  z-index: 20;
 }
 
 .nib-hero__vert-link {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
   font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
   font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--nib-ink);
   text-decoration: none;
-  transition: color 0.25s ease, transform 0.25s ease;
-  padding: 0.25rem 0;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  transition: all 0.25s ease;
+  padding: 0.5rem 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
 .nib-hero__vert-link:hover {
   color: var(--nib-accent);
-  transform: rotate(180deg) translateY(-3px);
 }
 
-/* Vertical Portal Image with Clip-Path Curtain Unmasking */
 .nib-hero__image-wrap {
-  position: absolute;
-  inset: 0;
-  left: 60px;
-  width: calc(100% - 60px);
+  position: relative;
+  flex: 1;
   height: 100%;
   overflow: hidden;
-  will-change: clip-path;
+  clip-path: inset(0% 0% 0% 0%);
 }
 
 .nib-hero__image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
+  object-position: center;
   display: block;
-  will-change: transform;
-  filter: contrast(1.05) brightness(0.96);
 }
 
 .nib-hero__image-scrim {
   position: absolute;
   inset: 0;
-  pointer-events: none;
   background: linear-gradient(
     to bottom,
-    rgba(18, 17, 16, 0.12) 0%,
-    rgba(18, 17, 16, 0) 35%,
-    rgba(18, 17, 16, 0.65) 100%
+    rgba(17, 16, 14, 0.15) 0%,
+    rgba(17, 16, 14, 0.45) 100%
   );
+  pointer-events: none;
 }
 
 /* --------------------------------------------------------------------------
-   4. EDITORIAL STORY CHAPTERS BELOW THE FOLD
+   SECTION 1: ARCHITECTURAL PORTAL (Primary Media Column)
    -------------------------------------------------------------------------- */
-.nib-story {
-  background: var(--nib-paper, #f7f6f2);
-  color: var(--nib-ink);
+.nib-section-media-primary {
+  width: clamp(520px, 48vw, 720px);
+  padding: 4rem 3rem;
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
 }
 
-.nib-story-section {
-  min-height: 100vh;
-  padding: 9rem clamp(1.5rem, 6vw, 7rem);
+.nib-media-card-primary {
   position: relative;
+  width: 70%;
+  height: 75vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.nib-media-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
-  opacity: 0;
-  transform: translateY(50px);
-  transition: opacity 0.9s ease, transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1);
+  border-radius: 4px;
 }
 
-.nib-story-section.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.nib-story-kicker {
-  font: 700 0.68rem/1 var(--font-sans, sans-serif);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--nib-muted);
-}
-
-.nib-story h2 {
-  font: 400 clamp(3rem, 7vw, 8rem) / 0.88 var(--font-sans, sans-serif);
-  letter-spacing: -0.06em;
-  margin: 0;
-}
-
-.nib-story h2 em,
-.nib-values-heading em {
-  font-family: var(--font-serif, Georgia, serif);
-  font-weight: 400;
-}
-
-.nib-story-grid {
-  display: grid;
-  grid-template-columns: 1.25fr 0.65fr;
-  gap: 8vw;
-  align-items: end;
-  margin: 12vh 0 8vh;
-}
-
-.nib-story-copy,
-.nib-projects-intro p,
-.nib-manifesto-story p,
-.nib-contact-grid p {
-  max-width: 24rem;
-  font: 400 1rem / 1.55 var(--font-sans, sans-serif);
-  color: var(--nib-muted);
-}
-
-.nib-story-copy p + p {
-  margin-top: 1.5rem;
-}
-
-.nib-story-image-wrap {
-  height: 52vh;
-  overflow: hidden;
-}
-
-.nib-story-image-wrap img,
-.nib-values-image img,
-.nib-project-card__image img {
+.nib-media-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+  display: block;
+  will-change: transform;
 }
 
-.nib-story-section.is-visible img {
-  transform: scale(1.03);
-}
-
-.nib-values-story {
-  background: #e6e0d5;
-}
-
-.nib-values-heading {
-  margin: 13vh 0 7vh;
-  font: 400 clamp(3rem, 7vw, 8rem) / 0.88 var(--font-sans, sans-serif);
-  letter-spacing: -0.06em;
-  display: flex;
-  flex-direction: column;
-}
-
-.nib-values-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  border-top: 1px solid rgba(27, 26, 23, 0.25);
-}
-
-.nib-values-grid article {
-  padding: 1.5rem 2rem 2rem 0;
-  border-right: 1px solid rgba(27, 26, 23, 0.25);
-}
-
-.nib-values-grid article + article {
-  padding-left: 2rem;
-}
-
-.nib-values-grid span {
-  font: 0.7rem / 1 var(--font-sans, sans-serif);
-  color: var(--nib-accent);
-}
-
-.nib-values-grid h3 {
-  font: 400 clamp(1.8rem, 3vw, 3rem) / 1 var(--font-serif, Georgia, serif);
-  margin: 3rem 0 1rem;
-}
-
-.nib-values-grid p {
-  max-width: 16rem;
-  color: var(--nib-muted);
-  line-height: 1.5;
-}
-
-.nib-values-image {
-  height: 32vh;
-  margin-top: 7rem;
-}
-
-.nib-projects-intro {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  margin: 13vh 0 7vh;
-}
-
-.nib-project-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-}
-
-.nib-project-card {
-  color: inherit;
-  text-decoration: none;
-}
-
-.nib-project-card__image {
-  height: 48vh;
-  overflow: hidden;
-}
-
-.nib-project-card:hover img {
-  transform: scale(1.08);
-}
-
-.nib-project-card__meta {
-  display: flex;
-  justify-content: space-between;
+.nib-media-caption {
   margin-top: 1rem;
-  font: 0.65rem / 1 var(--font-sans, sans-serif);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--nib-muted);
-}
-
-.nib-project-card h3 {
-  font: 400 clamp(1.7rem, 2.5vw, 2.7rem) / 1 var(--font-serif, Georgia, serif);
-  margin: 0.5rem 0;
-}
-
-.nib-manifesto-story {
-  min-height: 80vh;
-  background: var(--nib-ink);
-  color: var(--nib-paper);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 0.25rem;
 }
 
-.nib-manifesto-story .nib-story-kicker {
+.nib-media-badge {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
   color: var(--nib-accent);
 }
 
-.nib-manifesto-story h2 {
-  margin: 10vh 0 6vh;
+.nib-media-caption p {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--nib-muted);
+  margin: 0;
 }
 
-.nib-manifesto-story p {
-  color: rgba(247, 246, 242, 0.65);
-  margin-left: 50%;
+.nib-media-floating-card {
+  position: relative;
+  width: 30%;
+  height: 48vh;
+  display: flex;
+  flex-direction: column;
+  align-self: flex-end;
+  margin-bottom: 2rem;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
 }
 
-.nib-contact-story {
-  background: var(--nib-accent);
-  color: var(--nib-paper);
+.nib-floating-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-.nib-contact-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 0.7fr;
-  align-items: end;
-  gap: 8vw;
-  margin-top: 14vh;
-}
-
-.nib-contact-grid p {
-  color: rgba(247, 246, 242, 0.78);
-}
-
-.nib-story-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.7rem;
-  background: var(--nib-paper);
-  color: var(--nib-ink);
-  padding: 1rem 1.3rem;
-  border-radius: 999px;
-  text-decoration: none;
-  text-transform: uppercase;
-  font: 700 0.7rem / 1 var(--font-sans, sans-serif);
-  letter-spacing: 0.08em;
-  margin-top: 2rem;
+.nib-floating-tag {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  right: 0.75rem;
+  padding: 0.35rem 0.5rem;
+  background: rgba(27, 26, 23, 0.85);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-align: center;
+  border-radius: 2px;
 }
 
 /* --------------------------------------------------------------------------
-   5. DEDICATED MOBILE & TABLET OPTIMIZATIONS (UNDER 1024px / 768px)
+   SECTION 2: THE STUDIO & MANIFESTO (Editorial Typography)
    -------------------------------------------------------------------------- */
-@media (max-width: 1024px) {
-  .nib-hero {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-
-  .nib-hero__left {
-    padding: 7rem 2.5rem 4rem 2.5rem;
-  }
-
-  .nib-hero__right {
-    height: 60vh;
-    min-height: 380px;
-  }
-
-  .nib-hero__copyright {
-    display: none;
-  }
+.nib-section-manifesto {
+  width: clamp(650px, 60vw, 920px);
+  padding: 5rem 4.5rem;
+  display: flex;
+  align-items: center;
 }
 
-@media (max-width: 768px) {
-  /* Header docks as a sleek top bar rather than full-screen trap */
+.nib-manifesto-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 680px;
+}
+
+.nib-manifesto-title {
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(2.8rem, 4.8vw, 5.2rem);
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--nib-ink);
+  margin: 0;
+}
+
+.nib-manifesto-title em {
+  font-style: italic;
+  color: var(--nib-accent);
+}
+
+.nib-manifesto-p {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: clamp(1rem, 1.3vw, 1.25rem);
+  line-height: 1.7;
+  color: var(--nib-muted);
+  margin: 0;
+}
+
+.nib-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+}
+
+.nib-stat-pill {
+  display: flex;
+  flex-direction: column;
+  padding: 0.85rem 1.35rem;
+  background: #ffffff;
+  border: 1px solid var(--nib-hairline);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.nib-stat-pill strong {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--nib-ink);
+}
+
+.nib-stat-pill span {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--nib-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0.15rem;
+}
+
+/* --------------------------------------------------------------------------
+   SECTION 3: THE ATELIER & METHOD (Inverted Ink Luxury #11100e)
+   -------------------------------------------------------------------------- */
+.nib-section-atelier {
+  width: clamp(1000px, 90vw, 1400px);
+  padding: 5rem 4.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.nib-atelier-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 4rem;
+  align-items: center;
+  width: 100%;
+}
+
+.nib-atelier-visuals {
+  position: relative;
+  display: flex;
+  height: 70vh;
+}
+
+.nib-atelier-main-frame {
+  position: relative;
+  width: 75%;
+  height: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.nib-atelier-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.nib-atelier-badge {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  padding: 0.35rem 0.65rem;
+  background: rgba(17, 16, 14, 0.8);
+  backdrop-filter: blur(8px);
+  color: var(--nib-gold);
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  border-radius: 2px;
+}
+
+.nib-atelier-sub-frame {
+  position: absolute;
+  bottom: 2rem;
+  right: 0;
+  width: 45%;
+  height: 45%;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.nib-atelier-sub-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.nib-atelier-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+}
+
+.nib-atelier-lead {
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(2rem, 3.2vw, 3.5rem);
+  font-weight: 400;
+  line-height: 1.15;
+  color: #fbfaf7;
+  margin: 0;
+}
+
+.nib-beliefs-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.nib-belief-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nib-belief-num {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--nib-gold);
+  line-height: 1;
+}
+
+.nib-belief-body h4 {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fbfaf7;
+  margin: 0 0 0.35rem 0;
+}
+
+.nib-belief-body p {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: rgba(251, 250, 247, 0.65);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   SECTION 4: VERTICAL TYPOGRAPHY TICKER RIBBON
+   -------------------------------------------------------------------------- */
+.nib-section-ticker {
+  width: clamp(140px, 12vw, 200px);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid var(--nib-hairline);
+  border-right: 1px solid var(--nib-hairline);
+}
+
+.nib-ticker-strip {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+.nib-ticker-text {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #11100e;
+}
+
+/* --------------------------------------------------------------------------
+   SECTION 5: TACTILE MATERIALITY & CRAFT (Warm Limestone #f3efe8)
+   -------------------------------------------------------------------------- */
+.nib-section-craft {
+  width: clamp(800px, 75vw, 1100px);
+  padding: 5rem 4.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.nib-craft-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  width: 100%;
+}
+
+.nib-craft-header {
+  max-width: 600px;
+}
+
+.nib-craft-h3 {
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(2.2rem, 3.5vw, 3.8rem);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--nib-ink);
+  margin: 0;
+}
+
+.nib-craft-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+}
+
+.nib-craft-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.nib-craft-card__media {
+  position: relative;
+  width: 100%;
+  height: 48vh;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.nib-craft-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.nib-craft-card__info h4 {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--nib-ink);
+  margin: 0 0 0.25rem 0;
+}
+
+.nib-craft-card__info p {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--nib-muted);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   SECTION 6: SELECTED WORK (Horizontal Gallery Showcase)
+   -------------------------------------------------------------------------- */
+.nib-section-projects {
+  width: clamp(1500px, 135vw, 2200px);
+  padding: 5rem 4.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2.5rem;
+}
+
+.nib-projects-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 3rem;
+  max-width: 900px;
+}
+
+.nib-projects-h2 {
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(2.5rem, 4vw, 4.5rem);
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--nib-ink);
+  margin: 0;
+}
+
+.nib-projects-h2 em {
+  font-style: italic;
+  color: var(--nib-accent);
+}
+
+.nib-projects-sub {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--nib-muted);
+  margin: 0;
+  max-width: 380px;
+}
+
+.nib-projects-track {
+  display: flex;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+.nib-project-tile {
+  flex: 0 0 clamp(320px, 24vw, 420px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  text-decoration: none;
+  color: var(--nib-ink);
+  transition: transform 0.3s ease;
+}
+
+.nib-project-tile:hover {
+  transform: translateY(-6px);
+}
+
+.nib-tile-media {
+  position: relative;
+  width: 100%;
+  height: 52vh;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.nib-tile-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nib-project-tile:hover .nib-tile-media img {
+  transform: scale(1.06);
+}
+
+.nib-tile-hover-cue {
+  position: absolute;
+  inset: 0;
+  background: rgba(17, 16, 14, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #ffffff;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.nib-project-tile:hover .nib-tile-hover-cue {
+  opacity: 1;
+}
+
+.nib-tile-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--nib-accent);
+}
+
+.nib-tile-title {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--nib-ink);
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   SECTION 7: CLOSING FINALE & CONTACT (Inverted Ink Luxury)
+   -------------------------------------------------------------------------- */
+.nib-section-cierre {
+  width: clamp(850px, 75vw, 1150px);
+  padding: 6rem 5rem;
+  display: flex;
+  align-items: center;
+}
+
+.nib-cierre-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  max-width: 720px;
+}
+
+.nib-cierre-heading {
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(3rem, 5.5vw, 6.2rem);
+  font-weight: 400;
+  line-height: 0.95;
+  color: #fbfaf7;
+  margin: 0;
+}
+
+.nib-cierre-heading em {
+  font-style: italic;
+  color: var(--nib-gold);
+}
+
+.nib-cierre-desc {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: clamp(1rem, 1.4vw, 1.3rem);
+  line-height: 1.65;
+  color: rgba(251, 250, 247, 0.75);
+  margin: 0;
+}
+
+.nib-cierre-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.nib-cierre-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.nib-detail-label {
+  display: block;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--nib-gold);
+  margin-bottom: 0.5rem;
+}
+
+.nib-detail-block p {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(251, 250, 247, 0.7);
+  margin: 0;
+}
+
+.nib-detail-block a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.nib-detail-block a:hover {
+  color: var(--nib-gold);
+}
+
+.nib-cierre-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: rgba(251, 250, 247, 0.4);
+  padding-top: 2rem;
+}
+
+/* --------------------------------------------------------------------------
+   4. HORIZONTAL HEADS-UP DISPLAY (Bottom Floating Track & Chapters)
+   -------------------------------------------------------------------------- */
+.nib-horizontal-hud {
+  position: fixed;
+  bottom: 1.75rem;
+  left: 3.5rem;
+  right: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  z-index: 9980;
+  pointer-events: none;
+}
+
+.nib-hud-chapters {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  pointer-events: all;
+  background: rgba(27, 26, 23, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0.3rem 0.45rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.nib-hud-chip {
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nib-hud-chip:hover {
+  color: #ffffff;
+}
+
+.nib-hud-chip.is-active {
+  background: var(--nib-gold);
+  color: #11100e;
+}
+
+.nib-hud-timeline {
+  flex: 1;
+  max-width: 400px;
+  height: 2px;
+  background: rgba(27, 26, 23, 0.15);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.theme-dark-active .nib-hud-timeline {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.nib-hud-bar {
+  height: 100%;
+  background-color: var(--nib-accent);
+  transition: width 0.08s linear;
+}
+
+.nib-hud-metrics {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--nib-ink);
+  user-select: none;
+}
+
+.theme-dark-active .nib-hud-metrics {
+  color: #fbfaf7;
+}
+
+.nib-hud-percentage {
+  color: var(--nib-accent);
+}
+
+/* --------------------------------------------------------------------------
+   5. MOBILE & TABLET FALLBACK (@media (max-width: 991px))
+   -------------------------------------------------------------------------- */
+@media (max-width: 991px) {
   .nib-header {
-    height: 60px;
-    bottom: auto;
-    background: rgba(251, 250, 247, 0.95);
+    height: auto !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    background: rgba(251, 250, 247, 0.88);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(230, 225, 214, 0.5);
+    border-bottom: 1px solid rgba(27, 26, 23, 0.08);
+  }
+
+  .is-preloading .nib-header {
+    background: transparent !important;
+    border-bottom: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 
   .nib-header__wrapper {
-    height: 60px;
-    padding: 0 1.15rem;
-    justify-content: space-between;
-    align-items: center;
+    padding: 1rem 1.25rem !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
   }
 
   .nib-header__logo {
     position: static !important;
     width: auto !important;
     height: auto !important;
-    transform: none !important;
-    display: flex;
-    align-items: center;
   }
 
   .nib-logo__normal {
-    position: static;
-    gap: 0.45rem;
+    position: static !important;
   }
 
   .nib-logo__title {
-    font-size: clamp(1.15rem, 5vw, 1.45rem);
-    letter-spacing: 0.06em;
+    font-size: 1.5rem !important;
   }
 
-  .nib-logo__badge {
-    display: none;
+  .nib-header__controls {
+    position: static !important;
   }
 
-  /* Hide inverted logo in docked state on mobile */
-  .nib-logo__group {
+  /* When preloading on mobile, keep logo centered */
+  .is-preloading .nib-header {
+    height: 100vh !important;
+    bottom: 0 !important;
+  }
+
+  .is-preloading .nib-header__wrapper {
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .is-preloading .nib-header__logo {
+    position: relative !important;
+    width: 270px !important;
+    height: 110px !important;
+  }
+
+  .is-preloading .nib-logo__normal {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+
+  .is-preloading .nib-header__controls {
     display: none !important;
   }
 
-  /* Top Right Controls */
-  .nib-header__controls {
-    position: static;
-    top: auto;
-    right: auto;
-    gap: 0.35rem;
+  .nib-scroll-track {
+    height: auto !important;
+    overflow: visible !important;
   }
 
-  .nib-ctrl-btn {
-    padding: 0.35rem 0.65rem;
-    font-size: 0.6875rem;
+  .nib-scroll-strip {
+    flex-direction: column !important;
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
   }
 
-  .nib-menu-pill {
-    padding: 0.35rem 0.85rem;
-    font-size: 0.6875rem;
+  .nib-scroll-section {
+    width: 100% !important;
+    min-width: 100% !important;
+    height: auto !important;
+    padding: 5rem 1.5rem !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
   }
 
-  /* Preloader telemetry */
-  .nib-preloader-counter {
-    bottom: 2rem;
-    right: 1.5rem;
-    font-size: clamp(2.75rem, 8vw, 4rem);
+  .nib-section-hero {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 !important;
+    min-height: 100svh !important;
   }
 
-  .nib-preloader-meta {
-    bottom: 2rem;
-    left: 1.5rem;
-  }
-
-  .nib-preloader-label {
-    font-size: 0.6875rem;
-    letter-spacing: 0.18em;
-  }
-
-  /* Left Column Manifesto on Mobile */
   .nib-hero__left {
-    padding: 5.5rem 1.25rem 3rem 1.25rem;
+    padding: 7rem 1.5rem 3rem !important;
+    width: 100% !important;
   }
 
   .nib-hero__wrap-titles {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    width: 100%;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+    width: 100% !important;
   }
 
   .nib-title-line-1,
   .nib-title-line-2 {
-    font-size: clamp(1.75rem, 7.8vw, 2.5rem);
-    line-height: 0.94;
-    white-space: nowrap;
+    font-size: clamp(2rem, 9vw, 3.25rem) !important;
+    white-space: nowrap !important;
   }
 
   .nib-hero__h-line3-lead {
-    font-size: clamp(1.45rem, 6.5vw, 2.15rem);
-    line-height: 0.94;
+    font-size: clamp(1.75rem, 8vw, 2.75rem) !important;
   }
 
   .nib-hero__h-line3-climax {
-    font-size: clamp(2.35rem, 10vw, 3.4rem);
-    line-height: 0.88;
+    font-size: clamp(2.4rem, 11vw, 4rem) !important;
   }
 
   .nib-hero__narrative-block {
-    max-width: none;
-    padding-top: 0.5rem;
-    gap: 1.25rem;
-  }
-
-  .nib-hero__copy {
-    font-size: 0.875rem;
-    line-height: 1.55;
+    max-width: 100% !important;
   }
 
   .nib-hero__right {
-    height: 52vh;
-    min-height: 320px;
+    width: 100% !important;
+    height: 48vh !important;
+    border-left: none !important;
+    border-top: 1px solid var(--nib-hairline) !important;
   }
 
   .nib-hero__vert-nav {
-    display: none;
+    display: none !important;
   }
 
-  .nib-hero__image-wrap {
-    left: 0;
-    width: 100%;
+  .nib-logo__group {
+    display: none !important;
   }
 
-  /* Story section mobile responsiveness */
-  .nib-story-section {
-    min-height: auto;
-    padding: 6rem 1.25rem;
+  .nib-section-media-primary {
+    gap: 1.5rem !important;
   }
 
-  .nib-story-grid,
-  .nib-contact-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    margin: 5rem 0 3rem;
+  .nib-media-card-primary {
+    width: 100% !important;
+    height: 50vh !important;
   }
 
-  .nib-story h2 {
-    font-size: clamp(3rem, 14vw, 5.5rem);
+  .nib-media-floating-card {
+    display: none !important;
   }
 
-  .nib-story-image-wrap {
-    height: 44vh;
+  .nib-section-kicker {
+    position: static !important;
+    margin-bottom: 1.5rem !important;
   }
 
-  .nib-values-heading {
-    margin: 5rem 0 3rem;
-    font-size: clamp(3rem, 14vw, 5.5rem);
+  .nib-atelier-layout {
+    grid-template-columns: 1fr !important;
+    gap: 2.5rem !important;
   }
 
-  .nib-values-grid,
-  .nib-project-list {
-    grid-template-columns: 1fr;
+  .nib-atelier-visuals {
+    height: 45vh !important;
+    width: 100% !important;
   }
 
-  .nib-values-grid article,
-  .nib-values-grid article + article {
-    padding: 1.5rem 0;
-    border-right: 0;
-    border-bottom: 1px solid rgba(27, 26, 23, 0.25);
+  .nib-atelier-main-frame {
+    width: 100% !important;
   }
 
-  .nib-values-image {
-    height: 36vh;
-    margin-top: 3rem;
+  .nib-atelier-sub-frame {
+    display: none !important;
   }
 
-  .nib-projects-intro {
-    display: block;
-    margin: 5rem 0 3rem;
+  .nib-section-ticker {
+    width: 100% !important;
+    height: auto !important;
+    padding: 1.5rem 0 !important;
   }
 
-  .nib-project-card__image {
-    height: 52vh;
+  .nib-ticker-strip {
+    writing-mode: horizontal-tb !important;
+    transform: none !important;
+    overflow-x: auto !important;
   }
 
-  .nib-manifesto-story p {
-    margin: 0;
-  }
-}
-
-/* Preloader active state overrides for mobile */
-@media (max-width: 768px) {
-  .nib-root.is-preloading .nib-header {
-    height: 100vh;
-    bottom: 0;
-    background: transparent;
-    border-bottom: none;
+  .nib-craft-cards-grid {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
   }
 
-  .nib-root.is-preloading .nib-header__wrapper {
-    height: 100%;
-    justify-content: center;
-    align-items: center;
+  .nib-projects-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
   }
 
-  .nib-root.is-preloading .nib-header__logo {
-    position: relative !important;
-    width: 270px !important;
-    height: 110px !important;
-    display: block;
+  .nib-projects-track {
+    flex-direction: column !important;
+    width: 100% !important;
   }
 
-  .nib-root.is-preloading .nib-logo__normal {
-    position: absolute;
-    top: 0;
-    left: 0;
+  .nib-project-tile {
+    flex: none !important;
+    width: 100% !important;
   }
 
-  .nib-root.is-preloading .nib-logo__title {
-    font-size: 1.45rem;
+  .nib-tile-media {
+    height: 38vh !important;
   }
 
-  .nib-root.is-preloading .nib-logo__group {
-    display: flex !important;
-    position: absolute;
-    bottom: 0;
-    right: 0;
+  .nib-cierre-details {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
   }
 
-  .nib-root.is-preloading .nib-logo__is {
-    font-size: 1.3rem;
-  }
-
-  .nib-root.is-preloading .nib-logo__boring {
-    font-size: 1.4rem;
-  }
-
-  .nib-root.is-preloading .nib-header__controls {
-    display: none;
+  .nib-horizontal-hud {
+    display: none !important;
   }
 }

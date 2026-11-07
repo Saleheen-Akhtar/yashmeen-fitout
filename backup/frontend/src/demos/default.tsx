@@ -9,58 +9,18 @@ export default function ParallaxDemo() {
   return (
     <div style={{ position: 'relative', width: '100%', minHeight: '100vh', background: '#0d0d0c' }}>
       {/* View Switcher Floating Bar */}
-      <div
-        style={{
-          position: 'fixed',
-          top: '1.25rem',
-          right: '1.5rem',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.375rem',
-          background: 'rgba(27, 26, 23, 0.88)',
-          backdropFilter: 'blur(12px)',
-          border: '1px solid rgba(230, 225, 214, 0.18)',
-          borderRadius: '9999px',
-          padding: '0.35rem',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.45)'
-        }}
-      >
+      <div className="parallax-switcher">
         <button
           type="button"
           onClick={() => setActiveTab('yashmeen')}
-          style={{
-            border: 'none',
-            outline: 'none',
-            cursor: 'pointer',
-            padding: '0.5rem 1.15rem',
-            borderRadius: '9999px',
-            fontSize: '0.8125rem',
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            transition: 'all 0.25s ease',
-            backgroundColor: activeTab === 'yashmeen' ? '#8a6a28' : 'transparent',
-            color: activeTab === 'yashmeen' ? '#ffffff' : '#a8a29e'
-          }}
+          className={`parallax-switcher__btn ${activeTab === 'yashmeen' ? 'is-active' : ''}`}
         >
           Yashmeen Brand
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('osmo')}
-          style={{
-            border: 'none',
-            outline: 'none',
-            cursor: 'pointer',
-            padding: '0.5rem 1.15rem',
-            borderRadius: '9999px',
-            fontSize: '0.8125rem',
-            fontWeight: 600,
-            letterSpacing: '0.04em',
-            transition: 'all 0.25s ease',
-            backgroundColor: activeTab === 'osmo' ? '#8a6a28' : 'transparent',
-            color: activeTab === 'osmo' ? '#ffffff' : '#a8a29e'
-          }}
+          className={`parallax-switcher__btn ${activeTab === 'osmo' ? 'is-active' : ''}`}
         >
           21st.dev Reference
         </button>

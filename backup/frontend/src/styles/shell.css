@@ -95,7 +95,6 @@
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-.site-header.is-homepage { display: none !important; }
 .site-header.is-homepage-top .site-header-inner { max-width: none; padding: 0 clamp(24px, 2.65vw, 50px); }
 .site-header.is-homepage-top .site-brand { flex: none; }
 .site-header.is-homepage-top .site-brand-text { color: #171613; font-size: clamp(17px, 1.22vw, 23px); font-weight: 500; letter-spacing: .045em; white-space: nowrap; }

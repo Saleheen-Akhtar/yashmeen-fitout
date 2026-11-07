@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 
 const MENU_ITEMS = [
   { label: "Home", href: "/" },
-  { label: "Works", href: "/projects" },
-  { label: "Studio", href: "/about" },
-  { label: "Process", href: "/#process" },
+  { label: "Projects", href: "/projects" },
+  { label: "About", href: "/about" },
+  { label: "Services", href: "/services" },
   { label: "Gallery", href: "/photo-gallery" },
   { label: "Contact", href: "/contact" },
 ];

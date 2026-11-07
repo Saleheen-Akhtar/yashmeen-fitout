@@ -5,14 +5,10 @@ import QuestionnaireModal from "./layout/QuestionnaireModal";
 import "../styles/shell.css";
 
 const NAV_LINKS = [
-  { label: "Works", href: "/projects" },
-  { label: "Studio", href: "/about" },
-  { label: "Process", href: "/#process" },
-  { label: "Gallery", href: "/photo-gallery" },
-];
-const HOME_NAV_LINKS = [
   { label: "Projects", href: "/projects" },
-  { label: "Approach", href: "/about" },
+  { label: "About", href: "/about" },
+  { label: "Services", href: "/services" },
+  { label: "Gallery", href: "/photo-gallery" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -68,13 +64,13 @@ export default function Header() {
         <div className="site-header-inner">
           {/* Brand Left */}
           <Link to="/" className="site-brand" aria-label="Yashmeen Future Building Homepage">
-            <span className="site-brand-text">{isHomePage ? "YASHMEEN FIT-OUT" : "YASHMEEN"}</span>
+            <span className="site-brand-text">YASHMEEN FIT-OUT</span>
             <span className="site-brand-city">DUBAI</span>
           </Link>
 
           {/* Center Links with comma separation */}
           <nav className="site-nav-center" aria-label="Primary Navigation">
-            {(isHomePage ? HOME_NAV_LINKS : NAV_LINKS).map((item, idx) => (
+            {NAV_LINKS.map((item, idx) => (
               <span key={item.href} style={{ display: "inline-flex", alignItems: "center" }}>
                 <Link
                   to={item.href}
@@ -82,7 +78,7 @@ export default function Header() {
                 >
                   {item.label}
                 </Link>
-                {idx < (isHomePage ? HOME_NAV_LINKS : NAV_LINKS).length - 1 && <span className={`site-nav-sep ${isHomePage ? "home-nav-sep" : ""}`}>{isHomePage ? "/" : ","}</span>}
+                {idx < NAV_LINKS.length - 1 && <span className="site-nav-sep">,</span>}
               </span>
             ))}
           </nav>

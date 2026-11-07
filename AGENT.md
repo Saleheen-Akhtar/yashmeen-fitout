@@ -8,7 +8,7 @@ Operational manual for AI agents and developers maintaining and evolving the **Y
 
 * **Repository:** `Saleheen-Akhtar/yashmeen-fitout` (Git branch `main`)
 * **Workspace Root:** `C:\Users\sahil\Projects\IT\Dan`
-* **Frontend:** `backup/frontend` — React 19, Vite, React Router DOM, Tailwind CSS
+* **Frontend:** `backup/frontend` — React 19, Vite, React Router DOM, plain CSS (no Tailwind)
 * **Backend:** `backup/backend` — Node.js, Express, MongoDB Atlas (`mongoose`), JWT auth, Multer file uploads, Nodemailer SMTP
 
 ### Local Development Commands
@@ -25,43 +25,23 @@ npm --prefix backup/frontend run build
 
 ---
 
-## 2. Design System & Anti-Slop Directives
+## 2. Design System (Light Editorial)
 
-Every design modification must align with `design-taste-frontend-v2-experimental` and `antigravity-design-expert`.
+Source of truth: `backup/frontend/src/index.css` (tokens + primitives), `styles/shell.css` (header/footer), `styles/home.css` (homepage).
 
-### Core Dial Configuration
-* **`DESIGN_VARIANCE: 7`** — Asymmetric editorial rhythm, balanced white space, strict `< 768px` mobile collapse.
-* **`MOTION_INTENSITY: 6`** — Smooth scroll reveal, tactile button depression, glassmorphic refraction, spring physics.
-* **`VISUAL_DENSITY: 3`** — Airy, gallery-grade pacing (`py-28` to `py-36`), expansive photography, no cramped cards.
-
-### Hard Rules & Constraints (Non-Negotiable)
-
-1. **ZERO EM-DASH RULE (Section 9.G)**
-   * **Banned:** Em-dash (`—`) and en-dash (`–`) are completely banned across the entire user-facing interface (headlines, body copy, quotes, tags, buttons, attributions, alt text).
-   * **Approved:** Use standard hyphen (`-`), colon, period, or comma.
-
-2. **PAGE THEME LOCK (Section 4.11)**
-   * **No Zebra-Striping:** The page must not alternate back and forth between dark obsidian and light beige every section. Sections must transition smoothly within a coherent architectural theme.
-
-3. **EYEBROW RESTRAINT (Section 4.7 & 9.F)**
-   * **Cap:** Maximum 1 uppercase tracking eyebrow tag per 3 sections (at most 4 across the homepage). Never place an eyebrow above every single section.
-
-4. **COLOR CONSISTENCY LOCK (Section 4.2)**
-   * **Allowed Palette:** Obsidian (`#0d0c0a`, `#141311`), Satin Brass (`#c5a059`, `#dfba73`, `#8a6a28`), Warm Stone Linen (`#f7f5f0`, `#eae5dc`), and Crisp White (`#ffffff`).
-   * **Banned:** Legacy bright blue (`#0077ff`), corporate navy (`#254184`), and stark red (`#cf332a`).
-
-5. **IMAGE & BADGE DISCIPLINE (Section 4.8 & 9.F)**
-   * **No Image Overlays:** Do not place floating `.rb-tag` or `.rb-label` badges directly on top of photos. Let the architectural photography speak; place captions cleanly underneath.
-   * **Mandatory Fallback:** MongoDB records may reference filenames not on disk. Always provide `FALLBACK_IMAGES` and `onError={(e) => { e.currentTarget.src = fallbackUrl; }}` on project/gallery `<img>` tags.
-
-6. **ANTIGRAVITY SPATIAL DEPTH**
-   * Use frosted glassmorphic surfaces (`backdrop-filter: blur(16px)` + `border: 1px solid rgba(255,255,255,0.08)` + inner highlight `box-shadow: inset 0 1px 0 rgba(255,255,255,0.12)`).
-   * Provide tactile button depression: `:active { transform: scale(0.98); }`.
-   * Stagger entrances on card grids by `0.08s`.
-
-7. **ACCESSIBILITY & REDUCED MOTION (Section 6.B)**
-   * Always wrap continuous or complex transitions with `@media (prefers-reduced-motion: reduce)` fallbacks.
-   * Ensure text passes WCAG AA contrast (minimum 4.5:1 for body copy).
+* **Theme:** light, warm white (`--bg #fbfaf7`), alt surface `--surface-alt #f4f1ea`, ink `#1b1a17`, muted `#6b665c`, hairlines `#e6e1d6`. Footer is light too. No dark/light zebra sections.
+* **One accent:** bronze `--accent #8a6a28` (4.9:1 on white). No other golds. Photo overlays may use light text only on a dark gradient.
+* **Type:** two fonts only. `--font-serif` Cormorant Garamond for display, `--font-sans` Plus Jakarta Sans for body. Scale 12/14/16/18/20/24/30/36/48/60. Body 16px, line-height 1.65. No text under 12px.
+* **Space:** 4/8/16/24/32/48/64/96 (`--s-1` to `--s-8`). Sections use `.section` (96px, 64px on mobile).
+* **Depth:** flat cards with 1px border; shadow only on hover or for popovers. No glassmorphism, no parallax.
+* **Components:** `.btn .btn-primary|.btn-outline`, `.link-arrow`, `.card`, `.field`, `.eyebrow`, `.section-head`. Buttons and links are at least 44px tall.
+* **Hierarchy rules:** max one eyebrow per section head. One primary button per view. Left-align body copy; center only short headings.
+* **Accessibility:** visible focus ring, skip link in `Layout`, labelled form fields, `prefers-reduced-motion` honored, alt text on every `<img>`.
+* **Em/en dashes:** still banned in user-facing copy. Use hyphen, colon, comma or period.
+* **Images:** project/gallery `<img>` keep an `onError` fallback.
+* **Motion (visitor site only):** `src/motion/MotionProvider.jsx` mounts in `Layout`. Lenis smooth scroll runs off the GSAP ticker. Tag markup instead of writing per-page code: `data-split` (line mask reveal), `data-words` (scrub-lit words), `data-reveal`, `data-stagger`, `data-in` (+`.line-draw`), `data-parallax`, `data-clip`, `data-count`, `data-magnetic`, `data-nomotion` (opt out), `data-manual` (opt a page out of the generic fade-up). Untagged pages get automatic heading splits and fade-ups.
+* **Motion rules:** easing is `expo.out` / `power3.out`, never linear except scrub. Only animate `transform`, `opacity`, `clip-path`. Always respect `prefers-reduced-motion` (provider and `html.motion` class are skipped). Never put a transform on `#main`.
+* **Subpages:** each page keeps its own scoped variable block (`--archpg-*`, `--conspg-*`, etc.), now mapped to the light palette. When touching one, prefer the global tokens above.
 
 ---
 

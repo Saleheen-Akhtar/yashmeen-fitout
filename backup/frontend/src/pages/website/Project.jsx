@@ -3,6 +3,16 @@ import { Link } from "react-router-dom";
 import { FiMaximize2 } from "react-icons/fi";
 import { categoryAPI, projectAPI, itemPath } from "../../services/api"; // adjust the path to your project
 
+
+const CURATED_PROJECTS = [
+  { id: 1, title: "Palm Jumeirah Atelier", category: "Residential", src: "/static/work-oh-office.jpg", year: "2026", size: "14,500 sq.ft", location: "Palm Jumeirah, Dubai" },
+  { id: 2, title: "Emirates Hills Residence", category: "Residential", src: "/static/work-myrtle.jpg", year: "2025", size: "22,000 sq.ft", location: "Emirates Hills, Dubai" },
+  { id: 3, title: "DIFC Corporate Headquarters", category: "Commercial", src: "/static/work-clifton.jpg", year: "2026", size: "18,200 sq.ft", location: "DIFC, Dubai" },
+  { id: 4, title: "Al Quoz Design Pavilion", category: "Atelier", src: "/static/work-runic.jpg", year: "2025", size: "8,500 sq.ft", location: "Al Quoz, Dubai" },
+  { id: 5, title: "Dubai Hills Modern Sanctuary", category: "Residential", src: "/static/work-stanley.jpg", year: "2026", size: "11,800 sq.ft", location: "Dubai Hills Estate, Dubai" },
+  { id: 6, title: "Downtown Fashion Concept Store", category: "Retail", src: "/static/work-samford.jpg", year: "2025", size: "6,200 sq.ft", location: "Downtown Dubai" },
+];
+
 const GALLERY_HERO_BG_IMAGE =
   "https://images.unsplash.com/photo-1758448721205-8465cebc26af?auto=format&fit=crop&w=1800&q=80";
 
@@ -305,7 +315,6 @@ export default function PhotoGallery() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap');
 
         /* HERO (same look as Contact page) */
         .photogal-hero-section{
@@ -343,7 +352,7 @@ export default function PhotoGallery() {
         .photogal-hero-heading{
           margin:0;
           text-align:center;
-          font-family:'Montserrat', sans-serif;
+          font-family:var(--font-sans);
           font-weight:800;
           color:#FFFFFF;
           font-size:34px;
@@ -430,7 +439,7 @@ export default function PhotoGallery() {
                   appearance: "none",
                   border: `1px solid ${filter === f.id ? brass : line}`,
                   background: filter === f.id ? brass : "transparent",
-                  color: filter === f.id ? "#181410" : inkDim,
+                  color: filter === f.id ? "#ffffff" : inkDim,
                   fontFamily: "'Manrope', sans-serif",
                   fontWeight: 600,
                   fontSize: 12.5,
@@ -539,11 +548,11 @@ export default function PhotoGallery() {
                     <h3
                       style={{
                         margin: 0,
-                        fontFamily: "'Fraunces', serif",
+                        fontFamily: "var(--font-serif)",
                         fontWeight: 400,
                         fontSize: 17,
                         lineHeight: 1.25,
-                        color: ink,
+                        color: ovInk,
                       }}
                     >
                       {p.title}
@@ -560,11 +569,16 @@ export default function PhotoGallery() {
 }
 
 /* ---------------- tokens & shared styles ---------------- */
-const ink = "#efe9db";
-const inkDim = "#9c9584";
-const bg = "#0A0A0A"; // solid dark, matches the hero band
-const line = "#33302a";
-const brass = "#b9905a";
+const ink = "#1b1a17";
+const inkDim = "#6b665c";
+const bg = "#fbfaf7";
+const line = "#e6e1d6";
+const brass = "#8a6a28";
+// Overlay palette: text that sits on photos or the dark lightbox
+const ovInk = "#f3eee2";
+const ovDim = "#cfc8b6";
+const ovBrass = "#e0bd7c";
+const ovLine = "#4a463f";
 
 const messageStyle = {
   padding: "80px 0",
@@ -593,12 +607,11 @@ const tagStyle = {
   letterSpacing: "0.16em",
   textTransform: "uppercase",
   fontWeight: 700,
-  color: brass,
+  color: ovBrass,
   background: "rgba(18,16,14,0.55)",
   backdropFilter: "blur(6px)",
   padding: "6px 10px",
-  border: "1px solid rgba(185,144,90,0.35)",
-};
+  border: "1px solid rgba(185,144,90,0.35)",};
 
 const expandStyle = {
   position: "absolute",
@@ -611,7 +624,6 @@ const expandStyle = {
   alignItems: "center",
   justifyContent: "center",
   border: "1px solid rgba(239,233,219,0.5)",
-  background: "rgba(18,16,14,0.35)",
-};
+  background: "rgba(18,16,14,0.35)",};
 
 const metaStyle = { position: "absolute", left: 16, right: 16, bottom: 14 };

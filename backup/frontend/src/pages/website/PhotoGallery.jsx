@@ -10,6 +10,15 @@ import { categoryAPI, galleryAPI, itemPath } from "../../services/api"; // adjus
 const GALLERY_HERO_BG_IMAGE =
   "https://images.unsplash.com/photo-1758448721205-8465cebc26af?auto=format&fit=crop&w=1800&q=80";
 
+const FALLBACK_GALLERY_IMAGES = [
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+];
+
 // Works with both `{ data: { data: [...] } }` and `{ data: [...] }` responses
 const toList = (res) => {
   const body = res?.data;
@@ -182,7 +191,6 @@ export default function PhotoGallery() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap');
 
         /* HERO (same look as Contact page) */
         .photogal-hero-section{
@@ -220,7 +228,7 @@ export default function PhotoGallery() {
         .photogal-hero-heading{
           margin:0;
           text-align:center;
-          font-family:'Montserrat', sans-serif;
+          font-family:var(--font-sans);
           font-weight:800;
           color:#FFFFFF;
           font-size:34px;
@@ -258,7 +266,7 @@ export default function PhotoGallery() {
         .photogal-filter-chip{ transition: all .25s ease; }
         .photogal-circle-btn{ transition: all .2s; }
         .photogal-circle-btn:hover{ border-color:${brass} !important; background:${brass} !important; }
-        .photogal-circle-btn:hover svg{ color:#181410 !important; }
+        .photogal-circle-btn:hover svg{ color:#ffffff !important; }
         .photogal-masonry-grid{ column-count:3; column-gap:20px; }
         @media (max-width:980px){ .photogal-masonry-grid{ column-count:2; } }
         @media (max-width:620px){ .photogal-masonry-grid{ column-count:1; } }
@@ -310,7 +318,7 @@ export default function PhotoGallery() {
                   appearance: "none",
                   border: `1px solid ${filter === f.id ? brass : line}`,
                   background: filter === f.id ? brass : "transparent",
-                  color: filter === f.id ? "#181410" : inkDim,
+                  color: filter === f.id ? "#ffffff" : inkDim,
                   fontFamily: "'Manrope', sans-serif",
                   fontWeight: 600,
                   fontSize: 12.5,
@@ -411,11 +419,11 @@ export default function PhotoGallery() {
                       <h3
                         style={{
                           margin: 0,
-                          fontFamily: "'Fraunces', serif",
+                          fontFamily: "var(--font-serif)",
                           fontWeight: 400,
                           fontSize: 17,
                           lineHeight: 1.25,
-                          color: ink,
+                          color: ovInk,
                         }}
                       >
                         {p.title}
@@ -523,12 +531,17 @@ export default function PhotoGallery() {
 }
 
 /* ---------------- tokens & shared styles ---------------- */
-const ink = "#efe9db";
-const inkDim = "#9c9584";
-const bg = "#0A0A0A"; // solid dark, matches the hero band (was "#fff", which hid the cream text)
-const line = "#33302a";
-const brass = "#b9905a";
-const shadow = "0 30px 60px -25px rgba(0,0,0,0.6)";
+const ink = "#1b1a17";
+const inkDim = "#6b665c";
+const bg = "#fbfaf7";
+const line = "#e6e1d6";
+const brass = "#8a6a28";
+// Overlay palette: text that sits on photos or the dark lightbox
+const ovInk = "#f3eee2";
+const ovDim = "#cfc8b6";
+const ovBrass = "#e0bd7c";
+const ovLine = "#4a463f";
+const shadow = "0 18px 40px -16px rgba(27,26,23,0.18)";
 
 const messageStyle = {
   padding: "80px 0",
@@ -557,12 +570,11 @@ const tagStyle = {
   letterSpacing: "0.16em",
   textTransform: "uppercase",
   fontWeight: 700,
-  color: brass,
+  color: ovBrass,
   background: "rgba(18,16,14,0.55)",
   backdropFilter: "blur(6px)",
   padding: "6px 10px",
-  border: "1px solid rgba(185,144,90,0.35)",
-};
+  border: "1px solid rgba(185,144,90,0.35)",};
 
 const expandStyle = {
   position: "absolute",
@@ -575,8 +587,7 @@ const expandStyle = {
   alignItems: "center",
   justifyContent: "center",
   border: "1px solid rgba(239,233,219,0.5)",
-  background: "rgba(18,16,14,0.35)",
-};
+  background: "rgba(18,16,14,0.35)",};
 
 const metaStyle = { position: "absolute", left: 16, right: 16, bottom: 14 };
 
@@ -597,27 +608,24 @@ const lbHeadStyle = {
   justifyContent: "space-between",
   alignItems: "flex-end",
   marginBottom: 16,
-  gap: 20,
-};
+  gap: 20,};
 const lbCatStyle = {
   fontSize: 10.5,
   letterSpacing: "0.16em",
   textTransform: "uppercase",
-  color: brass,
+  color: ovBrass,
   fontWeight: 700,
-  marginBottom: 6,
-};
+  marginBottom: 6,};
 const lbTitleStyle = {
   margin: 0,
-  fontFamily: "'Fraunces', serif",
+  fontFamily: "var(--font-serif)",
   fontWeight: 400,
   fontSize: 26,
-  color: ink,
-};
+  color: ovInk,};
 const closeBtnStyle = {
-  border: `1px solid ${line}`,
+  border: `1px solid ${ovLine}`,
   background: "transparent",
-  color: ink,
+  color: ovInk,
   width: 38,
   height: 38,
   borderRadius: "50%",
@@ -625,8 +633,7 @@ const closeBtnStyle = {
   flex: "none",
   display: "flex",
   alignItems: "center",
-  justifyContent: "center",
-};
+  justifyContent: "center",};
 const navBtnStyle = {
   position: "absolute",
   top: "50%",
@@ -640,5 +647,4 @@ const navBtnStyle = {
   background: "rgba(18,16,14,0.5)",
   display: "flex",
   alignItems: "center",
-  justifyContent: "center",
-};
+  justifyContent: "center",};

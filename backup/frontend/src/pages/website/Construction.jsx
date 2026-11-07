@@ -173,23 +173,22 @@ export default function Construction() {
   return (
     <div className="conspg-page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .conspg-page{
-          --conspg-ink:#faf7f0;
-          --conspg-black:#0d0c0a;
-          --conspg-gray-50:#141311;
-          --conspg-gray-100:rgba(255,255,255,0.05);
-          --conspg-gray-200:rgba(255,255,255,0.08);
-          --conspg-gray-500:rgba(250,247,240,0.72);
-          --conspg-brass:var(--brass, #c5a059);
-          --conspg-brass-deep:var(--brass-light, #dfba73);
-          --conspg-font:'Montserrat', sans-serif;
+          --conspg-ink:#1b1a17;
+          --conspg-black:#fbfaf7;
+          --conspg-gray-50:#f4f1ea;
+          --conspg-gray-100:rgba(27,26,23,0.04);
+          --conspg-gray-200:#e6e1d6;
+          --conspg-gray-500:#6b665c;
+          --conspg-brass:#8a6a28;
+          --conspg-brass-deep:#6f541d;
+          --conspg-font:var(--font-sans);
           --conspg-max-w:1180px;
 
           min-height:100vh;
           width:100%;
-          background:#0d0c0a;
+          background:var(--conspg-black);
           color:var(--conspg-ink);
           font-family:var(--conspg-font);
         }
@@ -389,8 +388,8 @@ export default function Construction() {
         @media (min-width:700px){ .conspg-service-grid{ grid-template-columns:repeat(2,1fr); } }
         @media (min-width:1000px){ .conspg-service-grid{ grid-template-columns:repeat(3,1fr); } }
         .conspg-service-card{
-          background:rgba(255,255,255,0.03);
-          border:1px solid rgba(255,255,255,0.08);
+          background:#ffffff;
+          border:1px solid var(--conspg-gray-200);
           backdrop-filter:blur(16px);
           border-radius:8px;
           padding:30px 26px;
@@ -445,10 +444,10 @@ export default function Construction() {
         }
 
         /* COMMITMENTS (dark band) */
-        .conspg-commit-section{ background:var(--conspg-black); color:#FFFFFF; }
-        .conspg-commit-section .conspg-section-heading{ color:#FFFFFF; }
-        .conspg-commit-section .conspg-eyebrow{ color:#D3A36A; }
-        .conspg-commit-section .conspg-section-intro{ color:rgba(255,255,255,0.7); }
+        .conspg-commit-section{ background:var(--conspg-black); color:var(--conspg-ink); }
+        .conspg-commit-section .conspg-section-heading{ color:var(--conspg-ink); }
+        .conspg-commit-section .conspg-eyebrow{ color:#8a6a28; }
+        .conspg-commit-section .conspg-section-intro{ color:var(--conspg-gray-500); }
         .conspg-commit-grid{
           display:grid;
           grid-template-columns:1fr;
@@ -457,10 +456,10 @@ export default function Construction() {
         }
         @media (min-width:800px){ .conspg-commit-grid{ grid-template-columns:repeat(3,1fr); } }
         .conspg-commit-card{
-          border:1px solid rgba(255,255,255,0.14);
+          border:1px solid var(--conspg-gray-200);
           border-radius:8px;
           padding:30px 26px;
-          background:rgba(255,255,255,0.03);
+          background:#ffffff;
         }
         .conspg-commit-icon{
           width:52px;
@@ -481,7 +480,7 @@ export default function Construction() {
           margin:10px 0 0;
           font-size:14.5px;
           line-height:1.7;
-          color:rgba(255,255,255,0.7);
+          color:var(--conspg-gray-500);
         }
 
         /* PROCESS */
@@ -576,7 +575,7 @@ export default function Construction() {
           left:22px;
           right:22px;
           bottom:20px;
-          color:#FFFFFF;
+          color:#ffffff;
         }
         .conspg-project-tag{
           font-size:11px;
@@ -649,7 +648,7 @@ export default function Construction() {
         }
         .conspg-cta-heading{
           margin:0;
-          color:#FFFFFF;
+          color:var(--conspg-ink);
           font-size:26px;
           font-weight:700;
           line-height:1.3;
@@ -660,7 +659,7 @@ export default function Construction() {
           margin:10px 0 0;
           font-size:14.5px;
           line-height:1.7;
-          color:rgba(255,255,255,0.7);
+          color:var(--conspg-gray-500);
         }
         .conspg-cta-link{
           display:flex;
@@ -671,7 +670,7 @@ export default function Construction() {
         .conspg-cta-link-label{
           display:flex;
           align-items:center;
-          background:#0d0c0a;
+          background:var(--conspg-black);
           color:var(--conspg-ink);
           padding:15px 26px;
           font-size:14.5px;

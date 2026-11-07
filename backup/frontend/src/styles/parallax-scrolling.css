@@ -1,0 +1,155 @@
+/* Parallax Scrolling Component Styles */
+
+.parallax {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background-color: #0b0c10;
+}
+
+.parallax__header {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 650px;
+  overflow: hidden;
+  background-color: #000;
+}
+
+.parallax__visuals {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Covers subpixel rendering lines / gaps during transforms */
+.parallax__black-line-overflow {
+  position: absolute;
+  inset: -2px;
+  background-color: #000;
+  z-index: 1;
+}
+
+.parallax__layers {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  will-change: transform;
+}
+
+/* Precise layer depth stacking */
+[data-parallax-layer="1"] {
+  z-index: 1;
+}
+
+[data-parallax-layer="2"] {
+  z-index: 2;
+}
+
+[data-parallax-layer="3"] {
+  z-index: 3;
+}
+
+[data-parallax-layer="4"] {
+  z-index: 4;
+}
+
+.parallax__layer-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.parallax__layer-title {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inset: 0;
+  pointer-events: none;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+.parallax__title {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(4.5rem, 16vw, 14rem);
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  margin: 0;
+  text-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  user-select: none;
+}
+
+.parallax__fade {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 18rem;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.75) 60%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  z-index: 5;
+  pointer-events: none;
+}
+
+.parallax__content {
+  position: relative;
+  min-height: 45vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  background-color: #000000;
+  color: #ffffff;
+  padding: 5rem 2rem;
+  z-index: 6;
+}
+
+.parallax__content-icon {
+  width: 64px;
+  height: 64px;
+  color: #ffffff;
+}
+
+.osmo-icon-svg {
+  width: 80px;
+  height: 80px;
+  color: #ffffff;
+}
+
+.osmo-credits {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  background: #000000;
+  color: #ffffff;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.osmo-credits__p {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.9rem;
+  color: #a0a0a0;
+  margin: 0;
+}
+
+.osmo-credits__p-a {
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

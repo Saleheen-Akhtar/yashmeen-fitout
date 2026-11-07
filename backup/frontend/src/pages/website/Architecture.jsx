@@ -143,23 +143,22 @@ export default function Architecture() {
   return (
     <div className="archpg-page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .archpg-page{
-          --archpg-ink:#faf7f0;
-          --archpg-black:#0d0c0a;
-          --archpg-gray-50:#141311;
-          --archpg-gray-100:rgba(255,255,255,0.05);
-          --archpg-gray-200:rgba(255,255,255,0.08);
-          --archpg-gray-500:rgba(250,247,240,0.72);
-          --archpg-brass:var(--brass, #c5a059);
-          --archpg-brass-deep:var(--brass-light, #dfba73);
-          --archpg-font:'Montserrat', sans-serif;
+          --archpg-ink:#1b1a17;
+          --archpg-black:#fbfaf7;
+          --archpg-gray-50:#f4f1ea;
+          --archpg-gray-100:rgba(27,26,23,0.04);
+          --archpg-gray-200:#e6e1d6;
+          --archpg-gray-500:#6b665c;
+          --archpg-brass:#8a6a28;
+          --archpg-brass-deep:#6f541d;
+          --archpg-font:var(--font-sans);
           --archpg-max-w:1180px;
 
           min-height:100vh;
           width:100%;
-          background:#0d0c0a;
+          background:var(--archpg-black);
           color:var(--archpg-ink);
           font-family:var(--archpg-font);
         }
@@ -359,8 +358,8 @@ export default function Architecture() {
         @media (min-width:700px){ .archpg-service-grid{ grid-template-columns:repeat(2,1fr); } }
         @media (min-width:1000px){ .archpg-service-grid{ grid-template-columns:repeat(3,1fr); } }
         .archpg-service-card{
-          background:rgba(255,255,255,0.03);
-          border:1px solid rgba(255,255,255,0.08);
+          background:#ffffff;
+          border:1px solid var(--archpg-gray-200);
           backdrop-filter:blur(16px);
           border-radius:8px;
           padding:30px 26px;
@@ -394,9 +393,9 @@ export default function Architecture() {
         }
 
         /* PROCESS (dark band) */
-        .archpg-process-section{ background:var(--archpg-black); color:#FFFFFF; }
-        .archpg-process-section .archpg-section-heading{ color:#FFFFFF; }
-        .archpg-process-section .archpg-eyebrow{ color:#D3A36A; }
+        .archpg-process-section{ background:var(--archpg-black); color:var(--archpg-ink); }
+        .archpg-process-section .archpg-section-heading{ color:var(--archpg-ink); }
+        .archpg-process-section .archpg-eyebrow{ color:#8a6a28; }
         .archpg-process-grid{
           display:grid;
           grid-template-columns:1fr;
@@ -406,10 +405,10 @@ export default function Architecture() {
         @media (min-width:700px){ .archpg-process-grid{ grid-template-columns:repeat(2,1fr); } }
         @media (min-width:1100px){ .archpg-process-grid{ grid-template-columns:repeat(5,1fr); } }
         .archpg-process-step{
-          border:1px solid rgba(255,255,255,0.14);
+          border:1px solid var(--archpg-gray-200);
           border-radius:8px;
           padding:26px 22px;
-          background:rgba(255,255,255,0.03);
+          background:#ffffff;
         }
         .archpg-process-number{
           font-size:34px;
@@ -427,7 +426,7 @@ export default function Architecture() {
           margin:10px 0 0;
           font-size:14px;
           line-height:1.7;
-          color:rgba(255,255,255,0.7);
+          color:var(--archpg-gray-500);
         }
 
         /* VIDEO */
@@ -487,7 +486,7 @@ export default function Architecture() {
           left:22px;
           right:22px;
           bottom:20px;
-          color:#FFFFFF;
+          color:#ffffff;
         }
         .archpg-project-tag{
           font-size:11px;
@@ -560,7 +559,7 @@ export default function Architecture() {
         }
         .archpg-cta-heading{
           margin:0;
-          color:#FFFFFF;
+          color:var(--archpg-ink);
           font-size:26px;
           font-weight:700;
           line-height:1.3;
@@ -571,7 +570,7 @@ export default function Architecture() {
           margin:10px 0 0;
           font-size:14.5px;
           line-height:1.7;
-          color:rgba(255,255,255,0.7);
+          color:var(--archpg-gray-500);
         }
         .archpg-cta-link{
           display:flex;
@@ -582,7 +581,7 @@ export default function Architecture() {
         .archpg-cta-link-label{
           display:flex;
           align-items:center;
-          background:#0d0c0a;
+          background:var(--archpg-black);
           color:var(--archpg-ink);
           padding:15px 26px;
           font-size:14.5px;

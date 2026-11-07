@@ -1,0 +1,564 @@
+/* ==========================================================================
+   Yashmeen × Normal is Boring (NIB) Architectural Experience
+   Design System: Light Editorial (Warm White #fbfaf7, Ink #1b1a17, Bronze #8a6a28)
+   Reverse-Engineered Exact Kinematics from https://normalisboring.es/
+   ========================================================================== */
+
+:root {
+  --nib-bg: #fbfaf7;
+  --nib-ink: #1b1a17;
+  --nib-accent: #8a6a28;
+  --nib-gold: #d4af37;
+  --nib-muted: #6b665c;
+  --nib-hairline: #e6e1d6;
+  --nib-wrapper-padd: 2.5rem 3.5rem;
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --nib-wrapper-padd: 2rem 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --nib-wrapper-padd: 1.5rem 1.25rem;
+  }
+}
+
+.nib-root {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--nib-bg);
+  color: var(--nib-ink);
+  overflow-x: hidden;
+  font-family: var(--font-sans, "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --------------------------------------------------------------------------
+   1. FIXED HEADER WITH THE EXPANDING LOGO BOX
+   -------------------------------------------------------------------------- */
+.nib-header {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.nib-header__wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: var(--nib-wrapper-padd);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* Center bounding box that expands to viewport borders */
+.nib-header__logo {
+  position: relative;
+  width: 390px;
+  height: 155px;
+  pointer-events: none;
+  box-sizing: border-box;
+  will-change: width, height;
+}
+
+@media (max-width: 480px) {
+  .nib-header__logo {
+    width: 290px;
+    height: 125px;
+  }
+}
+
+/* Top-Left: YASHMEEN DUBAI */
+.nib-logo__normal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: var(--nib-ink);
+  pointer-events: all;
+  user-select: none;
+  line-height: 1;
+}
+
+.nib-logo__title {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: clamp(2rem, 3.2vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--nib-ink);
+  line-height: 0.9;
+  display: flex;
+}
+
+.nib-logo__badge {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--nib-accent);
+}
+
+/* Bottom-Right: considered INTERIORS ® */
+.nib-logo__group {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  line-height: 1;
+  pointer-events: all;
+  user-select: none;
+}
+
+.nib-logo__is {
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(1.75rem, 2.7vw, 2.75rem);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--nib-accent);
+  margin-bottom: 0.15rem;
+  display: flex;
+  line-height: 0.88;
+  transition: color 0.6s ease;
+}
+
+.nib-logo__boring {
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(1.85rem, 2.9vw, 3.05rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--nib-ink);
+  transform: scale(-1, -1); /* Upside-down homage to Normal is Boring */
+  display: flex;
+  line-height: 0.88;
+  transition: color 0.6s ease;
+}
+
+.nib-logo__reg {
+  font-size: 0.45em;
+  vertical-align: top;
+  margin-left: 2px;
+  transform: scale(-1, -1);
+  display: inline-block;
+}
+
+/* Smooth contrast adaptation when docked over right architectural image */
+.nib-logo__group.is-docked .nib-logo__boring {
+  color: #fbfaf7;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
+}
+
+.nib-logo__group.is-docked .nib-logo__is {
+  color: var(--nib-gold);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
+}
+
+/* Character sliding masks */
+.nib-char-mask {
+  display: inline-block;
+  overflow: clip;
+  vertical-align: top;
+}
+
+.nib-char-span {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Floating Controls (Top Right) */
+.nib-header__controls {
+  position: absolute;
+  top: 2.25rem;
+  right: 3.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 10000;
+  pointer-events: all;
+}
+
+@media (max-width: 768px) {
+  .nib-header__controls {
+    top: 1.25rem;
+    right: 1.25rem;
+  }
+}
+
+.nib-ctrl-btn {
+  background: rgba(27, 26, 23, 0.88);
+  color: #fbfaf7;
+  border: 1px solid rgba(230, 225, 214, 0.25);
+  border-radius: 9999px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.nib-ctrl-btn:hover {
+  background: var(--nib-ink);
+  color: var(--nib-accent);
+  border-color: var(--nib-accent);
+}
+
+.nib-menu-pill {
+  background: var(--nib-ink);
+  color: #fbfaf7;
+  border-radius: 9999px;
+  padding: 0.45rem 1.15rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
+}
+
+.nib-menu-pill:hover {
+  background: var(--nib-accent);
+  color: #fbfaf7;
+}
+
+/* --------------------------------------------------------------------------
+   2. PRELOADER BACKDROP & TELEMETRY
+   -------------------------------------------------------------------------- */
+.nib-preloader-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--nib-bg);
+  z-index: 9990;
+  pointer-events: all;
+  user-select: none;
+}
+
+.nib-preloader-counter {
+  position: absolute;
+  bottom: 3.25rem;
+  right: 4.5rem;
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(3.5rem, 7vw, 6.5rem);
+  font-weight: 400;
+  color: var(--nib-ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .nib-preloader-counter {
+    bottom: 2rem;
+    right: 2rem;
+    font-size: clamp(2.75rem, 6vw, 4rem);
+  }
+}
+
+.nib-preloader-meta {
+  position: absolute;
+  bottom: 3.5rem;
+  left: 4.5rem;
+}
+
+@media (max-width: 768px) {
+  .nib-preloader-meta {
+    bottom: 2rem;
+    left: 1.5rem;
+  }
+}
+
+.nib-preloader-label {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--nib-muted);
+}
+
+.nib-preloader-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background-color: var(--nib-ink);
+  width: 0%;
+  transition: width 0.05s linear;
+}
+
+/* --------------------------------------------------------------------------
+   3. ASYMMETRIC HERO SECTION
+   -------------------------------------------------------------------------- */
+.nib-hero {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: stretch;
+  background-color: var(--nib-bg);
+}
+
+@media (max-width: 1024px) {
+  .nib-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+}
+
+/* Left Column: Typographic Manifesto */
+.nib-hero__left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 7.5rem 3.5rem 5rem 4.5rem;
+  max-width: 780px;
+  z-index: 10;
+}
+
+@media (max-width: 1024px) {
+  .nib-hero__left {
+    padding: 7.5rem 2.5rem 4rem 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .nib-hero__left {
+    padding: 6.5rem 1.5rem 3.5rem 1.5rem;
+  }
+}
+
+/* Line Overflow Masks for Alternating Up/Down Character Reveals */
+.nib-line-mask {
+  display: block;
+  overflow: clip;
+  line-height: 0.98;
+}
+
+.nib-line-inner {
+  display: block;
+  will-change: transform;
+}
+
+.nib-hero__headline {
+  margin: 0 0 1.75rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.nib-title-line-1 {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: clamp(2rem, 4.2vw, 3.85rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--nib-ink);
+}
+
+.nib-title-line-2 {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: clamp(2rem, 4.2vw, 3.85rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--nib-ink);
+  margin-left: clamp(2rem, 5vw, 5rem); /* Asymmetric Stagger exactly as in Normal is Boring */
+}
+
+@media (max-width: 480px) {
+  .nib-title-line-2 {
+    margin-left: 1.25rem;
+  }
+}
+
+.nib-title-line-3 {
+  display: block;
+}
+
+.nib-hero__h-line3-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.nib-hero__h-line3-lead {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: clamp(1.4rem, 2.6vw, 2.4rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--nib-ink);
+}
+
+.nib-hero__h-line3-climax {
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(3rem, 6.2vw, 5.6rem);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--nib-ink);
+  line-height: 0.85;
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.nib-hero__accent-dot {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background-color: var(--nib-accent);
+  margin-left: 0.55rem;
+  box-shadow: 0 0 16px rgba(138, 106, 40, 0.5);
+  vertical-align: baseline;
+}
+
+.nib-hero__copy {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--nib-muted);
+  max-width: 500px;
+  margin: 0 0 2rem 0;
+}
+
+.nib-hero__actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
+   4. RIGHT COLUMN: ARCHITECTURAL PORTAL & VERTICAL NAVIGATION
+   -------------------------------------------------------------------------- */
+.nib-hero__right {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 600px;
+  overflow: hidden;
+  background-color: #121110;
+  display: flex;
+}
+
+@media (max-width: 1024px) {
+  .nib-hero__right {
+    height: 65vh;
+    min-height: 480px;
+  }
+}
+
+/* Sideways Vertical Navigation Strip */
+.nib-hero__vert-nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 60px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2.75rem;
+  background: rgba(251, 250, 247, 0.94);
+  backdrop-filter: blur(12px);
+  border-right: 1px solid var(--nib-hairline);
+}
+
+@media (max-width: 768px) {
+  .nib-hero__vert-nav {
+    display: none;
+  }
+}
+
+.nib-hero__vert-link {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--nib-ink);
+  text-decoration: none;
+  transition: color 0.25s ease, transform 0.25s ease;
+  padding: 0.25rem 0;
+}
+
+.nib-hero__vert-link:hover {
+  color: var(--nib-accent);
+  transform: rotate(180deg) translateY(-3px);
+}
+
+/* Vertical Portal Image with Clip-Path Curtain Unmasking */
+.nib-hero__image-wrap {
+  position: absolute;
+  inset: 0;
+  left: 60px;
+  width: calc(100% - 60px);
+  height: 100%;
+  overflow: hidden;
+  will-change: clip-path;
+}
+
+@media (max-width: 768px) {
+  .nib-hero__image-wrap {
+    left: 0;
+    width: 100%;
+  }
+}
+
+.nib-hero__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+  will-change: transform;
+  filter: contrast(1.05) brightness(0.96);
+}
+
+.nib-hero__image-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(18, 17, 16, 0.12) 0%,
+    rgba(18, 17, 16, 0) 35%,
+    rgba(18, 17, 16, 0.65) 100%
+  );
+}

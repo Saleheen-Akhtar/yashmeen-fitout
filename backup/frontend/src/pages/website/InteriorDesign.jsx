@@ -166,23 +166,22 @@ export default function InteriorDesign() {
   return (
     <div className="intpg-page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .intpg-page{
-          --intpg-ink:#faf7f0;
-          --intpg-black:#0d0c0a;
-          --intpg-gray-50:#141311;
-          --intpg-gray-100:rgba(255,255,255,0.05);
-          --intpg-gray-200:rgba(255,255,255,0.08);
-          --intpg-gray-500:rgba(250,247,240,0.72);
-          --intpg-brass:var(--brass, #c5a059);
-          --intpg-brass-deep:var(--brass-light, #dfba73);
-          --intpg-font:'Montserrat', sans-serif;
+          --intpg-ink:#1b1a17;
+          --intpg-black:#fbfaf7;
+          --intpg-gray-50:#f4f1ea;
+          --intpg-gray-100:rgba(27,26,23,0.04);
+          --intpg-gray-200:#e6e1d6;
+          --intpg-gray-500:#6b665c;
+          --intpg-brass:#8a6a28;
+          --intpg-brass-deep:#6f541d;
+          --intpg-font:var(--font-sans);
           --intpg-max-w:1180px;
 
           min-height:100vh;
           width:100%;
-          background:#0d0c0a;
+          background:var(--intpg-black);
           color:var(--intpg-ink);
           font-family:var(--intpg-font);
         }
@@ -385,8 +384,8 @@ export default function InteriorDesign() {
         @media (min-width:700px){ .intpg-service-grid{ grid-template-columns:repeat(2,1fr); } }
         @media (min-width:1000px){ .intpg-service-grid{ grid-template-columns:repeat(3,1fr); } }
         .intpg-service-card{
-          background:rgba(255,255,255,0.03);
-          border:1px solid rgba(255,255,255,0.08);
+          background:#ffffff;
+          border:1px solid var(--intpg-gray-200);
           backdrop-filter:blur(16px);
           border-radius:8px;
           padding:30px 26px;
@@ -453,7 +452,7 @@ export default function InteriorDesign() {
           left:20px;
           right:20px;
           bottom:20px;
-          color:#FFFFFF;
+          color:#ffffff;
         }
         .intpg-style-title{
           margin:0;
@@ -464,13 +463,13 @@ export default function InteriorDesign() {
           margin:8px 0 0;
           font-size:13.5px;
           line-height:1.6;
-          color:rgba(255,255,255,0.78);
+          color:rgba(255,255,255,0.8);
         }
 
         /* PROCESS (dark band) */
-        .intpg-process-section{ background:var(--intpg-black); color:#FFFFFF; }
-        .intpg-process-section .intpg-section-heading{ color:#FFFFFF; }
-        .intpg-process-section .intpg-eyebrow{ color:#D3A36A; }
+        .intpg-process-section{ background:var(--intpg-black); color:var(--intpg-ink); }
+        .intpg-process-section .intpg-section-heading{ color:var(--intpg-ink); }
+        .intpg-process-section .intpg-eyebrow{ color:#8a6a28; }
         .intpg-process-grid{
           display:grid;
           grid-template-columns:1fr;
@@ -480,10 +479,10 @@ export default function InteriorDesign() {
         @media (min-width:700px){ .intpg-process-grid{ grid-template-columns:repeat(2,1fr); } }
         @media (min-width:1100px){ .intpg-process-grid{ grid-template-columns:repeat(5,1fr); } }
         .intpg-process-step{
-          border:1px solid rgba(255,255,255,0.14);
+          border:1px solid var(--intpg-gray-200);
           border-radius:8px;
           padding:26px 22px;
-          background:rgba(255,255,255,0.03);
+          background:#ffffff;
         }
         .intpg-process-number{
           font-size:34px;
@@ -501,7 +500,7 @@ export default function InteriorDesign() {
           margin:10px 0 0;
           font-size:14px;
           line-height:1.7;
-          color:rgba(255,255,255,0.7);
+          color:var(--intpg-gray-500);
         }
 
         /* VIDEO */
@@ -562,7 +561,7 @@ export default function InteriorDesign() {
           left:22px;
           right:22px;
           bottom:20px;
-          color:#FFFFFF;
+          color:#ffffff;
         }
         .intpg-project-tag{
           font-size:11px;
@@ -634,7 +633,7 @@ export default function InteriorDesign() {
         }
         .intpg-cta-heading{
           margin:0;
-          color:#FFFFFF;
+          color:var(--intpg-ink);
           font-size:26px;
           font-weight:700;
           line-height:1.3;
@@ -645,7 +644,7 @@ export default function InteriorDesign() {
           margin:10px 0 0;
           font-size:14.5px;
           line-height:1.7;
-          color:rgba(255,255,255,0.7);
+          color:var(--intpg-gray-500);
         }
         .intpg-cta-link{
           display:flex;
@@ -656,7 +655,7 @@ export default function InteriorDesign() {
         .intpg-cta-link-label{
           display:flex;
           align-items:center;
-          background:#0d0c0a;
+          background:var(--intpg-black);
           color:var(--intpg-ink);
           padding:15px 26px;
           font-size:14.5px;

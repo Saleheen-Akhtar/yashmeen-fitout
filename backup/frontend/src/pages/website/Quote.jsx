@@ -178,18 +178,17 @@ export default function QuotePage() {
   return (
     <div className="enqpg-page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
         .enqpg-page{
-          --ink:#faf7f0;
-          --black:#0d0c0a;
-          --g50:#0d0c0a;
-          --g100:rgba(255,255,255,0.05);
-          --g200:rgba(255,255,255,0.1);
-          --g500:rgba(250,247,240,0.72);
-          --brass:var(--brass, #c5a059);
-          --brass-deep:var(--brass-light, #dfba73);
-          --brass-soft:var(--brass-light, #dfba73); --err:#B3261E;
-          font-family:'Montserrat',sans-serif; color:var(--ink); background:var(--g50); min-height:100vh; width:100%;
+          --ink:#1b1a17;
+          --black:#fbfaf7;
+          --g50:#f4f1ea;
+          --g100:rgba(27,26,23,0.04);
+          --g200:#e6e1d6;
+          --g500:#6b665c;
+          --brass:#8a6a28;
+          --brass-deep:#6f541d;
+          --brass-soft:#6f541d; --err:#B3261E;
+          font-family:var(--font-serif); color:var(--ink); background:var(--g50); min-height:100vh; width:100%;
         }
         .enqpg-page *{ box-sizing:border-box; }
         .enqpg-page a{ color:inherit; text-decoration:none; }
@@ -209,32 +208,31 @@ export default function QuotePage() {
 
         .enqpg-shell{
           display:grid; grid-template-columns:1fr; margin:-84px 0 80px;
-          border-radius:16px; overflow:hidden; background:#141311;
-          border:1px solid rgba(255,255,255,0.08);
-          box-shadow:0 40px 80px -40px rgba(0,0,0,0.7);
+          border-radius:16px; overflow:hidden; background:#ffffff;
+          border:1px solid var(--g200);
+          box-shadow:0 18px 40px -16px rgba(27,26,23,0.14);
         }
         @media(min-width:768px){ .enqpg-shell{ margin-top:-96px; } }
         @media(min-width:980px){ .enqpg-shell{ grid-template-columns:.78fr 1.22fr; } }
 
         .enqpg-side{
-          position:relative; padding:36px 28px; color:#fff; background:var(--black);
-          background-image:radial-gradient(circle at 0% 0%,rgba(169,121,63,.38),transparent 55%),
-                           radial-gradient(circle at 100% 100%,rgba(169,121,63,.18),transparent 50%);
+          position:relative; padding:36px 28px; color:var(--ink); background:var(--g50);
+          
         }
         @media(min-width:768px){ .enqpg-side{ padding:48px 44px; } }
         .enqpg-side h2{ margin:0; font-size:26px; font-weight:700; line-height:1.25; }
-        .enqpg-side-copy{ margin:14px 0 0; font-size:14.5px; line-height:1.75; color:rgba(255,255,255,.68); }
+        .enqpg-side-copy{ margin:14px 0 0; font-size:14.5px; line-height:1.75; color:var(--g500); }
         .enqpg-side h3{ margin:36px 0 14px; font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--brass-soft); }
 
         .enqpg-contacts{ list-style:none; margin:28px 0 0; padding:0; display:grid; gap:16px; }
-        .enqpg-contact{ display:flex; gap:14px; align-items:flex-start; font-size:14px; line-height:1.55; color:rgba(255,255,255,.85); }
+        .enqpg-contact{ display:flex; gap:14px; align-items:flex-start; font-size:14px; line-height:1.55; color:var(--g500); }
         .enqpg-contact-icon{ flex-shrink:0; width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center;
-          background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:var(--brass-soft); }
-        .enqpg-contact small{ display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.5); margin-bottom:2px; }
+          background:#ffffff; border:1px solid var(--g200); color:var(--brass-soft); }
+        .enqpg-contact small{ display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--g500); margin-bottom:2px; }
         .enqpg-contact a:hover{ color:var(--brass-soft); }
 
         .enqpg-next{ list-style:none; margin:0; padding:0; display:grid; gap:14px; counter-reset:n; }
-        .enqpg-next li{ position:relative; padding-left:40px; font-size:14px; line-height:1.55; color:rgba(255,255,255,.8); counter-increment:n; }
+        .enqpg-next li{ position:relative; padding-left:40px; font-size:14px; line-height:1.55; color:var(--g500); counter-increment:n; }
         .enqpg-next li::before{ content:counter(n); position:absolute; left:0; top:-2px; width:26px; height:26px; border-radius:50%;
           background:var(--brass); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
 
@@ -284,7 +282,7 @@ export default function QuotePage() {
           padding:18px 8px; font-size:13px; font-weight:600; border:1.5px solid var(--g200); border-radius:12px; background:#fff; transition:all .15s;
         }
         .enqpg-type input:hover + span{ border-color:var(--brass); }
-        .enqpg-type input:checked + span{ background:var(--black); border-color:var(--black); color:#fff; }
+        .enqpg-type input:checked + span{ background:var(--black); border-color:var(--black); color:var(--ink); }
         .enqpg-type input:checked + span svg{ color:var(--brass-soft); }
         .enqpg-type svg{ color:var(--brass-deep); transition:color .15s; }
 
@@ -307,7 +305,7 @@ export default function QuotePage() {
           display:inline-flex; align-items:center; gap:10px; font:inherit; font-size:14.5px; font-weight:700;
           border:0; border-radius:10px; padding:15px 26px; cursor:pointer; transition:all .15s;
         }
-        .enqpg-btn.primary{ background:linear-gradient(135deg, var(--brass-deep), var(--brass)); color:#0d0c0a; font-weight:700; }
+        .enqpg-btn.primary{ background:linear-gradient(135deg, var(--brass-deep), var(--brass)); color:#ffffff; font-weight:700; }
         .enqpg-btn.primary:hover:not(:disabled){ background:var(--brass-deep); }
         .enqpg-btn.ghost{ background:transparent; color:var(--ink); border:1.5px solid var(--g200); }
         .enqpg-btn.ghost:hover{ border-color:var(--ink); }

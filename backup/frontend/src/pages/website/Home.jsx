@@ -1,32 +1,30 @@
-import { useState } from "react";
-import HeroSection from "../../components/Hero";
-import ClientsSection from "../../components/Clients";
-import DisciplinesSection from "../../components/Disciplines";
-import ShowcaseSection from "../../components/Showcase";
-import MethodologySection from "../../components/Methodology";
-import ScopeConfigurator from "../../components/ScopeConfigurator";
-import TestimonialsSection from "../../components/Testimonials";
-import ContactSection from "../../components/ContactSection";
-import { OfferModal } from "../../components/OfferModal";
+import { useEffect } from "react";
+import "../../styles/home.css";
+import Hero from "../../components/home/Hero";
+import Studio from "../../components/home/Studio";
+import Works from "../../components/home/Works";
+import Process from "../../components/home/Process";
+import Testimonial from "../../components/home/Testimonial";
+import CTA from "../../components/home/CTA";
 
 export default function Home() {
-  const [open, setOpen] = useState(true);
-
-  const handleClose = () => {
-    setOpen(false);
-  };
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
-    <main className="overflow-x-hidden w-full max-w-full">
-      {open && <OfferModal handleClose={handleClose} />}
-      <HeroSection />
-      <ClientsSection />
-      <DisciplinesSection />
-      <ShowcaseSection />
-      <MethodologySection />
-      <ScopeConfigurator />
-      <TestimonialsSection />
-      <ContactSection />
-    </main>
+    <>
+      <main>
+        <Hero />
+        <Studio />
+        <Works />
+        <Process />
+        <Testimonial />
+        <CTA />
+      </main>
+    </>
   );
 }

@@ -1,0 +1,298 @@
+/* Yashmeen Architectural Parallax Styles */
+
+.yashmeen-parallax {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background-color: #121110;
+}
+
+.yp__header {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 680px;
+  overflow: hidden;
+  background-color: #0d0d0c;
+}
+
+.yp__visuals {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.yp__subpixel-fix {
+  position: absolute;
+  inset: -3px;
+  background-color: #0d0d0c;
+  z-index: 1;
+}
+
+.yp__layers {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  will-change: transform;
+}
+
+/* Layer depth planes */
+[data-parallax-layer="1"] {
+  z-index: 1;
+}
+
+[data-parallax-layer="2"] {
+  z-index: 2;
+}
+
+[data-parallax-layer="3"] {
+  z-index: 3;
+}
+
+[data-parallax-layer="4"] {
+  z-index: 4;
+}
+
+.yp__layer-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  will-change: transform;
+  pointer-events: none;
+  filter: brightness(0.88) contrast(1.05);
+}
+
+.yp__layer-scrim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 60% 40%,
+    rgba(18, 17, 16, 0.15) 0%,
+    rgba(18, 17, 16, 0.55) 70%,
+    rgba(18, 17, 16, 0.85) 100%
+  );
+  pointer-events: none;
+}
+
+.yp__layer-title {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  inset: 0;
+  pointer-events: none;
+  padding: 0 1.5rem;
+  text-align: center;
+}
+
+.yp__eyebrow {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: clamp(0.75rem, 1.2vw, 0.9375rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: #d4af37;
+  margin-bottom: 0.875rem;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9);
+}
+
+.yp__title {
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(4.5rem, 15vw, 13rem);
+  font-weight: 500;
+  line-height: 0.88;
+  color: #fbfaf7;
+  letter-spacing: 0.12em;
+  margin: 0;
+  text-transform: uppercase;
+  text-shadow: 0 10px 40px rgba(0, 0, 0, 0.85);
+  user-select: none;
+}
+
+.yp__tagline {
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(1.125rem, 2.5vw, 2rem);
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(251, 250, 247, 0.9);
+  margin-top: 1.25rem;
+  letter-spacing: 0.04em;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+}
+
+.yp__layer-fg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  will-change: transform;
+  pointer-events: none;
+  filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.65));
+}
+
+.yp__fade {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 18rem;
+  background: linear-gradient(
+    to bottom,
+    rgba(251, 250, 247, 0) 0%,
+    rgba(251, 250, 247, 0.6) 55%,
+    rgba(251, 250, 247, 1) 100%
+  );
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Brand Narrative Content Section */
+.yp__content {
+  position: relative;
+  background-color: var(--bg, #fbfaf7);
+  color: var(--ink, #1b1a17);
+  padding: 6rem 2rem 5rem;
+  z-index: 6;
+}
+
+.yp__content-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.yp__content-header {
+  text-align: center;
+  max-width: 820px;
+  margin: 0 auto 4.5rem;
+}
+
+.yp__lead-eyebrow {
+  display: inline-block;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent, #8a6a28);
+  margin-bottom: 1rem;
+}
+
+.yp__lead-h2 {
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--ink, #1b1a17);
+  margin: 0 0 1.5rem;
+}
+
+.yp__lead-p {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--muted, #6b665c);
+  margin: 0;
+}
+
+/* 3 Pillars Grid */
+.yp__pillars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 4.5rem;
+}
+
+@media (max-width: 900px) {
+  .yp__pillars {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.yp__pillar-card {
+  background: var(--surface-alt, #f4f1ea);
+  border: 1px solid var(--hairline, #e6e1d6);
+  padding: 2.25rem 2rem;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.yp__pillar-card:hover {
+  border-color: var(--accent, #8a6a28);
+  transform: translateY(-3px);
+}
+
+.yp__pillar-icon-wrap {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: rgba(138, 106, 40, 0.08);
+  color: var(--accent, #8a6a28);
+  margin-bottom: 1.5rem;
+}
+
+.yp__pillar-num {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted, #6b665c);
+  letter-spacing: 0.15em;
+  margin-bottom: 0.5rem;
+}
+
+.yp__pillar-title {
+  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+  font-size: 1.625rem;
+  font-weight: 600;
+  color: var(--ink, #1b1a17);
+  margin: 0 0 0.75rem;
+}
+
+.yp__pillar-text {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--muted, #6b665c);
+  margin: 0;
+}
+
+/* Call to Action Bar */
+.yp__cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 3.5rem;
+}
+
+.yp__accreditations {
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--hairline, #e6e1d6);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.yp__acc-item {
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted, #6b665c);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}

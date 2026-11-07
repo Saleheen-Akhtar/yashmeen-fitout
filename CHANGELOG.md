@@ -8,12 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-### Planned & In-Progress (Design Engineering & Antigravity Motion)
-- **Theme Lock Harmonization**: Eliminate the 6x zebra-striping between dark and light sections on the homepage to comply with Page Theme Lock (Section 4.11).
-- **Global Zero Em-Dash Sweep**: Eliminate all em-dashes (`—`) and en-dashes (`–`) across all user-facing strings to comply with Anti-Slop Section 9.G.
-- **Eyebrow Rationing**: Reduce uppercase tracking eyebrow tags from 10 down to 4 focused architectural moments across the homepage.
-- **Before/After Renovation Slider**: Activate and integrate `Beforeafter.jsx` between Services and Projects with a brushed brass tactile drag control.
-- **Antigravity Spatial Depth**: Add subtle glassmorphism (`backdrop-filter: blur(16px)` + layered 1px borders + inner top-edge highlights) and tactile active button depression.
+### Changed
+- **Light editorial redesign (all pages):** new token system in `index.css` (single bronze accent, two fonts, 4/8 spacing scale, flat cards, 44px+ targets).
+- **Header/Footer:** rewritten with CSS classes, keyboard-accessible dropdowns, active-route state, Escape to close, light footer, skip link.
+- **Homepage:** reduced from 8 sections to 6 (hero, services, projects, process, client words, contact). Removed auto-opening offer modal, scope configurator, client logo strip, GSAP hero.
+- **Subpages:** per-page variable blocks mapped to the light palette; overlays on photos keep light text; gallery/video/projects pages converted; Google font imports unified to two families.
+
+### Added (motion pass)
+- Lenis smooth scroll synced to GSAP ScrollTrigger, scroll progress bar, route fade, header that hides on scroll down.
+- Reusable data-attribute motion system (split-text line reveals, scrub-lit words, stagger, parallax, count-up, magnetic buttons) applied site-wide.
+- Homepage v2: oversized hero with expanding image mask, service marquee, scroll-lit statement, hover-preview service list, pinned horizontal projects gallery, dark count-up numbers band, drawn-line process, footer wordmark.
+- New dependency: `lenis`.
+
+### Unused after redesign (safe to delete once confirmed)
+`About, Beforeafter, Blog, Certifications, Clients, FAQ, Factory, Offer, OfferModal, ProjectLanding, ScopeConfigurator, Services, Why` in `src/components`.
 
 ---
 

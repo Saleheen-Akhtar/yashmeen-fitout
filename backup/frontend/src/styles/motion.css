@@ -1,0 +1,81 @@
+/* Architectural Motion System
+   Engine: GSAP 3.15 + CustomEase + SplitText + ScrollTrigger + Lenis
+   Inspired by oharchitecture.com.au / oharchitecture.vercel.app/app.js */
+
+#scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--ink);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  z-index: 300;
+  pointer-events: none;
+}
+
+::selection {
+  background: var(--ink);
+  color: #ffffff;
+}
+
+/* SplitText Line Masking */
+.split-parent {
+  overflow: hidden !important;
+  display: block !important;
+  position: relative !important;
+  padding-bottom: 0.08em;
+}
+
+.split-child {
+  display: inline-block !important;
+  will-change: transform;
+}
+
+/* Hairline Draw Line */
+.line-draw {
+  position: relative;
+}
+.line-draw::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 1px;
+  width: 100%;
+  background: var(--line);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.35, 1);
+}
+.line-draw.is-in::before {
+  transform: scaleX(1);
+}
+
+/* Architectural Curtain Reveal on Images */
+[data-image-reveal] {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-image-cover] {
+  position: absolute;
+  inset: 0;
+  background: var(--surface-alt);
+  z-index: 2;
+  pointer-events: none;
+  transform-origin: top;
+  will-change: transform, opacity;
+}
+
+/* Hero entrance transitions */
+.hero-editorial .hero-media-wrap img {
+  will-change: transform, filter;
+  transition: filter 1.6s cubic-bezier(0.16, 1, 0.35, 1);
+}
+
+/* Magnetic Pill Buttons */
+[data-magnetic] {
+  will-change: transform;
+}

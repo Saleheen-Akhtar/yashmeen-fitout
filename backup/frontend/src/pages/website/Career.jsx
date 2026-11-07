@@ -244,23 +244,22 @@ export default function Career() {
   return (
     <div className="careerpg-page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
         .careerpg-page{
-          --careerpg-ink:#faf7f0;
-          --careerpg-black:#0d0c0a;
-          --careerpg-gray-50:#141311;
-          --careerpg-gray-100:rgba(255,255,255,0.05);
-          --careerpg-gray-200:rgba(255,255,255,0.08);
-          --careerpg-gray-500:rgba(250,247,240,0.72);
-          --careerpg-brass:var(--brass, #c5a059);
-          --careerpg-brass-deep:var(--brass-light, #dfba73);
-          --careerpg-font:'Montserrat', sans-serif;
+          --careerpg-ink:#1b1a17;
+          --careerpg-black:#fbfaf7;
+          --careerpg-gray-50:#f4f1ea;
+          --careerpg-gray-100:rgba(27,26,23,0.04);
+          --careerpg-gray-200:#e6e1d6;
+          --careerpg-gray-500:#6b665c;
+          --careerpg-brass:#8a6a28;
+          --careerpg-brass-deep:#6f541d;
+          --careerpg-font:var(--font-sans);
           --careerpg-max-w:1180px;
 
           min-height:100vh;
           width:100%;
-          background:#0d0c0a;
+          background:var(--careerpg-black);
           color:var(--careerpg-ink);
           font-family:var(--careerpg-font);
         }
@@ -460,7 +459,7 @@ export default function Career() {
         }
         .careerpg-apply-btn{
           background:var(--careerpg-black);
-          color:#FFFFFF;
+          color:var(--careerpg-ink);
           border-radius:6px;
           padding:13px 26px;
           font-size:13.5px;
@@ -584,7 +583,7 @@ export default function Career() {
           align-items:center;
           gap:8px;
           background:var(--careerpg-black);
-          color:#FFFFFF;
+          color:var(--careerpg-ink);
           border-radius:6px;
           padding:13px 22px;
           font-size:13.5px;

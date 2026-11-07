@@ -2319,7 +2319,12 @@
 .aperture-project-link span { font-size: 18px; }
 .aperture-bottom-caption,.aperture-scroll-cue,.aperture-progress { display: none; }
 @keyframes yashmeen-hero-arrive { from { transform: scale(1.045); opacity: .75; } to { transform: scale(1); opacity: 1; } }
-@keyframes yashmeen-copy-arrive { from { transform: translateY(22px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+/* Keep the centering translate while animating. Without it, left: 50% places
+   the mobile copy's left edge at the viewport center and clips the headline. */
+@keyframes yashmeen-copy-arrive {
+  from { transform: translate(-50%, calc(-50% + 22px)); opacity: 0; }
+  to { transform: translate(-50%, -50%); opacity: 1; }
+}
 
 @media (max-width: 760px) {
   .works-bento-header { align-items: flex-start; flex-wrap: wrap; gap: 18px; }

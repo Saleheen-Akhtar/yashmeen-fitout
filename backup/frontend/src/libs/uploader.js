@@ -12,9 +12,10 @@ export class UploadAdapter {
         const data = new FormData();
 
         data.append("upload", await this.loader.file);
-        // https://www.yfbfitoutcontracting.com/api/upload
-        // http://localhost:8000/api/upload
-        const response = await fetch("https://www.yfbfitoutcontracting.com/api/upload", {
+        const uploadUrl = (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL)
+            ? `${import.meta.env.VITE_API_URL}/upload`
+            : "/api/upload";
+        const response = await fetch(uploadUrl, {
             method: "POST",
             body: data,
         });

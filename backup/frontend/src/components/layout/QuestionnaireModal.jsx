@@ -143,7 +143,7 @@ Design Brief: ${formData.brief || "N/A"}
 Referral: ${formData.referral} ${formData.otherReferral ? `(${formData.otherReferral})` : ""}`,
       };
 
-      const res = await fetch("/api/quotes/create", {
+      const res = await fetch("/api/quote/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

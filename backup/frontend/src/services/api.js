@@ -1,10 +1,8 @@
 import axios from 'axios';
 
-export const itemPath = "http://localhost:8000/uploads";
-//export const itemPath = "https://www.yfbfitoutcontracting.com/backend/uploads"
+export const itemPath = import.meta.env.VITE_ITEM_PATH || "/uploads";
 
-const API_URL = "http://localhost:8000/api";
-//const API_URL = "https://www.yfbfitoutcontracting.com/api";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 const api = axios.create({
   baseURL: API_URL,

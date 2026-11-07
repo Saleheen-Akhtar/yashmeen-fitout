@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { FiArrowRight, FiRotateCcw, FiExternalLink } from "react-icons/fi";
+import { FiArrowRight, FiRotateCcw } from "react-icons/fi";
 import "../../styles/yashmeen-nib.css";
 
 // Register GreenSock ScrollTrigger
@@ -13,632 +13,577 @@ export default function YashmeenNibExperience() {
   const [progress, setProgress] = useState(0);
   const [lang, setLang] = useState("en"); // "en" or "es"
   const [isPreloading, setIsPreloading] = useState(true);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [activeChapter, setActiveChapter] = useState("00 / INTRO");
+  const [activeProjectIdx, setActiveProjectIdx] = useState(0);
+  const [hoveredTermImage, setHoveredTermImage] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHeaderDark, setIsHeaderDark] = useState(false);
 
   const containerRef = useRef(null);
   const backdropRef = useRef(null);
-  const logoBoxRef = useRef(null);
   const timelineRef = useRef(null);
-  const trackRef = useRef(null);
-  const stripRef = useRef(null);
+  const modScrollRef = useRef(null);
+  const termsRef = useRef(null);
+  const headerLogoRef = useRef(null);
   const lenisRef = useRef(null);
-  const horizontalTweenRef = useRef(null);
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 991;
-  const initialLogoWidth = isMobile ? "270px" : "390px";
-  const initialLogoHeight = isMobile ? "110px" : "155px";
-
-  // Bilingual text definitions (matching normalisboring.es editorial voice)
+  // Bilingual text dictionary (exact matching structure of normalisboring.es)
   const texts = {
     en: {
+      navStudio: "STUDIO",
+      navProjects: "PROJECTS",
+      navContact: "CONTACT",
+      sectionHome: "Home",
+      copyright: "YASHMEEN FIT-OUT CONTRACTING ©2026",
+
+      // Hero Intro
       line1_a: "CONSIDERED",
       line1_b: "SPACES",
       line2_a: "THAT",
       line2_b: "CHALLENGE",
       line3_lead: "THE",
       line3_climax: "ORDINARY",
-      copy: "In a city of rushed handovers and fragmented subcontractors, Yashmeen operates under single-source accountability. Bespoke joinery from our 35,000 sq.ft Al Quoz facility, architectural engineering, and handover certainty.",
-      ctaPrimary: "Request a Quote",
-      ctaSecondary: "View Projects",
-      navPortfolio: "PORTFOLIO",
-      navStudio: "STUDIO",
-      navFacility: "AL QUOZ FACILITY",
-      navEnquiry: "ENQUIRY",
-      copyright: "YASHMEEN FIT-OUT CONTRACTING ©2026",
+      heroCopy:
+        "In a world where everything has become disposable, Yashmeen builds interiors to endure. Bespoke joinery from our 35,000 sq.ft Al Quoz atelier, architectural engineering and single-source certainty.",
 
-      // Chapter 01: The Studio
-      studioChapter: "01 / THE STUDIO",
-      studioTitle1: "Spaces that invite",
-      studioTitle2: "you to pause.",
-      studioParagraph: "Yashmeen creates considered environments for the way people live, work, gather and recharge. From first sketch to final handover, one dedicated team carries the detail through every decision.",
-      statAtelier: "35,000 sq.ft Manufacturing",
-      statLocation: "Al Quoz Industrial Area 3",
-      statCertainty: "Guaranteed Turnkey Handover",
+      // Section 2: Text / Studio
+      textSectionLabel: "The Studio",
+      textLine1: "SPACES THAT INVITE",
+      textLine2: "TO HOLD AND ENJOY",
+      textLine3: "TIME IN STILLNESS",
+      textLine4: "AND DISCONNECT",
+      textParagraph:
+        "Every space must be singular and meaningful, just like the people who inhabit it. We are the benchmark for quiet architectural luxury, where design discipline, sustainable engineering and craftsmanship unite to offer something truly exceptional.",
 
-      // Chapter 02: The Atelier
-      atelierChapter: "02 / THE METHOD & ATELIER",
-      atelierTitle: "Single-source discipline. Zero subcontractor blame.",
-      belief1Num: "01",
-      belief1Title: "Precision Engineering",
-      belief1Desc: "Every millimeter, junction and joinery detail is fully resolved in-house before components reach the site.",
-      belief2Num: "02",
-      belief2Title: "Material Honesty",
-      belief2Desc: "Natural French oak, porous travertine, brushed bronze and tactile linen composed to endure with quiet dignity.",
-      belief3Num: "03",
-      belief3Title: "Handover Certainty",
-      belief3Desc: "One studio from municipal approvals and bespoke fabrication to pristine site installation and handover.",
+      // Section 3: Dark Atelier
+      imagesTextParagraph:
+        "At Yashmeen, we shape spaces that stand apart through bespoke joinery craftsmanship and disciplined execution. Contemporary volumes, tactile materiality, open to light. Environments that elevate daily life with more comfort, more permanence and genuine emotion.",
 
-      // Chapter 03: Craftsmanship
-      craftChapter: "03 / TACTILE CRAFTSMANSHIP",
-      craftTitle: "Details made to be touched.",
-      craft1Title: "Illuminated Travertine Consoles",
-      craft1Desc: "Monolithic travertine stone with bespoke curved waterfall returns and integrated warm ambient illumination.",
-      craft2Title: "Bespoke Acoustic Fluted Joinery",
-      craft2Desc: "Dark walnut battens precision-milled with champagne gold architectural reveals and concealed acoustic backing.",
+      // Section 4: Carousel
+      carouselText: "VALUES",
 
-      // Chapter 04: Projects
-      workChapter: "04 / SELECTED WORK",
-      workTitle1: "Spaces made",
-      workTitle2: "to be lived in.",
-      workSubtitle: "Quiet architecture. Exacting fit-out. A finished space that feels inevitable.",
-      proj1Name: "Clifton Residence",
-      proj1Type: "Private Luxury Villa / Emirates Hills",
-      proj2Name: "Myrtle House",
-      proj2Type: "Boutique Hospitality / Al Quoz",
-      proj3Name: "OH Workplace",
-      proj3Type: "Executive Headquarters / DIFC",
-      proj4Name: "Al Quoz Atelier",
-      proj4Type: "Industrial Craftsmanship Hub / Dubai",
-      exploreProject: "View Case Study",
+      // Section 6: Terms
+      term1Num: "01",
+      term1Title: "ELEGANCE",
+      term1Desc:
+        "A quiet, sober architecture and aesthetic sensitivity manifested in natural French oak, limestone and earthy tones.",
+      term2Num: "02",
+      term2Title: "AUTHENTICITY",
+      term2Desc:
+        "Combination of elegant, sustainable architecture and in-house bespoke manufacturing creating refined, enduring spaces.",
+      term3Num: "03",
+      term3Title: "FUNCTIONALITY",
+      term3Desc:
+        "Open, harmonious spaces with pragmatic engineering. Versatile environments crafted for seamless daily living.",
 
-      // Chapter 05: Contact Finale
-      contactChapter: "05 / START A CONVERSATION",
-      contactTitle1: "Bring the",
-      contactTitle2: "ordinary",
-      contactTitle3: "to life.",
-      contactParagraph: "Tell us what you are shaping. We bring the people, 35,000 sq.ft facility and precision to make it real.",
-      contactCta: "Start a Project",
-      contactAddress: "Al Quoz Industrial Area 3, Dubai, UAE",
-      contactEmail: "info@yashmeen.ae",
-      contactPhone: "+971 4 000 0000"
+      // Section 7: Projects
+      projectsLabel: "Projects",
+      projectsIntro:
+        "We shape prime residences, bespoke hospitality and commercial spaces with single-source accountability.",
+      proj1Title: "CLIFTON RESIDENCE",
+      proj1Year: "2025",
+      proj1Loc: "EMIRATES HILLS",
+      proj1Num: "01",
+      proj2Title: "MYRTLE HOUSE",
+      proj2Year: "2025",
+      proj2Loc: "AL QUOZ",
+      proj2Num: "02",
+      proj3Title: "OH WORKPLACE",
+      proj3Year: "2024",
+      proj3Loc: "DIFC DUBAI",
+      proj3Num: "03",
+      proj4Title: "JUNO PAVILION",
+      proj4Year: "2025",
+      proj4Loc: "JUMEIRAH",
+      proj4Num: "04",
+      proj5Title: "AL QUOZ ATELIER",
+      proj5Year: "2026",
+      proj5Loc: "MANUFACTURING",
+      proj5Num: "05",
+
+      // Unpinned Vertical Finale
+      finaleChapter: "(Contact)",
+      finaleTitle: "UNLOCK YOUR VISION",
+      finaleSubtitle: "EXCLUSIVITY IN ITS HIGHEST EXPRESSION",
+      finaleParagraph:
+        "At Yashmeen, our priority is offering a personalized, dedicated partnership to bring your architectural vision into reality. Our team is at your disposal to guide you through every milestone.",
+      finaleCta: "Request Consultation",
+      footerTagline: "BESPOKE INTERIORS & ARCHITECTURAL FIT-OUT • DUBAI, UAE"
     },
     es: {
+      navStudio: "ESTUDIO",
+      navProjects: "PROYECTOS",
+      navContact: "CONTACTO",
+      sectionHome: "Inicio",
+      copyright: "YASHMEEN CONTRATACIÓN DE INTERIORES ©2026",
+
+      // Hero Intro
       line1_a: "ESPACIOS",
       line1_b: "DE VIDA",
       line2_a: "QUE",
       line2_b: "DESAFÍAN",
       line3_lead: "LO",
       line3_climax: "ORDINARIO",
-      copy: "En una metrópoli de entregas apresuradas y contratistas fragmentados, Yashmeen asume la responsabilidad integral de principio a fin. Ebanistería a medida en nuestra nave de 35.000 pies cuadrados en Al Quoz, ingeniería arquitectónica y certeza de entrega.",
-      ctaPrimary: "Solicitar Presupuesto",
-      ctaSecondary: "Ver Proyectos",
-      navPortfolio: "PORTAFOLIO",
-      navStudio: "ESTUDIO",
-      navFacility: "INSTALACIÓN AL QUOZ",
-      navEnquiry: "CONTACTO",
-      copyright: "YASHMEEN CONTRATACIÓN DE INTERIORES ©2026",
+      heroCopy:
+        "En un mundo fugaz en el que lo efímero lo ha empapado todo, construimos interiores para durar más y más, preservando la artesanía a medida y la certeza arquitectónica.",
 
-      // Chapter 01: El Estudio
-      studioChapter: "01 / EL ESTUDIO",
-      studioTitle1: "Espacios que invitan",
-      studioTitle2: "a detenerse.",
-      studioParagraph: "Yashmeen crea entornos cuidados para la forma en que las personas viven, trabajan, se reúnen y descansan. Desde el primer boceto hasta la entrega final, un único equipo traslada el detalle a cada decisión.",
-      statAtelier: "35.000 pies² Fabricación Propia",
-      statLocation: "Zona Industrial Al Quoz 3",
-      statCertainty: "Entrega Llave en Mano Garantizada",
+      // Section 2: Text / Studio
+      textSectionLabel: "Nosotros",
+      textLine1: "CASAS QUE INVITAN",
+      textLine2: "A  DETENER",
+      textLine3: "EL TIEMPO",
+      textLine4: "Y DESCONECTAR",
+      textParagraph:
+        "Cada vivienda debe ser única y especial, al igual que las personas que la habitan. Somos el referente del lujo aspiracional, donde diseño, sostenibilidad y calidad de vida se unen para ofrecer algo verdaderamente excepcional.",
 
-      // Chapter 02: El Método
-      atelierChapter: "02 / EL MÉTODO Y TALLER",
-      atelierTitle: "Disciplina de fuente única. Sin culpar a subcontratas.",
-      belief1Num: "01",
-      belief1Title: "Ingeniería de Precisión",
-      belief1Desc: "Cada milímetro, encuentro y detalle de carpintería se resuelve internamente antes de que las piezas lleguen a la obra.",
-      belief2Num: "02",
-      belief2Title: "Honestidad Material",
-      belief2Desc: "Roble francés natural, travertino poroso, bronce cepillado y lino táctil compuestos para perdurar con silenciosa dignidad.",
-      belief3Num: "03",
-      belief3Title: "Certeza de Entrega",
-      belief3Desc: "Un único estudio desde las aprobaciones municipales y fabricación a medida hasta la instalación impecable en obra.",
+      // Section 3: Dark Atelier
+      imagesTextParagraph:
+        "En Yashmeen construimos espacios que sobresalen por la calidad y el diseño, de volúmenes contemporáneos, impolutos y abiertos al exterior. Espacios que mejoran la calidad de vida de quienes los habitan, ofreciendo más confort, más belleza y más emoción.",
 
-      // Chapter 03: Artesanía
-      craftChapter: "03 / ARTESANÍA TÁCTIL",
-      craftTitle: "Detalles hechos para ser tocados.",
-      craft1Title: "Consolas de Travertino Iluminadas",
-      craft1Desc: "Piedra travertino monolítica con frentes curvos tipo cascada e iluminación ambiental cálida integrada.",
-      craft2Title: "Ebanistería Acústica Ranurada a Medida",
-      craft2Desc: "Listones de nogal oscuro fresados con precisión con remates arquitectónicos de oro champán y soporte acústico oculto.",
+      // Section 4: Carousel
+      carouselText: "VALORES",
 
-      // Chapter 04: Proyectos
-      workChapter: "04 / PROYECTOS SELECCIONADOS",
-      workTitle1: "Espacios hechos",
-      workTitle2: "para ser vividos.",
-      workSubtitle: "Arquitectura serena. Ajustes exactos. Un espacio final que parece inevitable.",
-      proj1Name: "Residencia Clifton",
-      proj1Type: "Villa Privada de Lujo / Emirates Hills",
-      proj2Name: "Casa Myrtle",
-      proj2Type: "Hospitalidad Exclusiva / Al Quoz",
-      proj3Name: "Sede Corporativa OH",
-      proj3Type: "Oficinas Ejecutivas / DIFC",
-      proj4Name: "Atelier Al Quoz",
-      proj4Type: "Centro de Fabricación Artesanal / Dubái",
-      exploreProject: "Ver Caso de Estudio",
+      // Section 6: Terms
+      term1Num: "01",
+      term1Title: "ELEGANCIA",
+      term1Desc:
+        "Una arquitectura sobria y silenciosa y una sensibilidad estética que se manifiesta en materiales como el roble o la piedra caliza.",
+      term2Num: "02",
+      term2Title: "AUTENTICIDAD",
+      term2Desc:
+        "Combinación de arquitectura elegante, sostenible y serena, creando espacios refinados que promueven un lujo sosegado.",
+      term3Num: "03",
+      term3Title: "FUNCIONALIDAD",
+      term3Desc:
+        "Espacios abiertos, menos jerarquizados y con un enfoque más pragmático. Zonas multifuncionales para un confort diario.",
 
-      // Chapter 05: Contacto
-      contactChapter: "05 / INICIAR CONVERSACIÓN",
-      contactTitle1: "Dar vida a",
-      contactTitle2: "lo ordinario",
-      contactTitle3: "con arte.",
-      contactParagraph: "Cuéntenos qué está proyectando. Aportaremos el equipo, nuestras instalaciones de 35.000 pies² y la precisión necesaria.",
-      contactCta: "Iniciar un Proyecto",
-      contactAddress: "Zona Industrial Al Quoz 3, Dubái, EAU",
-      contactEmail: "info@yashmeen.ae",
-      contactPhone: "+971 4 000 0000"
+      // Section 7: Projects
+      projectsLabel: "Proyectos",
+      projectsIntro:
+        "Desarrollamos proyectos residenciales y corporativos exclusivos con una visión integral de principio a fin.",
+      proj1Title: "RESIDENCIA CLIFTON",
+      proj1Year: "2025",
+      proj1Loc: "EMIRATES HILLS",
+      proj1Num: "01",
+      proj2Title: "CASA MYRTLE",
+      proj2Year: "2025",
+      proj2Loc: "AL QUOZ",
+      proj2Num: "02",
+      proj3Title: "SEDE CORPORATIVA OH",
+      proj3Year: "2024",
+      proj3Loc: "DIFC DUBÁI",
+      proj3Num: "03",
+      proj4Title: "PABELLÓN JUNO",
+      proj4Year: "2025",
+      proj4Loc: "JUMEIRAH",
+      proj4Num: "04",
+      proj5Title: "ATELIER AL QUOZ",
+      proj5Year: "2026",
+      proj5Loc: "FABRICACIÓN",
+      proj5Num: "05",
+
+      // Unpinned Vertical Finale
+      finaleChapter: "(Contacta)",
+      finaleTitle: "DESBLOQUEA TU SUEÑO",
+      finaleSubtitle: "EXCLUSIVIDAD EN SU MÁXIMA EXPRESIÓN",
+      finaleParagraph:
+        "En Yashmeen, nuestra prioridad es ofrecerte un servicio personalizado y cercano para ayudarte a materializar tu proyecto soñado.",
+      finaleCta: "Solicitar información",
+      footerTagline: "INTERIORES A MEDIDA Y CONTRATACIÓN ARQUITECTÓNICA • DUBÁI, EAU"
     }
   };
 
   const currentText = texts[lang];
 
   // Helper for masking individual characters
-  const renderChars = (str, className = "nib-hero-char") =>
+  const renderChars = (str, className = "char") =>
     str.split("").map((c, i) => (
-      <span key={i} className={`nib-char-mask${c === " " ? " nib-space" : ""}`}>
-        <span className={`nib-char-span ${className}`}>
+      <span key={i} className="splitline-char-wrap" style={{ position: "relative", display: "inline-block" }}>
+        <span
+          className={className}
+          style={{ position: "relative", display: "inline-block" }}
+        >
           {c === " " ? "\u00A0" : c}
         </span>
       </span>
     ));
 
   // --------------------------------------------------------------------------
-  // 1. PRELOADER & ENTRANCE SEQUENCE (Continuous expanding logo box)
+  // 1. PRELOADER & INTRO ENTRANCE ANIMATION (Matching normalisboring.es)
   // --------------------------------------------------------------------------
   const runSequence = useCallback(() => {
     setIsPreloading(true);
-
-    if (timelineRef.current) {
-      timelineRef.current.kill();
-    }
-    gsap.killTweensOf([
-      ".nib-header__logo",
-      ".nib-char-logo",
-      ".nib-preloader-backdrop",
-      ".nib-preloader-counter",
-      ".nib-preloader-bar",
-      ".nib-preloader-label",
-      ".nib-header__controls",
-      ".nib-hero-char",
-      ".nib-hero__copy",
-      ".nib-hero__actions",
-      ".nib-hero__vert-nav",
-      ".nib-hero__vert-link",
-      ".nib-hero__image-wrap",
-      ".nib-hero__image"
-    ]);
+    if (timelineRef.current) timelineRef.current.kill();
+    gsap.killTweensOf("*");
 
     setProgress(0);
 
-    // Reset initial states
-    document.querySelector(".nib-logo__group")?.classList.remove("is-docked");
-    if (backdropRef.current) {
-      backdropRef.current.style.display = "block";
-    }
+    const isMobile = window.innerWidth <= 991;
+
+    // Resets
+    if (backdropRef.current) backdropRef.current.style.display = "flex";
     gsap.set(".nib-preloader-backdrop", { opacity: 1 });
-    gsap.set(".nib-preloader-counter, .nib-preloader-label, .nib-preloader-bar", { opacity: 1 });
-    gsap.set(".nib-header__controls", { opacity: 0, y: -25 });
+    gsap.set(".nib-preloader-center", { opacity: 1 });
+    gsap.set(".header__logo", { opacity: 0 });
+    gsap.set(".header__btn", { y: "-180%", opacity: 0 });
 
-    // Logo box starts compact in the center
-    gsap.set(".nib-header__logo", {
-      width: initialLogoWidth,
-      height: initialLogoHeight
-    });
+    // Intro elements initial states
+    gsap.set(".mod-scroll__intro > .wrapper", { width: isMobile ? "100%" : "100vw" });
+    gsap.set(".mod-scroll__intro__title .char", { yPercent: 110 });
+    gsap.set(".mod-scroll__intro__text", { opacity: 0, y: "100%" });
+    gsap.set(".mod-scroll__intro__menu .menu-item", { y: "2.5rem", opacity: 0 });
+    gsap.set(".mod-scroll__intro__section", { opacity: 0 });
+    gsap.set(".mod-scroll__intro__copyright", { opacity: 0 });
+    gsap.set(".mod-scroll__intro__logo", { opacity: 0 });
 
-    // Logo letters start masked
-    gsap.set(".nib-char-logo", { xPercent: 120 });
-
-    // Hero title characters start masked (alternating kinematics)
-    gsap.set(".nib-title-line-1 .nib-hero-char", { yPercent: 110 });
-    gsap.set(".nib-title-line-2 .nib-hero-char", { yPercent: -110 });
-    gsap.set(".nib-title-line-3 .nib-hero-char", { yPercent: 110 });
-
-    // Hero content & image portal initial states
-    gsap.set(".nib-hero__copy", { opacity: 0, y: 35 });
-    gsap.set(".nib-hero__actions", { opacity: 0, y: 25 });
-    gsap.set(".nib-hero__vert-nav", { opacity: 0, x: -30 });
-    gsap.set(".nib-hero__vert-link", { opacity: 0, y: 15 });
-    gsap.set(".nib-hero__image-wrap", { clipPath: "inset(0% 0% 0% 100%)" });
-    gsap.set(".nib-hero__image", { scale: 1.18, yPercent: 4 });
-
-    // Stagger letters into center logo box
-    gsap.to(".nib-char-logo", {
-      xPercent: 0,
-      duration: 0.55,
-      stagger: 0.038,
-      ease: "power3.out",
-      delay: 0.2
-    });
-
-    // Progress counter 00% -> 100%
     const progressObj = { val: 0 };
     gsap.to(progressObj, {
       val: 100,
-      duration: 2.0,
+      duration: 1.8,
       ease: "power2.inOut",
       onUpdate: () => {
         setProgress(Math.round(progressObj.val));
       },
       onComplete: () => {
-        const masterTl = gsap.timeline();
-        timelineRef.current = masterTl;
+        const introTl = gsap.timeline();
+        timelineRef.current = introTl;
 
-        // A. Fade counter and telemetry
-        masterTl.to(
-          ".nib-preloader-counter, .nib-preloader-bar, .nib-preloader-label",
-          {
-            opacity: 0,
-            duration: 0.35,
-            ease: "linear"
-          },
-          0
-        );
-
-        // B. The Expanding Logo Box
-        masterTl.to(
-          ".nib-header__logo",
-          {
-            width: isMobile ? "auto" : "100%",
-            height: isMobile ? "60px" : "100%",
-            duration: 1.35,
-            ease: "power3.inOut",
-            onStart: () => {
-              setIsPreloading(false);
-              document.querySelector(".nib-logo__group")?.classList.add("is-docked");
-            },
-            onComplete: () => {
-              if (isMobile) {
-                gsap.set(".nib-header__logo", { clearProps: "width,height" });
-              }
-            }
-          },
-          0.12
-        );
-
-        // C. Dissolve preloader backdrop
-        masterTl.to(
+        // 1. Preloader fade out
+        introTl.to(".nib-preloader-center", { opacity: 0, duration: 0.35, ease: "linear" }, 0);
+        introTl.to(
           ".nib-preloader-backdrop",
           {
             opacity: 0,
-            duration: 0.95,
+            duration: 0.75,
             ease: "power2.inOut",
             onComplete: () => {
-              if (backdropRef.current) {
-                backdropRef.current.style.display = "none";
-              }
+              setIsPreloading(false);
+              if (backdropRef.current) backdropRef.current.style.display = "none";
             }
           },
-          0.25
+          0.1
         );
 
-        // D. Header controls reveal
-        masterTl.to(
-          ".nib-header__controls",
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.6,
-            ease: "power3.out"
-          },
-          0.7
-        );
+        // 2. Intro Logo Reveal
+        introTl.to(".mod-scroll__intro__logo", { opacity: 1, duration: 0.8 }, 0.2);
 
-        // E. Alternating Line Reveals for Hero Headline
-        // Line 1: yPercent 110 -> 0 (from below)
-        masterTl.to(
-          ".nib-title-line-1 .nib-hero-char",
+        // 3. Intro Title Char Reveals (alternating 110% and -110%)
+        introTl.to(
+          ".mod-scroll__intro__wrap-titles .char",
           {
             yPercent: 0,
+            duration: 0.65,
+            stagger: 0.02,
+            ease: "power3.out"
+          },
+          0.3
+        );
+
+        // 4. Intro text & menu
+        introTl.to(".mod-scroll__intro__text", { yPercent: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.5);
+        introTl.to(
+          ".mod-scroll__intro__menu .menu-item",
+          {
+            y: "0rem",
+            opacity: 1,
             duration: 0.7,
-            stagger: 0.025,
+            stagger: 0.08,
             ease: "power3.out"
           },
-          0.65
+          0.55
         );
+        introTl.to(".mod-scroll__intro__section, .mod-scroll__intro__copyright", { opacity: 1, duration: 0.5 }, 0.7);
 
-        // Line 2: yPercent -110 -> 0 (from ABOVE - alternating hallmark!)
-        masterTl.to(
-          ".nib-title-line-2 .nib-hero-char",
-          {
-            yPercent: 0,
-            duration: 0.7,
-            stagger: 0.025,
-            ease: "power3.out"
-          },
-          0.78
-        );
+        // 5. Shrink Intro Wrapper from 100vw to 80vw (revealing architectural preview on right!)
+        if (!isMobile) {
+          introTl.to(
+            ".mod-scroll__intro > .wrapper",
+            {
+              width: "80vw",
+              duration: 1.25,
+              ease: "power3.out"
+            },
+            0.6
+          );
 
-        // Line 3: yPercent 110 -> 0 (from below)
-        masterTl.to(
-          ".nib-title-line-3 .nib-hero-char",
-          {
-            yPercent: 0,
-            duration: 0.75,
-            stagger: 0.028,
-            ease: "power3.out"
-          },
-          0.92
-        );
-
-        // F. Narrative Copy & Actions reveal
-        masterTl.to(
-          ".nib-hero__copy",
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.85,
-            ease: "power3.out"
-          },
-          0.95
-        );
-
-        masterTl.to(
-          ".nib-hero__actions",
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.8,
-            ease: "power3.out"
-          },
-          1.05
-        );
-
-        // G. Sideways Vertical Navigation Strip
-        masterTl.to(
-          ".nib-hero__vert-nav",
-          {
-            x: 0,
-            opacity: 1,
-            duration: 0.85,
-            ease: "power3.out"
-          },
-          0.65
-        );
-
-        masterTl.to(
-          ".nib-hero__vert-link",
-          {
-            y: 0,
-            opacity: 1,
-            stagger: 0.07,
-            duration: 0.55,
-            ease: "power2.out"
-          },
-          0.8
-        );
-
-        // H. Architectural Vertical Portal Curtain Unmask
-        masterTl.to(
-          ".nib-hero__image-wrap",
-          {
-            clipPath: "inset(0% 0% 0% 0%)",
-            duration: 1.45,
-            ease: "power3.inOut"
-          },
-          0.6
-        );
-
-        masterTl.to(
-          ".nib-hero__image",
-          {
-            scale: 1.0,
-            yPercent: 0,
-            duration: 1.45,
-            ease: "power3.out"
-          },
-          0.6
-        );
+          introTl.fromTo(
+            ".mod-scroll__images__image-single",
+            { x: "-5vw" },
+            { x: "-15vw", duration: 1.25, ease: "power2.out" },
+            0.6
+          );
+        }
       }
     });
-  }, [initialLogoWidth, initialLogoHeight, isMobile]);
+  }, []);
 
   useEffect(() => {
     runSequence();
     return () => {
-      if (timelineRef.current) {
-        timelineRef.current.kill();
-      }
+      if (timelineRef.current) timelineRef.current.kill();
       gsap.killTweensOf("*");
     };
   }, [runSequence]);
 
   // --------------------------------------------------------------------------
-  // 2. BUTTERY HORIZONTAL SCROLL ENGINE (exact normalisboring.es formula)
+  // 2. HORIZONTAL SCROLL ENGINE (Exact kinematics of normalisboring.es)
   // --------------------------------------------------------------------------
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const modScroll = modScrollRef.current;
+    if (!modScroll) return;
 
-    const strip = stripRef.current;
-    const track = trackRef.current;
+    if (window.innerWidth <= 991) return; // Natural vertical flow on mobile
 
-    // Mobile fallback: natural vertical flow
-    if (window.innerWidth <= 991) {
-      if (horizontalTweenRef.current?.scrollTrigger) {
-        horizontalTweenRef.current.scrollTrigger.kill();
-        horizontalTweenRef.current.kill();
-      }
-      return;
-    }
-
-    if (!strip || !track) return;
-
-    // A. Initialize Lenis for momentum wheel scrolling
-    let localLenis = null;
-    let rafCallback = null;
+    let lenis = null;
+    let tickerCallback = null;
 
     try {
-      localLenis = new Lenis({
-        lerp: 0.075,
+      lenis = new Lenis({
+        lerp: 0.08,
         smoothWheel: true,
-        wheelMultiplier: 0.95,
+        wheelMultiplier: 0.95
       });
-      lenisRef.current = localLenis;
+      lenisRef.current = lenis;
 
-      localLenis.on("scroll", ScrollTrigger.update);
-      rafCallback = (time) => localLenis.raf(time * 1000);
-      gsap.ticker.add(rafCallback);
+      lenis.on("scroll", ScrollTrigger.update);
+      tickerCallback = (time) => lenis.raf(time * 1000);
+      gsap.ticker.add(tickerCallback);
       gsap.ticker.lagSmoothing(0);
     } catch (e) {
-      console.warn("Lenis initialization skipped:", e);
+      console.warn("Lenis init skipped:", e);
     }
 
-    // B. Setup Horizontal Pinning Timeline
-    const getScrollDistance = () => strip.scrollWidth - window.innerWidth;
+    const sections = Array.from(modScroll.querySelectorAll(":scope > div"));
+    const scrollH_width = modScroll.scrollWidth;
+    const scrollDistance = scrollH_width - window.innerWidth;
 
-    const horizontalTween = gsap.to(strip, {
-      x: () => -getScrollDistance(),
-      ease: "none",
-      scrollTrigger: {
-        id: "nib-horizontal-scroll",
-        trigger: track,
-        pin: true,
-        scrub: 1, // Buttery scrub matching normalisboring.es
-        start: "top top",
-        end: () => `+=${getScrollDistance()}`,
-        invalidateOnRefresh: true,
-        anticipatePin: 1,
-        onUpdate: (self) => {
-          const p = self.progress;
-          const pct = Math.round(p * 100);
-          setScrollProgress(pct);
+    // Master horizontal scroll timeline
+    const scrollTl = gsap.timeline({ paused: true });
 
-          // Smoothly fade out the inverted logo hallmark once we leave the intro hero
-          const logoGroup = document.querySelector(".nib-logo__group");
-          if (logoGroup) {
-            logoGroup.style.opacity = p > 0.03 ? "0" : "1";
-            logoGroup.style.pointerEvents = p > 0.03 ? "none" : "auto";
-            logoGroup.style.transform = p > 0.03 ? "translateY(15px)" : "translateY(0)";
-          }
+    // Move all sections horizontally
+    scrollTl.to(sections, {
+      x: -scrollDistance,
+      duration: 100,
+      ease: "none"
+    });
 
-          // Exact pixel coordinate detection for header contrast
-          const currentX = self.scroll();
-          const isAtelierUnderLogo = currentX >= 2900 && currentX <= 4250;
-          const isCierreUnderLogo = currentX >= 7400;
-          setIsHeaderDark(isAtelierUnderLogo || isCierreUnderLogo);
+    // Pinned horizontal track trigger
+    const scrollHTrigger = ScrollTrigger.create({
+      id: "normal-scroll-horizontal",
+      animation: scrollTl,
+      trigger: modScroll,
+      pin: "main",
+      scrub: 1,
+      start: "top top",
+      end: () => `+=${scrollDistance}`,
+      invalidateOnRefresh: true,
+      onUpdate: (self) => {
+        const currentScroll = self.scroll();
 
-          // Update active chapter
-          if (p < 0.16) {
-            setActiveChapter("00 / INTRO");
-          } else if (p < 0.38) {
-            setActiveChapter("01 / STUDIO");
-          } else if (p < 0.58) {
-            setActiveChapter("02 / ATELIER");
-          } else if (p < 0.72) {
-            setActiveChapter("03 / CRAFT");
-          } else if (p < 0.90) {
-            setActiveChapter("04 / WORK");
+        // Reveal fixed header logo & floating Menú controls once scrolled past intro
+        const headerLogo = headerLogoRef.current;
+        const headerControls = document.querySelector(".header__controls");
+        if (headerLogo && headerControls) {
+          if (self.progress > 0.04) {
+            headerLogo.style.opacity = "1";
+            headerControls.style.transform = "translate3d(0, 0, 0)";
+            headerControls.style.opacity = "1";
+            headerControls.style.pointerEvents = "all";
           } else {
-            setActiveChapter("05 / CONTACT");
+            headerLogo.style.opacity = "0";
+            headerControls.style.transform = "translate3d(0, -180%, 0)";
+            headerControls.style.opacity = "0";
+            headerControls.style.pointerEvents = "none";
           }
+        }
+
+        // Detect dark sections (Black Atelier or Red Cierre) to toggle white header contrast
+        const s3 = document.querySelector(".mod-scroll__images-text");
+        const s8 = document.querySelector(".mod-scroll__cierre");
+        if (s3 && s8) {
+          const s3Left = s3.offsetLeft - currentScroll;
+          const s3Right = s3Left + s3.offsetWidth;
+          const s8Left = s8.offsetLeft - currentScroll;
+          const s8Right = s8Left + s8.offsetWidth;
+
+          const isDark = (s3Left <= 250 && s3Right >= 50) || (s8Left <= 250 && s8Right >= 50);
+          setIsHeaderDark(isDark);
         }
       }
     });
 
-    horizontalTweenRef.current = horizontalTween;
-
-    // C. Internal Parallax scrubbing for architectural photo layers
-    const parallaxImgs = strip.querySelectorAll("[data-parallax-x]");
-    parallaxImgs.forEach((img) => {
+    // Section 1 Image scrub (moves -15vw -> 0vw)
+    const singleImg = modScroll.querySelector(".mod-scroll__images__image-single");
+    if (singleImg) {
       gsap.fromTo(
-        img,
-        { xPercent: -15 },
+        singleImg,
+        { x: "-15vw" },
         {
-          xPercent: 15,
+          x: "0vw",
           ease: "none",
           scrollTrigger: {
-            trigger: img.closest(".nib-scroll-section"),
-            containerAnimation: horizontalTween,
-            start: "left right",
-            end: "right left",
+            containerAnimation: scrollTl,
+            trigger: singleImg.closest(".mod-scroll__images"),
+            start: "0% 78%",
+            end: "90% 100%",
             scrub: 0.5
           }
         }
       );
+    }
+
+    // Section 4 Vertical Carousel Ticker (translates vertically as you scroll horizontally)
+    const carouselContent = modScroll.querySelector(".mod-scroll__carousel__content");
+    if (carouselContent) {
+      gsap.fromTo(
+        carouselContent,
+        { y: "175vh" },
+        {
+          y: "-100vh",
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: carouselContent.closest(".mod-scroll__carousel"),
+            start: "0% 95%",
+            end: "100% 0%",
+            scrub: 0.5
+          }
+        }
+      );
+    }
+
+    // Section 6 Terms Parallax
+    const terms = modScroll.querySelectorAll(".mod-scroll__terms__term");
+    if (terms.length >= 3) {
+      gsap.to(terms[0], {
+        paddingLeft: "12vw",
+        ease: "none",
+        scrollTrigger: {
+          containerAnimation: scrollTl,
+          trigger: terms[0],
+          start: "0% 100%",
+          end: "100% 0%",
+          scrub: 1
+        }
+      });
+      gsap.to(terms[1], {
+        paddingRight: "3vw",
+        ease: "none",
+        scrollTrigger: {
+          containerAnimation: scrollTl,
+          trigger: terms[1],
+          start: "0% 100%",
+          end: "100% 0%",
+          scrub: 1
+        }
+      });
+      gsap.to(terms[2], {
+        paddingLeft: "20vw",
+        ease: "none",
+        scrollTrigger: {
+          containerAnimation: scrollTl,
+          trigger: terms[2],
+          start: "0% 100%",
+          end: "100% 0%",
+          scrub: 1
+        }
+      });
+    }
+
+    // Section 7: Expanding Project Cards (signature 15vw -> 60vw expansion)
+    const projectItems = modScroll.querySelectorAll(".mod-scroll__projects__item:not(.last-item)");
+    projectItems.forEach((item, idx) => {
+      const media = item.querySelector(".media__source");
+
+      // Expand card width 15vw -> 60vw
+      gsap.fromTo(
+        item,
+        { width: "15vw" },
+        {
+          width: "60vw",
+          ease: "power1.inOut",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: item,
+            start: "0% 80%",
+            end: "100% 40%",
+            scrub: true,
+            onEnter: () => setActiveProjectIdx(idx),
+            onEnterBack: () => setActiveProjectIdx(idx)
+          }
+        }
+      );
+
+      // Media height adjustments
+      if (media) {
+        gsap.fromTo(
+          media,
+          { height: "87vh" },
+          {
+            height: "66vh",
+            ease: "power1.inOut",
+            scrollTrigger: {
+              containerAnimation: scrollTl,
+              trigger: item,
+              start: "0% 80%",
+              end: "100% 40%",
+              scrub: true
+            }
+          }
+        );
+      }
     });
 
     ScrollTrigger.refresh();
 
     return () => {
-      if (horizontalTween.scrollTrigger) {
-        horizontalTween.scrollTrigger.kill();
-      }
-      horizontalTween.kill();
-      if (localLenis && rafCallback) {
-        gsap.ticker.remove(rafCallback);
-        localLenis.destroy();
+      scrollHTrigger.kill();
+      scrollTl.kill();
+      if (lenis && tickerCallback) {
+        gsap.ticker.remove(tickerCallback);
+        lenis.destroy();
       }
     };
   }, []);
 
-  // Jump smoothly to a specific section along the horizontal track
-  const jumpToSection = (index) => {
-    const strip = stripRef.current;
-    if (!strip) return;
-    const sections = strip.querySelectorAll(".nib-scroll-section");
-    if (!sections[index]) return;
-
-    if (window.innerWidth <= 991 || !lenisRef.current) {
-      sections[index].scrollIntoView({ behavior: "smooth" });
-      return;
-    }
-
-    const targetOffset = sections[index].offsetLeft;
-    const totalDist = strip.scrollWidth - window.innerWidth;
-    const trigger = horizontalTweenRef.current?.scrollTrigger;
-    if (trigger && totalDist > 0) {
-      const targetScroll = trigger.start + (targetOffset / totalDist) * (trigger.end - trigger.start);
-      lenisRef.current.scrollTo(targetScroll, { duration: 1.2 });
-    }
+  // Track mouse coordinates for floating preview in terms section
+  const handleTermsMouseMove = (e) => {
+    if (!termsRef.current) return;
+    const rect = termsRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
   };
 
   return (
     <div
-      className={`nib-root ${isPreloading ? "is-preloading" : ""} ${
+      className={`nib-page-wrapper ${isPreloading ? "is-preloading" : ""} ${
         isHeaderDark ? "theme-dark-active" : ""
       }`}
       ref={containerRef}
     >
       {/* ------------------------------------------------------------------
-          1. FIXED HEADER OVERLAY (Contains Expanding Logo & Global Controls)
+          1. FIXED HEADER
          ------------------------------------------------------------------ */}
-      <header className={`nib-header ${isHeaderDark ? "nib-header--light-text" : ""}`}>
-        <div className="nib-header__wrapper">
-          {/* Centered logo box: 390x155 in preloader, expands to 100%x100% on exit */}
-          <div className="nib-header__logo" ref={logoBoxRef}>
-            {/* Top-Left: YASHMEEN DUBAI */}
-            <Link to="/" className="nib-logo__normal" aria-label="Yashmeen Dubai">
-              <div className="nib-logo__title">
-                {renderChars("YASHMEEN", "nib-char-logo")}
-              </div>
-              <span className="nib-logo__badge">DUBAI</span>
+      <header>
+        <div className="header">
+          {/* Top-Left Floating Compact Logo (Revealed on Scroll) */}
+          <div
+            className={`header__logo logo ${isHeaderDark ? "c-white" : ""}`}
+            ref={headerLogoRef}
+          >
+            <Link to="/" className="logo__normal" aria-label="Yashmeen Home">
+              <span>YASHMEEN</span>
             </Link>
-
-            {/* Bottom-Right: considered INTERIORS ® (inverted hallmark) */}
-            <div className="nib-logo__group">
-              <div className="nib-logo__is">
-                {renderChars("considered", "nib-char-logo")}
-              </div>
-              <div className="nib-logo__boring">
-                {renderChars("INTERIORS", "nib-char-logo")}
-                <span className="nib-logo__reg">®</span>
-              </div>
-            </div>
           </div>
 
-          {/* Top-Right Floating Controls (Language toggle, Replay, Menu) */}
-          <div className="nib-header__controls">
+          {/* Top-Right Floating Controls (Language Toggle & Menú Button) */}
+          <div className="header__controls">
             <button
               type="button"
               onClick={() => setLang(lang === "en" ? "es" : "en")}
-              className="nib-ctrl-btn"
+              className={`header__lang-btn ${isHeaderDark ? "c-white" : ""}`}
               title="Toggle Language"
             >
               {lang === "en" ? "ES" : "EN"}
@@ -647,455 +592,665 @@ export default function YashmeenNibExperience() {
             <button
               type="button"
               onClick={runSequence}
-              className="nib-ctrl-btn"
-              title="Replay Preloader Ceremony"
+              className={`header__lang-btn ${isHeaderDark ? "c-white" : ""}`}
+              title="Replay Entrance Ceremony"
+              style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}
             >
-              <FiRotateCcw size={12} />
+              <FiRotateCcw size={11} />
               <span>Replay</span>
             </button>
 
-            <Link to="/contact" className="nib-menu-pill">
-              Menú
+            <Link
+              to="/contact"
+              className="header__btn btn btn--bg f-edit t-parrafo-l"
+            >
+              <span>Menú</span>
             </Link>
           </div>
         </div>
       </header>
 
       {/* ------------------------------------------------------------------
-          2. PRELOADER BACKDROP & COUNTER
+          2. MINIMALIST PRELOADER BACKDROP
          ------------------------------------------------------------------ */}
       <div className="nib-preloader-backdrop" ref={backdropRef}>
-        <div className="nib-preloader-meta">
-          <span className="nib-preloader-label">Fit-Out Contracting Co. L.L.C</span>
+        <div className="nib-preloader-center">
+          <div className="nib-preloader-percent">{progress}%</div>
+          <div className="nib-preloader-progress">
+            <div
+              className="nib-preloader-progress-bar"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         </div>
-        <div className="nib-preloader-counter">
-          {String(progress).padStart(2, "0")}%
-        </div>
-        <div className="nib-preloader-bar" style={{ width: `${progress}%` }}></div>
       </div>
 
       {/* ------------------------------------------------------------------
-          3. FULL HORIZONTAL SCROLL TRACK (Continuous Side-by-Side Journey)
+          3. MAIN HORIZONTAL SCROLL WRAPPER (.mod-scroll)
          ------------------------------------------------------------------ */}
-      <div className="nib-scroll-track" ref={trackRef}>
-        <div className="nib-scroll-strip" ref={stripRef}>
-          {/* =================================================================
-              SECTION 0: THE INTRO / HERO (Warm White #fbfaf7)
-             ================================================================= */}
-          <section className="nib-scroll-section nib-section-hero bg-warm-white">
-            <div className="nib-hero__left">
-              <div className="nib-hero__wrap-titles">
-                {/* Col 1, Row 1: CONSIDERED / SPACES */}
-                <div className="nib-hero__title-block nib-title-line-1">
-                  <div className="nib-line-mask">
-                    <div className="nib-line-inner">{renderChars(currentText.line1_a)}</div>
-                  </div>
-                  <div className="nib-line-mask">
-                    <div className="nib-line-inner">{renderChars(currentText.line1_b)}</div>
-                  </div>
-                </div>
+      <main>
+        <section className="mod-scroll" ref={modScrollRef}>
+          {/* ===============================================================
+              SECTION 0: INTRO (.mod-scroll__intro bg-white)
+             =============================================================== */}
+          <div className="mod-scroll__intro bg-white">
+            <div className="wrapper">
+              {/* Rotated Top-Right Navigation Menu (-90deg hallmark) */}
+              <ul className="mod-scroll__intro__menu f-izmir t-parrafo t-upper">
+                <li className="menu-item">
+                  <a href="#studio">{currentText.navStudio}</a>
+                </li>
+                <li className="menu-item">
+                  <a href="#projects">{currentText.navProjects}</a>
+                </li>
+                <li className="menu-item">
+                  <a href="#contact">{currentText.navContact}</a>
+                </li>
+              </ul>
 
-                {/* Col 2, Row 1: THAT / CHALLENGE (Alternating Reveal) */}
-                <div className="nib-hero__title-block nib-title-line-2">
-                  <div className="nib-line-mask">
-                    <div className="nib-line-inner">{renderChars(currentText.line2_a)}</div>
-                  </div>
-                  <div className="nib-line-mask">
-                    <div className="nib-line-inner">{renderChars(currentText.line2_b)}</div>
-                  </div>
-                </div>
+              {/* Section Tag & Copyright */}
+              <div className="mod-scroll__intro__section mod-scroll__section t-parrafo-l f-edit">
+                {currentText.sectionHome}
+              </div>
+              <div className="mod-scroll__intro__copyright t-subtitulo f-izmir">
+                {currentText.copyright}
+              </div>
 
-                {/* Col 1, Row 2: THE / ORDINARY • */}
-                <div className="nib-hero__title-block nib-title-line-3">
-                  <div className="nib-line-mask">
-                    <div className="nib-line-inner nib-hero__h-line3-lead">
+              {/* 2-Column Asymmetric Editorial Headline Grid & Narrative Text */}
+              <div className="mod-scroll__intro__content">
+                <div className="mod-scroll__intro__wrap-titles">
+                  {/* Col 1, Row 1 */}
+                  <div className="mod-scroll__intro__title f-izmir t-titulo-xxl line lh-less is_home">
+                    <div className="splitline clip-y">
+                      {renderChars(currentText.line1_a)}
+                    </div>
+                    <div className="splitline clip-y">
+                      {renderChars(currentText.line1_b)}
+                    </div>
+                  </div>
+
+                  {/* Col 2, Row 1 (Indented/Spaced) */}
+                  <div className="mod-scroll__intro__title f-izmir t-titulo-xxl line lh-less is_home">
+                    <div className="splitline clip-y">&nbsp;</div>
+                    <div className="splitline clip-y">&nbsp;</div>
+                    <div className="splitline clip-y">
+                      {renderChars(currentText.line2_a)}
+                    </div>
+                    <div className="splitline clip-y">
+                      {renderChars(currentText.line2_b)}
+                    </div>
+                  </div>
+
+                  {/* Col 1, Row 2 */}
+                  <div className="mod-scroll__intro__title f-izmir t-titulo-xxl line lh-less is_home">
+                    <div className="splitline clip-y">
                       {renderChars(currentText.line3_lead)}
                     </div>
-                  </div>
-                  <div className="nib-line-mask">
-                    <div className="nib-line-inner nib-hero__h-line3-climax">
+                    <div className="splitline clip-y">
                       <em>{renderChars(currentText.line3_climax)}</em>
-                      <span className="nib-hero__accent-dot" aria-hidden="true">•</span>
+                      <span className="accent-dot">•</span>
                     </div>
                   </div>
-                </div>
 
-                {/* Col 2, Row 2: Narrative Copy & Call to Action */}
-                <div className="nib-hero__narrative-block">
-                  <p className="nib-hero__copy">{currentText.copy}</p>
-
-                  <div className="nib-hero__actions">
-                    <Link
-                      to="/quote"
-                      className="btn btn-primary"
-                      style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
-                    >
-                      <span>{currentText.ctaPrimary}</span>
-                      <FiArrowRight />
-                    </Link>
-                    <Link to="/projects" className="btn btn-outline">
-                      {currentText.ctaSecondary}
-                    </Link>
+                  {/* Col 2, Row 2: Pure Narrative Paragraph */}
+                  <div className="mod-scroll__intro__text">
+                    <p>{currentText.heroCopy}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Bottom Left Copyright */}
-              <div className="nib-hero__copyright">{currentText.copyright}</div>
+              {/* Intro Logo (NORMAL / BORING signature diagonal split) */}
+              <div className="mod-scroll__intro__logo logo c-black">
+                <div className="logo__normal" data-url="/">
+                  {renderChars("YASHMEEN")}
+                </div>
+                <div className="logo__group">
+                  <div className="logo__is">{renderChars("is")}</div>
+                  <div className="logo__boring">
+                    {renderChars("ORDINARY")}
+                    <div className="reg">®</div>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
 
-            {/* Quick Sideways Navigation Strip */}
-            <div className="nib-hero__right">
-              <nav className="nib-hero__vert-nav" aria-label="Quick Navigation">
-                <button type="button" onClick={() => jumpToSection(5)} className="nib-hero__vert-link">
-                  {currentText.navPortfolio}
-                </button>
-                <button type="button" onClick={() => jumpToSection(2)} className="nib-hero__vert-link">
-                  {currentText.navStudio}
-                </button>
-                <button type="button" onClick={() => jumpToSection(3)} className="nib-hero__vert-link">
-                  {currentText.navFacility}
-                </button>
-                <button type="button" onClick={() => jumpToSection(6)} className="nib-hero__vert-link">
-                  {currentText.navEnquiry}
-                </button>
-              </nav>
-
-              <div className="nib-hero__image-wrap">
+          {/* ===============================================================
+              SECTION 1: PRIMARY IMAGES (.mod-scroll__images bg-white principal)
+             =============================================================== */}
+          <div className="mod-scroll__images bg-white principal">
+            {/* Giant Single Image with translate3d(-15vw -> 0vw) */}
+            <div className="media mod-scroll__images__image-single noAspect">
+              <div className="media__wrap-source image">
                 <img
+                  className="media__source w-100"
                   src="/static/hero-editorial.png"
-                  alt="Yashmeen bespoke interior architectural finish overlooking Dubai skyline"
-                  className="nib-hero__image"
-                  loading="eager"
-                />
-                <div className="nib-hero__image-scrim"></div>
-              </div>
-            </div>
-          </section>
-
-          {/* =================================================================
-              SECTION 1: ARCHITECTURAL PORTAL (Primary Media Column)
-             ================================================================= */}
-          <section className="nib-scroll-section nib-section-media-primary bg-warm-white">
-            <div className="nib-media-card-primary">
-              <div className="nib-media-frame">
-                <img
-                  src="/static/studio.jpg"
-                  alt="Yashmeen Architectural Studio"
-                  className="nib-media-img"
-                  data-parallax-x="true"
-                  loading="lazy"
+                  alt="Yashmeen Interior Architecture"
                 />
               </div>
-              <div className="nib-media-caption">
-                <span className="nib-media-badge">DUBAI, UAE</span>
-                <p>Considered architecture shaped from brief to handover.</p>
-              </div>
             </div>
 
-            <div className="nib-media-floating-card">
-              <img
-                src="/static/design-desk.jpg"
-                alt="Architectural Material Selection"
-                className="nib-floating-img"
-                loading="lazy"
-              />
-              <span className="nib-floating-tag">MATERIAL LABORATORY</span>
-            </div>
-          </section>
-
-          {/* =================================================================
-              SECTION 2: THE STUDIO & MANIFESTO (Editorial Typography)
-             ================================================================= */}
-          <section className="nib-scroll-section nib-section-manifesto bg-warm-white">
-            <div className="nib-section-kicker">{currentText.studioChapter}</div>
-            <div className="nib-manifesto-content">
-              <h2 className="nib-manifesto-title">
-                {currentText.studioTitle1}
-                <br />
-                <em>{currentText.studioTitle2}</em>
-              </h2>
-              <p className="nib-manifesto-p">{currentText.studioParagraph}</p>
-
-              <div className="nib-stats-row">
-                <div className="nib-stat-pill">
-                  <strong>35,000 sq.ft</strong>
-                  <span>{currentText.statAtelier}</span>
-                </div>
-                <div className="nib-stat-pill">
-                  <strong>Al Quoz 3</strong>
-                  <span>{currentText.statLocation}</span>
-                </div>
-                <div className="nib-stat-pill">
-                  <strong>60-90 Days</strong>
-                  <span>{currentText.statCertainty}</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* =================================================================
-              SECTION 3: THE ATELIER & METHOD (Inverted Ink Luxury #11100e)
-             ================================================================= */}
-          <section className="nib-scroll-section nib-section-atelier bg-ink c-light">
-            <div className="nib-section-kicker c-gold">{currentText.atelierChapter}</div>
-
-            <div className="nib-atelier-layout">
-              {/* Left Column: Workshop Imagery */}
-              <div className="nib-atelier-visuals">
-                <div className="nib-atelier-main-frame">
+            {/* Overlapping Dual Flip Media */}
+            <div className="mod-scroll__images__flip flipMedia flipMedia--upDown">
+              <div className="media flipMedia__media flipMedia__media--down noAspect">
+                <div className="media__wrap-source image">
                   <img
-                    src="/static/joinery-bay.jpg"
-                    alt="Al Quoz Joinery Bay"
-                    className="nib-atelier-img"
-                    data-parallax-x="true"
-                    loading="lazy"
-                  />
-                  <div className="nib-atelier-badge">AL QUOZ JOINERY BAY 04</div>
-                </div>
-                <div className="nib-atelier-sub-frame">
-                  <img
-                    src="/static/production-facility.jpg"
-                    alt="Bespoke Metalwork & Stonework"
-                    loading="lazy"
+                    className="media__source w-100"
+                    src="/static/studio.jpg"
+                    alt="Yashmeen Design Studio"
                   />
                 </div>
               </div>
+              <div className="media flipMedia__media flipMedia__media--up noAspect">
+                <div className="media__wrap-source image">
+                  <img
+                    className="media__source w-100"
+                    src="/static/design-desk.jpg"
+                    alt="Materiality Selection"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
-              {/* Right Column: 3 Core Beliefs Cards */}
-              <div className="nib-atelier-content">
-                <h3 className="nib-atelier-lead">{currentText.atelierTitle}</h3>
+          {/* ===============================================================
+              SECTION 2: EDITORIAL TEXT (.mod-scroll__text bg-white)
+             =============================================================== */}
+          <div className="mod-scroll__text bg-white" id="studio">
+            <div className="wrapper">
+              <div className="mod-scroll__text__section mod-scroll__section t-parrafo-l f-edit">
+                {currentText.textSectionLabel}
+              </div>
 
-                <div className="nib-beliefs-stack">
-                  <div className="nib-belief-row">
-                    <span className="nib-belief-num">{currentText.belief1Num}</span>
-                    <div className="nib-belief-body">
-                      <h4>{currentText.belief1Title}</h4>
-                      <p>{currentText.belief1Desc}</p>
-                    </div>
+              <div className="mod-scroll__text__wrap-text">
+                <div className="mod-scroll__text__title t-supertitulo-l f-regular">
+                  <div className="line t-upper col-12 align-left t-left">
+                    <span className="cont">{currentText.textLine1}</span>
                   </div>
-
-                  <div className="nib-belief-row">
-                    <span className="nib-belief-num">{currentText.belief2Num}</span>
-                    <div className="nib-belief-body">
-                      <h4>{currentText.belief2Title}</h4>
-                      <p>{currentText.belief2Desc}</p>
-                    </div>
+                  <div className="line t-upper col-12 align-left t-left">
+                    <span className="cont">{currentText.textLine2}</span>
                   </div>
+                  <div className="line t-upper col-12 align-left t-left">
+                    <span className="cont">{currentText.textLine3}</span>
+                  </div>
+                  <div className="line t-upper col-12 align-right t-right">
+                    <span className="cont">{currentText.textLine4}</span>
+                  </div>
+                </div>
 
-                  <div className="nib-belief-row">
-                    <span className="nib-belief-num">{currentText.belief3Num}</span>
-                    <div className="nib-belief-body">
-                      <h4>{currentText.belief3Title}</h4>
-                      <p>{currentText.belief3Desc}</p>
-                    </div>
+                <div className="mod-scroll__text__text f-izmir t-parrafo">
+                  <p>{currentText.textParagraph}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ===============================================================
+              SECTION 3: DARK ATELIER (.mod-scroll__images-text bg-black c-white)
+             =============================================================== */}
+          <div className="mod-scroll__images-text bg-black c-white">
+            <div className="wrapper">
+              {/* Dual flip media pair 1 */}
+              <div className="mod-scroll__images-text__flip flipMedia flipMedia--rightLeft">
+                <div className="media flipMedia__media flipMedia__media--down noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source w-100"
+                      src="/static/joinery-bay.jpg"
+                      alt="Al Quoz Joinery Bay"
+                    />
+                  </div>
+                </div>
+                <div className="media flipMedia__media flipMedia__media--up noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source w-100"
+                      src="/static/production-facility.jpg"
+                      alt="Manufacturing Precision"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Central Narrative */}
+              <div className="mod-scroll__images-text__text">
+                <p>{currentText.imagesTextParagraph}</p>
+              </div>
+
+              {/* Dual flip media pair 2 */}
+              <div className="mod-scroll__images-text__flip flipMedia flipMedia--leftRight">
+                <div className="media flipMedia__media flipMedia__media--down noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source w-100"
+                      src="/static/Custom-Furniture.jpg"
+                      alt="Bespoke Travertine Detail"
+                    />
+                  </div>
+                </div>
+                <div className="media flipMedia__media flipMedia__media--up noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source w-100"
+                      src="/static/Residential-Fit-Out.jpg"
+                      alt="Fluted Acoustic Woodwork"
+                    />
                   </div>
                 </div>
               </div>
             </div>
-          </section>
+          </div>
 
-          {/* =================================================================
-              SECTION 4: VERTICAL TYPOGRAPHY TICKER RIBBON
-             ================================================================= */}
-          <section className="nib-scroll-section nib-section-ticker bg-gold c-ink">
-            <div className="nib-ticker-strip">
-              <span className="nib-ticker-text">
-                • 35,000 SQ.FT ATELIER • BESPOKE JOINERY • ARCHITECTURAL CERTAINTY • ISO 9001 CERTIFIED • DUBAI MUNICIPALITY APPROVED • ZERO SUBCONTRACTOR BLAME • HANDOVER CERTAINTY •
+          {/* ===============================================================
+              SECTION 4: VERTICAL CAROUSEL RIBBON (.mod-scroll__carousel)
+             =============================================================== */}
+          <div className="mod-scroll__carousel bg-beige c-black t-supertitulo-l">
+            <div className="mod-scroll__carousel__content">
+              <span>
+                <p className="mod-scroll__carousel__text f-regular">
+                  {currentText.carouselText}
+                </p>
+                <span className="mod-scroll__carousel__asterisk">✻</span>
+              </span>
+              <span>
+                <p className="mod-scroll__carousel__text f-regular">
+                  {currentText.carouselText}
+                </p>
+                <span className="mod-scroll__carousel__asterisk">✻</span>
+              </span>
+              <span>
+                <p className="mod-scroll__carousel__text f-regular">
+                  {currentText.carouselText}
+                </p>
+                <span className="mod-scroll__carousel__asterisk">✻</span>
+              </span>
+              <span>
+                <p className="mod-scroll__carousel__text f-regular">
+                  {currentText.carouselText}
+                </p>
+                <span className="mod-scroll__carousel__asterisk">✻</span>
               </span>
             </div>
-          </section>
+          </div>
 
-          {/* =================================================================
-              SECTION 5: TACTILE MATERIALITY & CRAFT (Warm Limestone #f3efe8)
-             ================================================================= */}
-          <section className="nib-scroll-section nib-section-craft bg-limestone">
-            <div className="nib-section-kicker">{currentText.craftChapter}</div>
-
-            <div className="nib-craft-layout">
-              <div className="nib-craft-header">
-                <h3 className="nib-craft-h3">{currentText.craftTitle}</h3>
-              </div>
-
-              <div className="nib-craft-cards-grid">
-                <div className="nib-craft-card">
-                  <div className="nib-craft-card__media">
-                    <img
-                      src="/static/Custom-Furniture.jpg"
-                      alt="Illuminated Travertine Waterfall Console"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="nib-craft-card__info">
-                    <h4>{currentText.craft1Title}</h4>
-                    <p>{currentText.craft1Desc}</p>
-                  </div>
-                </div>
-
-                <div className="nib-craft-card">
-                  <div className="nib-craft-card__media">
-                    <img
-                      src="/static/Residential-Fit-Out.jpg"
-                      alt="Bespoke Acoustic Fluted Joinery"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="nib-craft-card__info">
-                    <h4>{currentText.craft2Title}</h4>
-                    <p>{currentText.craft2Desc}</p>
-                  </div>
+          {/* ===============================================================
+              SECTION 5: SECONDARY MEDIA (.mod-scroll__images bg-beige c-black)
+             =============================================================== */}
+          <div className="mod-scroll__images bg-beige c-black secundario">
+            <div className="mod-scroll__images__flip flipMedia flipMedia--rightLeft">
+              <div className="media flipMedia__media flipMedia__media--down noAspect">
+                <div className="media__wrap-source image">
+                  <img
+                    className="media__source w-100"
+                    src="/static/atelier-render.jpg"
+                    alt="Atelier Fabrication"
+                  />
                 </div>
               </div>
             </div>
-          </section>
 
-          {/* =================================================================
-              SECTION 6: SELECTED WORK (Horizontal Gallery Showcase)
-             ================================================================= */}
-          <section className="nib-scroll-section nib-section-projects bg-warm-white">
-            <div className="nib-section-kicker">{currentText.workChapter}</div>
+            <div className="mod-scroll__images__flip flipMedia flipMedia--leftRight">
+              <div className="media flipMedia__media flipMedia__media--down noAspect">
+                <div className="media__wrap-source image">
+                  <img
+                    className="media__source w-100"
+                    src="/static/Open-Plan-Office-Fit-Out.jpg"
+                    alt="Turnkey Architectural Delivery"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <div className="nib-projects-header">
-              <h2 className="nib-projects-h2">
-                {currentText.workTitle1}
-                <br />
-                <em>{currentText.workTitle2}</em>
-              </h2>
-              <p className="nib-projects-sub">{currentText.workSubtitle}</p>
+          {/* ===============================================================
+              SECTION 6: TERMS WITH MOUSE-FOLLOW (.mod-scroll__terms bg-blue)
+             =============================================================== */}
+          <div
+            className="mod-scroll__terms follow__wrap bg-blue"
+            ref={termsRef}
+            onMouseMove={handleTermsMouseMove}
+            onMouseEnter={() => setHoveredTermImage("/static/work-clifton.jpg")}
+            onMouseLeave={() => setHoveredTermImage(null)}
+          >
+            {/* Term 1 */}
+            <div
+              className="mod-scroll__terms__term"
+              onMouseEnter={() => setHoveredTermImage("/static/work-clifton.jpg")}
+            >
+              <div className="mod-scroll__terms__term__text f-izmir t-parrafo">
+                <div className="mod-scroll__terms__term__text__single">
+                  {currentText.term1Desc}
+                </div>
+              </div>
+              <div className="mod-scroll__terms__term__wrap-title">
+                <div className="mod-scroll__terms__term__num f-edit t-parrafo">
+                  {currentText.term1Num}
+                </div>
+                <div className="mod-scroll__terms__term__title t-supertitulo-l f-edit">
+                  <span className="mod-scroll__terms__term__title__filter">
+                    <span className="mod-scroll__terms__term__title__color">
+                      {currentText.term1Title}
+                    </span>
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div className="nib-projects-track">
-              {[
-                {
-                  img: "/static/work-clifton.jpg",
-                  num: "01",
-                  name: currentText.proj1Name,
-                  type: currentText.proj1Type,
-                  link: "/projects"
-                },
-                {
-                  img: "/static/work-myrtle.jpg",
-                  num: "02",
-                  name: currentText.proj2Name,
-                  type: currentText.proj2Type,
-                  link: "/projects"
-                },
-                {
-                  img: "/static/work-oh-office.jpg",
-                  num: "03",
-                  name: currentText.proj3Name,
-                  type: currentText.proj3Type,
-                  link: "/projects"
-                },
-                {
-                  img: "/static/atelier-render.jpg",
-                  num: "04",
-                  name: currentText.proj4Name,
-                  type: currentText.proj4Type,
-                  link: "/about"
-                }
-              ].map((proj, idx) => (
-                <Link to={proj.link} className="nib-project-tile" key={idx}>
-                  <div className="nib-tile-media">
-                    <img src={proj.img} alt={proj.name} loading="lazy" />
-                    <div className="nib-tile-hover-cue">
-                      <span>{currentText.exploreProject}</span>
-                      <FiExternalLink />
+            {/* Term 2 */}
+            <div
+              className="mod-scroll__terms__term"
+              onMouseEnter={() => setHoveredTermImage("/static/work-myrtle.jpg")}
+            >
+              <div className="mod-scroll__terms__term__text f-izmir t-parrafo">
+                <div className="mod-scroll__terms__term__text__single">
+                  {currentText.term2Desc}
+                </div>
+              </div>
+              <div className="mod-scroll__terms__term__wrap-title">
+                <div className="mod-scroll__terms__term__num f-edit t-parrafo">
+                  {currentText.term2Num}
+                </div>
+                <div className="mod-scroll__terms__term__title t-supertitulo-l f-edit">
+                  <span className="mod-scroll__terms__term__title__filter">
+                    <span className="mod-scroll__terms__term__title__color">
+                      {currentText.term2Title}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Term 3 */}
+            <div
+              className="mod-scroll__terms__term"
+              onMouseEnter={() => setHoveredTermImage("/static/work-oh-office.jpg")}
+            >
+              <div className="mod-scroll__terms__term__text f-izmir t-parrafo">
+                <div className="mod-scroll__terms__term__text__single">
+                  {currentText.term3Desc}
+                </div>
+              </div>
+              <div className="mod-scroll__terms__term__wrap-title">
+                <div className="mod-scroll__terms__term__num f-edit t-parrafo">
+                  {currentText.term3Num}
+                </div>
+                <div className="mod-scroll__terms__term__title t-supertitulo-l f-edit">
+                  <span className="mod-scroll__terms__term__title__filter">
+                    <span className="mod-scroll__terms__term__title__color">
+                      {currentText.term3Title}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating Mouse Follow Image Container */}
+            <div
+              className={`follow__mouse ${hoveredTermImage ? "is-visible" : ""}`}
+              style={{
+                transform: `translate3d(${mousePos.x}px, ${mousePos.y}px, 0px)`
+              }}
+            >
+              {hoveredTermImage && (
+                <img src={hoveredTermImage} alt="Architectural Reference" />
+              )}
+            </div>
+          </div>
+
+          {/* ===============================================================
+              SECTION 7: PROJECTS EXPANDING GALLERY (.mod-scroll__projects)
+             =============================================================== */}
+          <div className="mod-scroll__projects" id="projects">
+            <div className="mod-scroll__projects__wrap-text">
+              <div className="mod-scroll__projects__section mod-scroll__section t-parrafo-l f-edit">
+                {currentText.projectsLabel}
+              </div>
+              <div className="mod-scroll__projects__text f-izmir t-parrafo">
+                <div className="line">{currentText.projectsIntro}</div>
+              </div>
+            </div>
+
+            {/* Project 1 */}
+            <div className="mod-scroll__projects__item bg-beige c-black">
+              <div className="mod-scroll__projects__item__content">
+                <div className="media mod-scroll__projects__item__image noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source"
+                      src="/static/work-clifton.jpg"
+                      alt={currentText.proj1Title}
+                    />
+                  </div>
+                </div>
+                <div className="mod-scroll__projects__item__text f-regular t-supertitulo-l t-upper">
+                  <div className="mod-scroll__projects__item__text__title">
+                    <div>{currentText.proj1Title}</div>
+                  </div>
+                  <div className="mod-scroll__projects__item__text__data f-izmir t-parrafo t-upper">
+                    <div className="data-year">
+                      <span>{currentText.proj1Year}</span>
+                    </div>
+                    <div className="data-loc">
+                      <span>{currentText.proj1Loc}</span>
+                    </div>
+                    <div className="data-number">
+                      <span>{currentText.proj1Num}</span>
                     </div>
                   </div>
-                  <div className="nib-tile-meta">
-                    <span className="nib-tile-num">{proj.num}</span>
-                    <span className="nib-tile-type">{proj.type}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Project 2 */}
+            <div className="mod-scroll__projects__item bg-grey">
+              <div className="mod-scroll__projects__item__content">
+                <div className="media mod-scroll__projects__item__image noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source"
+                      src="/static/work-myrtle.jpg"
+                      alt={currentText.proj2Title}
+                    />
                   </div>
-                  <h4 className="nib-tile-title">{proj.name}</h4>
-                </Link>
-              ))}
-            </div>
-          </section>
-
-          {/* =================================================================
-              SECTION 7: CLOSING FINALE & CONTACT (Inverted Ink Luxury)
-             ================================================================= */}
-          <section className="nib-scroll-section nib-section-cierre bg-ink c-light">
-            <div className="nib-section-kicker c-gold">{currentText.contactChapter}</div>
-
-            <div className="nib-cierre-wrap">
-              <h2 className="nib-cierre-heading">
-                {currentText.contactTitle1}{" "}
-                <em>{currentText.contactTitle2}</em>
-                <br />
-                {currentText.contactTitle3}
-              </h2>
-
-              <p className="nib-cierre-desc">{currentText.contactParagraph}</p>
-
-              <div className="nib-cierre-actions">
-                <Link to="/contact" className="btn btn-gold btn-large">
-                  <span>{currentText.contactCta}</span>
-                  <FiArrowRight />
-                </Link>
-                <Link to="/quote" className="btn btn-outline-white">
-                  {currentText.ctaPrimary}
-                </Link>
-              </div>
-
-              <div className="nib-cierre-details">
-                <div className="nib-detail-block">
-                  <span className="nib-detail-label">STUDIO & ATELIER</span>
-                  <p>{currentText.contactAddress}</p>
                 </div>
-                <div className="nib-detail-block">
-                  <span className="nib-detail-label">DIRECT ENQUIRY</span>
-                  <p>
-                    <a href={`mailto:${currentText.contactEmail}`}>{currentText.contactEmail}</a>
-                    <br />
-                    <a href="tel:+97140000000">{currentText.contactPhone}</a>
-                  </p>
+                <div className="mod-scroll__projects__item__text f-regular t-supertitulo-l t-upper">
+                  <div className="mod-scroll__projects__item__text__title">
+                    <div>{currentText.proj2Title}</div>
+                  </div>
+                  <div className="mod-scroll__projects__item__text__data f-izmir t-parrafo t-upper">
+                    <div className="data-year">
+                      <span>{currentText.proj2Year}</span>
+                    </div>
+                    <div className="data-loc">
+                      <span>{currentText.proj2Loc}</span>
+                    </div>
+                    <div className="data-number">
+                      <span>{currentText.proj2Num}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div className="nib-cierre-bottom">
-                <span>YASHMEEN FIT-OUT CONTRACTING CO. L.L.C © 2026</span>
-                <span>DUBAI • UNITED ARAB EMIRATES</span>
+            {/* Project 3 */}
+            <div className="mod-scroll__projects__item bg-blue">
+              <div className="mod-scroll__projects__item__content">
+                <div className="media mod-scroll__projects__item__image noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source"
+                      src="/static/work-oh-office.jpg"
+                      alt={currentText.proj3Title}
+                    />
+                  </div>
+                </div>
+                <div className="mod-scroll__projects__item__text f-regular t-supertitulo-l t-upper">
+                  <div className="mod-scroll__projects__item__text__title">
+                    <div>{currentText.proj3Title}</div>
+                  </div>
+                  <div className="mod-scroll__projects__item__text__data f-izmir t-parrafo t-upper">
+                    <div className="data-year">
+                      <span>{currentText.proj3Year}</span>
+                    </div>
+                    <div className="data-loc">
+                      <span>{currentText.proj3Loc}</span>
+                    </div>
+                    <div className="data-number">
+                      <span>{currentText.proj3Num}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </section>
-        </div>
-      </div>
 
-      {/* ------------------------------------------------------------------
-          4. HORIZONTAL HEADS-UP DISPLAY (Progress Bar & Chapter Selector)
-         ------------------------------------------------------------------ */}
-      <div className="nib-horizontal-hud" aria-hidden="true">
-        <div className="nib-hud-chapters">
-          {[
-            { label: "INTRO", idx: 0 },
-            { label: "STUDIO", idx: 2 },
-            { label: "ATELIER", idx: 3 },
-            { label: "CRAFT", idx: 5 },
-            { label: "WORK", idx: 6 },
-            { label: "CONTACT", idx: 7 }
-          ].map((ch) => (
-            <button
-              type="button"
-              key={ch.label}
-              onClick={() => jumpToSection(ch.idx)}
-              className={`nib-hud-chip ${activeChapter.includes(ch.label) ? "is-active" : ""}`}
-            >
-              {ch.label}
-            </button>
-          ))}
-        </div>
+            {/* Project 4 */}
+            <div className="mod-scroll__projects__item bg-beige c-black">
+              <div className="mod-scroll__projects__item__content">
+                <div className="media mod-scroll__projects__item__image noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source"
+                      src="/static/work-runic.jpg"
+                      alt={currentText.proj4Title}
+                    />
+                  </div>
+                </div>
+                <div className="mod-scroll__projects__item__text f-regular t-supertitulo-l t-upper">
+                  <div className="mod-scroll__projects__item__text__title">
+                    <div>{currentText.proj4Title}</div>
+                  </div>
+                  <div className="mod-scroll__projects__item__text__data f-izmir t-parrafo t-upper">
+                    <div className="data-year">
+                      <span>{currentText.proj4Year}</span>
+                    </div>
+                    <div className="data-loc">
+                      <span>{currentText.proj4Loc}</span>
+                    </div>
+                    <div className="data-number">
+                      <span>{currentText.proj4Num}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        <div className="nib-hud-timeline">
-          <div className="nib-hud-bar" style={{ width: `${scrollProgress}%` }}></div>
-        </div>
+            {/* Project 5 (Last Item) */}
+            <div className="mod-scroll__projects__item last-item bg-grey">
+              <div className="mod-scroll__projects__item__content">
+                <div className="media mod-scroll__projects__item__image noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source"
+                      src="/static/work-samford.jpg"
+                      alt={currentText.proj5Title}
+                    />
+                  </div>
+                </div>
+                <div className="mod-scroll__projects__item__text f-regular t-supertitulo-l t-upper">
+                  <div className="mod-scroll__projects__item__text__title">
+                    <div>{currentText.proj5Title}</div>
+                  </div>
+                  <div className="mod-scroll__projects__item__text__data f-izmir t-parrafo t-upper">
+                    <div className="data-year">
+                      <span>{currentText.proj5Year}</span>
+                    </div>
+                    <div className="data-loc">
+                      <span>{currentText.proj5Loc}</span>
+                    </div>
+                    <div className="data-number">
+                      <span>{currentText.proj5Num}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        <div className="nib-hud-metrics">
-          <span className="nib-hud-current-chapter">{activeChapter}</span>
-          <span className="nib-hud-percentage">{String(scrollProgress).padStart(2, "0")}%</span>
-        </div>
-      </div>
+            {/* Section 8: Closing Cierre (.mod-scroll__cierre bg-red c-black) */}
+            <div className="mod-scroll__cierre bg-red c-black">
+              <div className="mod-scroll__cierre__content">
+                <div className="mod-scroll__cierre__content__image flipMedia flipMedia--upDown">
+                  <div className="media flipMedia__media flipMedia__media--down noAspect">
+                    <div className="media__wrap-source image">
+                      <img
+                        className="media__source w-100"
+                        src="/static/work-stanley.jpg"
+                        alt="Yashmeen Cierre"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ===============================================================
+            4. UNPINNED VERTICAL FINALE & FOOTER (Matches normalisboring.es)
+           =============================================================== */}
+        <section
+          className="mod-title wrapper mod-title--chapter bg-beige c-black anim-line"
+          id="contact"
+        >
+          <div className="mod-title__chapter-label f-edit t-titulo">
+            {currentText.finaleChapter}
+          </div>
+          <h2 className="mod-title__heading f-regular t-supertitulo-xl t-title-ls t-upper t-center">
+            {currentText.finaleTitle}
+          </h2>
+        </section>
+
+        <section className="mod-media mod-media--double bg-beige c-black wrapper">
+          <div className="mod-media__col">
+            <img
+              src="/static/hero-cinematic.jpg"
+              alt="Luxury Dubai Architecture"
+            />
+          </div>
+          <div className="mod-media__col">
+            <img src="/static/about-us.webp" alt="Yashmeen Atelier" />
+          </div>
+        </section>
+
+        <section className="mod-title wrapper mod-title--lines bg-beige c-black">
+          <h3 className="line f-regular t-supertitulo t-title-ls t-upper col-12 align-left t-left">
+            {currentText.finaleSubtitle}
+          </h3>
+        </section>
+
+        <section className="mod-content wrapper mod-content--cols bg-beige c-black">
+          <div className="mod-content__col big_text">
+            <p>{currentText.finaleParagraph}</p>
+            <p>
+              <strong>info@yashmeen.ae</strong>
+            </p>
+          </div>
+        </section>
+
+        <section className="mod-content wrapper mod-content--center bg-beige c-black">
+          <Link
+            to="/contact"
+            className="mod-content__btn btn btn--bg btn--bg-xl f-edit t-titulo"
+          >
+            <span>{currentText.finaleCta}</span>
+          </Link>
+        </section>
+
+        <footer className="mod-footer wrapper bg-beige c-black">
+          <div className="mod-footer__top">
+            <div className="mod-footer__links">
+              <a href="mailto:info@yashmeen.ae">info@yashmeen.ae</a>
+              <span className="sep">|</span>
+              <a href="tel:+97140000000">+971 4 000 0000</a>
+              <span className="sep">|</span>
+              <span>Al Quoz Industrial Area 3, Dubai, UAE</span>
+            </div>
+          </div>
+          <div className="mod-footer__bottom">
+            <span>{currentText.copyright}</span>
+            <span>{currentText.footerTagline}</span>
+          </div>
+        </footer>
+      </main>
     </div>
   );
 }

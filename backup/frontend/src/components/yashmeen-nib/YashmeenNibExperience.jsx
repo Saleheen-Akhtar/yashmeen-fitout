@@ -7,16 +7,18 @@ import "../../styles/yashmeen-nib.css";
 export default function YashmeenNibExperience() {
   const [progress, setProgress] = useState(0);
   const [lang, setLang] = useState("en"); // "en" or "es"
+  const [isPreloading, setIsPreloading] = useState(true);
   const containerRef = useRef(null);
   const backdropRef = useRef(null);
   const logoBoxRef = useRef(null);
   const timelineRef = useRef(null);
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth <= 480;
-  const initialLogoWidth = isMobile ? "290px" : "390px";
-  const initialLogoHeight = isMobile ? "125px" : "155px";
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+  const initialLogoWidth = isMobile ? "270px" : "390px";
+  const initialLogoHeight = isMobile ? "110px" : "155px";
 
   const runSequence = useCallback(() => {
+    setIsPreloading(true);
     // Kill any active GSAP tweens
     if (timelineRef.current) {
       timelineRef.current.kill();
@@ -105,16 +107,22 @@ export default function YashmeenNibExperience() {
           0
         );
 
-        // B. The Expanding Logo Box: from compact 390x155 to 100% viewport width and height!
+        // B. The Expanding Logo Box: from compact 390x155 (or 270x110) to 100% viewport width and height!
         masterTl.to(
           ".nib-header__logo",
           {
-            width: "100%",
-            height: "100%",
+            width: isMobile ? "auto" : "100%",
+            height: isMobile ? "60px" : "100%",
             duration: 1.35,
             ease: "power3.inOut",
             onStart: () => {
+              setIsPreloading(false);
               document.querySelector('.nib-logo__group')?.classList.add('is-docked');
+            },
+            onComplete: () => {
+              if (isMobile) {
+                gsap.set(".nib-header__logo", { clearProps: "width,height" });
+              }
             }
           },
           0.12
@@ -304,7 +312,7 @@ export default function YashmeenNibExperience() {
   const line3ClimaxChars = currentText.line3Climax.split("");
 
   return (
-    <div className="nib-root" ref={containerRef}>
+    <div className={`nib-root ${isPreloading ? "is-preloading" : ""}`} ref={containerRef}>
       {/* ------------------------------------------------------------------
           1. FIXED HEADER OVERLAY (Contains the Expanding Logo Box)
          ------------------------------------------------------------------ */}

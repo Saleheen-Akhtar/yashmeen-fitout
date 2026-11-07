@@ -2,6 +2,7 @@
    Yashmeen × Normal is Boring (NIB) Architectural Experience
    Design System: Light Editorial (Warm White #fbfaf7, Ink #1b1a17, Bronze #8a6a28)
    Reverse-Engineered Exact Kinematics from https://normalisboring.es/
+   Fully Responsive for Desktop, Tablet, and Mobile
    ========================================================================== */
 
 :root {
@@ -22,7 +23,7 @@
 
 @media (max-width: 768px) {
   :root {
-    --nib-wrapper-padd: 1.5rem 1.25rem;
+    --nib-wrapper-padd: 1.15rem 1.15rem;
   }
 }
 
@@ -69,13 +70,6 @@
   pointer-events: none;
   box-sizing: border-box;
   will-change: width, height;
-}
-
-@media (max-width: 480px) {
-  .nib-header__logo {
-    width: 290px;
-    height: 125px;
-  }
 }
 
 /* Top-Left: YASHMEEN DUBAI */
@@ -195,13 +189,6 @@
   pointer-events: all;
 }
 
-@media (max-width: 768px) {
-  .nib-header__controls {
-    top: 1.25rem;
-    right: 1.25rem;
-  }
-}
-
 .nib-ctrl-btn {
   background: rgba(27, 26, 23, 0.88);
   color: #fbfaf7;
@@ -276,25 +263,10 @@
   line-height: 1;
 }
 
-@media (max-width: 768px) {
-  .nib-preloader-counter {
-    bottom: 2rem;
-    right: 2rem;
-    font-size: clamp(2.75rem, 6vw, 4rem);
-  }
-}
-
 .nib-preloader-meta {
   position: absolute;
   bottom: 3.5rem;
   left: 4.5rem;
-}
-
-@media (max-width: 768px) {
-  .nib-preloader-meta {
-    bottom: 2rem;
-    left: 1.5rem;
-  }
 }
 
 .nib-preloader-label {
@@ -352,12 +324,6 @@
   }
 }
 
-@media (max-width: 768px) {
-  .nib-hero__left {
-    padding: 6.5rem 1.5rem 3.5rem 1.5rem;
-  }
-}
-
 /* Line Overflow Masks for Alternating Up/Down Character Reveals */
 .nib-line-mask {
   display: block;
@@ -393,13 +359,7 @@
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--nib-ink);
-  margin-left: clamp(2rem, 5vw, 5rem); /* Asymmetric Stagger exactly as in Normal is Boring */
-}
-
-@media (max-width: 480px) {
-  .nib-title-line-2 {
-    margin-left: 1.25rem;
-  }
+  margin-left: clamp(2rem, 5vw, 5rem);
 }
 
 .nib-title-line-3 {
@@ -498,12 +458,6 @@
   border-right: 1px solid var(--nib-hairline);
 }
 
-@media (max-width: 768px) {
-  .nib-hero__vert-nav {
-    display: none;
-  }
-}
-
 .nib-hero__vert-link {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
@@ -534,13 +488,6 @@
   will-change: clip-path;
 }
 
-@media (max-width: 768px) {
-  .nib-hero__image-wrap {
-    left: 0;
-    width: 100%;
-  }
-}
-
 .nib-hero__image {
   width: 100%;
   height: 100%;
@@ -561,4 +508,234 @@
     rgba(18, 17, 16, 0) 35%,
     rgba(18, 17, 16, 0.65) 100%
   );
+}
+
+/* ==========================================================================
+   5. DEDICATED MOBILE & TABLET OPTIMIZATIONS (UNDER 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Header docks as a sleek top bar rather than full-screen trap */
+  .nib-header {
+    height: 60px;
+    bottom: auto;
+    background: rgba(251, 250, 247, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(230, 225, 214, 0.5);
+  }
+
+  .nib-header__wrapper {
+    height: 60px;
+    padding: 0 1.15rem;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nib-header__logo {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    transform: none !important;
+    display: flex;
+    align-items: center;
+  }
+
+  .nib-logo__normal {
+    position: static;
+    gap: 0.45rem;
+  }
+
+  .nib-logo__title {
+    font-size: clamp(1.15rem, 5vw, 1.45rem);
+    letter-spacing: 0.06em;
+  }
+
+  .nib-logo__badge {
+    font-size: 0.5625rem;
+    letter-spacing: 0.16em;
+  }
+
+  @media (max-width: 520px) {
+    .nib-logo__badge {
+      display: none;
+    }
+  }
+
+  /* Hide fixed bottom inverted logo on mobile to prevent blocking screen */
+  .nib-logo__group {
+    display: none !important;
+  }
+
+  /* Top Right Controls */
+  .nib-header__controls {
+    position: static;
+    top: auto;
+    right: auto;
+    gap: 0.35rem;
+  }
+
+  .nib-ctrl-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.6875rem;
+  }
+
+  .nib-menu-pill {
+    padding: 0.35rem 0.85rem;
+    font-size: 0.6875rem;
+  }
+
+  /* Preloader telemetry */
+  .nib-preloader-counter {
+    bottom: 2rem;
+    right: 1.5rem;
+    font-size: clamp(2.75rem, 8vw, 4rem);
+  }
+
+  .nib-preloader-meta {
+    bottom: 2rem;
+    left: 1.5rem;
+  }
+
+  .nib-preloader-label {
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+  }
+
+  /* Left Column Manifesto */
+  .nib-hero__left {
+    padding: 5.5rem 1.25rem 3rem 1.25rem;
+    min-height: auto;
+    justify-content: flex-start;
+  }
+
+  .nib-hero__headline {
+    margin: 0 0 1.35rem 0;
+    gap: 0.15rem;
+  }
+
+  .nib-title-line-1 {
+    font-size: clamp(1.45rem, 6.6vw, 2.35rem);
+    line-height: 0.98;
+    white-space: nowrap;
+  }
+
+  .nib-title-line-2 {
+    font-size: clamp(1.45rem, 6.6vw, 2.35rem);
+    line-height: 0.98;
+    margin-left: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .nib-title-line-3 {
+    font-size: clamp(1.95rem, 8.5vw, 3.1rem);
+    line-height: 0.98;
+    white-space: nowrap;
+  }
+
+  .nib-hero__h-line3-wrap {
+    gap: 0.55rem;
+  }
+
+  .nib-hero__h-line3-lead {
+    font-size: clamp(1.15rem, 5vw, 1.45rem);
+  }
+
+  .nib-hero__h-line3-climax {
+    font-size: clamp(2.35rem, 10vw, 3.25rem);
+    line-height: 0.85;
+  }
+
+  .nib-hero__accent-dot {
+    width: 10px;
+    height: 10px;
+    margin-left: 0.35rem;
+  }
+
+  .nib-hero__copy {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin: 0 0 1.5rem 0;
+    max-width: 100%;
+  }
+
+  .nib-hero__actions {
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .nib-hero__actions .btn {
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Right column architectural photo */
+  .nib-hero__right {
+    height: 55vh;
+    min-height: 340px;
+    width: 100%;
+  }
+
+  .nib-hero__vert-nav {
+    display: none;
+  }
+
+  .nib-hero__image-wrap {
+    left: 0;
+    width: 100%;
+  }
+}
+
+/* Special overrides while preloader is active on mobile */
+@media (max-width: 768px) {
+  .nib-root.is-preloading .nib-header {
+    height: 100vh;
+    bottom: 0;
+    background: transparent;
+    border-bottom: none;
+  }
+
+  .nib-root.is-preloading .nib-header__wrapper {
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .nib-root.is-preloading .nib-header__logo {
+    position: relative !important;
+    width: 270px !important;
+    height: 110px !important;
+    display: block;
+  }
+
+  .nib-root.is-preloading .nib-logo__normal {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .nib-root.is-preloading .nib-logo__title {
+    font-size: 1.45rem;
+  }
+
+  .nib-root.is-preloading .nib-logo__group {
+    display: flex !important;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+  }
+
+  .nib-root.is-preloading .nib-logo__is {
+    font-size: 1.3rem;
+  }
+
+  .nib-root.is-preloading .nib-logo__boring {
+    font-size: 1.4rem;
+  }
+
+  .nib-root.is-preloading .nib-header__controls {
+    display: none;
+  }
 }

@@ -2326,19 +2326,29 @@
   .works-bento-header > div:last-child { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
   .works-view-switcher { flex-wrap: wrap; }
   .works-bento-count { font-size: clamp(30px, 9vw, 42px); }
-  .aperture-hero-stage { height: 86svh; min-height: 680px; max-height: 900px; }
+  .aperture-hero-stage { height: 100svh; min-height: 560px; max-height: 880px; }
   .aperture-hero-photo img { object-position: 59% center; }
   .aperture-parallax-architecture { opacity: .3; }
   .aperture-parallax-ateliers { opacity: .48; clip-path: polygon(0 78%, 100% 67%, 100% 100%, 0 100%); }
   .aperture-hero-photo::after { background: linear-gradient(0deg, rgba(13,12,10,.72), rgba(13,12,10,.06) 88%), linear-gradient(90deg, rgba(13,12,10,.18), transparent 80%); }
-  .aperture-copy { top: 48%; width: calc(100% - 36px); }
-  .aperture-kicker { max-width: 31ch; margin-bottom: 22px; font-size: 9px; line-height: 1.5; }
-  .aperture-copy h1 { max-width: none; font-size: clamp(54px, 14vw, 76px); line-height: .9; }
-  .aperture-intro { max-width: 34ch; margin-top: 20px; font-size: 14px; }
-  .aperture-actions { margin-top: 22px; }
-  .aperture-cta { width: min(100%, 300px); min-height: 50px; font-size: 10px; }
-  .aperture-proof { right: 22px; bottom: 24px; }
-  .aperture-project-link { right: auto; bottom: 76px; left: 22px; font-size: 8px; }
+  .aperture-copy { top: 46%; width: min(340px, calc(100% - 32px)); }
+  .aperture-kicker { max-width: 31ch; margin-bottom: 16px; font-size: 9px; line-height: 1.5; }
+  .aperture-copy h1 { max-width: none; font-size: clamp(38px, 11vw, 56px); line-height: .94; }
+  .aperture-intro { max-width: 32ch; margin-top: 14px; font-size: 13.5px; line-height: 1.45; }
+  .aperture-actions { margin-top: 18px; }
+  .aperture-cta { width: auto; min-width: 200px; min-height: 46px; font-size: 10px; padding: 0 18px; }
+  .aperture-proof { right: 20px; bottom: 20px; z-index: 10; }
+  .aperture-proof strong { font-size: 13px; }
+  .aperture-project-link { right: auto; bottom: 20px; left: 20px; font-size: 8px; z-index: 10; }
+}
+
+@media (max-width: 760px) and (max-height: 700px) {
+  .aperture-copy { top: 44%; }
+  .aperture-kicker { margin-bottom: 10px; }
+  .aperture-copy h1 { font-size: clamp(32px, 9.5vw, 42px); }
+  .aperture-intro { margin-top: 10px; font-size: 12.5px; }
+  .aperture-actions { margin-top: 14px; }
+  .aperture-cta { min-height: 42px; min-width: 180px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .aperture-hero-photo img,.aperture-copy { animation: none; }

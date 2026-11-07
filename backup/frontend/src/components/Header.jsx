@@ -10,6 +10,11 @@ const NAV_LINKS = [
   { label: "Process", href: "/#process" },
   { label: "Gallery", href: "/photo-gallery" },
 ];
+const HOME_NAV_LINKS = [
+  { label: "Projects", href: "/projects" },
+  { label: "Approach", href: "/about" },
+  { label: "Contact", href: "/contact" },
+];
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -58,18 +63,18 @@ export default function Header() {
   return (
     <>
       <header
-        className={`site-header ${scrolled ? "is-scrolled" : ""} ${hidden ? "is-hidden" : ""} ${isHomePage && !scrolled ? "is-homepage-top" : ""}`}
+        className={`site-header ${scrolled ? "is-scrolled" : ""} ${hidden ? "is-hidden" : ""} ${isHomePage ? "is-homepage" : ""} ${isHomePage && !scrolled ? "is-homepage-top" : ""}`}
       >
         <div className="site-header-inner">
           {/* Brand Left */}
           <Link to="/" className="site-brand" aria-label="Yashmeen Future Building Homepage">
-            <span className="site-brand-text">YASHMEEN</span>
+            <span className="site-brand-text">{isHomePage ? "YASHMEEN FIT-OUT" : "YASHMEEN"}</span>
             <span className="site-brand-city">DUBAI</span>
           </Link>
 
           {/* Center Links with comma separation */}
           <nav className="site-nav-center" aria-label="Primary Navigation">
-            {NAV_LINKS.map((item, idx) => (
+            {(isHomePage ? HOME_NAV_LINKS : NAV_LINKS).map((item, idx) => (
               <span key={item.href} style={{ display: "inline-flex", alignItems: "center" }}>
                 <Link
                   to={item.href}
@@ -77,7 +82,7 @@ export default function Header() {
                 >
                   {item.label}
                 </Link>
-                {idx < NAV_LINKS.length - 1 && <span className="site-nav-sep">,</span>}
+                {idx < (isHomePage ? HOME_NAV_LINKS : NAV_LINKS).length - 1 && <span className={`site-nav-sep ${isHomePage ? "home-nav-sep" : ""}`}>{isHomePage ? "/" : ","}</span>}
               </span>
             ))}
           </nav>

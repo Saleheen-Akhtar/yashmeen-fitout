@@ -5,11 +5,11 @@ export default function Studio() {
     <section className="studio-manifesto-section wrap" id="manifesto" aria-label="Studio Manifesto">
       {/* Eyebrow & Monumental Display Title */}
       <div className="studio-headline-block">
-        <span className="eyebrow">(OUR STUDIO)</span>
+        <span className="eyebrow">(ONE TEAM. EVERY STAGE.)</span>
         <h2 className="u-text-display">
-          EXPERIENCE FOCUSED
+          DESIGN TO
           <br />
-          FIT-OUT
+          DELIVERY
         </h2>
       </div>
 
@@ -26,19 +26,17 @@ export default function Studio() {
       <div className="studio-narrative-grid">
         <div>
           <p>
-            <strong>Yashmeen Future Building</strong> was founded on a simple premise: fit-out delivery in
-            Dubai should never depend on a fragile chain of disconnected subcontractors. Design,
+            <strong>Yashmeen Future Building</strong> brings Dubai fit-out delivery together under one team. Design,
             spatial engineering, bespoke joinery, architectural glazing, and authority approvals
-            run together under one accountable roof.
+            move together under one accountable team, from the first brief to site handover.
           </p>
         </div>
 
         <div>
           <p>
-            Our dedicated 35,000 sq.ft Al Quoz manufacturing facility fabricates custom millwork,
-            curved timber, metalwork, and acoustic panelling direct from the bench. With turnkey MEP
-            and master site supervision, we eliminate finger-pointing, guarantee milestones, and
-            protect architectural intent.
+            In our 35,000 sq. ft. Al Quoz atelier, craftspeople fabricate custom millwork, curved timber,
+            metalwork and acoustic panels. Our MEP and site teams carry those details into the finished
+            space, keeping the approved design and the built result connected.
           </p>
 
           <div style={{ marginTop: "2rem" }}>

@@ -140,11 +140,14 @@ export default function MenuOverlay({ open, onClose }) {
         <div>
           <div className="menu-curtain-title">INDEX</div>
           <div style={{ display: "flex", gap: 16 }}>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.instagram.com/yashmeenfuture" target="_blank" rel="noopener noreferrer">
               Instagram
             </a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
-              LinkedIn
+            <a href="https://www.facebook.com/profile.php?id=61595342604561" target="_blank" rel="noopener noreferrer">
+              Facebook
+            </a>
+            <a href="https://www.youtube.com/@YashmeenFuture" target="_blank" rel="noopener noreferrer">
+              YouTube
             </a>
           </div>
         </div>

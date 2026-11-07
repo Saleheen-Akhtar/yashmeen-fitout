@@ -117,6 +117,29 @@ export default function MotionProvider() {
         const heroBadges = document.querySelectorAll(".hero-baseline-numbers, .hero-minimal-numbers, .hero-hud-pill, .hero-hud-coords, .hero-corner-tag, .hero-stage-badge, .hero-commission-tabs, .hero-layer-toggle-btn");
         const scrollCue = document.querySelector(".hero-minimal-scroll, .hero-scroll-cue-link, .hero-scroll-prompt, .hero-scroll-down-cue, .hero-scroll-cue");
 
+        /* Homepage layered parallax, created inside the route context so its
+           ScrollTriggers are refreshed and reverted with the active page. */
+        const apertureStage = document.querySelector(".aperture-hero-stage");
+        if (apertureStage && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          const isMobile = window.matchMedia("(max-width: 760px)").matches;
+          const apertureDepths = isMobile ? [32, 24, 16, 6] : [70, 55, 40, 10];
+          apertureDepths.forEach((depth, index) => {
+            const layer = apertureStage.querySelector(`[data-parallax-layer='${index + 1}']`);
+            if (!layer) return;
+            gsap.fromTo(layer, { yPercent: 0 }, {
+              yPercent: depth,
+              ease: "none",
+              scrollTrigger: {
+                trigger: apertureStage,
+                start: "top top",
+                end: "bottom top",
+                scrub: 0.35,
+                invalidateOnRefresh: true,
+              },
+            });
+          });
+        }
+
         if (heroStageImgs.length && heroSection) {
           // Entrance Animation with GPU-accelerated transforms (zero filter:blur overhead)
           const heroTl = gsap.timeline({ defaults: { ease: "ease-secondary" } });
@@ -401,7 +424,7 @@ export default function MotionProvider() {
 
         // 3. Testimonial Blockquote Elevation Float
         const testimonialQuote = document.querySelector(".testimonial-quote-text");
-        const testimonialSec = document.querySelector(".testimonial-editorial-section");
+        const testimonialSec = document.querySelector(".testimonial-card-section");
         if (testimonialQuote && testimonialSec) {
           gsap.fromTo(
             testimonialQuote,

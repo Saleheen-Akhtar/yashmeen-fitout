@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import "../../styles/home.css";
-import Preloader from "../../components/home/Preloader";
 import Hero from "../../components/home/Hero";
 import Studio from "../../components/home/Studio";
 import Works from "../../components/home/Works";
@@ -18,7 +17,6 @@ export default function Home() {
 
   return (
     <>
-      <Preloader />
       <main>
         <Hero />
         <Studio />

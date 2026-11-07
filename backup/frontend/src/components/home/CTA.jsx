@@ -9,14 +9,14 @@ export default function CTA() {
         <span className="eyebrow">(START YOUR COMMISSION)</span>
 
         <h2 className="u-text-display climax-cta-headline">
-          FOCUSED ON QUALITY
+          FROM BRIEF
           <br />
-          DRIVEN BY CRAFT
+          TO BUILT.
         </h2>
 
         <p className="climax-cta-lede">
-          Tell us about your project. Our senior atelier team will review the details and be in
-          touch within one working day.
+          Tell us what you are planning. We will bring design, engineering, joinery and delivery into
+          one conversation.
         </p>
 
         <button
@@ -25,7 +25,7 @@ export default function CTA() {
           className="btn-pill btn-pill-dark"
           style={{ height: 50, padding: "0 28px" }}
         >
-          <span>TELL US ABOUT YOUR PROJECT</span>
+          <span>START A PROJECT CONVERSATION</span>
           <span className="g-circle" aria-hidden="true" />
         </button>
       </div>

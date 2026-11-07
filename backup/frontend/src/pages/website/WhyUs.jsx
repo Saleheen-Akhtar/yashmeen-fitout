@@ -429,6 +429,7 @@ export default function WhyUs() {
           height:1px;
           background:var(--gray-200);
         }
+        @media (max-width:767px){ .process-divider{ display:none; } }
 
         /* VIDEO SECTION */
         .video-section{ padding:56px 0; background:var(--gray-50); }

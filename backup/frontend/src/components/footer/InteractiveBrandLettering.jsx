@@ -726,49 +726,44 @@ export default function InteractiveBrandLettering({
       height = 0,
       ratio = 1;
 
-    // Exact reference single-row layout poses matching Image 3
     const createLayout = (w, h) => {
       const chars = [...word];
-      const count = chars.length;
       const aspectMap = { Y: 0.72, A: 0.76, S: 0.64, H: 0.72, M: 0.86, E: 0.62, N: 0.72 };
-
-      let glyphH = Math.min(h * 0.64, 250);
-      let letterWidths = chars.map((c) => glyphH * (aspectMap[c] || 0.72));
-      let sumWidths = letterWidths.reduce((a, b) => a + b, 0);
-      const minPadding = Math.max(24, w * 0.04);
-      const availW = w - minPadding * 2;
-
-      // If the word exceeds container width, scale glyphH down proportionally
-      const estGaps = (count - 1) * 16;
-      if (sumWidths + estGaps > availW) {
-        const scale = (availW - estGaps) / sumWidths;
-        glyphH *= Math.max(0.4, scale);
-        letterWidths = chars.map((c) => glyphH * (aspectMap[c] || 0.72));
-        sumWidths = letterWidths.reduce((a, b) => a + b, 0);
-      }
-
-      // Calculate uniform optical gap between letters
-      const totalGapSpace = availW - sumWidths;
-      const gap = clamp(totalGapSpace / (count - 1), 10, 26);
-      const totalWordW = sumWidths + (count - 1) * gap;
-      const startX = (w - totalWordW) / 2;
-
       const angles = [-0.03, 0.02, -0.04, 0.03, -0.02, 0.03, -0.03, 0.02];
       const yOffsets = [-0.012, 0.012, -0.008, 0.012, -0.012, 0.008, -0.012, 0.012];
+      const isMobile = w < 560;
+      const rows = isMobile ? [chars.slice(0, 4), chars.slice(4)] : [chars];
+      const controlsSpace = isMobile ? 72 : 0;
+      const usableHeight = Math.max(80, h - controlsSpace);
+      const rowHeight = usableHeight / rows.length;
+      const topOffset = isMobile ? 0 : (h - usableHeight) / 2;
+      const padding = Math.max(isMobile ? 18 : 24, w * (isMobile ? 0.055 : 0.04));
+      const availableWidth = Math.max(1, w - padding * 2);
+      const gap = isMobile ? 8 : 16;
+      const poses = [];
 
-      let curX = startX;
-      const poses = chars.map((char, i) => {
-        const lw = letterWidths[i];
-        const pose = {
-          x: curX + lw * 0.5,
-          y: h * 0.5 + (yOffsets[i % yOffsets.length] || 0) * h,
-          w: lw,
-          h: glyphH,
-          angle: angles[i % angles.length] || 0,
-          packingScale: 1.0,
-        };
-        curX += lw + gap;
-        return pose;
+      rows.forEach((row, rowIndex) => {
+        const aspectTotal = row.reduce((sum, char) => sum + (aspectMap[char] || 0.72), 0);
+        const heightForWidth = (availableWidth - gap * (row.length - 1)) / aspectTotal;
+        const glyphH = Math.max(1, Math.min(250, rowHeight * (isMobile ? 0.72 : 0.64), heightForWidth));
+        const letterWidths = row.map((char) => glyphH * (aspectMap[char] || 0.72));
+        const totalWordW = letterWidths.reduce((sum, width) => sum + width, 0) + gap * (row.length - 1);
+        let curX = (w - totalWordW) / 2;
+        const rowCenterY = topOffset + rowIndex * rowHeight + rowHeight / 2;
+
+        row.forEach((char, index) => {
+          const glyphIndex = rowIndex * 4 + index;
+          const letterWidth = letterWidths[index];
+          poses.push({
+            x: curX + letterWidth * 0.5,
+            y: rowCenterY + (yOffsets[glyphIndex % yOffsets.length] || 0) * rowHeight,
+            w: letterWidth,
+            h: glyphH,
+            angle: angles[glyphIndex % angles.length] || 0,
+            packingScale: 1.0,
+          });
+          curX += letterWidth + gap;
+        });
       });
 
       const glyphs = chars.map((c, i) => new Glyph(c, poses[i], i));

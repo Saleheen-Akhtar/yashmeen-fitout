@@ -42,7 +42,7 @@ export default function Process() {
         {/* Left Column: Tag, Photo & 6-Stage List */}
         <div className="process-left-col">
           <div>
-            <span className="eyebrow">(OUR PROCESS)</span>
+            <span className="eyebrow">(FROM FIRST MEETING TO HANDOVER)</span>
             <div className="process-photo-wrap" style={{ marginTop: "1rem" }}>
               <img
                 src="/static/why-us.jpg"
@@ -68,19 +68,17 @@ export default function Process() {
         {/* Right Column: Statement, Lead & Action */}
         <div className="process-right-col">
           <h2 className="process-display-statement">
-            Our approach at Yashmeen is designed to make your journey from concept to completion
-            as smooth and transparent as possible.
+            One team carries your project from the first brief to the final handover.
           </h2>
 
           <div className="process-narrative-copy">
             <p style={{ marginBottom: "1.5rem" }}>
-              Traditional commercial and residential fit-out in the UAE often fractures between
-              architects, third-party joiners, and subcontractors. Yashmeen unifies the entire lifecycle.
-              One contract, one point of contact, and full financial transparency.
+              Interior design, engineering, approvals, fabrication and site delivery run as one connected
+              programme. You have a clear point of contact and a team responsible for the complete result.
             </p>
             <p>
-              By fabricating in our own Al Quoz facility and executing on-site with full-time
-              craftspeople, we ensure every joint, reveal, and junction matches the approved drawings.
+              Our Al Quoz atelier fabricates the details our site team installs, helping each material,
+              junction and finish stay true to the approved design.
             </p>
           </div>
 

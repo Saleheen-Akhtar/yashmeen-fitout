@@ -146,7 +146,7 @@ export default function Footer() {
               Privacy Policy
             </Link>
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/yashmeenfuture"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: "var(--muted)" }}
@@ -154,12 +154,20 @@ export default function Footer() {
               Instagram
             </a>
             <a
-              href="https://linkedin.com"
+              href="https://www.facebook.com/profile.php?id=61595342604561"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: "var(--muted)" }}
             >
-              LinkedIn
+              Facebook
+            </a>
+            <a
+              href="https://www.youtube.com/@YashmeenFuture"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "var(--muted)" }}
+            >
+              YouTube
             </a>
           </div>
         </div>

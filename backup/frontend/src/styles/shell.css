@@ -86,11 +86,30 @@
 }
 
 .site-header.is-homepage-top {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-100%);
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  height: clamp(58px, 3.75vw, 72px);
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+  background: #f5f3ef;
+  border-bottom: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
+.site-header.is-homepage { display: none !important; }
+.site-header.is-homepage-top .site-header-inner { max-width: none; padding: 0 clamp(24px, 2.65vw, 50px); }
+.site-header.is-homepage-top .site-brand { flex: none; }
+.site-header.is-homepage-top .site-brand-text { color: #171613; font-size: clamp(17px, 1.22vw, 23px); font-weight: 500; letter-spacing: .045em; white-space: nowrap; }
+.site-header.is-homepage-top .site-brand-city { display: none; }
+.site-header.is-homepage-top .site-nav-center { display: flex; flex: 1; justify-content: flex-end; gap: clamp(12px, 1.35vw, 26px); margin-left: clamp(22px, 2.2vw, 42px); }
+.site-header.is-homepage-top .site-nav-center::before { display: block; height: 1px; flex: 1; align-self: center; margin-right: clamp(10px, 1.2vw, 24px); background: #b18a4f; content: ""; }
+.site-header.is-homepage-top .site-nav-link { padding: 8px 0; color: #171613; font-size: clamp(12px, .84vw, 16px); font-weight: 500; letter-spacing: .055em; }
+.site-header.is-homepage-top .site-nav-link:hover,.site-header.is-homepage-top .site-nav-link.active { color: #8e6b37; }
+.site-header.is-homepage-top .site-nav-sep { color: #b18a4f; font-size: clamp(12px, .84vw, 16px); }
+.site-header.is-homepage-top .site-header-actions { margin-left: 0; }
+.site-header.is-homepage-top .header-btn-enquire { display: none; }
+.site-header.is-homepage-top .header-btn-menu { display: none; }
+.site-header.is-homepage-top .site-nav-sep { margin: 0 clamp(10px, 1.45vw, 28px); }
+.site-header.is-homepage-top .header-btn-menu { border: 0; padding: 0; color: #171613; background: transparent; }
 
 /* Header Brand / Logo */
 .site-brand {
@@ -201,6 +220,9 @@
   .site-nav-center {
     display: none;
   }
+  .site-header.is-homepage-top .site-nav-center { display: none; }
+  .site-header.is-homepage-top .site-header-actions { display: flex; }
+  .site-header.is-homepage-top .header-btn-menu { display: inline-flex; }
 }
 
 @media (max-width: 768px) {

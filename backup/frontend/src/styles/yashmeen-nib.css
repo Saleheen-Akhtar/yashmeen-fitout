@@ -12,18 +12,19 @@
   --nib-gold: #d4af37;
   --nib-muted: #6b665c;
   --nib-hairline: #e6e1d6;
-  --nib-wrapper-padd: 2.5rem 3.5rem;
+  --nib-paper: #f7f6f2;
+  --nib-wrapper-padd: 2rem 2.5rem;
 }
 
 @media (max-width: 1024px) {
   :root {
-    --nib-wrapper-padd: 2rem 2rem;
+    --nib-wrapper-padd: 1.5rem 1.75rem;
   }
 }
 
 @media (max-width: 768px) {
   :root {
-    --nib-wrapper-padd: 1.15rem 1.15rem;
+    --nib-wrapper-padd: 1rem 1.25rem;
   }
 }
 
@@ -107,11 +108,11 @@
   color: var(--nib-accent);
 }
 
-/* Bottom-Right: considered INTERIORS ® */
+/* Bottom-Right of Left Panel: considered INTERIORS ® (upside-down) */
 .nib-logo__group {
   position: absolute;
-  bottom: 0;
-  right: 0;
+  bottom: 2rem;
+  right: calc(clamp(280px, 24vw, 380px) + 2rem);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -119,6 +120,7 @@
   line-height: 1;
   pointer-events: all;
   user-select: none;
+  background: transparent;
 }
 
 .nib-logo__is {
@@ -126,43 +128,28 @@
   font-size: clamp(1.75rem, 2.7vw, 2.75rem);
   font-style: italic;
   font-weight: 400;
-  color: var(--nib-accent);
-  margin-bottom: 0.15rem;
-  display: flex;
+  color: var(--nib-gold);
   line-height: 0.88;
-  transition: color 0.6s ease;
+  margin-bottom: 0.15rem;
 }
 
 .nib-logo__boring {
-  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
-  font-size: clamp(1.85rem, 2.9vw, 3.05rem);
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: clamp(1.75rem, 2.7vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--nib-ink);
-  transform: scale(-1, -1); /* Upside-down homage to Normal is Boring */
+  transform: rotate(180deg);
   display: flex;
   line-height: 0.88;
-  transition: color 0.6s ease;
 }
 
 .nib-logo__reg {
-  font-size: 0.45em;
-  vertical-align: top;
-  margin-left: 2px;
-  transform: scale(-1, -1);
-  display: inline-block;
-}
-
-/* Smooth contrast adaptation when docked over right architectural image */
-.nib-logo__group.is-docked .nib-logo__boring {
-  color: #fbfaf7;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
-}
-
-.nib-logo__group.is-docked .nib-logo__is {
-  color: var(--nib-gold);
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
+  font-size: 0.5em;
+  font-weight: 400;
+  vertical-align: super;
+  margin-left: 0.15em;
 }
 
 /* Character sliding masks */
@@ -170,6 +157,11 @@
   display: inline-block;
   overflow: clip;
   vertical-align: top;
+  line-height: 1;
+}
+
+.nib-char-mask.nib-space {
+  width: 0.32em;
 }
 
 .nib-char-span {
@@ -177,158 +169,163 @@
   will-change: transform;
 }
 
-/* Floating Controls (Top Right) */
+/* Top-Right Floating Controls (Language toggle & Replay) */
 .nib-header__controls {
   position: absolute;
-  top: 2.25rem;
-  right: 3.5rem;
+  top: 1.75rem;
+  right: 2.25rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  z-index: 10000;
   pointer-events: all;
+  z-index: 100;
 }
 
 .nib-ctrl-btn {
-  background: rgba(27, 26, 23, 0.88);
-  color: #fbfaf7;
-  border: 1px solid rgba(230, 225, 214, 0.25);
-  border-radius: 9999px;
-  padding: 0.45rem 0.85rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
+  padding: 0.45rem 0.95rem;
+  background: rgba(27, 26, 23, 0.88);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
   transition: all 0.25s ease;
-  user-select: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .nib-ctrl-btn:hover {
-  background: var(--nib-ink);
-  color: var(--nib-accent);
-  border-color: var(--nib-accent);
+  background: #000000;
+  transform: translateY(-1px);
 }
 
 .nib-menu-pill {
-  background: var(--nib-ink);
-  color: #fbfaf7;
-  border-radius: 9999px;
-  padding: 0.45rem 1.15rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  text-decoration: none;
-  cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  padding: 0.45rem 1.15rem;
+  background: #1b1a17;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  cursor: pointer;
   transition: all 0.25s ease;
 }
 
 .nib-menu-pill:hover {
-  background: var(--nib-accent);
-  color: #fbfaf7;
+  background: #000000;
+  transform: translateY(-1px);
 }
 
 /* --------------------------------------------------------------------------
-   2. PRELOADER BACKDROP & TELEMETRY
+   2. PRELOADER BACKDROP & COUNTER
    -------------------------------------------------------------------------- */
 .nib-preloader-backdrop {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
-  background-color: var(--nib-bg);
+  background-color: #0d0d0c;
   z-index: 9990;
-  pointer-events: all;
-  user-select: none;
+  pointer-events: none;
+  overflow: hidden;
 }
 
 .nib-preloader-counter {
   position: absolute;
-  bottom: 3.25rem;
+  bottom: 3.5rem;
   right: 4.5rem;
-  font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
-  font-size: clamp(3.5rem, 7vw, 6.5rem);
-  font-weight: 400;
-  color: var(--nib-ink);
-  letter-spacing: -0.02em;
-  line-height: 1;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: clamp(3.5rem, 8vw, 7.5rem);
+  font-weight: 800;
+  color: #fbfaf7;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  user-select: none;
 }
 
 .nib-preloader-meta {
   position: absolute;
   bottom: 3.5rem;
   left: 4.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .nib-preloader-label {
   font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
   font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--nib-muted);
+  letter-spacing: 0.25em;
+  color: rgba(251, 250, 247, 0.45);
 }
 
 .nib-preloader-bar {
   position: absolute;
   bottom: 0;
   left: 0;
-  height: 2px;
-  background-color: var(--nib-ink);
+  height: 3px;
+  background-color: var(--nib-gold);
   width: 0%;
   transition: width 0.05s linear;
 }
 
 /* --------------------------------------------------------------------------
-   3. ASYMMETRIC HERO SECTION
+   3. EDITORIAL HERO SECTION (2-Column Grid matching normalisboring.es)
    -------------------------------------------------------------------------- */
 .nib-hero {
   position: relative;
   width: 100%;
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: minmax(0, 3.2fr) minmax(280px, 1fr);
   align-items: stretch;
   background-color: var(--nib-bg);
 }
 
-@media (max-width: 1024px) {
-  .nib-hero {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-}
-
-/* Left Column: Typographic Manifesto */
+/* Left Column: Typographic Manifesto & Asymmetric 2-Column Headline Grid */
 .nib-hero__left {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 7.5rem 3.5rem 5rem 4.5rem;
-  max-width: 780px;
+  padding: 8rem 4rem 5rem 4.5rem;
   z-index: 10;
+  box-sizing: border-box;
 }
 
-@media (max-width: 1024px) {
-  .nib-hero__left {
-    padding: 7.5rem 2.5rem 4rem 2.5rem;
-  }
+/* Asymmetric 2-Column Headline Grid */
+.nib-hero__wrap-titles {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 2.25rem 3.5rem;
+  align-items: start;
+  width: fit-content;
+}
+
+.nib-hero__title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 
 /* Line Overflow Masks for Alternating Up/Down Character Reveals */
 .nib-line-mask {
   display: block;
   overflow: clip;
-  line-height: 0.98;
+  line-height: 0.92;
 }
 
 .nib-line-inner {
@@ -336,57 +333,49 @@
   will-change: transform;
 }
 
-.nib-hero__headline {
-  margin: 0 0 1.75rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
+/* Title Block 1: CONSIDERED / SPACES */
 .nib-title-line-1 {
   font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
-  font-size: clamp(2rem, 4.2vw, 3.85rem);
+  font-size: clamp(2.2rem, 3.5vw, 4.25rem);
   font-weight: 800;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--nib-ink);
+  line-height: 0.92;
 }
 
+/* Title Block 2: THAT / CHALLENGE (Offset right column) */
 .nib-title-line-2 {
   font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
-  font-size: clamp(2rem, 4.2vw, 3.85rem);
+  font-size: clamp(2.2rem, 3.5vw, 4.25rem);
   font-weight: 800;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--nib-ink);
-  margin-left: clamp(2rem, 5vw, 5rem);
+  line-height: 0.92;
 }
 
+/* Title Block 3: THE / ORDINARY • */
 .nib-title-line-3 {
-  display: block;
-}
-
-.nib-hero__h-line3-wrap {
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: 0.25rem;
 }
 
 .nib-hero__h-line3-lead {
   font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
-  font-size: clamp(1.4rem, 2.6vw, 2.4rem);
+  font-size: clamp(1.8rem, 3vw, 3.5rem);
   font-weight: 800;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--nib-ink);
+  line-height: 0.92;
 }
 
 .nib-hero__h-line3-climax {
   font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
-  font-size: clamp(3rem, 6.2vw, 5.6rem);
+  font-size: clamp(3rem, 5.2vw, 6.2rem);
+  font-weight: 400;
   font-style: italic;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
   color: var(--nib-ink);
   line-height: 0.85;
   display: inline-flex;
@@ -394,50 +383,90 @@
 }
 
 .nib-hero__accent-dot {
+  color: var(--nib-accent);
+  margin-left: 0.15rem;
+  font-style: normal;
   display: inline-block;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background-color: var(--nib-accent);
-  margin-left: 0.55rem;
-  box-shadow: 0 0 16px rgba(138, 106, 40, 0.5);
-  vertical-align: baseline;
+}
+
+/* Narrative Copy Block (Column 2 Row 2 beneath THAT CHALLENGE) */
+.nib-hero__narrative-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 290px;
+  padding-top: 0.5rem;
 }
 
 .nib-hero__copy {
   font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
-  font-size: 0.95rem;
-  line-height: 1.65;
-  color: var(--nib-muted);
-  max-width: 500px;
-  margin: 0 0 2rem 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(27, 26, 23, 0.75);
+  margin: 0;
 }
 
 .nib-hero__actions {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
-/* --------------------------------------------------------------------------
-   4. RIGHT COLUMN: ARCHITECTURAL PORTAL & VERTICAL NAVIGATION
-   -------------------------------------------------------------------------- */
+.nib-hero__actions .btn {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.35rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.nib-hero__actions .btn-primary {
+  background-color: var(--nib-ink);
+  color: #ffffff;
+}
+
+.nib-hero__actions .btn-primary:hover {
+  background-color: #000000;
+  transform: translateY(-2px);
+}
+
+.nib-hero__actions .btn-outline {
+  background-color: transparent;
+  color: var(--nib-ink);
+  border: 1px solid rgba(27, 26, 23, 0.3);
+}
+
+.nib-hero__actions .btn-outline:hover {
+  background-color: var(--nib-ink);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+/* Bottom Left Copyright */
+.nib-hero__copyright {
+  position: absolute;
+  bottom: 2.25rem;
+  left: 4.5rem;
+  font-family: var(--font-sans, "Plus Jakarta Sans", sans-serif);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(27, 26, 23, 0.4);
+}
+
+/* Right Column: Architectural Vertical Portal & Sideways Navigation */
 .nib-hero__right {
   position: relative;
   width: 100%;
   height: 100vh;
-  min-height: 600px;
+  min-height: 100%;
   overflow: hidden;
-  background-color: #121110;
-  display: flex;
-}
-
-@media (max-width: 1024px) {
-  .nib-hero__right {
-    height: 65vh;
-    min-height: 480px;
-  }
+  background-color: #0d0d0c;
 }
 
 /* Sideways Vertical Navigation Strip */
@@ -455,6 +484,7 @@
   gap: 2.75rem;
   background: rgba(251, 250, 247, 0.94);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-right: 1px solid var(--nib-hairline);
 }
 
@@ -510,9 +540,254 @@
   );
 }
 
-/* ==========================================================================
-   5. DEDICATED MOBILE & TABLET OPTIMIZATIONS (UNDER 768px)
-   ========================================================================== */
+/* --------------------------------------------------------------------------
+   4. EDITORIAL STORY CHAPTERS BELOW THE FOLD
+   -------------------------------------------------------------------------- */
+.nib-story {
+  background: var(--nib-paper, #f7f6f2);
+  color: var(--nib-ink);
+}
+
+.nib-story-section {
+  min-height: 100vh;
+  padding: 9rem clamp(1.5rem, 6vw, 7rem);
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.9s ease, transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.nib-story-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.nib-story-kicker {
+  font: 700 0.68rem/1 var(--font-sans, sans-serif);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nib-muted);
+}
+
+.nib-story h2 {
+  font: 400 clamp(3rem, 7vw, 8rem) / 0.88 var(--font-sans, sans-serif);
+  letter-spacing: -0.06em;
+  margin: 0;
+}
+
+.nib-story h2 em,
+.nib-values-heading em {
+  font-family: var(--font-serif, Georgia, serif);
+  font-weight: 400;
+}
+
+.nib-story-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.65fr;
+  gap: 8vw;
+  align-items: end;
+  margin: 12vh 0 8vh;
+}
+
+.nib-story-copy,
+.nib-projects-intro p,
+.nib-manifesto-story p,
+.nib-contact-grid p {
+  max-width: 24rem;
+  font: 400 1rem / 1.55 var(--font-sans, sans-serif);
+  color: var(--nib-muted);
+}
+
+.nib-story-copy p + p {
+  margin-top: 1.5rem;
+}
+
+.nib-story-image-wrap {
+  height: 52vh;
+  overflow: hidden;
+}
+
+.nib-story-image-wrap img,
+.nib-values-image img,
+.nib-project-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.nib-story-section.is-visible img {
+  transform: scale(1.03);
+}
+
+.nib-values-story {
+  background: #e6e0d5;
+}
+
+.nib-values-heading {
+  margin: 13vh 0 7vh;
+  font: 400 clamp(3rem, 7vw, 8rem) / 0.88 var(--font-sans, sans-serif);
+  letter-spacing: -0.06em;
+  display: flex;
+  flex-direction: column;
+}
+
+.nib-values-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid rgba(27, 26, 23, 0.25);
+}
+
+.nib-values-grid article {
+  padding: 1.5rem 2rem 2rem 0;
+  border-right: 1px solid rgba(27, 26, 23, 0.25);
+}
+
+.nib-values-grid article + article {
+  padding-left: 2rem;
+}
+
+.nib-values-grid span {
+  font: 0.7rem / 1 var(--font-sans, sans-serif);
+  color: var(--nib-accent);
+}
+
+.nib-values-grid h3 {
+  font: 400 clamp(1.8rem, 3vw, 3rem) / 1 var(--font-serif, Georgia, serif);
+  margin: 3rem 0 1rem;
+}
+
+.nib-values-grid p {
+  max-width: 16rem;
+  color: var(--nib-muted);
+  line-height: 1.5;
+}
+
+.nib-values-image {
+  height: 32vh;
+  margin-top: 7rem;
+}
+
+.nib-projects-intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin: 13vh 0 7vh;
+}
+
+.nib-project-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.nib-project-card {
+  color: inherit;
+  text-decoration: none;
+}
+
+.nib-project-card__image {
+  height: 48vh;
+  overflow: hidden;
+}
+
+.nib-project-card:hover img {
+  transform: scale(1.08);
+}
+
+.nib-project-card__meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  font: 0.65rem / 1 var(--font-sans, sans-serif);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--nib-muted);
+}
+
+.nib-project-card h3 {
+  font: 400 clamp(1.7rem, 2.5vw, 2.7rem) / 1 var(--font-serif, Georgia, serif);
+  margin: 0.5rem 0;
+}
+
+.nib-manifesto-story {
+  min-height: 80vh;
+  background: var(--nib-ink);
+  color: var(--nib-paper);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.nib-manifesto-story .nib-story-kicker {
+  color: var(--nib-accent);
+}
+
+.nib-manifesto-story h2 {
+  margin: 10vh 0 6vh;
+}
+
+.nib-manifesto-story p {
+  color: rgba(247, 246, 242, 0.65);
+  margin-left: 50%;
+}
+
+.nib-contact-story {
+  background: var(--nib-accent);
+  color: var(--nib-paper);
+}
+
+.nib-contact-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.7fr;
+  align-items: end;
+  gap: 8vw;
+  margin-top: 14vh;
+}
+
+.nib-contact-grid p {
+  color: rgba(247, 246, 242, 0.78);
+}
+
+.nib-story-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: var(--nib-paper);
+  color: var(--nib-ink);
+  padding: 1rem 1.3rem;
+  border-radius: 999px;
+  text-decoration: none;
+  text-transform: uppercase;
+  font: 700 0.7rem / 1 var(--font-sans, sans-serif);
+  letter-spacing: 0.08em;
+  margin-top: 2rem;
+}
+
+/* --------------------------------------------------------------------------
+   5. DEDICATED MOBILE & TABLET OPTIMIZATIONS (UNDER 1024px / 768px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .nib-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .nib-hero__left {
+    padding: 7rem 2.5rem 4rem 2.5rem;
+  }
+
+  .nib-hero__right {
+    height: 60vh;
+    min-height: 380px;
+  }
+
+  .nib-hero__copyright {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   /* Header docks as a sleek top bar rather than full-screen trap */
   .nib-header {
@@ -551,17 +826,10 @@
   }
 
   .nib-logo__badge {
-    font-size: 0.5625rem;
-    letter-spacing: 0.16em;
+    display: none;
   }
 
-  @media (max-width: 520px) {
-    .nib-logo__badge {
-      display: none;
-    }
-  }
-
-  /* Hide fixed bottom inverted logo on mobile to prevent blocking screen */
+  /* Hide inverted logo in docked state on mobile */
   .nib-logo__group {
     display: none !important;
   }
@@ -601,81 +869,49 @@
     letter-spacing: 0.18em;
   }
 
-  /* Left Column Manifesto */
+  /* Left Column Manifesto on Mobile */
   .nib-hero__left {
     padding: 5.5rem 1.25rem 3rem 1.25rem;
-    min-height: auto;
-    justify-content: flex-start;
   }
 
-  .nib-hero__headline {
-    margin: 0 0 1.35rem 0;
-    gap: 0.15rem;
+  .nib-hero__wrap-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    width: 100%;
   }
 
-  .nib-title-line-1 {
-    font-size: clamp(1.45rem, 6.6vw, 2.35rem);
-    line-height: 0.98;
-    white-space: nowrap;
-  }
-
+  .nib-title-line-1,
   .nib-title-line-2 {
-    font-size: clamp(1.45rem, 6.6vw, 2.35rem);
-    line-height: 0.98;
-    margin-left: 0.85rem;
+    font-size: clamp(1.75rem, 7.8vw, 2.5rem);
+    line-height: 0.94;
     white-space: nowrap;
-  }
-
-  .nib-title-line-3 {
-    font-size: clamp(1.95rem, 8.5vw, 3.1rem);
-    line-height: 0.98;
-    white-space: nowrap;
-  }
-
-  .nib-hero__h-line3-wrap {
-    gap: 0.55rem;
   }
 
   .nib-hero__h-line3-lead {
-    font-size: clamp(1.15rem, 5vw, 1.45rem);
+    font-size: clamp(1.45rem, 6.5vw, 2.15rem);
+    line-height: 0.94;
   }
 
   .nib-hero__h-line3-climax {
-    font-size: clamp(2.35rem, 10vw, 3.25rem);
-    line-height: 0.85;
+    font-size: clamp(2.35rem, 10vw, 3.4rem);
+    line-height: 0.88;
   }
 
-  .nib-hero__accent-dot {
-    width: 10px;
-    height: 10px;
-    margin-left: 0.35rem;
+  .nib-hero__narrative-block {
+    max-width: none;
+    padding-top: 0.5rem;
+    gap: 1.25rem;
   }
 
   .nib-hero__copy {
     font-size: 0.875rem;
-    line-height: 1.6;
-    margin: 0 0 1.5rem 0;
-    max-width: 100%;
+    line-height: 1.55;
   }
 
-  .nib-hero__actions {
-    gap: 0.75rem;
-    width: 100%;
-  }
-
-  .nib-hero__actions .btn {
-    flex: 1;
-    min-width: 140px;
-    justify-content: center;
-    padding: 0.75rem 1rem;
-    font-size: 0.8125rem;
-  }
-
-  /* Right column architectural photo */
   .nib-hero__right {
-    height: 55vh;
-    min-height: 340px;
-    width: 100%;
+    height: 52vh;
+    min-height: 320px;
   }
 
   .nib-hero__vert-nav {
@@ -686,9 +922,65 @@
     left: 0;
     width: 100%;
   }
+
+  /* Story section mobile responsiveness */
+  .nib-story-section {
+    min-height: auto;
+    padding: 6rem 1.25rem;
+  }
+
+  .nib-story-grid,
+  .nib-contact-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin: 5rem 0 3rem;
+  }
+
+  .nib-story h2 {
+    font-size: clamp(3rem, 14vw, 5.5rem);
+  }
+
+  .nib-story-image-wrap {
+    height: 44vh;
+  }
+
+  .nib-values-heading {
+    margin: 5rem 0 3rem;
+    font-size: clamp(3rem, 14vw, 5.5rem);
+  }
+
+  .nib-values-grid,
+  .nib-project-list {
+    grid-template-columns: 1fr;
+  }
+
+  .nib-values-grid article,
+  .nib-values-grid article + article {
+    padding: 1.5rem 0;
+    border-right: 0;
+    border-bottom: 1px solid rgba(27, 26, 23, 0.25);
+  }
+
+  .nib-values-image {
+    height: 36vh;
+    margin-top: 3rem;
+  }
+
+  .nib-projects-intro {
+    display: block;
+    margin: 5rem 0 3rem;
+  }
+
+  .nib-project-card__image {
+    height: 52vh;
+  }
+
+  .nib-manifesto-story p {
+    margin: 0;
+  }
 }
 
-/* Special overrides while preloader is active on mobile */
+/* Preloader active state overrides for mobile */
 @media (max-width: 768px) {
   .nib-root.is-preloading .nib-header {
     height: 100vh;

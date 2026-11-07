@@ -19,7 +19,7 @@ export default function YashmeenNibExperience() {
 
   const runSequence = useCallback(() => {
     setIsPreloading(true);
-    // Kill any active GSAP tweens
+
     if (timelineRef.current) {
       timelineRef.current.kill();
     }
@@ -43,7 +43,7 @@ export default function YashmeenNibExperience() {
     setProgress(0);
 
     // 1. Reset all elements to initial state
-    document.querySelector('.nib-logo__group')?.classList.remove('is-docked');
+    document.querySelector(".nib-logo__group")?.classList.remove("is-docked");
     if (backdropRef.current) {
       backdropRef.current.style.display = "block";
     }
@@ -82,7 +82,7 @@ export default function YashmeenNibExperience() {
       delay: 0.2
     });
 
-    // 3. Simulated progress countdown 00% -> 100%
+    // 3. Progress countdown 00% -> 100%
     const progressObj = { val: 0 };
     gsap.to(progressObj, {
       val: 100,
@@ -92,7 +92,7 @@ export default function YashmeenNibExperience() {
         setProgress(Math.round(progressObj.val));
       },
       onComplete: () => {
-        // 4. THE TRADEMARK EXPANSION & HERO REVEAL CEREMONY
+        // 4. THE TRADEMARK EXPANSION & HERO REVEAL CEREMONY (exact Normal is Boring formula)
         const masterTl = gsap.timeline();
         timelineRef.current = masterTl;
 
@@ -107,7 +107,7 @@ export default function YashmeenNibExperience() {
           0
         );
 
-        // B. The Expanding Logo Box: from compact 390x155 (or 270x110) to 100% viewport width and height!
+        // B. The Expanding Logo Box: from compact to full viewport bounds!
         masterTl.to(
           ".nib-header__logo",
           {
@@ -117,7 +117,7 @@ export default function YashmeenNibExperience() {
             ease: "power3.inOut",
             onStart: () => {
               setIsPreloading(false);
-              document.querySelector('.nib-logo__group')?.classList.add('is-docked');
+              document.querySelector(".nib-logo__group")?.classList.add("is-docked");
             },
             onComplete: () => {
               if (isMobile) {
@@ -156,7 +156,7 @@ export default function YashmeenNibExperience() {
           0.7
         );
 
-        // E. Alternating Line Reveals for Hero Headline (exact Normal is Boring formula)
+        // E. Alternating Line Reveals for Hero Headline
         // Line 1: yPercent 110 -> 0 (from below)
         masterTl.to(
           ".nib-title-line-1 .nib-hero-char",
@@ -166,10 +166,10 @@ export default function YashmeenNibExperience() {
             stagger: 0.025,
             ease: "power3.out"
           },
-          0.55
+          0.65
         );
 
-        // Line 2: yPercent -110 -> 0 (from above, alternating!)
+        // Line 2: yPercent -110 -> 0 (from ABOVE - alternating hallmark!)
         masterTl.to(
           ".nib-title-line-2 .nib-hero-char",
           {
@@ -178,7 +178,7 @@ export default function YashmeenNibExperience() {
             stagger: 0.025,
             ease: "power3.out"
           },
-          0.7
+          0.78
         );
 
         // Line 3: yPercent 110 -> 0 (from below)
@@ -187,19 +187,19 @@ export default function YashmeenNibExperience() {
           {
             yPercent: 0,
             duration: 0.75,
-            stagger: 0.025,
+            stagger: 0.028,
             ease: "power3.out"
           },
-          0.85
+          0.92
         );
 
-        // F. Body copy & Call to Action
+        // F. Narrative Copy & Actions reveal
         masterTl.to(
           ".nib-hero__copy",
           {
             y: 0,
             opacity: 1,
-            duration: 0.8,
+            duration: 0.85,
             ease: "power3.out"
           },
           0.95
@@ -256,14 +256,14 @@ export default function YashmeenNibExperience() {
           {
             scale: 1.0,
             yPercent: 0,
-            duration: 1.8,
-            ease: "power2.out"
+            duration: 1.45,
+            ease: "power3.out"
           },
           0.6
         );
       }
     });
-  }, [initialLogoWidth, initialLogoHeight]);
+  }, [initialLogoWidth, initialLogoHeight, isMobile]);
 
   useEffect(() => {
     runSequence();
@@ -275,41 +275,67 @@ export default function YashmeenNibExperience() {
     };
   }, [runSequence]);
 
-  // Language texts
+  useEffect(() => {
+    const sections = document.querySelectorAll(".nib-story-section");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add("is-visible");
+        });
+      },
+      { threshold: 0.18 }
+    );
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
+  // Language texts (English & Spanish matching normalisboring.es structure)
   const texts = {
     en: {
-      line1: "CONSIDERED SPACES",
-      line2: "THAT CHALLENGE",
-      line3Lead: "THE",
-      line3Climax: "ORDINARY.",
+      line1_a: "CONSIDERED",
+      line1_b: "SPACES",
+      line2_a: "THAT",
+      line2_b: "CHALLENGE",
+      line3_lead: "THE",
+      line3_climax: "ORDINARY",
       copy: "In a city of rushed handovers and fragmented subcontractors, Yashmeen operates under single-source accountability. Bespoke joinery from our 35,000 sq.ft Al Quoz facility, architectural engineering, and handover certainty.",
       ctaPrimary: "Request a Quote",
       ctaSecondary: "View Projects",
       navPortfolio: "PORTFOLIO",
       navStudio: "STUDIO",
       navFacility: "AL QUOZ FACILITY",
-      navEnquiry: "ENQUIRY"
+      navEnquiry: "ENQUIRY",
+      copyright: "YASHMEEN FIT-OUT CONTRACTING ©2026"
     },
     es: {
-      line1: "ESPACIOS DE VIDA",
-      line2: "QUE DESAFÍAN",
-      line3Lead: "LO",
-      line3Climax: "ORDINARIO.",
+      line1_a: "ESPACIOS",
+      line1_b: "DE VIDA",
+      line2_a: "QUE",
+      line2_b: "DESAFÍAN",
+      line3_lead: "LO",
+      line3_climax: "ORDINARIO",
       copy: "En una metrópoli de entregas apresuradas y contratistas fragmentados, Yashmeen asume la responsabilidad integral de principio a fin. Ebanistería a medida en nuestra nave de 35.000 pies cuadrados en Al Quoz, ingeniería arquitectónica y certeza de entrega.",
       ctaPrimary: "Solicitar Presupuesto",
       ctaSecondary: "Ver Proyectos",
       navPortfolio: "PORTAFOLIO",
       navStudio: "ESTUDIO",
       navFacility: "INSTALACIÓN AL QUOZ",
-      navEnquiry: "CONTACTO"
+      navEnquiry: "CONTACTO",
+      copyright: "YASHMEEN CONTRATACIÓN DE INTERIORES ©2026"
     }
   };
 
   const currentText = texts[lang];
-  const line1Chars = currentText.line1.split("");
-  const line2Chars = currentText.line2.split("");
-  const line3LeadChars = currentText.line3Lead.split("");
-  const line3ClimaxChars = currentText.line3Climax.split("");
+
+  // Helper for masking individual characters
+  const renderChars = (str, className = "nib-hero-char") =>
+    str.split("").map((c, i) => (
+      <span key={i} className={`nib-char-mask${c === " " ? " nib-space" : ""}`}>
+        <span className={`nib-char-span ${className}`}>
+          {c === " " ? "\u00A0" : c}
+        </span>
+      </span>
+    ));
 
   return (
     <div className={`nib-root ${isPreloading ? "is-preloading" : ""}`} ref={containerRef}>
@@ -318,16 +344,12 @@ export default function YashmeenNibExperience() {
          ------------------------------------------------------------------ */}
       <header className="nib-header">
         <div className="nib-header__wrapper">
-          {/* Centered logo box: 360x145 in preloader, expands to 100%x100% on exit */}
+          {/* Centered logo box: 390x155 in preloader, expands to 100%x100% on exit */}
           <div className="nib-header__logo" ref={logoBoxRef}>
             {/* Top-Left: YASHMEEN DUBAI */}
             <Link to="/" className="nib-logo__normal" aria-label="Yashmeen Dubai">
               <div className="nib-logo__title">
-                {["Y", "A", "S", "H", "M", "E", "E", "N"].map((c, i) => (
-                  <span key={i} className="nib-char-mask">
-                    <span className="nib-char-span nib-char-logo">{c}</span>
-                  </span>
-                ))}
+                {renderChars("YASHMEEN", "nib-char-logo")}
               </div>
               <span className="nib-logo__badge">DUBAI</span>
             </Link>
@@ -335,24 +357,16 @@ export default function YashmeenNibExperience() {
             {/* Bottom-Right: considered INTERIORS ® (upside-down) */}
             <div className="nib-logo__group">
               <div className="nib-logo__is">
-                {["c", "o", "n", "s", "i", "d", "e", "r", "e", "d"].map((c, i) => (
-                  <span key={i} className="nib-char-mask">
-                    <span className="nib-char-span nib-char-logo">{c}</span>
-                  </span>
-                ))}
+                {renderChars("considered", "nib-char-logo")}
               </div>
               <div className="nib-logo__boring">
-                {["I", "N", "T", "E", "R", "I", "O", "R", "S"].map((c, i) => (
-                  <span key={i} className="nib-char-mask">
-                    <span className="nib-char-span nib-char-logo">{c}</span>
-                  </span>
-                ))}
+                {renderChars("INTERIORS", "nib-char-logo")}
                 <span className="nib-logo__reg">®</span>
               </div>
             </div>
           </div>
 
-          {/* Top-Right Floating Controls (Language toggle & Replay) */}
+          {/* Top-Right Floating Controls (Language toggle, Replay, Menu) */}
           <div className="nib-header__controls">
             <button
               type="button"
@@ -394,78 +408,70 @@ export default function YashmeenNibExperience() {
       </div>
 
       {/* ------------------------------------------------------------------
-          3. EDITORIAL ASYMMETRIC HERO SECTION
+          3. EDITORIAL ASYMMETRIC HERO SECTION (Direct Normal is Boring formula)
          ------------------------------------------------------------------ */}
       <section className="nib-hero">
-        {/* Left Column: Typographic Manifesto */}
+        {/* Left Column: Typographic Manifesto & Asymmetric 2-Column Headline Grid */}
         <div className="nib-hero__left">
-          <div className="nib-hero__headline">
-            {/* Line 1: Unmasks from bottom */}
-            <div className="nib-line-mask nib-title-line-1">
-              <span className="nib-line-inner">
-                {line1Chars.map((c, i) => (
-                  <span key={i} className="nib-char-mask">
-                    <span className="nib-char-span nib-hero-char">
-                      {c === " " ? "\u00A0" : c}
-                    </span>
-                  </span>
-                ))}
-              </span>
+          <div className="nib-hero__wrap-titles">
+            {/* Grid Column 1, Row 1: CONSIDERED / SPACES */}
+            <div className="nib-hero__title-block nib-title-line-1">
+              <div className="nib-line-mask">
+                <div className="nib-line-inner">{renderChars(currentText.line1_a)}</div>
+              </div>
+              <div className="nib-line-mask">
+                <div className="nib-line-inner">{renderChars(currentText.line1_b)}</div>
+              </div>
             </div>
 
-            {/* Line 2: Unmasks from top (alternating!) with asymmetric margin */}
-            <div className="nib-line-mask nib-title-line-2">
-              <span className="nib-line-inner">
-                {line2Chars.map((c, i) => (
-                  <span key={i} className="nib-char-mask">
-                    <span className="nib-char-span nib-hero-char">
-                      {c === " " ? "\u00A0" : c}
-                    </span>
-                  </span>
-                ))}
-              </span>
+            {/* Grid Column 2, Row 1: THAT / CHALLENGE (Alternating Reveal) */}
+            <div className="nib-hero__title-block nib-title-line-2">
+              <div className="nib-line-mask">
+                <div className="nib-line-inner">{renderChars(currentText.line2_a)}</div>
+              </div>
+              <div className="nib-line-mask">
+                <div className="nib-line-inner">{renderChars(currentText.line2_b)}</div>
+              </div>
             </div>
 
-            {/* Line 3: Sans lead + Giant italic climax with bronze dot */}
-            <div className="nib-line-mask nib-title-line-3">
-              <div className="nib-hero__h-line3-wrap">
-                <span className="nib-hero__h-line3-lead">
-                  {line3LeadChars.map((c, i) => (
-                    <span key={i} className="nib-char-mask">
-                      <span className="nib-char-span nib-hero-char">
-                        {c === " " ? "\u00A0" : c}
-                      </span>
-                    </span>
-                  ))}
-                </span>
-                <span className="nib-hero__h-line3-climax">
-                  {line3ClimaxChars.map((c, i) => (
-                    <span key={i} className="nib-char-mask">
-                      <span className="nib-char-span nib-hero-char">
-                        {c === " " ? "\u00A0" : c}
-                      </span>
-                    </span>
-                  ))}
-                  <span className="nib-hero__accent-dot" aria-hidden="true"></span>
-                </span>
+            {/* Grid Column 1, Row 2: THE / ORDINARY • */}
+            <div className="nib-hero__title-block nib-title-line-3">
+              <div className="nib-line-mask">
+                <div className="nib-line-inner nib-hero__h-line3-lead">
+                  {renderChars(currentText.line3_lead)}
+                </div>
+              </div>
+              <div className="nib-line-mask">
+                <div className="nib-line-inner nib-hero__h-line3-climax">
+                  <em>{renderChars(currentText.line3_climax)}</em>
+                  <span className="nib-hero__accent-dot" aria-hidden="true">•</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Grid Column 2, Row 2: Narrative Copy & Call to Action (stacked beneath THAT CHALLENGE) */}
+            <div className="nib-hero__narrative-block">
+              <p className="nib-hero__copy">{currentText.copy}</p>
+
+              <div className="nib-hero__actions">
+                <Link
+                  to="/quote"
+                  className="btn btn-primary"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
+                >
+                  <span>{currentText.ctaPrimary}</span>
+                  <FiArrowRight />
+                </Link>
+                <Link to="/projects" className="btn btn-outline">
+                  {currentText.ctaSecondary}
+                </Link>
               </div>
             </div>
           </div>
 
-          <p className="nib-hero__copy">{currentText.copy}</p>
-
-          <div className="nib-hero__actions">
-            <Link
-              to="/quote"
-              className="btn btn-primary"
-              style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
-            >
-              <span>{currentText.ctaPrimary}</span>
-              <FiArrowRight />
-            </Link>
-            <Link to="/projects" className="btn btn-outline">
-              {currentText.ctaSecondary}
-            </Link>
+          {/* Bottom Left Copyright Indicator */}
+          <div className="nib-hero__copyright">
+            {currentText.copyright}
           </div>
         </div>
 
@@ -499,6 +505,122 @@ export default function YashmeenNibExperience() {
           </div>
         </div>
       </section>
+
+      {/* ------------------------------------------------------------------
+          4. EDITORIAL STORYTELLING SECTIONS BELOW THE HERO
+         ------------------------------------------------------------------ */}
+      <main className="nib-story">
+        <section className="nib-story-section nib-intro-story">
+          <div className="nib-story-kicker">01 / STUDIO</div>
+          <div className="nib-story-grid">
+            <h2>
+              Spaces that invite
+              <br />
+              <em>you to pause.</em>
+            </h2>
+            <div className="nib-story-copy">
+              <p>
+                Yashmeen creates considered environments for the way people live, work, gather and recharge.
+              </p>
+              <p>
+                From first sketch to final handover, one team carries the detail through every decision.
+              </p>
+            </div>
+          </div>
+          <div className="nib-story-image-wrap">
+            <img src="/static/studio.jpg" alt="Yashmeen studio and design workspace" />
+          </div>
+        </section>
+
+        <section className="nib-story-section nib-values-story">
+          <div className="nib-story-kicker">02 / THE METHOD</div>
+          <div className="nib-values-heading">
+            <span>Built on</span>
+            <em>three beliefs.</em>
+          </div>
+          <div className="nib-values-grid">
+            <article>
+              <span>01</span>
+              <h3>Precision</h3>
+              <p>Every junction, material and finish is resolved before it reaches site.</p>
+            </article>
+            <article>
+              <span>02</span>
+              <h3>Materiality</h3>
+              <p>Timber, stone, metal and light are composed to feel calm, tactile and lasting.</p>
+            </article>
+            <article>
+              <span>03</span>
+              <h3>Certainty</h3>
+              <p>A single accountable team keeps design, engineering and delivery moving together.</p>
+            </article>
+          </div>
+          <div className="nib-values-image">
+            <img src="/static/production-facility.jpg" alt="Yashmeen production facility" />
+          </div>
+        </section>
+
+        <section className="nib-story-section nib-projects-story">
+          <div className="nib-story-kicker">03 / SELECTED WORK</div>
+          <div className="nib-projects-intro">
+            <h2>
+              Spaces made
+              <br />
+              <em>to be lived in.</em>
+            </h2>
+            <p>Quiet architecture. Exacting fit-out. A finished space that feels inevitable.</p>
+          </div>
+          <div className="nib-project-list">
+            {[
+              ["/static/work-clifton.jpg", "01", "Clifton Residence", "Private Residence / Dubai"],
+              ["/static/work-myrtle.jpg", "02", "Myrtle House", "Hospitality / Al Quoz"],
+              ["/static/work-oh-office.jpg", "03", "OH Office", "Workplace / Dubai"]
+            ].map(([image, number, title, type]) => (
+              <Link to="/projects" className="nib-project-card" key={title}>
+                <div className="nib-project-card__image">
+                  <img src={image} alt={title} />
+                </div>
+                <div className="nib-project-card__meta">
+                  <span>{number}</span>
+                  <span>{type}</span>
+                </div>
+                <h3>{title}</h3>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="nib-story-section nib-manifesto-story">
+          <div className="nib-story-kicker">04 / THE ORDINARY, RECONSIDERED</div>
+          <h2>
+            Luxury is not loud.
+            <br />
+            <em>It is felt.</em>
+          </h2>
+          <p>
+            We build spaces that resist the disposable. Places with a clear point of view, made with local craft, disciplined engineering and room for life to unfold.
+          </p>
+        </section>
+
+        <section className="nib-story-section nib-contact-story">
+          <div className="nib-story-kicker">05 / START A CONVERSATION</div>
+          <div className="nib-contact-grid">
+            <h2>
+              Bring the
+              <br />
+              <em>ordinary</em>
+              <br />
+              to life.
+            </h2>
+            <div>
+              <p>Tell us what you are shaping. We will bring the people, process and precision to make it real.</p>
+              <Link to="/contact" className="nib-story-button">
+                Start a project <FiArrowRight />
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

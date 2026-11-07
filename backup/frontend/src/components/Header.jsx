@@ -1,120 +1,67 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import MenuOverlay from "./layout/MenuOverlay";
+import useWebDetails from "../hooks/cacheStore";
 import QuestionnaireModal from "./layout/QuestionnaireModal";
 import "../styles/shell.css";
 
-const NAV_LINKS = [
-  { label: "Projects", href: "/projects" },
-  { label: "About", href: "/about" },
-  { label: "Services", href: "/services" },
-  { label: "Gallery", href: "/photo-gallery" },
-  { label: "Contact", href: "/contact" },
+const NAV_ITEMS = [
+  { label: "Home", path: "/" },
+  { label: "About", path: "/about", children: [["About Us", "/about"], ["Founders Message", "/founders-message"], ["Why Us", "/why-us"], ["FAQ", "/faq"], ["Careers", "/careers"]] },
+  { label: "Services", path: "/services", children: [["Architecture", "/services/architecture"], ["Interior Design", "/services/interior-design"], ["Construction", "/services/construction"], ["Office Renovation", "/services/office-renovation"]] },
+  { label: "Gallery", path: "/gallery", children: [["Photo Gallery", "/photo-gallery"], ["Video Gallery", "/video-gallery"]] },
+  { label: "Projects", path: "/projects" },
+  { label: "Contact", path: "/contact" },
 ];
 
-export default function Header() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [questionnaireOpen, setQuestionnaireOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
-  const lastY = useRef(0);
-  const { pathname } = useLocation();
+function Chevron({ open }) {
+  return <span className={`original-nav-chevron${open ? " is-open" : ""}`} aria-hidden="true">⌄</span>;
+}
 
-  // Reset overlay on navigation
+export default function Header() {
+  const details = useWebDetails();
+  const { pathname } = useLocation();
+  const [mobile, setMobile] = useState(false);
+  const [open, setOpen] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
+  const phone = details?.mobile || "+971 54 386 2870";
+
+  useEffect(() => {
+    const sync = () => setMobile(window.innerWidth <= 980);
+    sync();
+    window.addEventListener("resize", sync);
+    return () => window.removeEventListener("resize", sync);
+  }, []);
+
   useEffect(() => {
     setMenuOpen(false);
+    setOpen(null);
   }, [pathname]);
 
-  // Listen for global open-questionnaire and open-menu events
-  useEffect(() => {
-    const handleOpenEnquiry = () => setQuestionnaireOpen(true);
-    const handleOpenMenu = () => setMenuOpen(true);
-    window.addEventListener("open-questionnaire", handleOpenEnquiry);
-    window.addEventListener("open-menu", handleOpenMenu);
-    return () => {
-      window.removeEventListener("open-questionnaire", handleOpenEnquiry);
-      window.removeEventListener("open-menu", handleOpenMenu);
-    };
-  }, []);
+  const closeMobile = () => { setMenuOpen(false); setOpen(null); };
 
-  // Scroll detection for floating bar
-  useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 20);
-      if (y > 200 && y > lastY.current + 6) {
-        setHidden(true);
-      } else if (y < lastY.current - 4) {
-        setHidden(false);
-      }
-      lastY.current = y;
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const isHomePage = pathname === "/";
-
-  return (
-    <>
-      <header
-        className={`site-header ${scrolled ? "is-scrolled" : ""} ${hidden ? "is-hidden" : ""} ${isHomePage ? "is-homepage" : ""} ${isHomePage && !scrolled ? "is-homepage-top" : ""}`}
-      >
-        <div className="site-header-inner">
-          {/* Brand Left */}
-          <Link to="/" className="site-brand" aria-label="Yashmeen Future Building Homepage">
-            <span className="site-brand-text">YASHMEEN FIT-OUT</span>
-            <span className="site-brand-city">DUBAI</span>
-          </Link>
-
-          {/* Center Links with comma separation */}
-          <nav className="site-nav-center" aria-label="Primary Navigation">
-            {NAV_LINKS.map((item, idx) => (
-              <span key={item.href} style={{ display: "inline-flex", alignItems: "center" }}>
-                <Link
-                  to={item.href}
-                  className={`site-nav-link ${pathname === item.href ? "active" : ""}`}
-                >
-                  {item.label}
-                </Link>
-                {idx < NAV_LINKS.length - 1 && <span className="site-nav-sep">,</span>}
-              </span>
-            ))}
-          </nav>
-
-          {/* Right Action Pills */}
-          <div className="site-header-actions">
-            <button
-              type="button"
-              className="header-btn-enquire"
-              onClick={() => setQuestionnaireOpen(true)}
-              aria-label="Open Project Enquiry Questionnaire"
-            >
-              <span>Get in touch</span>
-              <span className="g-circle" aria-hidden="true" />
-            </button>
-
-            <button
-              type="button"
-              className="header-btn-menu"
-              onClick={() => setMenuOpen(true)}
-              aria-label="Open Navigation Menu"
-            >
-              Menu
-            </button>
-          </div>
+  return <>
+    <header className="original-nav" aria-label="Primary navigation">
+      <div className="original-nav-inner">
+        <Link to="/" className="original-nav-logo" aria-label="Yashmeen Future Building home"><img src="/static/logo.jpg" alt="Yashmeen Future Building" /></Link>
+        {!mobile && <nav className="original-nav-links">
+          {NAV_ITEMS.map((item) => <div className="original-nav-item" key={item.label} onMouseEnter={() => item.children && setOpen(item.label)} onMouseLeave={() => item.children && setOpen(null)}>
+            <div className="original-nav-link-row"><Link to={item.path} className={pathname === item.path ? "is-active" : ""}>{item.label}</Link>{item.children && <button type="button" aria-label={`Toggle ${item.label} menu`} aria-expanded={open === item.label} onClick={() => setOpen(open === item.label ? null : item.label)}><Chevron open={open === item.label} /></button>}</div>
+            {item.children && open === item.label && <div className="original-nav-dropdown">{item.children.map(([label, path]) => <Link key={path} to={path}>{label}</Link>)}</div>}
+          </div>)}
+        </nav>}
+        <div className="original-nav-actions">
+          {!mobile && <a className="original-nav-phone" href={`tel:${phone.replace(/\s+/g, "")}`}><small>Call the Studio</small><span>{phone}</span></a>}
+          <button type="button" className="original-nav-quote" onClick={() => setEnquiryOpen(true)}>Get a Quote</button>
+          {mobile && <button type="button" className={`original-nav-menu${menuOpen ? " is-open" : ""}`} onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label={menuOpen ? "Close menu" : "Open menu"}><i /><i /><i /></button>}
         </div>
-      </header>
-
-      {/* Fullscreen Curtain Menu Overlay */}
-      <MenuOverlay open={menuOpen} onClose={() => setMenuOpen(false)} />
-
-      {/* 8-Step Project Questionnaire Modal */}
-      <QuestionnaireModal
-        isOpen={questionnaireOpen}
-        onClose={() => setQuestionnaireOpen(false)}
-      />
-    </>
-  );
+      </div>
+      {mobile && menuOpen && <nav className="original-nav-mobile" aria-label="Mobile navigation">
+        {NAV_ITEMS.map((item) => <div key={item.label}><div className="original-nav-mobile-row"><Link to={item.path} onClick={closeMobile}>{item.label}</Link>{item.children && <button type="button" onClick={() => setOpen(open === item.label ? null : item.label)}><Chevron open={open === item.label} /></button>}</div>{item.children && open === item.label && <div className="original-nav-mobile-children">{item.children.map(([label, path]) => <Link key={path} to={path} onClick={closeMobile}>{label}</Link>)}</div>}</div>)}
+        <a className="original-nav-mobile-phone" href={`tel:${phone.replace(/\s+/g, "")}`}><small>Call the Studio</small><span>{phone}</span></a>
+        <button type="button" className="original-nav-mobile-quote" onClick={() => { closeMobile(); setEnquiryOpen(true); }}>Get a Quote</button>
+      </nav>}
+    </header>
+    <QuestionnaireModal isOpen={enquiryOpen} onClose={() => setEnquiryOpen(false)} />
+  </>;
 }

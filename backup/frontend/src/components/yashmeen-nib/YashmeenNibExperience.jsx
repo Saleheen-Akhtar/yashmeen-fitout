@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { FiArrowRight, FiRotateCcw } from "react-icons/fi";
+import { FiArrowRight, FiRotateCcw, FiLayers, FiMaximize2, FiX } from "react-icons/fi";
 import "../../styles/yashmeen-nib.css";
 
 // Register GreenSock ScrollTrigger
@@ -13,10 +13,17 @@ export default function YashmeenNibExperience() {
   const [progress, setProgress] = useState(0);
   const [lang, setLang] = useState("en"); // "en" or "es"
   const [isPreloading, setIsPreloading] = useState(true);
+  const [activeChapter, setActiveChapter] = useState(0);
   const [activeProjectIdx, setActiveProjectIdx] = useState(0);
   const [hoveredTermImage, setHoveredTermImage] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHeaderDark, setIsHeaderDark] = useState(false);
+
+  // Storytelling interactive states
+  const [activeMaterial, setActiveMaterial] = useState("travertine");
+  const [isBlueprintMode, setIsBlueprintMode] = useState(false);
+  const [openSpecProjectIdx, setOpenSpecProjectIdx] = useState(null);
+  const [activeCommissionType, setActiveCommissionType] = useState("residential");
 
   const containerRef = useRef(null);
   const backdropRef = useRef(null);
@@ -26,7 +33,7 @@ export default function YashmeenNibExperience() {
   const headerLogoRef = useRef(null);
   const lenisRef = useRef(null);
 
-  // Bilingual text dictionary (exact matching structure of normalisboring.es)
+  // Bilingual text dictionary
   const texts = {
     en: {
       navStudio: "STUDIO",
@@ -34,6 +41,18 @@ export default function YashmeenNibExperience() {
       navContact: "CONTACT",
       sectionHome: "Home",
       copyright: "YASHMEEN FIT-OUT CONTRACTING ©2026",
+
+      // Chapters
+      chapters: [
+        "01 ORIGIN",
+        "02 MATERIALITY",
+        "03 THE STUDIO",
+        "04 THE ATELIER",
+        "05 VALUES",
+        "06 TENETS",
+        "07 MONOLITHS",
+        "08 COMMISSION"
+      ],
 
       // Hero Intro
       line1_a: "CONSIDERED",
@@ -45,7 +64,21 @@ export default function YashmeenNibExperience() {
       heroCopy:
         "In a world where everything has become disposable, Yashmeen builds interiors to endure. Bespoke joinery from our 35,000 sq.ft Al Quoz atelier, architectural engineering and single-source certainty.",
 
-      // Section 2: Text / Studio
+      // Chapter 1: Materiality Lab
+      matEyebrow: "ACT I // MATERIALITY & ANATOMY",
+      matTitle: "THE ALCHEMY OF RAW SUBSTANCE",
+      matNarrative:
+        "Before architectural form exists, there is raw matter. In Dubai's climate, true luxury is material honesty. We calibrate European quarries and sustainably harvested timber to withstand time with effortless grace.",
+      matTravertine: "Roman Travertine",
+      matOak: "French White Oak",
+      matBronze: "Patinated Bronze",
+      matWalnut: "Fluted Walnut",
+      labelOrigin: "Quarry / Origin",
+      labelFinish: "Tactile Finish",
+      labelDensity: "Density / Grade",
+      labelApplication: "Joinery Application",
+
+      // Chapter 2: Text / Studio
       textSectionLabel: "The Studio",
       textLine1: "SPACES THAT INVITE",
       textLine2: "TO HOLD AND ENJOY",
@@ -53,15 +86,20 @@ export default function YashmeenNibExperience() {
       textLine4: "AND DISCONNECT",
       textParagraph:
         "Every space must be singular and meaningful, just like the people who inhabit it. We are the benchmark for quiet architectural luxury, where design discipline, sustainable engineering and craftsmanship unite to offer something truly exceptional.",
+      telemetry1Label: "AL QUOZ MASTER ATELIER",
+      telemetry2Label: "BESPOKE ARTISANS & JOINERS",
+      telemetry3Label: "SHADOW GAP PRECISION",
 
-      // Section 3: Dark Atelier
+      // Chapter 3: Dark Atelier
       imagesTextParagraph:
         "At Yashmeen, we shape spaces that stand apart through bespoke joinery craftsmanship and disciplined execution. Contemporary volumes, tactile materiality, open to light. Environments that elevate daily life with more comfort, more permanence and genuine emotion.",
+      btnBlueprintReality: "Built Reality",
+      btnBlueprintCad: "CAD Drafting Wireframe",
 
-      // Section 4: Carousel
+      // Chapter 4: Carousel
       carouselText: "VALUES",
 
-      // Section 6: Terms
+      // Chapter 5: Terms
       term1Num: "01",
       term1Title: "ELEGANCE",
       term1Desc:
@@ -75,10 +113,17 @@ export default function YashmeenNibExperience() {
       term3Desc:
         "Open, harmonious spaces with pragmatic engineering. Versatile environments crafted for seamless daily living.",
 
-      // Section 7: Projects
+      // Chapter 6: Projects
       projectsLabel: "Projects",
       projectsIntro:
         "We shape prime residences, bespoke hospitality and commercial spaces with single-source accountability.",
+      btnInspectSpec: "Technical Spec +",
+      btnHideSpec: "Close Spec ×",
+      specScope: "Scope",
+      specArea: "Footprint",
+      specTimeline: "Duration",
+      specJoinery: "Key Joinery",
+
       proj1Title: "CLIFTON RESIDENCE",
       proj1Year: "2025",
       proj1Loc: "EMIRATES HILLS",
@@ -100,13 +145,25 @@ export default function YashmeenNibExperience() {
       proj5Loc: "MANUFACTURING",
       proj5Num: "05",
 
-      // Unpinned Vertical Finale
-      finaleChapter: "(Contact)",
+      // Chapter 7: Unpinned Vertical Finale
+      finaleChapter: "(Commission)",
       finaleTitle: "UNLOCK YOUR VISION",
       finaleSubtitle: "EXCLUSIVITY IN ITS HIGHEST EXPRESSION",
       finaleParagraph:
         "At Yashmeen, our priority is offering a personalized, dedicated partnership to bring your architectural vision into reality. Our team is at your disposal to guide you through every milestone.",
-      finaleCta: "Request Consultation",
+      commResidential: "Private Residences",
+      commCorporate: "Executive Headquarters",
+      commHospitality: "Bespoke Hospitality",
+      commMillwork: "Atelier Joinery",
+      guidanceResidential:
+        "Turnkey interior fit-out and architectural millwork for villas and private estates across Emirates Hills, Palm Jumeirah and Dubai Hills. Typical delivery: 20–32 weeks.",
+      guidanceCorporate:
+        "Grade-A commercial fit-outs and boardroom architecture in DIFC and Downtown Dubai. Acoustically tuned woodwork and single-source project governance.",
+      guidanceHospitality:
+        "Atmospheric dining salons, boutique hotel suites and experiential retail spaces requiring custom curved millwork and patinated architectural metalwork.",
+      guidanceMillwork:
+        "Dedicated bespoke fabrication from our 35,000 sq.ft Al Quoz atelier for architects, interior designers and private commissioners.",
+      finaleCta: "Request Private Consultation",
       footerTagline: "BESPOKE INTERIORS & ARCHITECTURAL FIT-OUT • DUBAI, UAE"
     },
     es: {
@@ -115,6 +172,18 @@ export default function YashmeenNibExperience() {
       navContact: "CONTACTO",
       sectionHome: "Inicio",
       copyright: "YASHMEEN CONTRATACIÓN DE INTERIORES ©2026",
+
+      // Chapters
+      chapters: [
+        "01 ORIGEN",
+        "02 MATERIALIDAD",
+        "03 EL ESTUDIO",
+        "04 EL ATELIER",
+        "05 VALORES",
+        "06 PRINCIPIOS",
+        "07 MONOLITOS",
+        "08 COMISIÓN"
+      ],
 
       // Hero Intro
       line1_a: "ESPACIOS",
@@ -126,7 +195,21 @@ export default function YashmeenNibExperience() {
       heroCopy:
         "En un mundo fugaz en el que lo efímero lo ha empapado todo, construimos interiores para durar más y más, preservando la artesanía a medida y la certeza arquitectónica.",
 
-      // Section 2: Text / Studio
+      // Chapter 1: Materiality Lab
+      matEyebrow: "ACTO I // MATERIALIDAD Y ANATOMÍA",
+      matTitle: "LA ALQUIMIA DE LA SUSTANCIA PURA",
+      matNarrative:
+        "Antes de que la forma arquitectónica exista, está la materia prima. En el clima de Dubái, el verdadero lujo es la honestidad material. Calibramos canteras europeas y maderas nobles sostenibles para trascender el tiempo con serenidad.",
+      matTravertine: "Travertino Romano",
+      matOak: "Roble Francés",
+      matBronze: "Bronce Patinado",
+      matWalnut: "Nogal Acanalado",
+      labelOrigin: "Cantera / Origen",
+      labelFinish: "Acabado Táctil",
+      labelDensity: "Densidad / Grado",
+      labelApplication: "Aplicación de Ebanistería",
+
+      // Chapter 2: Text / Studio
       textSectionLabel: "Nosotros",
       textLine1: "CASAS QUE INVITAN",
       textLine2: "A  DETENER",
@@ -134,15 +217,20 @@ export default function YashmeenNibExperience() {
       textLine4: "Y DESCONECTAR",
       textParagraph:
         "Cada vivienda debe ser única y especial, al igual que las personas que la habitan. Somos el referente del lujo aspiracional, donde diseño, sostenibilidad y calidad de vida se unen para ofrecer algo verdaderamente excepcional.",
+      telemetry1Label: "ATELIER CENTRAL EN AL QUOZ",
+      telemetry2Label: "MAESTROS ARTESANOS Y EBANISTAS",
+      telemetry3Label: "PRECISIÓN EN JUNTAS OCULTAS",
 
-      // Section 3: Dark Atelier
+      // Chapter 3: Dark Atelier
       imagesTextParagraph:
         "En Yashmeen construimos espacios que sobresalen por la calidad y el diseño, de volúmenes contemporáneos, impolutos y abiertos al exterior. Espacios que mejoran la calidad de vida de quienes los habitan, ofreciendo más confort, más belleza y más emoción.",
+      btnBlueprintReality: "Realidad Construida",
+      btnBlueprintCad: "Plano Técnico CAD",
 
-      // Section 4: Carousel
+      // Chapter 4: Carousel
       carouselText: "VALORES",
 
-      // Section 6: Terms
+      // Chapter 5: Terms
       term1Num: "01",
       term1Title: "ELEGANCIA",
       term1Desc:
@@ -156,10 +244,17 @@ export default function YashmeenNibExperience() {
       term3Desc:
         "Espacios abiertos, menos jerarquizados y con un enfoque más pragmático. Zonas multifuncionales para un confort diario.",
 
-      // Section 7: Projects
+      // Chapter 6: Projects
       projectsLabel: "Proyectos",
       projectsIntro:
         "Desarrollamos proyectos residenciales y corporativos exclusivos con una visión integral de principio a fin.",
+      btnInspectSpec: "Ficha Técnica +",
+      btnHideSpec: "Cerrar Ficha ×",
+      specScope: "Alcance",
+      specArea: "Superficie",
+      specTimeline: "Plazo",
+      specJoinery: "Ebanistería",
+
       proj1Title: "RESIDENCIA CLIFTON",
       proj1Year: "2025",
       proj1Loc: "EMIRATES HILLS",
@@ -181,34 +276,129 @@ export default function YashmeenNibExperience() {
       proj5Loc: "FABRICACIÓN",
       proj5Num: "05",
 
-      // Unpinned Vertical Finale
-      finaleChapter: "(Contacta)",
+      // Chapter 7: Unpinned Vertical Finale
+      finaleChapter: "(Comisión)",
       finaleTitle: "DESBLOQUEA TU SUEÑO",
       finaleSubtitle: "EXCLUSIVIDAD EN SU MÁXIMA EXPRESIÓN",
       finaleParagraph:
         "En Yashmeen, nuestra prioridad es ofrecerte un servicio personalizado y cercano para ayudarte a materializar tu proyecto soñado.",
-      finaleCta: "Solicitar información",
+      commResidential: "Residencias Privadas",
+      commCorporate: "Sedes Corporativas",
+      commHospitality: "Hospitalidad Exclusiva",
+      commMillwork: "Ebanistería a Medida",
+      guidanceResidential:
+        "Construcción y ebanistería llave en mano para villas en Emirates Hills, Palm Jumeirah y Dubai Hills. Plazo estimado: 20–32 semanas.",
+      guidanceCorporate:
+        "Equipamiento corporativo en DIFC y Downtown Dubái. Acústica de precisión y dirección técnica integral.",
+      guidanceHospitality:
+        "Salones gastronómicos y suites de lujo con madera curvada al vapor y metales nobles patinados a mano.",
+      guidanceMillwork:
+        "Fabricación dedicada desde nuestro atelier de 35,000 pies cuadrados en Al Quoz para arquitectos y promotores privados.",
+      finaleCta: "Solicitar Consulta Privada",
       footerTagline: "INTERIORES A MEDIDA Y CONTRATACIÓN ARQUITECTÓNICA • DUBÁI, EAU"
     }
   };
 
   const currentText = texts[lang];
 
+  // Material Specimen Definitions
+  const materialSpecs = {
+    travertine: {
+      name: currentText.matTravertine,
+      origin: lang === "en" ? "Tivoli Quarries, Italy" : "Canteras de Tívoli, Italia",
+      finish: lang === "en" ? "Honed & Cross-Cut Silk" : "Apomazado y Corte Transversal Seda",
+      density: "2,480 kg/m³ • Class A",
+      application:
+        lang === "en"
+          ? "Monolithic Kitchen Islands & Full-Slab Bathroom Vanities"
+          : "Islas Monolíticas de Cocina y Revestimientos de Baño",
+      image: "/static/Custom-Furniture.jpg",
+      color: "#d9cec1"
+    },
+    oak: {
+      name: currentText.matOak,
+      origin: lang === "en" ? "Vosges Forest, France" : "Bosque de los Vosgos, Francia",
+      finish: lang === "en" ? "Smoked Natural Tannin & Matte Polyurethane" : "Tanino Ahumado y Poliuretano Mate",
+      density: "740 kg/m³ • Janka 1,360",
+      application:
+        lang === "en"
+          ? "Floor-to-Ceiling Pivot Portals & Fluted Secret Doors"
+          : "Puertas Pivotantes de Suelo a Techo y Puertas Ocultas",
+      image: "/static/Residential-Fit-Out.jpg",
+      color: "#c2ab87"
+    },
+    bronze: {
+      name: currentText.matBronze,
+      origin: lang === "en" ? "Bespoke Foundry Custom Extrusion" : "Extrusión a Medida en Fundición Artesanal",
+      finish: lang === "en" ? "Hand-Rubbed Micro-Abrasive Patina" : "Pátina Microabrasiva Frotada a Mano",
+      density: "8,730 kg/m³ • Marine Grade",
+      application:
+        lang === "en"
+          ? "Concealed Edge Pulls, Shadow Gap Trims & Pivot Hinges"
+          : "Tiradores Embutidos, Perfiles de Junta Oculta y Bisagras",
+      image: "/static/studio.jpg",
+      color: "#a4824d"
+    },
+    walnut: {
+      name: currentText.matWalnut,
+      origin: lang === "en" ? "Appalachian Sustainable Hardwood" : "Madera Sostenible de los Apalaches",
+      finish: lang === "en" ? "Open-Pore Deep Walnut Oil Seal" : "Sellado al Aceite Profundo a Poro Abierto",
+      density: "660 kg/m³ • Acoustic Baffle",
+      application:
+        lang === "en"
+          ? "Acoustic Slatted Wall Cladding & Executive Desk Suites"
+          : "Revestimiento Acústico Alistonado y Despachos Ejecutivos",
+      image: "/static/design-desk.jpg",
+      color: "#5c4033"
+    }
+  };
+
+  // Detailed Monolith Project Specs
+  const projectSpecs = [
+    {
+      scope: lang === "en" ? "Turnkey Private Residence" : "Residencia Privada Llave en Mano",
+      area: "14,500 sq.ft",
+      timeline: "24 Weeks",
+      joinery: lang === "en" ? "French Oak & Fluted Wall Paneling" : "Roble Francés y Panelado Acanalado"
+    },
+    {
+      scope: lang === "en" ? "Commercial Creative Atelier" : "Atelier Creativo Comercial",
+      area: "8,200 sq.ft",
+      timeline: "16 Weeks",
+      joinery: lang === "en" ? "Roman Travertine & Patinated Bronze" : "Travertino Romano y Bronce Patinado"
+    },
+    {
+      scope: lang === "en" ? "DIFC Executive Sovereign Suite" : "Sede Ejecutiva en DIFC",
+      area: "18,000 sq.ft",
+      timeline: "28 Weeks",
+      joinery: lang === "en" ? "Acoustic Slatted Walnut & Marble" : "Nogal Acústico Alistonado y Mármol"
+    },
+    {
+      scope: lang === "en" ? "Bespoke Hospitality Pavilion" : "Pabellón Gastronómico de Lujo",
+      area: "11,200 sq.ft",
+      timeline: "20 Weeks",
+      joinery: lang === "en" ? "Curved Steam-Bent Teak & Brass" : "Teca Curvada al Vapor y Latón Macizo"
+    },
+    {
+      scope: lang === "en" ? "Master Joinery Fabrication Facility" : "Centro de Fabricación de Ebanistería",
+      area: "35,000 sq.ft",
+      timeline: "Continuous Operations",
+      joinery: lang === "en" ? "5-Axis CNC & Hand-Chiseled Detailing" : "CNC de 5 Ejes y Acabado Manual"
+    }
+  ];
+
   // Helper for masking individual characters
   const renderChars = (str, className = "char") =>
     str.split("").map((c, i) => (
       <span key={i} className="splitline-char-wrap" style={{ position: "relative", display: "inline-block" }}>
-        <span
-          className={className}
-          style={{ position: "relative", display: "inline-block" }}
-        >
+        <span className={className} style={{ position: "relative", display: "inline-block" }}>
           {c === " " ? "\u00A0" : c}
         </span>
       </span>
     ));
 
   // --------------------------------------------------------------------------
-  // 1. PRELOADER & INTRO ENTRANCE ANIMATION (Matching normalisboring.es)
+  // 1. PRELOADER & INTRO ENTRANCE ANIMATION
   // --------------------------------------------------------------------------
   const runSequence = useCallback(() => {
     setIsPreloading(true);
@@ -216,17 +406,14 @@ export default function YashmeenNibExperience() {
     gsap.killTweensOf("*");
 
     setProgress(0);
-
     const isMobile = window.innerWidth <= 991;
 
-    // Resets
     if (backdropRef.current) backdropRef.current.style.display = "flex";
     gsap.set(".nib-preloader-backdrop", { opacity: 1 });
     gsap.set(".nib-preloader-center", { opacity: 1 });
     gsap.set(".header__logo", { opacity: 0 });
     gsap.set(".header__btn", { y: "-180%", opacity: 0 });
 
-    // Intro elements initial states
     gsap.set(".mod-scroll__intro > .wrapper", { width: isMobile ? "100%" : "100vw" });
     gsap.set(".mod-scroll__intro__title .char", { yPercent: 110 });
     gsap.set(".mod-scroll__intro__text", { opacity: 0, y: "100%" });
@@ -247,7 +434,6 @@ export default function YashmeenNibExperience() {
         const introTl = gsap.timeline();
         timelineRef.current = introTl;
 
-        // 1. Preloader fade out
         introTl.to(".nib-preloader-center", { opacity: 0, duration: 0.35, ease: "linear" }, 0);
         introTl.to(
           ".nib-preloader-backdrop",
@@ -263,10 +449,8 @@ export default function YashmeenNibExperience() {
           0.1
         );
 
-        // 2. Intro Logo Reveal
         introTl.to(".mod-scroll__intro__logo", { opacity: 1, duration: 0.8 }, 0.2);
 
-        // 3. Intro Title Char Reveals (alternating 110% and -110%)
         introTl.to(
           ".mod-scroll__intro__wrap-titles .char",
           {
@@ -278,7 +462,6 @@ export default function YashmeenNibExperience() {
           0.3
         );
 
-        // 4. Intro text & menu
         introTl.to(".mod-scroll__intro__text", { yPercent: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.5);
         introTl.to(
           ".mod-scroll__intro__menu .menu-item",
@@ -293,7 +476,6 @@ export default function YashmeenNibExperience() {
         );
         introTl.to(".mod-scroll__intro__section, .mod-scroll__intro__copyright", { opacity: 1, duration: 0.5 }, 0.7);
 
-        // 5. Shrink Intro Wrapper from 100vw to 80vw (revealing architectural preview on right!)
         if (!isMobile) {
           introTl.to(
             ".mod-scroll__intro > .wrapper",
@@ -325,7 +507,7 @@ export default function YashmeenNibExperience() {
   }, [runSequence]);
 
   // --------------------------------------------------------------------------
-  // 2. HORIZONTAL SCROLL ENGINE (Exact kinematics of normalisboring.es)
+  // 2. HORIZONTAL SCROLL & CHAPTER CHOREOGRAPHY ENGINE
   // --------------------------------------------------------------------------
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -357,17 +539,14 @@ export default function YashmeenNibExperience() {
     const scrollH_width = modScroll.scrollWidth;
     const scrollDistance = scrollH_width - window.innerWidth;
 
-    // Master horizontal scroll timeline
     const scrollTl = gsap.timeline({ paused: true });
 
-    // Move all sections horizontally
     scrollTl.to(sections, {
       x: -scrollDistance,
       duration: 100,
       ease: "none"
     });
 
-    // Pinned horizontal track trigger
     const scrollHTrigger = ScrollTrigger.create({
       id: "normal-scroll-horizontal",
       animation: scrollTl,
@@ -380,11 +559,11 @@ export default function YashmeenNibExperience() {
       onUpdate: (self) => {
         const currentScroll = self.scroll();
 
-        // Reveal fixed header logo & floating Menú controls once scrolled past intro
+        // Fixed header logo & Menú button reveal
         const headerLogo = headerLogoRef.current;
         const headerControls = document.querySelector(".header__controls");
         if (headerLogo && headerControls) {
-          if (self.progress > 0.04) {
+          if (self.progress > 0.03) {
             headerLogo.style.opacity = "1";
             headerControls.style.transform = "translate3d(0, 0, 0)";
             headerControls.style.opacity = "1";
@@ -397,14 +576,40 @@ export default function YashmeenNibExperience() {
           }
         }
 
-        // Detect dark sections (Black Atelier or Red Cierre) to toggle white header contrast
-        const s3 = document.querySelector(".mod-scroll__images-text");
-        const s8 = document.querySelector(".mod-scroll__cierre");
-        if (s3 && s8) {
-          const s3Left = s3.offsetLeft - currentScroll;
-          const s3Right = s3Left + s3.offsetWidth;
-          const s8Left = s8.offsetLeft - currentScroll;
-          const s8Right = s8Left + s8.offsetWidth;
+        // Active Chapter Calculation (0 to 7) based on section boundaries
+        const sectionSelectors = [
+          ".mod-scroll__intro",
+          ".mod-scroll__materiality",
+          ".mod-scroll__text",
+          ".mod-scroll__images-text",
+          ".mod-scroll__carousel",
+          ".mod-scroll__terms",
+          ".mod-scroll__projects",
+          ".mod-title--chapter"
+        ];
+        if (window.innerWidth > 991) {
+          const currentX = self.progress * (modScroll.scrollWidth - window.innerWidth);
+          let activeIdx = 0;
+          for (let i = 0; i < 7; i++) {
+            const sec = document.querySelector(sectionSelectors[i]);
+            if (sec && currentX >= sec.offsetLeft - window.innerWidth * 0.35) {
+              activeIdx = i;
+            }
+          }
+          if (self.progress >= 0.95) {
+            activeIdx = 7;
+          }
+          setActiveChapter(activeIdx);
+        }
+
+        // Dark Theme Contrast Detection
+        const sAtelier = document.querySelector(".mod-scroll__images-text");
+        const sCierre = document.querySelector(".mod-scroll__cierre");
+        if (sAtelier && sCierre) {
+          const s3Left = sAtelier.offsetLeft - currentScroll;
+          const s3Right = s3Left + sAtelier.offsetWidth;
+          const s8Left = sCierre.offsetLeft - currentScroll;
+          const s8Right = s8Left + sCierre.offsetWidth;
 
           const isDark = (s3Left <= 250 && s3Right >= 50) || (s8Left <= 250 && s8Right >= 50);
           setIsHeaderDark(isDark);
@@ -432,7 +637,7 @@ export default function YashmeenNibExperience() {
       );
     }
 
-    // Section 4 Vertical Carousel Ticker (translates vertically as you scroll horizontally)
+    // Section 4 Vertical Carousel Ticker
     const carouselContent = modScroll.querySelector(".mod-scroll__carousel__content");
     if (carouselContent) {
       gsap.fromTo(
@@ -490,12 +695,11 @@ export default function YashmeenNibExperience() {
       });
     }
 
-    // Section 7: Expanding Project Cards (signature 15vw -> 60vw expansion)
+    // Section 7: Expanding Project Cards (15vw -> 60vw)
     const projectItems = modScroll.querySelectorAll(".mod-scroll__projects__item:not(.last-item)");
     projectItems.forEach((item, idx) => {
       const media = item.querySelector(".media__source");
 
-      // Expand card width 15vw -> 60vw
       gsap.fromTo(
         item,
         { width: "15vw" },
@@ -514,7 +718,6 @@ export default function YashmeenNibExperience() {
         }
       );
 
-      // Media height adjustments
       if (media) {
         gsap.fromTo(
           media,
@@ -546,7 +749,44 @@ export default function YashmeenNibExperience() {
     };
   }, []);
 
-  // Track mouse coordinates for floating preview in terms section
+  // Jump to specific chapter along the journey
+  const jumpToChapter = (idx) => {
+    if (typeof window === "undefined") return;
+    const modScroll = modScrollRef.current;
+    const sectionSelectors = [
+      ".mod-scroll__intro",
+      ".mod-scroll__materiality",
+      ".mod-scroll__text",
+      ".mod-scroll__images-text",
+      ".mod-scroll__carousel",
+      ".mod-scroll__terms",
+      ".mod-scroll__projects",
+      ".mod-title--chapter"
+    ];
+
+    const targetEl = document.querySelector(sectionSelectors[idx]);
+    if (!targetEl) return;
+
+    let targetY = 0;
+    if (window.innerWidth > 991 && modScroll) {
+      const scrollDistance = modScroll.scrollWidth - window.innerWidth;
+      if (idx < 7) {
+        targetY = Math.min(targetEl.offsetLeft, scrollDistance);
+      } else {
+        targetY = scrollDistance + 1200;
+      }
+    } else {
+      targetY = targetEl.getBoundingClientRect().top + window.scrollY - 80;
+    }
+
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(targetY, { duration: 1.2 });
+    } else {
+      window.scrollTo({ top: targetY, behavior: "smooth" });
+    }
+  };
+
+  // Track mouse coordinates for floating preview
   const handleTermsMouseMove = (e) => {
     if (!termsRef.current) return;
     const rect = termsRef.current.getBoundingClientRect();
@@ -555,6 +795,8 @@ export default function YashmeenNibExperience() {
       y: e.clientY - rect.top
     });
   };
+
+  const currentMat = materialSpecs[activeMaterial];
 
   return (
     <div
@@ -626,12 +868,29 @@ export default function YashmeenNibExperience() {
       </div>
 
       {/* ------------------------------------------------------------------
-          3. MAIN HORIZONTAL SCROLL WRAPPER (.mod-scroll)
+          3. FIXED BOTTOM STORYTELLING CHAPTER HUD
+         ------------------------------------------------------------------ */}
+      <nav className="nib-story-hud" aria-label="Experience Chapters">
+        {currentText.chapters.map((chapterName, idx) => (
+          <button
+            key={idx}
+            type="button"
+            className={`nib-story-hud__btn ${activeChapter === idx ? "is-active" : ""}`}
+            onClick={() => jumpToChapter(idx)}
+            title={`Glide to ${chapterName}`}
+          >
+            {chapterName}
+          </button>
+        ))}
+      </nav>
+
+      {/* ------------------------------------------------------------------
+          4. MAIN HORIZONTAL SCROLL WRAPPER (.mod-scroll)
          ------------------------------------------------------------------ */}
       <main>
         <section className="mod-scroll" ref={modScrollRef}>
           {/* ===============================================================
-              SECTION 0: INTRO (.mod-scroll__intro bg-white)
+              CHAPTER 0: INTRO MANIFESTO (.mod-scroll__intro bg-white)
              =============================================================== */}
           <div className="mod-scroll__intro bg-white">
             <div className="wrapper">
@@ -716,7 +975,7 @@ export default function YashmeenNibExperience() {
           </div>
 
           {/* ===============================================================
-              SECTION 1: PRIMARY IMAGES (.mod-scroll__images bg-white principal)
+              CHAPTER 1: PRIMARY IMAGES (.mod-scroll__images bg-white principal)
              =============================================================== */}
           <div className="mod-scroll__images bg-white principal">
             {/* Giant Single Image with translate3d(-15vw -> 0vw) */}
@@ -754,7 +1013,73 @@ export default function YashmeenNibExperience() {
           </div>
 
           {/* ===============================================================
-              SECTION 2: EDITORIAL TEXT (.mod-scroll__text bg-white)
+              NEW CHAPTER: MATERIALITY LABORATORY (.mod-scroll__materiality)
+             =============================================================== */}
+          <div className="mod-scroll__materiality">
+            {/* Visual Column */}
+            <div className="materiality__col-visual">
+              <span className="materiality__visual-badge">
+                {currentMat.name} // SPECIMEN 01
+              </span>
+              <img
+                src={currentMat.image}
+                alt={currentMat.name}
+                key={activeMaterial}
+                style={{ animation: "fadeIn 0.6s ease" }}
+              />
+            </div>
+
+            {/* Narrative & Interactive Swatches Column */}
+            <div className="materiality__col-content">
+              <div className="materiality__eyebrow">{currentText.matEyebrow}</div>
+              <h2 className="materiality__title">{currentText.matTitle}</h2>
+              <p className="materiality__narrative">{currentText.matNarrative}</p>
+
+              {/* Swatch Selector Buttons */}
+              <div className="materiality__swatches">
+                {Object.keys(materialSpecs).map((key) => {
+                  const item = materialSpecs[key];
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      className={`material-swatch-btn ${activeMaterial === key ? "is-active" : ""}`}
+                      onClick={() => setActiveMaterial(key)}
+                    >
+                      <span
+                        className="swatch-color-dot"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span>{item.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Technical Specimen Card */}
+              <div className="materiality__spec-card">
+                <div className="spec-item">
+                  <span className="spec-label">{currentText.labelOrigin}</span>
+                  <span className="spec-val">{currentMat.origin}</span>
+                </div>
+                <div className="spec-item">
+                  <span className="spec-label">{currentText.labelDensity}</span>
+                  <span className="spec-val">{currentMat.density}</span>
+                </div>
+                <div className="spec-item">
+                  <span className="spec-label">{currentText.labelFinish}</span>
+                  <span className="spec-val">{currentMat.finish}</span>
+                </div>
+                <div className="spec-item">
+                  <span className="spec-label">{currentText.labelApplication}</span>
+                  <span className="spec-val">{currentMat.application}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ===============================================================
+              CHAPTER 2: EDITORIAL TEXT (.mod-scroll__text bg-white)
              =============================================================== */}
           <div className="mod-scroll__text bg-white" id="studio">
             <div className="wrapper">
@@ -781,17 +1106,54 @@ export default function YashmeenNibExperience() {
                 <div className="mod-scroll__text__text f-izmir t-parrafo">
                   <p>{currentText.textParagraph}</p>
                 </div>
+
+                {/* Live Studio Telemetry Counters */}
+                <div className="mod-scroll__text__telemetry">
+                  <div className="telemetry-item">
+                    <span className="telemetry-num">35,000</span>
+                    <span className="telemetry-label">{currentText.telemetry1Label}</span>
+                  </div>
+                  <div className="telemetry-item">
+                    <span className="telemetry-num">140+</span>
+                    <span className="telemetry-label">{currentText.telemetry2Label}</span>
+                  </div>
+                  <div className="telemetry-item">
+                    <span className="telemetry-num">0.5 MM</span>
+                    <span className="telemetry-label">{currentText.telemetry3Label}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* ===============================================================
-              SECTION 3: DARK ATELIER (.mod-scroll__images-text bg-black c-white)
+              CHAPTER 3: DARK ATELIER (.mod-scroll__images-text bg-black c-white)
              =============================================================== */}
           <div className="mod-scroll__images-text bg-black c-white">
-            <div className="wrapper">
+            <div className="wrapper" style={{ position: "relative" }}>
+              {/* CAD Blueprint / Built Reality X-Ray Mode Toggle */}
+              <div className="atelier-controls">
+                <button
+                  type="button"
+                  className={`btn-blueprint-mode ${isBlueprintMode ? "is-active" : ""}`}
+                  onClick={() => setIsBlueprintMode(!isBlueprintMode)}
+                >
+                  <FiLayers size={13} />
+                  <span>
+                    {isBlueprintMode ? currentText.btnBlueprintReality : currentText.btnBlueprintCad}
+                  </span>
+                </button>
+              </div>
+
               {/* Dual flip media pair 1 */}
-              <div className="mod-scroll__images-text__flip flipMedia flipMedia--rightLeft">
+              <div className="mod-scroll__images-text__flip flipMedia flipMedia--rightLeft" style={{ position: "relative" }}>
+                {isBlueprintMode && (
+                  <div className="blueprint-overlay">
+                    <span className="blueprint-tag">CAD DRAFTING // JOINERY BAY 03</span>
+                    <span className="blueprint-tag">DETAIL: 45° MITRED CORNER • 0.5MM TOLERANCE</span>
+                    <span className="blueprint-tag">CONCEALED HAFELE PIVOT AXIS</span>
+                  </div>
+                )}
                 <div className="media flipMedia__media flipMedia__media--down noAspect">
                   <div className="media__wrap-source image">
                     <img
@@ -842,7 +1204,7 @@ export default function YashmeenNibExperience() {
           </div>
 
           {/* ===============================================================
-              SECTION 4: VERTICAL CAROUSEL RIBBON (.mod-scroll__carousel)
+              CHAPTER 4: VERTICAL CAROUSEL RIBBON (.mod-scroll__carousel)
              =============================================================== */}
           <div className="mod-scroll__carousel bg-beige c-black t-supertitulo-l">
             <div className="mod-scroll__carousel__content">
@@ -874,7 +1236,7 @@ export default function YashmeenNibExperience() {
           </div>
 
           {/* ===============================================================
-              SECTION 5: SECONDARY MEDIA (.mod-scroll__images bg-beige c-black)
+              CHAPTER 5: SECONDARY MEDIA (.mod-scroll__images.secundario)
              =============================================================== */}
           <div className="mod-scroll__images bg-beige c-black secundario">
             <div className="mod-scroll__images__flip flipMedia flipMedia--rightLeft">
@@ -903,7 +1265,7 @@ export default function YashmeenNibExperience() {
           </div>
 
           {/* ===============================================================
-              SECTION 6: TERMS WITH MOUSE-FOLLOW (.mod-scroll__terms bg-blue)
+              CHAPTER 6: SPATIAL TENETS (.mod-scroll__terms bg-blue)
              =============================================================== */}
           <div
             className="mod-scroll__terms follow__wrap bg-blue"
@@ -998,7 +1360,7 @@ export default function YashmeenNibExperience() {
           </div>
 
           {/* ===============================================================
-              SECTION 7: PROJECTS EXPANDING GALLERY (.mod-scroll__projects)
+              CHAPTER 7: EXPANDING MONOLITHS (.mod-scroll__projects)
              =============================================================== */}
           <div className="mod-scroll__projects" id="projects">
             <div className="mod-scroll__projects__wrap-text">
@@ -1010,9 +1372,44 @@ export default function YashmeenNibExperience() {
               </div>
             </div>
 
-            {/* Project 1 */}
+            {/* Project 1: Clifton Residence */}
             <div className="mod-scroll__projects__item bg-beige c-black">
               <div className="mod-scroll__projects__item__content">
+                <button
+                  type="button"
+                  className="project-spec-toggle-btn"
+                  onClick={() =>
+                    setOpenSpecProjectIdx(openSpecProjectIdx === 0 ? null : 0)
+                  }
+                >
+                  {openSpecProjectIdx === 0
+                    ? currentText.btnHideSpec
+                    : currentText.btnInspectSpec}
+                </button>
+
+                {openSpecProjectIdx === 0 && (
+                  <div className="project-spec-drawer">
+                    <div className="drawer-details-grid">
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specScope}</span>
+                        <span className="drawer-val">{projectSpecs[0].scope}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specArea}</span>
+                        <span className="drawer-val">{projectSpecs[0].area}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specTimeline}</span>
+                        <span className="drawer-val">{projectSpecs[0].timeline}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specJoinery}</span>
+                        <span className="drawer-val">{projectSpecs[0].joinery}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="media mod-scroll__projects__item__image noAspect">
                   <div className="media__wrap-source image">
                     <img
@@ -1041,9 +1438,44 @@ export default function YashmeenNibExperience() {
               </div>
             </div>
 
-            {/* Project 2 */}
+            {/* Project 2: Myrtle House */}
             <div className="mod-scroll__projects__item bg-grey">
               <div className="mod-scroll__projects__item__content">
+                <button
+                  type="button"
+                  className="project-spec-toggle-btn"
+                  onClick={() =>
+                    setOpenSpecProjectIdx(openSpecProjectIdx === 1 ? null : 1)
+                  }
+                >
+                  {openSpecProjectIdx === 1
+                    ? currentText.btnHideSpec
+                    : currentText.btnInspectSpec}
+                </button>
+
+                {openSpecProjectIdx === 1 && (
+                  <div className="project-spec-drawer">
+                    <div className="drawer-details-grid">
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specScope}</span>
+                        <span className="drawer-val">{projectSpecs[1].scope}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specArea}</span>
+                        <span className="drawer-val">{projectSpecs[1].area}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specTimeline}</span>
+                        <span className="drawer-val">{projectSpecs[1].timeline}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specJoinery}</span>
+                        <span className="drawer-val">{projectSpecs[1].joinery}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="media mod-scroll__projects__item__image noAspect">
                   <div className="media__wrap-source image">
                     <img
@@ -1072,9 +1504,44 @@ export default function YashmeenNibExperience() {
               </div>
             </div>
 
-            {/* Project 3 */}
+            {/* Project 3: OH Workplace */}
             <div className="mod-scroll__projects__item bg-blue">
               <div className="mod-scroll__projects__item__content">
+                <button
+                  type="button"
+                  className="project-spec-toggle-btn"
+                  onClick={() =>
+                    setOpenSpecProjectIdx(openSpecProjectIdx === 2 ? null : 2)
+                  }
+                >
+                  {openSpecProjectIdx === 2
+                    ? currentText.btnHideSpec
+                    : currentText.btnInspectSpec}
+                </button>
+
+                {openSpecProjectIdx === 2 && (
+                  <div className="project-spec-drawer">
+                    <div className="drawer-details-grid">
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specScope}</span>
+                        <span className="drawer-val">{projectSpecs[2].scope}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specArea}</span>
+                        <span className="drawer-val">{projectSpecs[2].area}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specTimeline}</span>
+                        <span className="drawer-val">{projectSpecs[2].timeline}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specJoinery}</span>
+                        <span className="drawer-val">{projectSpecs[2].joinery}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="media mod-scroll__projects__item__image noAspect">
                   <div className="media__wrap-source image">
                     <img
@@ -1103,9 +1570,44 @@ export default function YashmeenNibExperience() {
               </div>
             </div>
 
-            {/* Project 4 */}
+            {/* Project 4: Juno Pavilion */}
             <div className="mod-scroll__projects__item bg-beige c-black">
               <div className="mod-scroll__projects__item__content">
+                <button
+                  type="button"
+                  className="project-spec-toggle-btn"
+                  onClick={() =>
+                    setOpenSpecProjectIdx(openSpecProjectIdx === 3 ? null : 3)
+                  }
+                >
+                  {openSpecProjectIdx === 3
+                    ? currentText.btnHideSpec
+                    : currentText.btnInspectSpec}
+                </button>
+
+                {openSpecProjectIdx === 3 && (
+                  <div className="project-spec-drawer">
+                    <div className="drawer-details-grid">
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specScope}</span>
+                        <span className="drawer-val">{projectSpecs[3].scope}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specArea}</span>
+                        <span className="drawer-val">{projectSpecs[3].area}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specTimeline}</span>
+                        <span className="drawer-val">{projectSpecs[3].timeline}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specJoinery}</span>
+                        <span className="drawer-val">{projectSpecs[3].joinery}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="media mod-scroll__projects__item__image noAspect">
                   <div className="media__wrap-source image">
                     <img
@@ -1134,9 +1636,44 @@ export default function YashmeenNibExperience() {
               </div>
             </div>
 
-            {/* Project 5 (Last Item) */}
+            {/* Project 5: The Master Atelier (Last Item) */}
             <div className="mod-scroll__projects__item last-item bg-grey">
               <div className="mod-scroll__projects__item__content">
+                <button
+                  type="button"
+                  className="project-spec-toggle-btn"
+                  onClick={() =>
+                    setOpenSpecProjectIdx(openSpecProjectIdx === 4 ? null : 4)
+                  }
+                >
+                  {openSpecProjectIdx === 4
+                    ? currentText.btnHideSpec
+                    : currentText.btnInspectSpec}
+                </button>
+
+                {openSpecProjectIdx === 4 && (
+                  <div className="project-spec-drawer">
+                    <div className="drawer-details-grid">
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specScope}</span>
+                        <span className="drawer-val">{projectSpecs[4].scope}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specArea}</span>
+                        <span className="drawer-val">{projectSpecs[4].area}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specTimeline}</span>
+                        <span className="drawer-val">{projectSpecs[4].timeline}</span>
+                      </div>
+                      <div className="drawer-item">
+                        <span className="drawer-label">{currentText.specJoinery}</span>
+                        <span className="drawer-val">{projectSpecs[4].joinery}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="media mod-scroll__projects__item__image noAspect">
                   <div className="media__wrap-source image">
                     <img
@@ -1185,7 +1722,7 @@ export default function YashmeenNibExperience() {
         </section>
 
         {/* ===============================================================
-            4. UNPINNED VERTICAL FINALE & FOOTER (Matches normalisboring.es)
+            EPILOGUE: UNPINNED VERTICAL FINALE & BESPOKE COMMISSION
            =============================================================== */}
         <section
           className="mod-title wrapper mod-title--chapter bg-beige c-black anim-line"
@@ -1217,10 +1754,52 @@ export default function YashmeenNibExperience() {
           </h3>
         </section>
 
+        {/* Interactive Commission Scope Selector */}
         <section className="mod-content wrapper mod-content--cols bg-beige c-black">
           <div className="mod-content__col big_text">
             <p>{currentText.finaleParagraph}</p>
-            <p>
+            
+            <div className="commission-selector">
+              <div className="commission-pills">
+                <button
+                  type="button"
+                  className={`commission-pill-btn ${activeCommissionType === "residential" ? "is-active" : ""}`}
+                  onClick={() => setActiveCommissionType("residential")}
+                >
+                  {currentText.commResidential}
+                </button>
+                <button
+                  type="button"
+                  className={`commission-pill-btn ${activeCommissionType === "corporate" ? "is-active" : ""}`}
+                  onClick={() => setActiveCommissionType("corporate")}
+                >
+                  {currentText.commCorporate}
+                </button>
+                <button
+                  type="button"
+                  className={`commission-pill-btn ${activeCommissionType === "hospitality" ? "is-active" : ""}`}
+                  onClick={() => setActiveCommissionType("hospitality")}
+                >
+                  {currentText.commHospitality}
+                </button>
+                <button
+                  type="button"
+                  className={`commission-pill-btn ${activeCommissionType === "millwork" ? "is-active" : ""}`}
+                  onClick={() => setActiveCommissionType("millwork")}
+                >
+                  {currentText.commMillwork}
+                </button>
+              </div>
+
+              <div className="commission-guidance-card">
+                {activeCommissionType === "residential" && currentText.guidanceResidential}
+                {activeCommissionType === "corporate" && currentText.guidanceCorporate}
+                {activeCommissionType === "hospitality" && currentText.guidanceHospitality}
+                {activeCommissionType === "millwork" && currentText.guidanceMillwork}
+              </div>
+            </div>
+
+            <p style={{ marginTop: "1.5rem" }}>
               <strong>info@yashmeen.ae</strong>
             </p>
           </div>

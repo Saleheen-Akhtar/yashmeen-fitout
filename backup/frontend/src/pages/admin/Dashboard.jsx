@@ -2,27 +2,29 @@ import React, { useEffect, useState } from "react";
 import { webDetailsAPI } from "../../services/api";
 
 const palette = {
-  navy950: "#0B1220",
-  navy900: "#101a30",
-  navyBorder: "#1E293B",
-  blue500: "#3B82F6",
-  blue400: "#60A5FA",
-  cyan400: "#22D3EE",
-  slate50: "#F8FAFC",
-  slate100: "#F1F5F9",
-  slate200: "#E2E8F0",
-  slate400: "#94A3B8",
-  slate500: "#64748B",
-  slate900: "#0F172A",
+  obsidian: "#171613",
+  obsidianHover: "#2a2824",
+  brass: "#b18a4f",
+  brassHover: "#8e6b37",
+  brassDim: "rgba(177, 138, 79, 0.12)",
+  stoneBg: "#f5f3ef",
   white: "#FFFFFF",
-  red600: "#DC2626",
-  green600: "#16A34A",
+  cardBg: "#FFFFFF",
+  border: "#e7e4dc",
+  inputBorder: "#e2ded4",
+  inputBg: "#ffffff",
+  ink: "#171613",
+  inkSoft: "#30302e",
+  muted: "#6b6860",
+  mutedLight: "#9c978b",
+  red600: "#c62828",
+  green600: "#2e7d32",
 };
 
 const TrashIcon = () => (
   <svg
-    width="16"
-    height="16"
+    width="15"
+    height="15"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -34,12 +36,12 @@ const TrashIcon = () => (
 
 const PlusIcon = () => (
   <svg
-    width="16"
-    height="16"
+    width="14"
+    height="14"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth="2"
+    strokeWidth="2.2"
   >
     <path d="M12 5v14M5 12h14" />
   </svg>
@@ -51,7 +53,7 @@ const emptyDetails = {
     city: "",
     state: "",
     zipCode: "",
-    country: "India",
+    country: "United Arab Emirates",
   },
   email: "",
   mobile: "",
@@ -62,7 +64,6 @@ const emptyDetails = {
 const URL_RE = /^https?:\/\/.+/;
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
-// Normalise whatever the server returns into the shape the form expects
 const normalizeDetails = (data = {}) => ({
   address: { ...emptyDetails.address, ...(data.address || {}) },
   email: data.email || "",
@@ -71,7 +72,6 @@ const normalizeDetails = (data = {}) => ({
   socialLinks: Array.isArray(data.socialLinks) ? data.socialLinks : [],
 });
 
-// Survives unmounts, so revisiting the page doesn't refetch
 let cachedDetails = null;
 
 export default function Dashboard() {
@@ -79,10 +79,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(!cachedDetails);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
-  const [banner, setBanner] = useState(null); // { type: 'success' | 'error', text }
+  const [banner, setBanner] = useState(null);
 
   useEffect(() => {
-    if (cachedDetails) return; // already have it, no API call
+    if (cachedDetails) return;
 
     let cancelled = false;
     (async () => {
@@ -150,56 +150,44 @@ export default function Dashboard() {
 
   const validate = () => {
     const next = {};
-
     if (details.email && !EMAIL_RE.test(details.email)) {
       next.email = "Enter a valid email address.";
     }
-
     details.socialLinks.forEach((link, i) => {
       if (!link.platform?.trim()) {
-        next[`social_${i}_platform`] = "Platform is required.";
+        next[`social_${i}_platform`] = "Platform required.";
       }
       if (!link.url?.trim()) {
-        next[`social_${i}_url`] = "URL is required.";
+        next[`social_${i}_url`] = "URL required.";
       } else if (!URL_RE.test(link.url.trim())) {
-        next[`social_${i}_url`] = "URL must start with http:// or https://";
+        next[`social_${i}_url`] = "Must begin with http:// or https://";
       }
     });
-
-    return next;
+    setErrors(next);
+    return Object.keys(next).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const next = validate();
-    setErrors(next);
-    if (Object.keys(next).length > 0) return;
+    setBanner(null);
+    if (!validate()) return;
 
     setSaving(true);
-    setBanner(null);
-
     try {
       const payload = {
-        ...details,
-        socialLinks: details.socialLinks.map((l) => ({
-          platform: l.platform.trim().toLowerCase(),
-          url: l.url.trim(),
+        address: details.address,
+        email: details.email.trim(),
+        mobile: details.mobile.trim(),
+        whatsapp: details.whatsapp.trim(),
+        socialLinks: details.socialLinks.map((s) => ({
+          platform: s.platform.trim(),
+          url: s.url.trim(),
         })),
       };
-
-      // Same unwrapping as the load: axios response -> body -> body.data
       const { data: res } = await webDetailsAPI.update(payload);
-      const updated = res?.data;
-
-      // If the server didn't return the document, keep what the user typed
-      const next =
-        updated && typeof updated === "object"
-          ? normalizeDetails(updated)
-          : payload;
-
-      cachedDetails = next; // keep cache in sync
-      setDetails(next);
-
+      const saved = res?.data || payload;
+      cachedDetails = normalizeDetails(saved);
+      setDetails(cachedDetails);
       setBanner({
         type: "success",
         text: "Website details updated successfully.",
@@ -209,8 +197,7 @@ export default function Dashboard() {
         type: "error",
         text:
           err?.response?.data?.message ||
-          err?.message ||
-          "Failed to save details.",
+          "Failed to save changes. Please try again.",
       });
     } finally {
       setSaving(false);
@@ -219,11 +206,9 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div style={styles.page}>
-        <style>{css}</style>
-        <div style={styles.card}>
-          <p style={styles.cardSubtitle}>Loading website details…</p>
-        </div>
+      <div style={styles.loadingWrap}>
+        <div style={styles.loadingSpinner}></div>
+        <span style={styles.loadingText}>LOADING ATELIER DETAILS…</span>
       </div>
     );
   }
@@ -233,10 +218,17 @@ export default function Dashboard() {
       <style>{css}</style>
 
       <div className="wdCard" style={styles.card}>
-        <h2 style={styles.cardTitle}>Website Details</h2>
-        <p style={styles.cardSubtitle}>
-          Manage your public contact information, address and social links.
-        </p>
+        {/* Header Section */}
+        <div style={styles.cardHeader}>
+          <div style={styles.badgeRow}>
+            <span style={styles.atelierBadge}>ATELIER DIRECTORY · 01</span>
+            <div style={styles.topHairline} />
+          </div>
+          <h2 style={styles.cardTitle}>Website Identity & Public Profile</h2>
+          <p style={styles.cardSubtitle}>
+            Configure the official Yashmeen atelier address, client contact lines, and active digital social handles shown on the public site.
+          </p>
+        </div>
 
         {banner && (
           <div
@@ -244,60 +236,71 @@ export default function Dashboard() {
               ...styles.banner,
               background:
                 banner.type === "success"
-                  ? "rgba(22,163,74,0.08)"
-                  : "rgba(220,38,38,0.08)",
-              border: `1px solid ${banner.type === "success" ? "rgba(22,163,74,0.3)" : "rgba(220,38,38,0.3)"}`,
-              color:
-                banner.type === "success" ? palette.green600 : palette.red600,
+                  ? "rgba(46, 125, 50, 0.08)"
+                  : "rgba(198, 40, 40, 0.08)",
+              border: `1px solid ${
+                banner.type === "success"
+                  ? "rgba(46, 125, 50, 0.3)"
+                  : "rgba(198, 40, 40, 0.3)"
+              }`,
+              color: banner.type === "success" ? palette.green600 : palette.red600,
             }}
           >
             {banner.text}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} noValidate style={styles.form}>
-          {/* Address */}
+        <form onSubmit={handleSubmit} style={styles.form}>
+          {/* Section 01: Physical Address */}
           <section style={styles.section}>
-            <h3 style={styles.sectionTitle}>Address</h3>
+            <div style={styles.sectionHeader}>
+              <span style={styles.sectionNum}>(01)</span>
+              <h3 style={styles.sectionTitle}>Physical Location & Atelier</h3>
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Street / Building Details</label>
+              <input
+                style={styles.input}
+                className="wdInput"
+                value={details.address.street}
+                onChange={setAddressField("street")}
+                placeholder="Municipality Building 2nd floor, Deira / Al Quoz, Dubai"
+              />
+            </div>
+
             <div style={styles.grid2}>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Street</label>
-                <input
-                  style={styles.input}
-                  className="wdInput"
-                  value={details.address.street}
-                  onChange={setAddressField("street")}
-                  placeholder="123 Main St"
-                />
-              </div>
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>City</label>
+                <label style={styles.label}>City / Emirate</label>
                 <input
                   style={styles.input}
                   className="wdInput"
                   value={details.address.city}
                   onChange={setAddressField("city")}
-                  placeholder="Mumbai"
+                  placeholder="Dubai"
                 />
               </div>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>State</label>
+                <label style={styles.label}>State / Region</label>
                 <input
                   style={styles.input}
                   className="wdInput"
                   value={details.address.state}
                   onChange={setAddressField("state")}
-                  placeholder="Maharashtra"
+                  placeholder="Dubai"
                 />
               </div>
+            </div>
+
+            <div style={styles.grid2}>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Zip Code</label>
+                <label style={styles.label}>Postal Code / P.O. Box</label>
                 <input
                   style={styles.input}
                   className="wdInput"
                   value={details.address.zipCode}
                   onChange={setAddressField("zipCode")}
-                  placeholder="400001"
+                  placeholder="67 Dubai UAE"
                 />
               </div>
               <div style={styles.inputGroup}>
@@ -307,82 +310,91 @@ export default function Dashboard() {
                   className="wdInput"
                   value={details.address.country}
                   onChange={setAddressField("country")}
-                  placeholder="India"
+                  placeholder="United Arab Emirates"
                 />
               </div>
             </div>
           </section>
 
-          {/* Contact */}
+          {/* Section 02: Contact */}
           <section style={styles.section}>
-            <h3 style={styles.sectionTitle}>Contact</h3>
-            <div style={styles.grid2}>
+            <div style={styles.sectionHeader}>
+              <span style={styles.sectionNum}>(02)</span>
+              <h3 style={styles.sectionTitle}>Client Inquiries & Direct Lines</h3>
+            </div>
+
+            <div style={styles.grid3}>
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Email</label>
+                <label style={styles.label}>Public Official Email</label>
                 <input
                   style={styles.input}
                   className="wdInput"
                   type="email"
                   value={details.email}
                   onChange={setField("email")}
-                  placeholder="contact@company.com"
+                  placeholder="info@yfbfitoutcontracting.com"
                 />
                 {errors.email && (
                   <span style={styles.errorMsg}>{errors.email}</span>
                 )}
               </div>
+
               <div style={styles.inputGroup}>
-                <label style={styles.label}>Mobile</label>
+                <label style={styles.label}>Phone / Mobile</label>
                 <input
                   style={styles.input}
                   className="wdInput"
                   value={details.mobile}
                   onChange={setField("mobile")}
-                  placeholder="+91 98765 43210"
+                  placeholder="+971 54 386 2870"
                 />
               </div>
+
               <div style={styles.inputGroup}>
-                <label style={styles.label}>WhatsApp</label>
+                <label style={styles.label}>WhatsApp Business</label>
                 <input
                   style={styles.input}
                   className="wdInput"
                   value={details.whatsapp}
                   onChange={setField("whatsapp")}
-                  placeholder="+91 98765 43210"
+                  placeholder="+971 54 386 2870"
                 />
               </div>
             </div>
           </section>
 
-          {/* Social Links */}
+          {/* Section 03: Social Links */}
           <section style={styles.section}>
             <div style={styles.socialHeaderRow}>
-              <h3 style={styles.sectionTitle}>Social Links</h3>
+              <div style={styles.sectionHeader}>
+                <span style={styles.sectionNum}>(03)</span>
+                <h3 style={styles.sectionTitle}>Digital Channels & Socials</h3>
+              </div>
               <button
                 type="button"
                 className="wdAddBtn"
                 style={styles.addBtn}
                 onClick={addSocialLink}
               >
-                <PlusIcon /> Add link
+                <PlusIcon /> ADD CHANNEL
               </button>
             </div>
 
             {details.socialLinks.length === 0 && (
-              <p style={styles.emptyText}>No social links added yet.</p>
+              <p style={styles.emptyText}>No digital channels linked yet.</p>
             )}
 
             <div style={styles.socialList}>
               {details.socialLinks.map((link, i) => (
                 <div key={i} style={styles.socialRow}>
-                  <div style={{ ...styles.inputGroup, flex: "0 0 160px" }}>
+                  <div style={{ ...styles.inputGroup, flex: "0 0 170px" }}>
                     <label style={styles.label}>Platform</label>
                     <input
                       style={styles.input}
                       className="wdInput"
                       value={link.platform}
                       onChange={setSocialField(i, "platform")}
-                      placeholder="instagram"
+                      placeholder="instagram / facebook"
                     />
                     {errors[`social_${i}_platform`] && (
                       <span style={styles.errorMsg}>
@@ -397,7 +409,7 @@ export default function Dashboard() {
                       className="wdInput"
                       value={link.url}
                       onChange={setSocialField(i, "url")}
-                      placeholder="https://instagram.com/yourbrand"
+                      placeholder="https://instagram.com/yashmeenfuture"
                     />
                     {errors[`social_${i}_url`] && (
                       <span style={styles.errorMsg}>
@@ -410,7 +422,7 @@ export default function Dashboard() {
                     className="wdRemoveBtn"
                     style={styles.removeBtn}
                     onClick={() => removeSocialLink(i)}
-                    aria-label="Remove social link"
+                    aria-label="Remove social channel"
                   >
                     <TrashIcon />
                   </button>
@@ -419,6 +431,7 @@ export default function Dashboard() {
             </div>
           </section>
 
+          {/* Action Row */}
           <div style={styles.actionsRow}>
             <button
               type="submit"
@@ -426,7 +439,7 @@ export default function Dashboard() {
               style={styles.btnPrimary}
               disabled={saving}
             >
-              {saving ? "Saving…" : "Save changes"}
+              {saving ? "UPDATING ATELIER…" : "SAVE CHANGES ↗"}
             </button>
           </div>
         </form>
@@ -435,134 +448,269 @@ export default function Dashboard() {
   );
 }
 
-/* ---------- styles ---------- */
-
 const styles = {
+  loadingWrap: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "400px",
+    gap: "16px",
+  },
+  loadingSpinner: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    border: "2px solid #e7e4dc",
+    borderTopColor: "#b18a4f",
+    animation: "spin 0.8s linear infinite",
+  },
+  loadingText: {
+    fontSize: "11px",
+    fontWeight: 700,
+    letterSpacing: "0.12em",
+    color: "#b18a4f",
+  },
   page: {
-    minHeight: "100vh",
     width: "100%",
     display: "flex",
     justifyContent: "center",
-    fontFamily:
-      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    background: palette.slate50,
+    fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
     boxSizing: "border-box",
   },
   card: {
     width: "100%",
-    background: palette.white,
-    border: `1px solid ${palette.slate200}`,
-    borderRadius: "16px",
-    padding: "clamp(24px, 4vw, 40px)",
+    background: "#ffffff",
+    border: "1px solid #e7e4dc",
+    borderRadius: "14px",
+    padding: "clamp(24px, 3.5vw, 44px)",
     boxSizing: "border-box",
-    height: "fit-content",
+    boxShadow: "0 4px 20px -4px rgba(8, 8, 7, 0.05)",
+  },
+  cardHeader: {
+    marginBottom: "28px",
+  },
+  badgeRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    marginBottom: "10px",
+  },
+  atelierBadge: {
+    fontSize: "10px",
+    fontWeight: 700,
+    letterSpacing: "0.14em",
+    color: "#b18a4f",
+    textTransform: "uppercase",
+  },
+  topHairline: {
+    flex: 1,
+    height: "1px",
+    background: "#b18a4f",
+    opacity: 0.35,
   },
   cardTitle: {
-    fontFamily: "'Sora', 'Inter', sans-serif",
-    fontWeight: 600,
-    fontSize: "24px",
-    color: palette.slate900,
-    margin: "0 0 6px 0",
+    fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+    fontWeight: 700,
+    fontSize: "clamp(22px, 2vw, 28px)",
+    color: "#171613",
+    margin: "0 0 8px 0",
+    letterSpacing: "-0.025em",
   },
   cardSubtitle: {
     fontSize: "14px",
-    color: palette.slate500,
-    margin: "0 0 20px 0",
+    color: "#6b6860",
+    lineHeight: 1.55,
+    margin: 0,
+    maxWidth: "700px",
   },
   banner: {
     borderRadius: "8px",
-    padding: "10px 14px",
+    padding: "12px 16px",
     fontSize: "13px",
-    marginBottom: "20px",
+    fontWeight: 500,
+    marginBottom: "24px",
   },
-  form: { display: "flex", flexDirection: "column", gap: "28px" },
-  section: { display: "flex", flexDirection: "column", gap: "14px" },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "36px",
+  },
+  section: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "18px",
+    paddingTop: "24px",
+    borderTop: "1px solid #f1f0ee",
+  },
+  sectionHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  sectionNum: {
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontSize: "12px",
+    fontWeight: 700,
+    color: "#b18a4f",
+    letterSpacing: "0.05em",
+  },
   sectionTitle: {
-    fontFamily: "'Sora', 'Inter', sans-serif",
-    fontSize: "15px",
-    fontWeight: 600,
-    color: palette.slate900,
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontSize: "14px",
+    fontWeight: 700,
+    color: "#171613",
+    letterSpacing: "0.06em",
+    textTransform: "uppercase",
     margin: 0,
   },
   grid2: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: "16px",
+    gap: "18px",
   },
-  inputGroup: { display: "flex", flexDirection: "column", gap: "6px" },
-  label: { fontSize: "13px", fontWeight: 500, color: palette.slate900 },
+  grid3: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: "18px",
+  },
+  inputGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  },
+  label: {
+    fontSize: "11.5px",
+    fontWeight: 600,
+    letterSpacing: "0.05em",
+    textTransform: "uppercase",
+    color: "#171613",
+  },
   input: {
-    border: `1px solid ${palette.slate200}`,
-    background: palette.slate100,
-    borderRadius: "10px",
+    border: "1px solid #e2ded4",
+    background: "#ffffff",
+    borderRadius: "8px",
     padding: "11px 14px",
-    fontSize: "14px",
-    color: palette.slate900,
+    fontSize: "13.5px",
+    color: "#171613",
     outline: "none",
     width: "100%",
     boxSizing: "border-box",
+    transition: "all 0.2s ease",
   },
-  errorMsg: { fontSize: "12px", color: palette.red600 },
-  emptyText: { fontSize: "13px", color: palette.slate500, margin: 0 },
+  errorMsg: {
+    fontSize: "11.5px",
+    color: palette.red600,
+    marginTop: "2px",
+  },
+  emptyText: {
+    fontSize: "13px",
+    color: "#9c978b",
+    margin: 0,
+    fontStyle: "italic",
+  },
   socialHeaderRow: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
   },
   addBtn: {
-    display: "flex",
+    display: "inline-flex",
     alignItems: "center",
     gap: "6px",
     background: "transparent",
-    border: `1px solid ${palette.slate200}`,
-    borderRadius: "8px",
-    padding: "6px 12px",
-    fontSize: "13px",
-    fontWeight: 500,
-    color: palette.blue500,
+    border: "1px solid #b18a4f",
+    borderRadius: "9999px",
+    padding: "6px 16px",
+    fontSize: "11px",
+    fontWeight: 700,
+    letterSpacing: "0.06em",
+    color: "#b18a4f",
     cursor: "pointer",
+    transition: "all 0.2s ease",
   },
-  socialList: { display: "flex", flexDirection: "column", gap: "12px" },
+  socialList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "14px",
+  },
   socialRow: {
     display: "flex",
     alignItems: "flex-end",
-    gap: "10px",
+    gap: "12px",
   },
   removeBtn: {
     background: "transparent",
     border: "none",
-    color: palette.slate400,
+    color: "#9c978b",
     cursor: "pointer",
     padding: "10px",
     flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "color 0.2s ease",
   },
-  actionsRow: { display: "flex", justifyContent: "flex-end" },
+  actionsRow: {
+    display: "flex",
+    justifyContent: "flex-end",
+    paddingTop: "12px",
+    borderTop: "1px solid #f1f0ee",
+  },
   btnPrimary: {
-    fontFamily: "'Sora', 'Inter', sans-serif",
-    background: palette.blue500,
-    color: palette.white,
-    border: "none",
-    borderRadius: "10px",
-    padding: "12px 24px",
-    fontSize: "14px",
-    fontWeight: 600,
+    fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+    background: "#171613",
+    color: "#ffffff",
+    border: "1px solid #171613",
+    borderRadius: "9999px",
+    padding: "12px 32px",
+    fontSize: "12px",
+    fontWeight: 700,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
     cursor: "pointer",
+    transition: "all 0.25s ease",
+    boxShadow: "0 4px 14px rgba(8, 8, 7, 0.15)",
   },
 };
 
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 
   .wdInput:focus {
-    border-color: ${palette.blue500} !important;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    border-color: #b18a4f !important;
+    box-shadow: 0 0 0 3px rgba(177, 138, 79, 0.15) !important;
   }
-  .wdAddBtn:hover { background: ${palette.slate100}; }
-  .wdRemoveBtn:hover { color: ${palette.red600}; }
-  .wdBtnPrimary:hover:not(:disabled) { background: ${palette.blue400}; }
-  .wdBtnPrimary:disabled { opacity: 0.7; cursor: not-allowed; }
+  .wdAddBtn:hover {
+    background: #b18a4f !important;
+    color: #ffffff !important;
+  }
+  .wdRemoveBtn:hover {
+    color: #c62828 !important;
+  }
+  .wdBtnPrimary:hover:not(:disabled) {
+    background: #b18a4f !important;
+    border-color: #b18a4f !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(177, 138, 79, 0.25) !important;
+  }
+  .wdBtnPrimary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 900px) {
+    .wdCard [style*="grid-template-columns: 1fr 1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
 
   @media (max-width: 640px) {
-    .wdCard [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+    .wdCard [style*="grid-template-columns: 1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
   }
 `;

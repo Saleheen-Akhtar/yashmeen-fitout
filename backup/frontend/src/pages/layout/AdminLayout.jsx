@@ -1,34 +1,40 @@
-import React, { useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import React, { useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../../components/admin/Sidebar";
 import AdminHeader from "../../components/admin/AdminHeader";
+import "../../styles/admin-architectural.css";
+
+const ROUTE_TITLES = {
+  "/dashboard": "Atelier Overview",
+  "/dashboard/quotes": "Quotations",
+  "/dashboard/enquiry": "Client Inquiries",
+  "/dashboard/project-manager": "Project Portfolio",
+  "/dashboard/vacancy-manager": "Career Vacancies",
+  "/dashboard/blog-manager": "Editorial & Insights",
+  "/dashboard/create-blog": "Draft Insight",
+  "/dashboard/gallery-manager": "Photo Atelier",
+  "/dashboard/video-manager": "Cinematic Archive",
+  "/dashboard/banner-manager": "Hero Banners",
+  "/dashboard/popup-manager": "Announcement Popups",
+  "/dashboard/categories": "Taxonomy & Categories",
+};
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("Dashboard");
+  const location = useLocation();
 
-  const [activeBreadcrumb, setActiveBreadcrumb] = useState("Home / Dashboard");
+  const currentPath = location.pathname.replace(/\/+$/, "") || "/dashboard";
+  const activeMenu = ROUTE_TITLES[currentPath] || "Dashboard";
+  const activeBreadcrumb = `Yashmeen Atelier / ${activeMenu}`;
 
-  const handleMenuClick = (menuName, parentName = null) => {
-    setActiveMenu(menuName);
-    if (parentName) {
-      setActiveBreadcrumb(`Home / ${parentName} / ${menuName}`);
-    } else {
-      setActiveBreadcrumb(`Home / ${menuName}`);
-    }
-    if (window.innerWidth <= 768) {
-      setSidebarOpen(false);
-    }
-  };
   return (
-    <div style={styles.container}>
+    <div className="admin-shell-container" style={styles.container}>
       {sidebarOpen && (
         <div style={styles.overlay} onClick={() => setSidebarOpen(false)} />
       )}
 
       <Sidebar
-        handleMenuClick={handleMenuClick}
         sidebarOpen={sidebarOpen}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
@@ -44,6 +50,7 @@ export default function AdminLayout() {
         }}
       >
         <AdminHeader
+          activeMenu={activeMenu}
           activeBreadcrumb={activeBreadcrumb}
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
@@ -59,10 +66,12 @@ export default function AdminLayout() {
 
 const styles = {
   container: {
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    background: "#f8f9fa",
-    color: "#2c3e50",
+    fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    background: "#f5f3ef",
+    color: "#171613",
     minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
   },
   overlay: {
     display: "block",
@@ -71,20 +80,25 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: "rgba(0, 0, 0, 0.5)",
+    background: "rgba(17, 17, 16, 0.65)",
+    backdropFilter: "blur(4px)",
+    WebkitBackdropFilter: "blur(4px)",
     zIndex: 999,
   },
-
   mainContent: {
     marginLeft: window.innerWidth > 768 ? "280px" : 0,
     minHeight: "100vh",
-    transition: "margin-left 0.3s ease",
+    transition: "margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+    background: "#f5f3ef",
   },
   mainContentCollapsed: {
     marginLeft: "80px",
   },
-
   content: {
-    padding: window.innerWidth > 768 ? "30px" : "20px 15px",
+    padding: window.innerWidth > 768 ? "32px 40px 60px 40px" : "20px 16px 40px 16px",
+    maxWidth: "1400px",
+    margin: "0 auto",
+    width: "100%",
+    boxSizing: "border-box",
   },
 };

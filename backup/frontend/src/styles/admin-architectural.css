@@ -1,0 +1,318 @@
+/* ==========================================================================
+   Yashmeen Future Building & Fit-Out: Architectural Admin Design System
+   Matches the luxury editorial aesthetic of the Yashmeen Home Page:
+   - Paper Canvas / Warm Stone (#f5f3ef & #fcfcfc)
+   - Deep Obsidian Ink (#171613 & #111110)
+   - Champagne Brass Hairline Rules (#b18a4f & #8e6b37)
+   - Plus Jakarta Sans Typography & Precision Architectural Pills
+   ========================================================================== */
+
+:root {
+  --adm-bg: #f5f3ef;
+  --adm-surface: #ffffff;
+  --adm-surface-alt: #fbf9f6;
+  --adm-obsidian: #111110;
+  --adm-ink: #171613;
+  --adm-ink-soft: #30302e;
+  --adm-muted: #6b6860;
+  --adm-muted-light: #9c978b;
+  --adm-brass: #b18a4f;
+  --adm-brass-hover: #8e6b37;
+  --adm-brass-dim: rgba(177, 138, 79, 0.12);
+  --adm-line: rgba(8, 8, 7, 0.08);
+  --adm-line-strong: rgba(8, 8, 7, 0.16);
+  --adm-line-brass: rgba(177, 138, 79, 0.35);
+  --adm-radius-sm: 4px;
+  --adm-radius-md: 8px;
+  --adm-radius-lg: 14px;
+  --adm-radius-pill: 9999px;
+  --adm-shadow: 0 4px 20px -4px rgba(8, 8, 7, 0.05);
+}
+
+/* Base Admin Container */
+.admin-shell-container {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
+  background-color: var(--adm-bg) !important;
+  color: var(--adm-ink) !important;
+  min-height: 100vh;
+  letter-spacing: -0.01em;
+}
+
+/* Global Card & Container Overrides for All Admin Pages */
+.admin-shell-container .wdCard,
+.admin-shell-container [class*="Card"],
+.admin-shell-container [class*="tableCard"],
+.admin-shell-container [style*="border-radius: 16px"],
+.admin-shell-container [style*="borderRadius: 16px"],
+.admin-shell-container [style*="borderRadius: \"16px\""],
+.admin-shell-container [style*="borderRadius: '16px'"],
+.admin-shell-container [style*="border-radius: 14px"],
+.admin-shell-container [style*="borderRadius: 14px"],
+.admin-shell-container [style*="borderRadius: \"14px\""],
+.admin-shell-container [style*="borderRadius: '14px'"] {
+  background: var(--adm-surface) !important;
+  border: 1px solid #e7e4dc !important;
+  border-radius: var(--adm-radius-lg) !important;
+  box-shadow: var(--adm-shadow) !important;
+}
+
+/* Headings across Admin */
+.admin-shell-container h1,
+.admin-shell-container h2,
+.admin-shell-container h3,
+.admin-shell-container .cardTitle,
+.admin-shell-container [class*="cardTitle"],
+.admin-shell-container [class*="Title"],
+.admin-shell-container [class*="heading"] {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  color: var(--adm-ink) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Inputs across Admin */
+.admin-shell-container input,
+.admin-shell-container select,
+.admin-shell-container textarea,
+.admin-shell-container .wdInput,
+.admin-shell-container [class*="Input"],
+.admin-shell-container [class*="input"],
+.admin-shell-container [class*="searchInput"] {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  background: #ffffff !important;
+  border: 1px solid #e2ded4 !important;
+  border-radius: var(--adm-radius-md) !important;
+  color: var(--adm-ink) !important;
+  font-size: 13.5px !important;
+  padding: 10px 14px !important;
+  transition: all 0.2s ease !important;
+  outline: none !important;
+}
+
+.admin-shell-container input:focus,
+.admin-shell-container select:focus,
+.admin-shell-container textarea:focus,
+.admin-shell-container .wdInput:focus,
+.admin-shell-container [class*="Input"]:focus,
+.admin-shell-container [class*="input"]:focus,
+.admin-shell-container [class*="searchInput"]:focus {
+  border-color: var(--adm-brass) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(177, 138, 79, 0.14) !important;
+  background: #ffffff !important;
+}
+
+/* Labels across Admin */
+.admin-shell-container label,
+.admin-shell-container [class*="label"],
+.admin-shell-container [class*="Label"] {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--adm-ink) !important;
+  margin-bottom: 4px !important;
+}
+
+/* Primary Action Buttons */
+.admin-shell-container button[type="submit"],
+.admin-shell-container .wdBtnPrimary,
+.admin-shell-container [class*="btnPrimary"],
+.admin-shell-container [class*="btn-primary"],
+.admin-shell-container [class*="BtnPrimary"],
+.admin-shell-container [class*="primaryBtn"] {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  background: var(--adm-ink) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--adm-ink) !important;
+  border-radius: var(--adm-radius-pill) !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  padding: 11px 26px !important;
+  cursor: pointer !important;
+  transition: all 0.25s ease !important;
+  box-shadow: 0 2px 8px rgba(8, 8, 7, 0.12) !important;
+}
+
+.admin-shell-container button[type="submit"]:hover:not(:disabled),
+.admin-shell-container .wdBtnPrimary:hover:not(:disabled),
+.admin-shell-container [class*="btnPrimary"]:hover:not(:disabled),
+.admin-shell-container [class*="btn-primary"]:hover:not(:disabled),
+.admin-shell-container [class*="BtnPrimary"]:hover:not(:disabled),
+.admin-shell-container [class*="primaryBtn"]:hover:not(:disabled) {
+  background: var(--adm-brass) !important;
+  border-color: var(--adm-brass) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px rgba(177, 138, 79, 0.25) !important;
+}
+
+/* Secondary / Outline / Add Buttons */
+.admin-shell-container .wdAddBtn,
+.admin-shell-container [class*="addBtn"],
+.admin-shell-container [class*="AddBtn"],
+.admin-shell-container [class*="btnOutline"],
+.admin-shell-container [class*="btn-outline"] {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  background: transparent !important;
+  border: 1px solid var(--adm-brass) !important;
+  color: var(--adm-brass) !important;
+  border-radius: var(--adm-radius-pill) !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  padding: 6px 16px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-shell-container .wdAddBtn:hover,
+.admin-shell-container [class*="addBtn"]:hover,
+.admin-shell-container [class*="AddBtn"]:hover,
+.admin-shell-container [class*="btnOutline"]:hover,
+.admin-shell-container [class*="btn-outline"]:hover {
+  background: var(--adm-brass) !important;
+  color: #ffffff !important;
+}
+
+/* Tables across Admin Manager Pages */
+.admin-shell-container table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  border: 1px solid #e7e4dc !important;
+  border-radius: var(--adm-radius-lg) !important;
+  overflow: hidden !important;
+  background: #ffffff !important;
+}
+
+.admin-shell-container th {
+  background: #fbf9f6 !important;
+  color: var(--adm-muted) !important;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  padding: 14px 18px !important;
+  border-bottom: 1px solid #e7e4dc !important;
+  text-align: left !important;
+}
+
+.admin-shell-container td {
+  padding: 14px 18px !important;
+  font-size: 13.5px !important;
+  color: var(--adm-ink) !important;
+  border-bottom: 1px solid #f1f0ee !important;
+  vertical-align: middle !important;
+}
+
+.admin-shell-container tr:last-child td {
+  border-bottom: none !important;
+}
+
+.admin-shell-container tr:hover td {
+  background: #faf8f5 !important;
+}
+
+/* Chips & Badges */
+.admin-shell-container .status-badge,
+.admin-shell-container [class*="badge"],
+.admin-shell-container [class*="Badge"],
+.admin-shell-container [class*="chip"],
+.admin-shell-container [class*="Chip"] {
+  border-radius: var(--adm-radius-pill) !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  padding: 4px 10px !important;
+}
+
+/* Action Icon Buttons */
+.admin-shell-container [class*="iconBtn"],
+.admin-shell-container [class*="IconBtn"] {
+  background: transparent !important;
+  border: 1px solid #e2ded4 !important;
+  border-radius: 8px !important;
+  color: var(--adm-ink) !important;
+  transition: all 0.2s ease !important;
+}
+.admin-shell-container [class*="iconBtn"]:hover,
+.admin-shell-container [class*="IconBtn"]:hover {
+  border-color: var(--adm-brass) !important;
+  color: var(--adm-brass) !important;
+  background: rgba(177, 138, 79, 0.08) !important;
+}
+
+/* Pager Buttons */
+.admin-shell-container [class*="pagerBtn"],
+.admin-shell-container [class*="PagerBtn"] {
+  background: #ffffff !important;
+  border: 1px solid #e2ded4 !important;
+  border-radius: var(--adm-radius-pill) !important;
+  color: var(--adm-ink) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  padding: 6px 14px !important;
+  transition: all 0.2s ease !important;
+}
+.admin-shell-container [class*="pagerBtn"]:hover:not(:disabled),
+.admin-shell-container [class*="PagerBtn"]:hover:not(:disabled) {
+  background: var(--adm-ink) !important;
+  color: #ffffff !important;
+  border-color: var(--adm-ink) !important;
+}
+
+/* Modal Overlays */
+.admin-shell-container [class*="overlay"],
+.admin-shell-container [class*="Overlay"] {
+  background: rgba(17, 17, 16, 0.65) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+
+.admin-shell-container [class*="modal"],
+.admin-shell-container [class*="Modal"] {
+  background: #ffffff !important;
+  border: 1px solid #e7e4dc !important;
+  border-radius: var(--adm-radius-lg) !important;
+  box-shadow: 0 20px 48px -12px rgba(8, 8, 7, 0.2) !important;
+}
+
+/* Delete / Remove Buttons */
+.admin-shell-container .wdRemoveBtn,
+.admin-shell-container [class*="removeBtn"],
+.admin-shell-container [class*="btnDanger"],
+.admin-shell-container [class*="BtnDanger"] {
+  color: var(--adm-muted-light) !important;
+  transition: color 0.2s ease !important;
+}
+.admin-shell-container .wdRemoveBtn:hover,
+.admin-shell-container [class*="removeBtn"]:hover,
+.admin-shell-container [class*="btnDanger"]:hover,
+.admin-shell-container [class*="BtnDanger"]:hover {
+  color: #c62828 !important;
+}
+
+/* Scrollbar */
+.admin-shell-container ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.admin-shell-container ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-shell-container ::-webkit-scrollbar-thumb {
+  background: rgba(8, 8, 7, 0.15);
+  border-radius: 9999px;
+}
+.admin-shell-container ::-webkit-scrollbar-thumb:hover {
+  background: var(--adm-brass);
+}

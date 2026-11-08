@@ -125,8 +125,8 @@ html, body {
 .wrapper {
   position: relative;
   width: 100%;
-  height: 100%;
-  padding: var(--wrapper-padd);
+  padding-left: var(--wrapper-padd);
+  padding-right: var(--wrapper-padd);
   box-sizing: border-box;
 }
 
@@ -701,19 +701,22 @@ main .mod-scroll > * {
    CHAPTER 0: INTRO MANIFESTO (.mod-scroll__intro bg-white)
    ========================================================================== */
 main .mod-scroll__intro {
+  width: 80vw;
+  min-width: 80vw;
   height: 100vh;
   background-color: var(--white);
   display: flex;
   align-items: center;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 main .mod-scroll__intro .wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 80vw;
+  width: 100%;
   height: 100vh;
   position: relative;
   padding: 0 var(--wrapper-padd);
@@ -722,14 +725,14 @@ main .mod-scroll__intro .wrapper {
 
 .mod-scroll__intro__menu {
   position: absolute;
-  top: calc(var(--wrapper-padd) - 1.15rem);
-  right: var(--wrapper-padd);
+  top: 25px;
+  right: 25px;
   list-style: none;
   display: flex;
   flex-wrap: nowrap;
   gap: 1.2rem;
   transform: rotate(-90deg);
-  transform-origin: right bottom;
+  transform-origin: right top;
   z-index: 10;
 }
 
@@ -741,6 +744,11 @@ main .mod-scroll__intro .wrapper {
   text-transform: uppercase;
   display: block;
   white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.mod-scroll__intro__menu .menu-item a:hover {
+  color: var(--bronze);
 }
 
 .mod-scroll__intro__section {
@@ -848,16 +856,17 @@ main .mod-scroll__images.principal {
   background-color: var(--white);
   display: flex;
   align-items: center;
-  gap: 4vw;
-  padding: 0 4vw;
+  gap: 3.5vw;
+  padding: 0 3.5vw 0 0;
+  overflow: clip;
 }
 
 .mod-scroll__images__image-single {
-  width: 38vw;
-  height: 80vh;
+  width: 44vw;
+  height: 100vh;
   position: relative;
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .mod-scroll__images__image-single .media__wrap-source,
@@ -898,12 +907,18 @@ main .mod-scroll__images.principal {
    CHAPTER 2: EDITORIAL STUDIO MANIFESTO (.mod-scroll__text bg-white)
    ========================================================================== */
 main .mod-scroll__text {
-  width: 82vw;
-  min-width: 82vw;
+  width: 90vw;
+  min-width: 90vw;
   background-color: var(--white);
   display: flex;
   align-items: center;
-  padding: 0 5vw;
+  padding: 0 8vw;
+  box-sizing: border-box;
+}
+
+.mod-scroll__text .wrapper {
+  padding: 0;
+  width: 100%;
 }
 
 .mod-scroll__text__section {
@@ -918,6 +933,7 @@ main .mod-scroll__text {
   display: flex;
   flex-direction: column;
   gap: 3.5vh;
+  margin-top: 7.5rem;
 }
 
 .mod-scroll__text__title {
@@ -1180,99 +1196,140 @@ main .mod-scroll__terms {
    CHAPTER 7: EXPANDING PROJECT MONOLITHS (.mod-scroll__projects)
    ========================================================================== */
 main .mod-scroll__projects {
-  width: auto;
-  min-width: 350vw;
-  background-color: transparent;
   display: flex;
-  align-items: center;
-  padding: 0 5vw;
-  gap: 2vw;
+  flex-wrap: nowrap;
+  z-index: 10;
+  background-color: transparent;
   position: relative;
+  align-items: stretch;
 }
 
-.mod-scroll__projects__wrap-text {
+main .mod-scroll__projects__wrap-text {
+  position: relative;
   width: 25vw;
-  min-width: 25vw;
-  padding-right: 3vw;
+  height: 100vh;
+  padding: var(--wrapper-padd);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
-.mod-scroll__projects__section {
+main .mod-scroll__projects__section {
   margin-bottom: 1.5rem;
   opacity: 0.5;
 }
 
-.mod-scroll__projects__text {
+main .mod-scroll__projects__text {
   font-family: var(--f-izmir);
   font-size: var(--titulo-xl);
   line-height: 1.35;
   letter-spacing: -0.01em;
+  width: 17.5rem;
+}
+
+main .mod-scroll__projects__text .line {
+  overflow: clip;
 }
 
 /* Expanding Accordion Item */
-.mod-scroll__projects__item {
-  width: 16vw;
-  min-width: 16vw;
-  height: 87vh;
+main .mod-scroll__projects__item {
   position: relative;
   overflow: hidden;
-  border-radius: 4px;
+  box-shadow: unset;
+  height: 100vh;
+  width: 15vw;
+  flex-shrink: 0;
   cursor: pointer;
-  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
 }
 
-.mod-scroll__projects__item.is-active {
-  width: 58vw;
-  min-width: 58vw;
-}
-
-.mod-scroll__projects__item__content {
-  width: 100%;
-  height: 100%;
+main .mod-scroll__projects__item__content {
+  position: relative;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-between;
 }
 
-.mod-scroll__projects__item__image {
+main .mod-scroll__projects__item__image {
+  position: relative;
+  z-index: 2;
   width: 100%;
-  overflow: hidden;
 }
 
-.mod-scroll__projects__item__image .media,
-.mod-scroll__projects__item__image .media__wrap-source {
+main .mod-scroll__projects__item__image .media,
+main .mod-scroll__projects__item__image .media__wrap-source {
   width: 100%;
   height: 100%;
+  aspect-ratio: unset !important;
 }
 
-.mod-scroll__projects__item__image .media__source {
+main .mod-scroll__projects__item__image .media__source {
+  position: relative;
+  display: block;
   width: 100%;
   height: 87vh;
   object-fit: cover;
-  transition: height 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  object-position: center center;
 }
 
-.mod-scroll__projects__item__text {
-  padding: 1.8rem 2.2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
+main .mod-scroll__projects__item__text {
+  flex: 1 1 0%;
+  position: relative;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  --margin: 1.25rem;
+  z-index: 1;
 }
 
-.mod-scroll__projects__item__text__data {
-  display: flex;
-  align-items: baseline;
-  gap: 2rem;
-  font-family: var(--f-edit);
-  font-size: var(--parrafo-l);
+main .mod-scroll__projects__item__text__title {
+  white-space: nowrap;
+  padding: var(--margin);
+  letter-spacing: -0.01em;
 }
 
-.mod-scroll__projects__item__text__data .data-number {
+main .mod-scroll__projects__item__text__title > div {
+  overflow: hidden;
+}
+
+main .mod-scroll__projects__item__text__data {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+main .mod-scroll__projects__item__text__data > * {
+  position: absolute;
+  overflow: hidden;
+}
+
+main .mod-scroll__projects__item__text__data > :nth-child(1) {
+  top: var(--margin);
+  left: var(--margin);
+}
+
+main .mod-scroll__projects__item__text__data > :nth-child(2) {
+  top: var(--margin);
+  right: var(--margin);
+}
+
+main .mod-scroll__projects__item__text__data > :nth-child(3) {
+  bottom: var(--margin);
+  left: var(--margin);
+}
+
+main .mod-scroll__projects__item__text__data > :nth-child(4) {
+  bottom: var(--margin);
+  right: var(--margin);
+}
+
+main .mod-scroll__projects__item__text__data .data-number {
   color: var(--bronze);
   font-weight: 600;
-}
-
-.mod-scroll__projects__item__text__title {
-  letter-spacing: -0.01em;
 }
 
 .btn--bg-inv {
@@ -1291,118 +1348,153 @@ main .mod-scroll__projects {
   color: var(--white) !important;
 }
 
-/* Iconic .last-item Layout */
-.mod-scroll__projects__item.last-item {
-  width: 88vw;
-  min-width: 88vw;
+/* Iconic .last-item Layout (Seamless 100vw Storytelling Monolith) */
+main .mod-scroll__projects .last-item {
+  position: relative;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  min-width: 100vw;
+  flex-shrink: 0;
   display: flex;
   background-color: var(--grey);
 }
 
-.mod-scroll__projects__item.last-item .mod-scroll__projects__item__content {
-  width: 32vw;
-  min-width: 32vw;
+main .mod-scroll__projects .last-item .mod-scroll__projects__item__content {
+  display: none;
 }
 
-.last-item__carousel {
-  width: 20vw;
-  min-width: 20vw;
-  height: 100%;
+main .mod-scroll__projects .last-item__carousel {
+  position: relative;
+  top: 0px;
+  left: 0px;
+  width: 42.5vw;
+  min-width: 42.5vw;
+  height: 100vh;
+  z-index: 3;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding: 2rem 1.5rem;
+  justify-content: flex-start;
+  padding: 0;
   box-sizing: border-box;
 }
 
-.last-item__carousel__item {
+main .mod-scroll__projects .last-item__carousel__item {
+  position: relative;
   width: 100%;
-  height: 38vh;
+  height: 33.3333vh;
+  display: grid;
+  place-items: center;
   overflow: hidden;
-  border-radius: 4px;
+  flex-shrink: 0;
 }
 
-.last-item__carousel__item .image,
-.last-item__carousel__item img {
+main .mod-scroll__projects .last-item__carousel__item__image {
+  position: absolute;
+  top: 50%;
+  left: 0px;
+  transform: translateY(-50%);
+  display: block;
+  width: 100%;
+}
+
+main .mod-scroll__projects .last-item__carousel__item__image .media__source {
+  object-fit: cover;
+  object-position: center center;
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
 
-.last-item__carousel__item--link {
-  height: auto;
-  padding: 1rem 1.5rem;
-  background: var(--blue);
-  color: var(--black);
-  text-decoration: none;
+main .mod-scroll__projects .last-item__carousel__item--link {
+  height: 25vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 9999px;
+  background-color: var(--blue);
+  color: var(--black);
+  text-decoration: none;
+  font-family: var(--f-edit);
   font-weight: 600;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
-.last-item__carousel__item--link:hover {
-  background: var(--black);
+main .mod-scroll__projects .last-item__carousel__item--link:hover {
+  background-color: var(--black);
   color: var(--white);
 }
 
-.last-item__content {
-  width: 36vw;
-  min-width: 36vw;
-  height: 100%;
+main .mod-scroll__projects .last-item__content {
+  position: relative;
+  top: 0px;
+  left: 0px;
+  width: 57.5vw;
+  min-width: 57.5vw;
+  height: 100vh;
+  background: var(--white);
+  z-index: 1;
   display: flex;
   align-items: center;
-  padding: 0 4vw;
   box-sizing: border-box;
 }
 
-.last-item__content__wrap {
+main .mod-scroll__projects .last-item__content__wrap {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 var(--wrapper-padd);
+  gap: var(--grid-gap);
+  box-sizing: border-box;
+  position: relative;
 }
 
-.last-item__content__section {
+main .mod-scroll__projects .last-item__content__section {
+  position: absolute;
+  top: var(--wrapper-padd);
   color: var(--bronze);
   text-transform: uppercase;
-  font-weight: 600;
 }
 
-.last-item__content__title .line {
+main .mod-scroll__projects .last-item__content__title {
+  width: 100%;
+}
+
+main .mod-scroll__projects .last-item__content__title .line {
   line-height: 1.05;
   letter-spacing: -0.02em;
+  overflow: clip;
 }
 
-.last-item__content__text p {
-  font-family: var(--f-izmir);
-  font-size: var(--parrafo);
-  line-height: 1.7;
+main .mod-scroll__projects .last-item__content__text p {
+  font-size: var(--titulo);
+  line-height: var(--titulo-lh);
+  font-family: var(--f-edit);
   max-width: 44ch;
   color: rgba(10, 10, 11, 0.85);
 }
 
 main .mod-scroll__pin {
-  position: relative;
-  z-index: 1;
+  display: none;
+  width: 0;
+  min-width: 0;
+  height: 0;
   pointer-events: none;
-  width: 200vw;
-  min-width: 200vw;
-  height: 100vh;
-  flex-shrink: 0;
 }
 
 main .mod-scroll__cierre {
   position: relative;
   z-index: 15;
-  width: 150vw;
-  min-width: 150vw;
+  width: 100vw;
+  min-width: 100vw;
   height: 100vh;
   flex-shrink: 0;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   background-color: var(--red) !important;
   color: var(--black);
   overflow: hidden;
@@ -1547,7 +1639,7 @@ main .mod-scroll__cierre__content__image {
    EDITORIAL ARCHITECTURAL FOOTER (.mod-footer)
    ========================================================================== */
 .mod-footer {
-  padding: 6rem var(--wrapper-padd) 4rem;
+  padding: 6rem var(--wrapper-padd) 6.5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.12);
   background-color: var(--beige);
 }
@@ -1611,6 +1703,7 @@ main .mod-scroll__cierre__content__image {
 .mod-footer__links {
   display: flex;
   gap: 2rem;
+  padding-right: 14rem;
 }
 
 .mod-footer__links a {
@@ -1801,19 +1894,22 @@ main .mod-scroll__cierre__content__image {
 }
 
 #mouse.is-expanded {
-  width: 72px;
-  height: 72px;
-  background-color: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  width: 7.15rem;
+  height: 7.15rem;
+  background-color: var(--white);
+  color: var(--black);
+  mix-blend-mode: normal;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  border: none;
 }
 
 #mouse span {
   font-family: var(--f-izmir);
-  font-size: 0.72rem;
-  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--white);
+  color: var(--black);
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;

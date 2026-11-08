@@ -402,28 +402,12 @@ export default function YashmeenNibExperience() {
       "-=0.4"
     );
 
-    // Signature intro reveal: wrapper contracts from 100vw to 80vw, revealing Section 1 image
+    // Reveal Section 1 principal image smoothly into place
     if (window.innerWidth > 991) {
       tl.fromTo(
-        ".mod-scroll__intro > .wrapper",
-        { width: "100vw" },
-        {
-          width: "80vw",
-          duration: 1.25,
-          ease: "power3.out",
-          onStart: () => {
-            const singleImage = document.querySelector(
-              ".mod-scroll__images__image-single"
-            );
-            if (singleImage) {
-              gsap.fromTo(
-                singleImage,
-                { x: "-5vw" },
-                { x: "-15vw", duration: 1.25, ease: "power2.out" }
-              );
-            }
-          }
-        },
+        ".mod-scroll__images__image-single img",
+        { scale: 1.15 },
+        { scale: 1.0, duration: 1.25, ease: "power2.out" },
         "-=0.5"
       );
     }
@@ -451,6 +435,7 @@ export default function YashmeenNibExperience() {
         smoothWheel: true
       });
       lenisRef.current = lenis;
+      if (typeof window !== "undefined") window.__lenis = lenis;
 
       lenis.on("scroll", () => {
         ScrollTrigger.update();
@@ -473,8 +458,7 @@ export default function YashmeenNibExperience() {
       const sections = modScroll.querySelectorAll(".mod-scroll > *");
       const scrollH_width = modScroll.scrollWidth;
       const scroll_tl_end = (scrollH_width * 100) / window.innerWidth;
-      const adjust_width = window.innerWidth * 0.2;
-      const totalX = (scrollH_width - adjust_width) * -1;
+      const totalX = -(scrollH_width - window.innerWidth);
 
       scrollTl = gsap.timeline({ paused: true });
 
@@ -576,21 +560,22 @@ export default function YashmeenNibExperience() {
       // Section 1: Principal Images scrubbing & Vertical FlipMedia Parallax
       const principalSec = document.querySelector(".mod-scroll__images.principal");
       if (principalSec) {
-        const singleImage = principalSec.querySelector(
-          ".mod-scroll__images__image-single"
+        const singleImgElem = principalSec.querySelector(
+          ".mod-scroll__images__image-single img"
         );
-        if (singleImage) {
+        if (singleImgElem) {
           gsap.fromTo(
-            singleImage,
-            { x: "-15vw" },
+            singleImgElem,
+            { scale: 1.08, xPercent: -5 },
             {
-              x: "0vw",
+              scale: 1.0,
+              xPercent: 5,
               ease: "none",
               scrollTrigger: {
                 containerAnimation: scrollTl,
                 trigger: principalSec,
-                start: "0% 78%",
-                end: "90% 100%",
+                start: "left right",
+                end: "right left",
                 scrub: 0.5
               }
             }
@@ -801,7 +786,7 @@ export default function YashmeenNibExperience() {
         const projectsTl = gsap.timeline({ paused: true });
 
         projectItems.forEach((elem, idx) => {
-          let time = idx * 1;
+          let time = idx * 1.2;
           const media = elem.querySelector(".media__source");
           const textData = elem.querySelector(
             ".mod-scroll__projects__item__text"
@@ -831,6 +816,29 @@ export default function YashmeenNibExperience() {
               time + 0.3
             );
           }
+
+          // Shrink back when transitioning to next card
+          if (idx < projectItems.length - 1) {
+            projectsTl.to(
+              elem,
+              { width: "15vw", duration: 0.8, ease: "power1.inOut" },
+              time + 1.2
+            );
+            if (media) {
+              projectsTl.to(
+                media,
+                { height: "87vh", duration: 0.8, ease: "power1.inOut" },
+                time + 1.2
+              );
+            }
+            if (textData) {
+              projectsTl.to(
+                textData,
+                { opacity: 0, y: 30, duration: 0.3, ease: "power2.in" },
+                time + 1.2
+              );
+            }
+          }
         });
 
         ScrollTrigger.create({
@@ -842,53 +850,95 @@ export default function YashmeenNibExperience() {
           scrub: 0.5
         });
 
-        // Last Item Carousel Upward Scrub
+        // Last Item Upward Vertical Carousel & Storytelling Manifesto
         const lastItem = projectsSec.querySelector(
           ".mod-scroll__projects__item.last-item"
         );
-        if (lastItem) {
-          const carousel = lastItem.querySelector(".last-item__carousel");
-          if (carousel) {
+        const carousel = lastItem?.querySelector(".last-item__carousel");
+        const carouselItems = lastItem?.querySelectorAll(
+          ".last-item__carousel__item:not(.last-item__carousel__item--link)"
+        );
+        const manifestoLines = lastItem?.querySelectorAll(
+          ".last-item__content__title .line"
+        );
+
+        if (lastItem && carousel) {
+          // Upward vertical carousel scrolling as lastItem passes through viewport
+          gsap.fromTo(
+            carousel,
+            { y: "25vh" },
+            {
+              y: "-25vh",
+              ease: "none",
+              scrollTrigger: {
+                containerAnimation: scrollTl,
+                trigger: lastItem,
+                start: "left right",
+                end: "right left",
+                scrub: 0.5
+              }
+            }
+          );
+
+          if (manifestoLines && manifestoLines.length) {
+            gsap.from(manifestoLines, {
+              y: 40,
+              opacity: 0,
+              duration: 0.8,
+              stagger: 0.15,
+              ease: "power2.out",
+              scrollTrigger: {
+                containerAnimation: scrollTl,
+                trigger: lastItem,
+                start: "left 70%",
+                toggleActions: "play none none reverse"
+              }
+            });
+          }
+        }
+
+        // Cierre terracotta closure module & vertical parallax reveal
+        const cierre = document.querySelector(".mod-scroll__cierre");
+        const cierreContent = document.querySelector(".mod-scroll__cierre__content");
+        const cierreMedia = cierreContent?.querySelector(".mod-scroll__cierre__content__image");
+        if (cierre && cierreMedia) {
+          const downImg = cierreMedia.querySelector(".flipMedia__media--down");
+          const upImg = cierreMedia.querySelector(".flipMedia__media--up");
+
+          if (downImg) {
             gsap.fromTo(
-              carousel,
-              { y: "50vh" },
+              downImg,
+              { y: "-12vh" },
               {
-                y: "-30vh",
+                y: "12vh",
                 ease: "none",
                 scrollTrigger: {
                   containerAnimation: scrollTl,
-                  trigger: lastItem,
-                  start: "left 70%",
-                  end: "right 30%",
+                  trigger: cierre,
+                  start: "left right",
+                  end: "right left",
                   scrub: 0.5
                 }
               }
             );
           }
-        }
-
-        // Cierre horizontal slide
-        const cierre = document.querySelector(".mod-scroll__cierre");
-        const cierreContent = document.querySelector(".mod-scroll__cierre__content");
-        if (cierre && cierreContent) {
-          const percentMov =
-            ((cierre.offsetWidth - cierreContent.offsetWidth) * 100) /
-            window.innerWidth;
-          gsap.fromTo(
-            cierreContent,
-            { x: "0%" },
-            {
-              x: percentMov + "%",
-              ease: "none",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: cierre,
-                start: "left 0%",
-                end: "left -" + percentMov + "%",
-                scrub: 0.5
+          if (upImg) {
+            gsap.fromTo(
+              upImg,
+              { y: "12vh" },
+              {
+                y: "-12vh",
+                ease: "none",
+                scrollTrigger: {
+                  containerAnimation: scrollTl,
+                  trigger: cierre,
+                  start: "left right",
+                  end: "right left",
+                  scrub: 0.5
+                }
               }
-            }
-          );
+            );
+          }
         }
       }
     }
@@ -999,24 +1049,51 @@ export default function YashmeenNibExperience() {
     }, 450);
   };
 
-  // Mouse cursor tracking for custom #mouse
+  // Mouse cursor tracking for custom #mouse with dynamic badge expansion
   useEffect(() => {
-    if (window.innerWidth <= 991) return;
+    if (typeof window === "undefined" || window.innerWidth <= 991) return;
     const mouseEl = mouseRef.current;
-    if (!mouseEl) return;
+    const mouseSpan = mouseSpanRef.current;
+    if (!mouseEl || !mouseSpan) return;
 
     const handleMouseMove = (e) => {
       gsap.to(mouseEl, {
         x: e.clientX,
         y: e.clientY,
-        duration: 0.15,
+        duration: 0.12,
         ease: "power2.out"
       });
     };
 
+    const handleMouseOver = (e) => {
+      const target = e.target.closest(".expand_mouse");
+      if (target) {
+        const text =
+          target.getAttribute("data-text") ||
+          (lang === "en" ? "EXPLORE" : "VER");
+        mouseSpan.textContent = text;
+        mouseEl.classList.add("is-expanded");
+      }
+    };
+
+    const handleMouseOut = (e) => {
+      const target = e.target.closest(".expand_mouse");
+      if (target) {
+        mouseSpan.textContent = "";
+        mouseEl.classList.remove("is-expanded");
+      }
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+    document.addEventListener("mouseover", handleMouseOver);
+    document.addEventListener("mouseout", handleMouseOut);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseover", handleMouseOver);
+      document.removeEventListener("mouseout", handleMouseOut);
+    };
+  }, [lang]);
 
   // Tenets Mouse Move Listener
   const handleTermsMouseMove = (e) => {
@@ -1320,7 +1397,10 @@ export default function YashmeenNibExperience() {
              =============================================================== */}
           <div className="mod-scroll__images bg-white principal">
             {/* Single Large Scrubbing Image (-15vw -> 0vw) */}
-            <div className="media mod-scroll__images__image-single noAspect">
+            <div
+              className="media mod-scroll__images__image-single noAspect expand_mouse"
+              data-text={currentText.menuExploreTag}
+            >
               <div className="media__wrap-source image">
                 <img
                   className="media__source w-100"
@@ -1626,9 +1706,10 @@ export default function YashmeenNibExperience() {
             {projectsList.slice(0, 4).map((proj, idx) => (
               <div
                 key={idx}
-                className={`mod-scroll__projects__item ${proj.bgClass} c-black ${
+                className={`mod-scroll__projects__item ${proj.bgClass} c-black expand_mouse ${
                   activeProjectIdx === idx ? "is-active" : ""
                 }`}
+                data-text={currentText.menuExploreTag}
                 onClick={() => setActiveProjectIdx(idx)}
               >
                 <div className="mod-scroll__projects__item__content">
@@ -1673,9 +1754,10 @@ export default function YashmeenNibExperience() {
 
             {/* Card 5: The Authentic .last-item with Upward Carousel & Manifesto */}
             <div
-              className={`mod-scroll__projects__item last-item bg-grey c-black ${
+              className={`mod-scroll__projects__item last-item bg-grey c-black expand_mouse ${
                 activeProjectIdx === 4 ? "is-active" : ""
               }`}
+              data-text={currentText.menuExploreTag}
               onClick={() => setActiveProjectIdx(4)}
             >
               <div className="mod-scroll__projects__item__content">
@@ -1822,14 +1904,20 @@ export default function YashmeenNibExperience() {
 
         {/* Double Full-Bleed Architectural Media with Vertical Parallax */}
         <section className="mod-media mod-media--double bg-beige c-black wrapper">
-          <div className="mod-media__col">
+          <div
+            className="mod-media__col expand_mouse"
+            data-text={lang === "en" ? "ATELIER" : "TALLER"}
+          >
             <img
               src="/static/hero-cinematic.jpg"
               alt="Luxury Dubai Architecture"
               className="mod-media__img"
             />
           </div>
-          <div className="mod-media__col">
+          <div
+            className="mod-media__col expand_mouse"
+            data-text={lang === "en" ? "JOINERY" : "EBANISTERÍA"}
+          >
             <img
               src="/static/hero-bg.jpg"
               alt="Atelier Joinery Monolith"

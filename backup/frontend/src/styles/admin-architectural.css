@@ -4,7 +4,8 @@
    - Gentle Charcoal Ink (#1e2022) & Muted Grays (#6b7280)
    - Ultra-Soft Delicate Borders (rgba(0,0,0,0.06) & #e5e7eb)
    - Calming Desaturated Pastel Badges (Sage, Mist Blue, Warm Amber, Lavender)
-   - Smooth Micro-Interactions (Fluid Easing, Soft Ambient Elevations)
+   - Tactile Double-Bezel Concentric Enclosures
+   - Button-in-Button Kinetic Interaction Design
    ========================================================================== */
 
 :root {
@@ -15,15 +16,16 @@
   --adm-ink-soft: #374151;
   --adm-muted: #6b7280;
   --adm-muted-light: #9ca3af;
-  --adm-line: rgba(0, 0, 0, 0.07);
+  --adm-line: rgba(0, 0, 0, 0.06);
   --adm-line-strong: rgba(0, 0, 0, 0.12);
   --adm-line-subtle: #f0f2f5;
   --adm-radius-sm: 6px;
   --adm-radius-md: 10px;
   --adm-radius-lg: 14px;
+  --adm-radius-xl: 18px;
   --adm-radius-pill: 9999px;
-  --adm-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
-  --adm-shadow-hover: 0 12px 32px -4px rgba(0, 0, 0, 0.07);
+  --adm-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  --adm-shadow-hover: 0 10px 28px -4px rgba(0, 0, 0, 0.06);
 }
 
 /* Base Admin Container */
@@ -35,43 +37,125 @@
   letter-spacing: -0.01em;
 }
 
-/* Global Cards in Clean White with Soft Borders */
-.admin-shell-container .wdCard,
-.admin-shell-container [class*="Card"],
-.admin-shell-container [class*="tableCard"] {
-  background: var(--adm-surface) !important;
-  border: 1px solid var(--adm-line) !important;
-  border-radius: var(--adm-radius-lg) !important;
-  box-shadow: var(--adm-shadow) !important;
+/* Double-Bezel Architecture (Doppelrand) */
+.crm-bezel-wrapper {
+  background: rgba(0, 0, 0, 0.025);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 16px;
+  padding: 3px;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Headings across Admin: Soft Charcoal */
+.crm-bezel-wrapper:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.crm-bezel-inner {
+  background: #ffffff;
+  border-radius: 13px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.crm-bezel-wrapper:hover .crm-bezel-inner {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 10px 24px -4px rgba(0, 0, 0, 0.06);
+}
+
+/* Avatar Monograms */
+.crm-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+
+/* Button-in-Button Architecture */
+.crm-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #18181b;
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 6px 6px 6px 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.crm-btn-primary:hover {
+  background: #27272a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.crm-btn-icon-pill {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.crm-btn-primary:hover .crm-btn-icon-pill {
+  transform: translateX(2px);
+}
+
+/* Secondary Button */
+.crm-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.crm-btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #111827;
+}
+
+/* Headings */
 .admin-shell-container h1,
 .admin-shell-container h2,
 .admin-shell-container h3,
-.admin-shell-container h4,
-.admin-shell-container .cardTitle,
-.admin-shell-container [class*="cardTitle"],
-.admin-shell-container [class*="Title"],
-.admin-shell-container [class*="heading"] {
+.admin-shell-container h4 {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
   color: var(--adm-ink) !important;
   font-weight: 700 !important;
   letter-spacing: -0.02em !important;
 }
 
-/* Inputs across Admin: Crisp White, Soft Focus */
+/* Inputs across Admin */
 .admin-shell-container input,
 .admin-shell-container select,
-.admin-shell-container textarea,
-.admin-shell-container .wdInput,
-.admin-shell-container [class*="Input"],
-.admin-shell-container [class*="input"],
-.admin-shell-container [class*="searchInput"] {
+.admin-shell-container textarea {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
   background: #ffffff !important;
   border: 1px solid #e5e7eb !important;
-  border-radius: var(--adm-radius-md) !important;
+  border-radius: 8px !important;
   color: var(--adm-ink) !important;
   font-size: 13.5px !important;
   padding: 9px 14px !important;
@@ -81,91 +165,21 @@
 
 .admin-shell-container input:focus,
 .admin-shell-container select:focus,
-.admin-shell-container textarea:focus,
-.admin-shell-container .wdInput:focus,
-.admin-shell-container [class*="Input"]:focus,
-.admin-shell-container [class*="input"]:focus,
-.admin-shell-container [class*="searchInput"]:focus {
+.admin-shell-container textarea:focus {
   border-color: #3b82f6 !important;
   outline: none !important;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
-  background: #ffffff !important;
 }
 
-/* Labels: Clean & Soothing */
-.admin-shell-container label,
-.admin-shell-container [class*="label"],
-.admin-shell-container [class*="Label"] {
+.admin-shell-container label {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
   font-size: 11.5px !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   color: var(--adm-muted) !important;
-  margin-bottom: 6px !important;
-}
-
-/* Primary Action Buttons: Soft Charcoal */
-.admin-shell-container button[type="submit"],
-.admin-shell-container .wdBtnPrimary,
-.admin-shell-container [class*="btnPrimary"],
-.admin-shell-container [class*="btn-primary"],
-.admin-shell-container [class*="BtnPrimary"],
-.admin-shell-container [class*="primaryBtn"] {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-  background: #18181b !important;
-  color: #ffffff !important;
-  border: 1px solid #18181b !important;
-  border-radius: var(--adm-radius-md) !important;
-  font-weight: 600 !important;
-  font-size: 12.5px !important;
-  letter-spacing: 0.02em !important;
-  padding: 9px 20px !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
-}
-
-.admin-shell-container button[type="submit"]:hover:not(:disabled),
-.admin-shell-container .wdBtnPrimary:hover:not(:disabled),
-.admin-shell-container [class*="btnPrimary"]:hover:not(:disabled),
-.admin-shell-container [class*="btn-primary"]:hover:not(:disabled),
-.admin-shell-container [class*="BtnPrimary"]:hover:not(:disabled),
-.admin-shell-container [class*="primaryBtn"]:hover:not(:disabled) {
-  background: #27272a !important;
-  border-color: #27272a !important;
-  color: #ffffff !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Secondary / Outline Buttons */
-.admin-shell-container .wdAddBtn,
-.admin-shell-container [class*="addBtn"],
-.admin-shell-container [class*="AddBtn"],
-.admin-shell-container [class*="btnOutline"],
-.admin-shell-container [class*="btn-outline"] {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-  background: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
-  color: var(--adm-ink-soft) !important;
-  border-radius: var(--adm-radius-md) !important;
-  font-weight: 600 !important;
-  font-size: 12px !important;
-  letter-spacing: 0.02em !important;
-  padding: 7px 16px !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-}
-
-.admin-shell-container .wdAddBtn:hover,
-.admin-shell-container [class*="addBtn"]:hover,
-.admin-shell-container [class*="AddBtn"]:hover,
-.admin-shell-container [class*="btnOutline"]:hover,
-.admin-shell-container [class*="btn-outline"]:hover {
-  background: #f9fafb !important;
-  border-color: #d1d5db !important;
-  color: #111827 !important;
+  margin-bottom: 5px !important;
+  display: block;
 }
 
 /* Tables across Admin */
@@ -174,7 +188,7 @@
   border-collapse: separate !important;
   border-spacing: 0 !important;
   border: 1px solid #e5e7eb !important;
-  border-radius: var(--adm-radius-lg) !important;
+  border-radius: 12px !important;
   overflow: hidden !important;
   background: #ffffff !important;
 }
@@ -182,7 +196,6 @@
 .admin-shell-container th {
   background: #f9fafb !important;
   color: var(--adm-muted) !important;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
   font-size: 11.5px !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
@@ -239,12 +252,20 @@
   border: 1px solid #e5e7eb !important;
 }
 
-/* Modals & Overlays */
-.admin-shell-container [class*="overlay"],
-.admin-shell-container [class*="Overlay"] {
-  background: rgba(15, 23, 42, 0.35) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+/* Slide-Over Drawer Transitions */
+@keyframes crmDrawerSlide {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.crm-drawer-panel {
+  animation: crmDrawerSlide 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Scrollbars */
@@ -256,9 +277,9 @@
   background: transparent;
 }
 .admin-shell-container ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 9999px;
 }
 .admin-shell-container ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.22);
 }

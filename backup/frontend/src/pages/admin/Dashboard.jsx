@@ -21,11 +21,10 @@ import {
   FiLayers,
   FiFileText,
   FiMessageSquare,
-  FiSettings,
   FiCheckCircle,
-  FiDollarSign,
-  FiBriefcase,
-  FiCalendar,
+  FiSliders,
+  FiGrid,
+  FiList,
 } from "react-icons/fi";
 
 const STAGES = [
@@ -36,6 +35,7 @@ const STAGES = [
     color: "#58437d",
     bg: "#f4f2f9",
     border: "#e4def1",
+    barColor: "#c4b5fd",
     desc: "Incoming quotation briefs & web inquiries",
   },
   {
@@ -45,6 +45,7 @@ const STAGES = [
     color: "#1e5c8a",
     bg: "#edf5fc",
     border: "#d2e6f7",
+    barColor: "#93c5fd",
     desc: "CAD site survey, MEP planning & spatial pricing",
   },
   {
@@ -54,6 +55,7 @@ const STAGES = [
     color: "#8c581e",
     bg: "#fdf6ec",
     border: "#fae5cb",
+    barColor: "#fcd34d",
     desc: "Turnkey fit-out quotes sent & negotiations",
   },
   {
@@ -63,6 +65,7 @@ const STAGES = [
     color: "#374151",
     bg: "#f0f2f5",
     border: "#e2e5e9",
+    barColor: "#cbd5e1",
     desc: "Al Quoz joinery fabrication & on-site build",
   },
   {
@@ -72,6 +75,7 @@ const STAGES = [
     color: "#2e6930",
     bg: "#edf6ee",
     border: "#d4ebd5",
+    barColor: "#86efac",
     desc: "Snag-free handover & signed off spaces",
   },
 ];
@@ -115,9 +119,19 @@ const formatDate = (val) => {
   });
 };
 
+const getInitials = (name = "") => {
+  if (!name) return "CL";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+};
+
 export default function Dashboard() {
-  // Current view: 'pipeline' (Kanban), 'table' (List), 'inquiries', 'directory'
+  // Current view: 'pipeline', 'table', 'inquiries', 'directory'
   const [activeTab, setActiveTab] = useState("pipeline");
+
+  // Density mode: 'comfort' or 'compact'
+  const [density, setDensity] = useState("comfort");
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -235,7 +249,7 @@ export default function Dashboard() {
     toast.success(`Moved "${itemTitle}" to ${targetStage?.name || targetStageId}`);
   };
 
-  // Move forward / backward
+  // Step Move Forward / Backward
   const handleStepMove = (item, direction) => {
     const currentIndex = STAGES.findIndex((s) => s.id === item.stage);
     if (currentIndex === -1) return;
@@ -260,8 +274,11 @@ export default function Dashboard() {
         itemType: "QUOTE",
         typeBadge: "Commission",
         badgeStyle: "badge-amber",
+        avatarBg: "#fdf6ec",
+        avatarColor: "#8c581e",
         title: q.name || "Client Commission",
         client: q.name,
+        initials: getInitials(q.name),
         subtitle: q.projectType ? `${q.projectType} Fit-Out` : "Turnkey Fit-Out",
         location: q.location || "Dubai",
         budget: q.budget || "Custom Budget",
@@ -285,8 +302,11 @@ export default function Dashboard() {
         itemType: "ENQUIRY",
         typeBadge: "Inquiry",
         badgeStyle: "badge-lavender",
+        avatarBg: "#f4f2f9",
+        avatarColor: "#58437d",
         title: e.name || "Client Inquiry",
         client: e.name,
+        initials: getInitials(e.name),
         subtitle: e.services || "Fit-Out Consultation",
         location: "Dubai, UAE",
         budget: "Direct Inquiry",
@@ -300,7 +320,7 @@ export default function Dashboard() {
       });
     });
 
-    // 3. Projects (Sample first 8 for studio progress)
+    // 3. Projects (Sample first 8 for spatial execution)
     projects.slice(0, 8).forEach((p, idx) => {
       const id = `project-${p._id}`;
       const defaultStage =
@@ -319,8 +339,11 @@ export default function Dashboard() {
         itemType: "PROJECT",
         typeBadge: "Spatial Fit-Out",
         badgeStyle: "badge-mist",
+        avatarBg: "#edf5fc",
+        avatarColor: "#1e5c8a",
         title: p.title || "Spatial Project",
         client: "Yashmeen Atelier",
+        initials: "YA",
         subtitle: p.category || "Fit-Out & Joinery",
         location: p.location || "Dubai, UAE",
         budget: "Turnkey Execution",
@@ -345,8 +368,11 @@ export default function Dashboard() {
         itemType: "CUSTOM",
         typeBadge: c.type || "Lead",
         badgeStyle: "badge-neutral",
+        avatarBg: "#f3f4f6",
+        avatarColor: "#374151",
         title: c.title || "Custom Lead",
         client: c.client || "Private Client",
+        initials: getInitials(c.client),
         subtitle: c.scope || "Architectural Task",
         location: c.location || "Dubai, UAE",
         budget: c.budget || "AED 150,000",
@@ -381,6 +407,16 @@ export default function Dashboard() {
       return true;
     });
   }, [allCRMItems, stageFilter, searchQuery]);
+
+  // Calculate Pipeline Distribution Percentages
+  const stageDistribution = useMemo(() => {
+    const total = allCRMItems.length || 1;
+    return STAGES.map((stg) => {
+      const count = allCRMItems.filter((i) => i.stage === stg.id).length;
+      const pct = Math.round((count / total) * 100);
+      return { ...stg, count, pct };
+    });
+  }, [allCRMItems]);
 
   // Drag and drop handlers
   const handleDragStart = (e, item) => {
@@ -459,7 +495,7 @@ export default function Dashboard() {
     toast.success(`Created "${newEntry.title}" in pipeline.`);
   };
 
-  // Delete handlers
+  // Delete old quotations
   const handleDeleteOldQuotes = async () => {
     if (!window.confirm("Permanently delete quotations older than 1 month?")) return;
     try {
@@ -493,9 +529,9 @@ export default function Dashboard() {
   return (
     <div style={{ maxWidth: "1480px", margin: "0 auto", padding: "32px 28px" }}>
       {/* ======================================================================
-          1. CALMING HEADER & KPI METRICS
+          1. HEADER & CALMING KPI METRICS
           ====================================================================== */}
-      <section style={{ marginBottom: "32px" }}>
+      <section style={{ marginBottom: "28px" }}>
         <div
           style={{
             display: "flex",
@@ -503,13 +539,13 @@ export default function Dashboard() {
             justifyContent: "space-between",
             flexWrap: "wrap",
             gap: "16px",
-            marginBottom: "24px",
+            marginBottom: "20px",
           }}
         >
           <div>
             <h1
               style={{
-                fontSize: "24px",
+                fontSize: "22px",
                 fontWeight: 700,
                 color: "#18181b",
                 margin: 0,
@@ -520,265 +556,317 @@ export default function Dashboard() {
             </h1>
             <p
               style={{
-                fontSize: "13.5px",
+                fontSize: "13px",
                 color: "#6b7280",
                 margin: "4px 0 0 0",
               }}
             >
-              Manage quotations, active client inquiries, joinery production, and spatial handovers.
+              Monitor turnkey fit-out commissions, client requests, and Al Quoz workshop fabrication.
             </p>
           </div>
 
-          {/* Quick Actions Right */}
+          {/* Quick Actions Right: Nested Button-in-Button */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <button
               onClick={() => setQuickAddOpen(true)}
-              style={{
-                background: "#18181b",
-                color: "#ffffff",
-                border: "none",
-                borderRadius: "8px",
-                padding: "8px 16px",
-                fontSize: "12.5px",
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                transition: "all 0.15s ease",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#27272a";
-                e.currentTarget.style.transform = "translateY(-1px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#18181b";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
+              className="crm-btn-primary"
             >
-              <FiPlus size={14} />
               <span>New Lead / Deal</span>
+              <span className="crm-btn-icon-pill">
+                <FiPlus size={13} color="#ffffff" />
+              </span>
             </button>
           </div>
         </div>
 
-        {/* 4 Soft & Soothing KPI Cards */}
+        {/* 4 Soft & Soothing KPI Cards with Double-Bezel Architecture */}
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
             gap: "16px",
+            marginBottom: "20px",
           }}
         >
-          {/* Card 1 */}
-          <div
-            style={{
-              background: "#ffffff",
-              border: "1px solid rgba(0,0,0,0.06)",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "8px",
-              }}
-            >
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
-                Total Deals in Pipeline
-              </span>
+          {/* Card 1: Total Pipeline */}
+          <div className="crm-bezel-wrapper">
+            <div className="crm-bezel-inner" style={{ padding: "18px 20px" }}>
               <div
                 style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "8px",
-                  background: "#edf5fc",
-                  color: "#1e5c8a",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "8px",
                 }}
               >
-                <FiLayers size={14} />
+                <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
+                  Active Pipeline Deals
+                </span>
+                <div
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "8px",
+                    background: "#edf5fc",
+                    color: "#1e5c8a",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <FiLayers size={13} />
+                </div>
               </div>
-            </div>
-            <div
-              style={{
-                fontSize: "26px",
-                fontWeight: 700,
-                color: "#18181b",
-                lineHeight: 1.1,
-              }}
-            >
-              {allCRMItems.length}
-            </div>
-            <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
-              Active quotes, messages & works
+              <div
+                style={{
+                  fontSize: "26px",
+                  fontWeight: 700,
+                  color: "#18181b",
+                  lineHeight: 1.1,
+                }}
+              >
+                {allCRMItems.length}
+              </div>
+              <div style={{ fontSize: "11.5px", color: "#6b7280", marginTop: "6px" }}>
+                Commissions & active client inquiries
+              </div>
             </div>
           </div>
 
-          {/* Card 2 */}
-          <div
-            style={{
-              background: "#ffffff",
-              border: "1px solid rgba(0,0,0,0.06)",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "8px",
-              }}
-            >
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
-                Quotation Briefs
-              </span>
+          {/* Card 2: Quotes */}
+          <div className="crm-bezel-wrapper">
+            <div className="crm-bezel-inner" style={{ padding: "18px 20px" }}>
               <div
                 style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "8px",
-                  background: "#fdf6ec",
-                  color: "#8c581e",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "8px",
                 }}
               >
-                <FiFileText size={14} />
+                <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
+                  Quotation Briefs
+                </span>
+                <div
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "8px",
+                    background: "#fdf6ec",
+                    color: "#8c581e",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <FiFileText size={13} />
+                </div>
               </div>
-            </div>
-            <div
-              style={{
-                fontSize: "26px",
-                fontWeight: 700,
-                color: "#18181b",
-                lineHeight: 1.1,
-              }}
-            >
-              {quotes.length}
-            </div>
-            <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
-              {quotes[0] ? `Latest: ${quotes[0].name}` : "Awaiting requests"}
+              <div
+                style={{
+                  fontSize: "26px",
+                  fontWeight: 700,
+                  color: "#18181b",
+                  lineHeight: 1.1,
+                }}
+              >
+                {quotes.length}
+              </div>
+              <div style={{ fontSize: "11.5px", color: "#6b7280", marginTop: "6px" }}>
+                {quotes[0] ? `Latest: ${quotes[0].name}` : "Awaiting briefs"}
+              </div>
             </div>
           </div>
 
-          {/* Card 3 */}
-          <div
-            style={{
-              background: "#ffffff",
-              border: "1px solid rgba(0,0,0,0.06)",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "8px",
-              }}
-            >
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
-                Client Inquiries
-              </span>
+          {/* Card 3: Inquiries */}
+          <div className="crm-bezel-wrapper">
+            <div className="crm-bezel-inner" style={{ padding: "18px 20px" }}>
               <div
                 style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "8px",
-                  background: "#f4f2f9",
-                  color: "#58437d",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "8px",
                 }}
               >
-                <FiMessageSquare size={14} />
+                <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
+                  Client Inquiries
+                </span>
+                <div
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "8px",
+                    background: "#f4f2f9",
+                    color: "#58437d",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <FiMessageSquare size={13} />
+                </div>
               </div>
-            </div>
-            <div
-              style={{
-                fontSize: "26px",
-                fontWeight: 700,
-                color: "#18181b",
-                lineHeight: 1.1,
-              }}
-            >
-              {enquiries.length}
-            </div>
-            <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
-              {enquiries[0] ? `Latest: ${enquiries[0].name}` : "All responded"}
+              <div
+                style={{
+                  fontSize: "26px",
+                  fontWeight: 700,
+                  color: "#18181b",
+                  lineHeight: 1.1,
+                }}
+              >
+                {enquiries.length}
+              </div>
+              <div style={{ fontSize: "11.5px", color: "#6b7280", marginTop: "6px" }}>
+                {enquiries[0] ? `Latest: ${enquiries[0].name}` : "All responded"}
+              </div>
             </div>
           </div>
 
-          {/* Card 4 */}
-          <div
-            style={{
-              background: "#ffffff",
-              border: "1px solid rgba(0,0,0,0.06)",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "8px",
-              }}
-            >
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
-                Spatial Works
-              </span>
+          {/* Card 4: Projects */}
+          <div className="crm-bezel-wrapper">
+            <div className="crm-bezel-inner" style={{ padding: "18px 20px" }}>
               <div
                 style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "8px",
-                  background: "#edf6ee",
-                  color: "#2e6930",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "8px",
                 }}
               >
-                <FiCheckCircle size={14} />
+                <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
+                  Spatial Archive
+                </span>
+                <div
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "8px",
+                    background: "#edf6ee",
+                    color: "#2e6930",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <FiCheckCircle size={13} />
+                </div>
+              </div>
+              <div
+                style={{
+                  fontSize: "26px",
+                  fontWeight: 700,
+                  color: "#18181b",
+                  lineHeight: 1.1,
+                }}
+              >
+                {projects.length}
+              </div>
+              <div style={{ fontSize: "11.5px", color: "#6b7280", marginTop: "6px" }}>
+                Completed architectural works
               </div>
             </div>
-            <div
-              style={{
-                fontSize: "26px",
-                fontWeight: 700,
-                color: "#18181b",
-                lineHeight: 1.1,
-              }}
-            >
-              {projects.length}
-            </div>
-            <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
-              Archived portfolio & fit-out projects
-            </div>
+          </div>
+        </div>
+
+        {/* Executive Pipeline Flow Distribution Bar */}
+        <div
+          style={{
+            background: "#ffffff",
+            border: "1px solid rgba(0, 0, 0, 0.05)",
+            borderRadius: "12px",
+            padding: "14px 18px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.015)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "10px",
+              fontSize: "11.5px",
+              fontWeight: 600,
+              color: "#6b7280",
+            }}
+          >
+            <span>Pipeline Distribution</span>
+            <span style={{ color: "#18181b" }}>{allCRMItems.length} active leads</span>
+          </div>
+
+          {/* Segmented Progress Bar */}
+          <div
+            style={{
+              height: "7px",
+              borderRadius: "9999px",
+              background: "#f3f4f6",
+              display: "flex",
+              overflow: "hidden",
+              gap: "2px",
+              marginBottom: "10px",
+            }}
+          >
+            {stageDistribution.map((stg) => (
+              <div
+                key={stg.id}
+                title={`${stg.name}: ${stg.count} (${stg.pct}%)`}
+                style={{
+                  width: `${Math.max(stg.pct, 4)}%`,
+                  background: stg.barColor,
+                  borderRadius: "2px",
+                  transition: "width 0.4s ease",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Micro Legend */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "16px",
+              flexWrap: "wrap",
+              fontSize: "11px",
+              color: "#6b7280",
+            }}
+          >
+            {stageDistribution.map((stg) => (
+              <div
+                key={stg.id}
+                onClick={() => {
+                  setStageFilter(stageFilter === stg.id ? "ALL" : stg.id);
+                  setActiveTab("pipeline");
+                }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  cursor: "pointer",
+                  opacity: stageFilter === "ALL" || stageFilter === stg.id ? 1 : 0.4,
+                  fontWeight: stageFilter === stg.id ? 700 : 500,
+                }}
+              >
+                <span
+                  style={{
+                    width: "7px",
+                    height: "7px",
+                    borderRadius: "50%",
+                    background: stg.barColor,
+                    display: "inline-block",
+                  }}
+                />
+                <span>
+                  {stg.name} ({stg.count})
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ======================================================================
-          2. VIEW CONTROLS (TABS & SEARCH)
+          2. VIEW CONTROLS & DENSITY TOGGLE
           ====================================================================== */}
       <div
         style={{
@@ -786,19 +874,19 @@ export default function Dashboard() {
           alignItems: "center",
           justifyContent: "space-between",
           flexWrap: "wrap",
-          gap: "16px",
+          gap: "14px",
           marginBottom: "20px",
           paddingBottom: "16px",
           borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
         }}
       >
         {/* View Switchers */}
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
           {[
             { id: "pipeline", label: `Kanban Pipeline (${allCRMItems.length})` },
-            { id: "table", label: `Quotes Register (${quotes.length})` },
+            { id: "table", label: `Quotations Register (${quotes.length})` },
             { id: "inquiries", label: `Inquiries Feed (${enquiries.length})` },
-            { id: "directory", label: "Studio Profile & Directory" },
+            { id: "directory", label: "Studio Directory" },
           ].map((tab) => {
             const active = activeTab === tab.id;
             return (
@@ -824,43 +912,94 @@ export default function Dashboard() {
           })}
         </div>
 
-        {/* Search Input */}
-        <div style={{ position: "relative", minWidth: "260px" }}>
-          <FiSearch
-            size={13}
-            style={{
-              position: "absolute",
-              left: "12px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "#9ca3af",
-            }}
-          />
-          <input
-            type="text"
-            placeholder="Search leads, clients, locations..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: "100%",
-              paddingLeft: "34px",
-              paddingRight: "14px",
-              paddingTop: "7px",
-              paddingBottom: "7px",
-              fontSize: "12.5px",
-              border: "1px solid #e5e7eb",
-              borderRadius: "8px",
-              background: "#ffffff",
-              color: "#18181b",
-              outline: "none",
-              boxSizing: "border-box",
-            }}
-          />
+        {/* Right Tools: Density + Search */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* Comfort vs Compact Density Switcher */}
+          {activeTab === "pipeline" && (
+            <div
+              style={{
+                display: "flex",
+                background: "#ffffff",
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
+                padding: "2px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setDensity("comfort")}
+                title="Comfort View (Rich cards)"
+                style={{
+                  background: density === "comfort" ? "#f3f4f6" : "transparent",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "5px 8px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  color: density === "comfort" ? "#18181b" : "#9ca3af",
+                }}
+              >
+                <FiGrid size={13} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setDensity("compact")}
+                title="Compact View (Single-line cards)"
+                style={{
+                  background: density === "compact" ? "#f3f4f6" : "transparent",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "5px 8px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  color: density === "compact" ? "#18181b" : "#9ca3af",
+                }}
+              >
+                <FiList size={13} />
+              </button>
+            </div>
+          )}
+
+          {/* Search Input */}
+          <div style={{ position: "relative", minWidth: "240px" }}>
+            <FiSearch
+              size={13}
+              style={{
+                position: "absolute",
+                left: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#9ca3af",
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Search leads, clients..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: "100%",
+                paddingLeft: "34px",
+                paddingRight: "12px",
+                paddingTop: "7px",
+                paddingBottom: "7px",
+                fontSize: "12px",
+                border: "1px solid #e5e7eb",
+                borderRadius: "8px",
+                background: "#ffffff",
+                color: "#18181b",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
         </div>
       </div>
 
       {/* ======================================================================
-          3. MAIN VIEW TAB A: SOFT & SOOTHING KANBAN PIPELINE
+          3. MAIN TAB A: DOUBLE-BEZEL SOOTHING KANBAN BOARD
           ====================================================================== */}
       {activeTab === "pipeline" && (
         <div
@@ -883,8 +1022,8 @@ export default function Dashboard() {
                 style={{
                   background: isOver ? "#f3f4f6" : "#f8f9fa",
                   border: "1px solid",
-                  borderColor: isOver ? "#d1d5db" : "rgba(0, 0, 0, 0.05)",
-                  borderRadius: "12px",
+                  borderColor: isOver ? "#cbd5e1" : "rgba(0, 0, 0, 0.05)",
+                  borderRadius: "14px",
                   padding: "16px",
                   minHeight: "520px",
                   display: "flex",
@@ -953,7 +1092,7 @@ export default function Dashboard() {
                     <div
                       style={{
                         border: "1px dashed rgba(0, 0, 0, 0.08)",
-                        borderRadius: "8px",
+                        borderRadius: "10px",
                         padding: "36px 12px",
                         textAlign: "center",
                         color: "#9ca3af",
@@ -970,209 +1109,237 @@ export default function Dashboard() {
                         draggable
                         onDragStart={(e) => handleDragStart(e, item)}
                         onDragEnd={handleDragEnd}
-                        style={{
-                          background: "#ffffff",
-                          border: "1px solid rgba(0, 0, 0, 0.06)",
-                          borderRadius: "10px",
-                          padding: "14px",
-                          cursor: "grab",
-                          transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                          boxShadow: "0 1px 4px rgba(0, 0, 0, 0.02)",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = "translateY(-2px)";
-                          e.currentTarget.style.boxShadow =
-                            "0 6px 18px rgba(0, 0, 0, 0.05)";
-                          e.currentTarget.style.borderColor = "rgba(0, 0, 0, 0.12)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = "translateY(0)";
-                          e.currentTarget.style.boxShadow =
-                            "0 1px 4px rgba(0, 0, 0, 0.02)";
-                          e.currentTarget.style.borderColor = "rgba(0, 0, 0, 0.06)";
-                        }}
+                        className="crm-bezel-wrapper"
+                        style={{ cursor: "grab" }}
                       >
-                        {/* Card Header: Type chip + Date */}
                         <div
+                          className="crm-bezel-inner"
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            marginBottom: "8px",
+                            padding: density === "comfort" ? "14px" : "10px 12px",
                           }}
                         >
-                          <span
-                            className={item.badgeStyle}
-                            style={{
-                              fontSize: "10px",
-                              fontWeight: 600,
-                              padding: "2px 8px",
-                              borderRadius: "9999px",
-                            }}
-                          >
-                            {item.typeBadge}
-                          </span>
-                          <span style={{ fontSize: "11px", color: "#9ca3af" }}>
-                            {formatDate(item.date)}
-                          </span>
-                        </div>
-
-                        {/* Title & Scope */}
-                        <h4
-                          onClick={() => setInspectedItem(item)}
-                          style={{
-                            fontSize: "13.5px",
-                            fontWeight: 600,
-                            color: "#18181b",
-                            margin: "0 0 2px 0",
-                            cursor: "pointer",
-                          }}
-                        >
-                          {item.title}
-                        </h4>
-                        <div
-                          style={{
-                            fontSize: "11.5px",
-                            color: "#6b7280",
-                            marginBottom: "10px",
-                          }}
-                        >
-                          {item.subtitle}
-                        </div>
-
-                        {/* Meta Tags: Location & Budget */}
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            flexWrap: "wrap",
-                            marginBottom: "10px",
-                            fontSize: "11px",
-                            color: "#4b5563",
-                          }}
-                        >
-                          <span
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "3px",
-                            }}
-                          >
-                            <FiMapPin size={10} color="#9ca3af" />
-                            {item.location}
-                          </span>
-                          {item.budget && (
-                            <span
-                              style={{
-                                background: "#f3f4f6",
-                                padding: "2px 6px",
-                                borderRadius: "4px",
-                                fontSize: "10.5px",
-                                fontWeight: 500,
-                              }}
-                            >
-                              {item.budget}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Brief Excerpt */}
-                        {item.message && (
+                          {/* Card Top: Avatar + Client Name + Tag */}
                           <div
                             style={{
-                              fontSize: "11px",
-                              color: "#6b7280",
-                              lineHeight: 1.45,
-                              marginBottom: "12px",
-                              display: "-webkit-box",
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
-                              background: "#f9fafb",
-                              padding: "6px 8px",
-                              borderRadius: "6px",
-                            }}
-                          >
-                            "{item.message}"
-                          </div>
-                        )}
-
-                        {/* Card Footer: Step Movers & Inspect */}
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            paddingTop: "8px",
-                            borderTop: "1px solid #f3f4f6",
-                          }}
-                        >
-                          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                            <button
-                              type="button"
-                              title="Previous stage"
-                              disabled={stg.id === "leads"}
-                              onClick={() => handleStepMove(item, -1)}
-                              style={{
-                                background: "#f9fafb",
-                                border: "1px solid #e5e7eb",
-                                borderRadius: "4px",
-                                width: "22px",
-                                height: "22px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                cursor: stg.id === "leads" ? "not-allowed" : "pointer",
-                                opacity: stg.id === "leads" ? 0.35 : 1,
-                                color: "#4b5563",
-                              }}
-                            >
-                              <FiChevronLeft size={11} />
-                            </button>
-                            <button
-                              type="button"
-                              title="Next stage"
-                              disabled={stg.id === "completed"}
-                              onClick={() => handleStepMove(item, 1)}
-                              style={{
-                                background: "#f9fafb",
-                                border: "1px solid #e5e7eb",
-                                borderRadius: "4px",
-                                width: "22px",
-                                height: "22px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                cursor: stg.id === "completed" ? "not-allowed" : "pointer",
-                                opacity: stg.id === "completed" ? 0.35 : 1,
-                                color: "#4b5563",
-                              }}
-                            >
-                              <FiChevronRight size={11} />
-                            </button>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => setInspectedItem(item)}
-                            style={{
-                              background: "transparent",
-                              border: "none",
-                              fontSize: "11px",
-                              fontWeight: 600,
-                              color: "#4b5563",
-                              cursor: "pointer",
-                              display: "inline-flex",
+                              display: "flex",
                               alignItems: "center",
-                              gap: "3px",
+                              justifyContent: "space-between",
+                              marginBottom: density === "comfort" ? "8px" : "4px",
                             }}
-                            onMouseEnter={(e) => (e.currentTarget.style.color = "#18181b")}
-                            onMouseLeave={(e) => (e.currentTarget.style.color = "#4b5563")}
                           >
-                            <span>Inspect</span>
-                            <FiArrowUpRight size={11} />
-                          </button>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              {/* Monogram Avatar */}
+                              <div
+                                className="crm-avatar"
+                                style={{
+                                  background: item.avatarBg,
+                                  color: item.avatarColor,
+                                }}
+                              >
+                                {item.initials}
+                              </div>
+
+                              <div>
+                                <h4
+                                  onClick={() => setInspectedItem(item)}
+                                  style={{
+                                    fontSize: "13px",
+                                    fontWeight: 600,
+                                    color: "#18181b",
+                                    margin: 0,
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  {item.title}
+                                </h4>
+                                <div
+                                  style={{
+                                    fontSize: "11px",
+                                    color: "#6b7280",
+                                  }}
+                                >
+                                  {item.subtitle}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Badge */}
+                            <span
+                              className={item.badgeStyle}
+                              style={{
+                                fontSize: "9.5px",
+                                fontWeight: 600,
+                                padding: "2px 7px",
+                                borderRadius: "9999px",
+                              }}
+                            >
+                              {item.typeBadge}
+                            </span>
+                          </div>
+
+                          {/* Miniature Spatial Image (if project) */}
+                          {density === "comfort" && item.image && (
+                            <div
+                              style={{
+                                width: "100%",
+                                height: "95px",
+                                borderRadius: "8px",
+                                overflow: "hidden",
+                                margin: "8px 0",
+                                border: "1px solid rgba(0,0,0,0.06)",
+                                background: "#f3f4f6",
+                              }}
+                            >
+                              <img
+                                src={imageUrl(item.image)}
+                                alt={item.title}
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                }}
+                                onError={(e) => {
+                                  e.target.src = "/static/hero-aperture.png";
+                                }}
+                              />
+                            </div>
+                          )}
+
+                          {/* Deal Value & Location */}
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              fontSize: "11px",
+                              color: "#4b5563",
+                              margin: "6px 0",
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "3px",
+                              }}
+                            >
+                              <FiMapPin size={10} color="#9ca3af" />
+                              {item.location}
+                            </span>
+
+                            {item.budget && (
+                              <span
+                                style={{
+                                  background: "#f3f4f6",
+                                  color: "#18181b",
+                                  padding: "2px 6px",
+                                  borderRadius: "4px",
+                                  fontSize: "10px",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {item.budget}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Brief Excerpt in Comfort Mode */}
+                          {density === "comfort" && item.message && (
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                color: "#6b7280",
+                                lineHeight: 1.4,
+                                marginBottom: "10px",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                                background: "#fafafa",
+                                padding: "6px 8px",
+                                borderRadius: "6px",
+                              }}
+                            >
+                              "{item.message}"
+                            </div>
+                          )}
+
+                          {/* Footer Controls: Step Movers + Inspect */}
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              paddingTop: "6px",
+                              borderTop: "1px solid #f3f4f6",
+                            }}
+                          >
+                            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              <button
+                                type="button"
+                                title="Previous stage"
+                                disabled={stg.id === "leads"}
+                                onClick={() => handleStepMove(item, -1)}
+                                style={{
+                                  background: "#ffffff",
+                                  border: "1px solid #e5e7eb",
+                                  borderRadius: "4px",
+                                  width: "22px",
+                                  height: "22px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  cursor: stg.id === "leads" ? "not-allowed" : "pointer",
+                                  opacity: stg.id === "leads" ? 0.35 : 1,
+                                  color: "#4b5563",
+                                }}
+                              >
+                                <FiChevronLeft size={11} />
+                              </button>
+                              <button
+                                type="button"
+                                title="Next stage"
+                                disabled={stg.id === "completed"}
+                                onClick={() => handleStepMove(item, 1)}
+                                style={{
+                                  background: "#ffffff",
+                                  border: "1px solid #e5e7eb",
+                                  borderRadius: "4px",
+                                  width: "22px",
+                                  height: "22px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  cursor: stg.id === "completed" ? "not-allowed" : "pointer",
+                                  opacity: stg.id === "completed" ? 0.35 : 1,
+                                  color: "#4b5563",
+                                }}
+                              >
+                                <FiChevronRight size={11} />
+                              </button>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => setInspectedItem(item)}
+                              style={{
+                                background: "transparent",
+                                border: "none",
+                                fontSize: "11px",
+                                fontWeight: 600,
+                                color: "#4b5563",
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "3px",
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.color = "#18181b")}
+                              onMouseLeave={(e) => (e.currentTarget.style.color = "#4b5563")}
+                            >
+                              <span>Inspect</span>
+                              <FiArrowUpRight size={11} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))
@@ -1192,7 +1359,7 @@ export default function Dashboard() {
           style={{
             background: "#ffffff",
             border: "1px solid rgba(0, 0, 0, 0.06)",
-            borderRadius: "12px",
+            borderRadius: "14px",
             padding: "24px",
             boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
           }}
@@ -1210,7 +1377,7 @@ export default function Dashboard() {
                 Client Quotation Requests
               </h3>
               <p style={{ fontSize: "12.5px", color: "#6b7280", margin: "2px 0 0 0" }}>
-                Received from public quotation questionnaire.
+                Received from website quotation questionnaire.
               </p>
             </div>
             <button
@@ -1236,7 +1403,7 @@ export default function Dashboard() {
             <table>
               <thead>
                 <tr>
-                  <th>Client Name</th>
+                  <th>Client</th>
                   <th>Project Type</th>
                   <th>Location</th>
                   <th>Budget</th>
@@ -1258,7 +1425,20 @@ export default function Dashboard() {
                     const stageObj = STAGES.find((s) => s.id === match?.stage);
                     return (
                       <tr key={q._id}>
-                        <td style={{ fontWeight: 600 }}>{q.name}</td>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div
+                              className="crm-avatar"
+                              style={{ background: "#fdf6ec", color: "#8c581e" }}
+                            >
+                              {getInitials(q.name)}
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 600 }}>{q.name}</div>
+                              <div style={{ fontSize: "11px", color: "#6b7280" }}>{q.email}</div>
+                            </div>
+                          </div>
+                        </td>
                         <td>{q.projectType || "Bespoke"}</td>
                         <td>{q.location || "Dubai"}</td>
                         <td>{q.budget || "Custom"}</td>
@@ -1266,7 +1446,7 @@ export default function Dashboard() {
                           <span
                             className={stageObj?.badgeClass || "badge-neutral"}
                             style={{
-                              fontSize: "11px",
+                              fontSize: "10.5px",
                               fontWeight: 600,
                               padding: "2px 8px",
                               borderRadius: "9999px",
@@ -1281,18 +1461,10 @@ export default function Dashboard() {
                             onClick={() => {
                               if (match) setInspectedItem(match);
                             }}
-                            style={{
-                              background: "#f9fafb",
-                              border: "1px solid #e5e7eb",
-                              borderRadius: "6px",
-                              padding: "4px 10px",
-                              fontSize: "11.5px",
-                              fontWeight: 600,
-                              color: "#374151",
-                              cursor: "pointer",
-                            }}
+                            className="crm-btn-secondary"
                           >
-                            View
+                            <span>Inspect</span>
+                            <FiArrowUpRight size={11} />
                           </button>
                         </td>
                       </tr>
@@ -1313,7 +1485,7 @@ export default function Dashboard() {
           style={{
             background: "#ffffff",
             border: "1px solid rgba(0, 0, 0, 0.06)",
-            borderRadius: "12px",
+            borderRadius: "14px",
             padding: "24px",
             boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
           }}
@@ -1323,7 +1495,7 @@ export default function Dashboard() {
               Client Messages & Inquiries
             </h3>
             <p style={{ fontSize: "12.5px", color: "#6b7280", margin: "2px 0 0 0" }}>
-              Direct submissions from the contact page.
+              Direct submissions from website contact forms.
             </p>
           </div>
 
@@ -1335,92 +1507,78 @@ export default function Dashboard() {
             }}
           >
             {enquiries.map((e) => (
-              <div
-                key={e._id}
-                style={{
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "10px",
-                  padding: "18px",
-                  background: "#ffffff",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "start",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <h4 style={{ margin: 0, fontSize: "15px", fontWeight: 600 }}>
-                    {e.name}
-                  </h4>
-                  <span style={{ fontSize: "11px", color: "#9ca3af" }}>
-                    {formatDate(e.createdAt)}
-                  </span>
-                </div>
-
-                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "10px" }}>
-                  <a href={`mailto:${e.email}`} style={{ color: "#2563eb", textDecoration: "none" }}>
-                    {e.email}
-                  </a>
-                  {e.mobile && ` · ${e.mobile}`}
-                </div>
-
-                {e.services && (
-                  <div style={{ fontSize: "11.5px", marginBottom: "8px" }}>
-                    <strong>Service:</strong> <span style={{ color: "#4b5563" }}>{e.services}</span>
-                  </div>
-                )}
-
-                {e.message && (
+              <div key={e._id} className="crm-bezel-wrapper">
+                <div className="crm-bezel-inner" style={{ padding: "18px" }}>
                   <div
                     style={{
-                      fontSize: "12.5px",
-                      color: "#374151",
-                      background: "#f9fafb",
-                      padding: "10px",
-                      borderRadius: "6px",
-                      lineHeight: 1.45,
-                      marginBottom: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "10px",
                     }}
                   >
-                    "{e.message}"
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div
+                        className="crm-avatar"
+                        style={{ background: "#f4f2f9", color: "#58437d" }}
+                      >
+                        {getInitials(e.name)}
+                      </div>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 600 }}>
+                          {e.name}
+                        </h4>
+                        <div style={{ fontSize: "11.5px", color: "#6b7280" }}>
+                          {e.services || "Turnkey Fit-Out"}
+                        </div>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: "11px", color: "#9ca3af" }}>
+                      {formatDate(e.createdAt)}
+                    </span>
                   </div>
-                )}
 
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <a
-                    href={`mailto:${e.email}?subject=Yashmeen%20Fit-Out%20Follow-up`}
-                    style={{
-                      background: "#18181b",
-                      color: "#ffffff",
-                      borderRadius: "6px",
-                      padding: "6px 12px",
-                      fontSize: "11.5px",
-                      fontWeight: 600,
-                      textDecoration: "none",
-                    }}
-                  >
-                    Reply via Email
-                  </a>
-                  {e.mobile && (
-                    <a
-                      href={`tel:${e.mobile}`}
+                  <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "10px" }}>
+                    <a href={`mailto:${e.email}`} style={{ color: "#2563eb", textDecoration: "none" }}>
+                      {e.email}
+                    </a>
+                    {e.mobile && ` · ${e.mobile}`}
+                  </div>
+
+                  {e.message && (
+                    <div
                       style={{
-                        background: "#ffffff",
+                        fontSize: "12px",
                         color: "#374151",
-                        border: "1px solid #d1d5db",
-                        borderRadius: "6px",
-                        padding: "6px 12px",
-                        fontSize: "11.5px",
-                        fontWeight: 600,
-                        textDecoration: "none",
+                        background: "#f9fafb",
+                        padding: "10px",
+                        borderRadius: "8px",
+                        lineHeight: 1.45,
+                        marginBottom: "12px",
                       }}
                     >
-                      Call
-                    </a>
+                      "{e.message}"
+                    </div>
                   )}
+
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <a
+                      href={`mailto:${e.email}?subject=Yashmeen%20Fit-Out%20Follow-up`}
+                      className="crm-btn-primary"
+                      style={{ textDecoration: "none", fontSize: "11.5px", padding: "6px 12px" }}
+                    >
+                      <span>Reply via Email</span>
+                    </a>
+                    {e.mobile && (
+                      <a
+                        href={`tel:${e.mobile}`}
+                        className="crm-btn-secondary"
+                        style={{ textDecoration: "none" }}
+                      >
+                        Call
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -1436,7 +1594,7 @@ export default function Dashboard() {
           style={{
             background: "#ffffff",
             border: "1px solid rgba(0, 0, 0, 0.06)",
-            borderRadius: "12px",
+            borderRadius: "14px",
             padding: "24px",
             boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
           }}
@@ -1462,7 +1620,7 @@ export default function Dashboard() {
               <div
                 style={{
                   border: "1px solid #f3f4f6",
-                  borderRadius: "10px",
+                  borderRadius: "12px",
                   padding: "18px",
                   background: "#fafafa",
                 }}
@@ -1534,7 +1692,7 @@ export default function Dashboard() {
               <div
                 style={{
                   border: "1px solid #f3f4f6",
-                  borderRadius: "10px",
+                  borderRadius: "12px",
                   padding: "18px",
                   background: "#fafafa",
                 }}
@@ -1588,18 +1746,9 @@ export default function Dashboard() {
               <button
                 type="submit"
                 disabled={savingSettings}
-                style={{
-                  background: "#18181b",
-                  color: "#ffffff",
-                  border: "none",
-                  borderRadius: "8px",
-                  padding: "10px 20px",
-                  fontSize: "12.5px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
+                className="crm-btn-primary"
               >
-                {savingSettings ? "Saving..." : "Save Directory Changes"}
+                <span>{savingSettings ? "Saving..." : "Save Directory Changes"}</span>
               </button>
             </div>
           </form>
@@ -1607,7 +1756,7 @@ export default function Dashboard() {
       )}
 
       {/* ======================================================================
-          7. SLIDE-OVER INSPECTION SHEET (SOFT & SOOTHING)
+          7. SLIDE-OVER INSPECTION SHEET (DOUBLE-BEZEL FINISH)
           ====================================================================== */}
       {inspectedItem && (
         <div
@@ -1624,6 +1773,7 @@ export default function Dashboard() {
           onClick={() => setInspectedItem(null)}
         >
           <div
+            className="crm-drawer-panel"
             style={{
               width: "100%",
               maxWidth: "520px",
@@ -1631,7 +1781,7 @@ export default function Dashboard() {
               height: "100%",
               overflowY: "auto",
               padding: "32px 28px",
-              boxShadow: "-8px 0 28px rgba(0, 0, 0, 0.12)",
+              boxShadow: "-8px 0 28px rgba(0, 0, 0, 0.1)",
               display: "flex",
               flexDirection: "column",
               boxSizing: "border-box",
@@ -1649,30 +1799,33 @@ export default function Dashboard() {
                 marginBottom: "20px",
               }}
             >
-              <div>
-                <span
-                  className={inspectedItem.badgeStyle}
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div
+                  className="crm-avatar"
                   style={{
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: "9999px",
+                    width: "36px",
+                    height: "36px",
+                    fontSize: "13px",
+                    background: inspectedItem.avatarBg,
+                    color: inspectedItem.avatarColor,
                   }}
                 >
-                  {inspectedItem.typeBadge}
-                </span>
-                <h2
-                  style={{
-                    fontSize: "20px",
-                    fontWeight: 700,
-                    color: "#18181b",
-                    margin: "10px 0 2px 0",
-                  }}
-                >
-                  {inspectedItem.title}
-                </h2>
-                <div style={{ fontSize: "12.5px", color: "#6b7280" }}>
-                  {inspectedItem.subtitle}
+                  {inspectedItem.initials}
+                </div>
+                <div>
+                  <h2
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: 700,
+                      color: "#18181b",
+                      margin: "0 0 2px 0",
+                    }}
+                  >
+                    {inspectedItem.title}
+                  </h2>
+                  <div style={{ fontSize: "12px", color: "#6b7280" }}>
+                    {inspectedItem.subtitle} · {inspectedItem.location}
+                  </div>
                 </div>
               </div>
 
@@ -1683,15 +1836,15 @@ export default function Dashboard() {
                   background: "#f9fafb",
                   border: "1px solid #e5e7eb",
                   borderRadius: "50%",
-                  width: "32px",
-                  height: "32px",
+                  width: "30px",
+                  height: "30px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
                 }}
               >
-                <FiX size={15} color="#4b5563" />
+                <FiX size={14} color="#6b7280" />
               </button>
             </div>
 
@@ -1864,34 +2017,17 @@ export default function Dashboard() {
               {inspectedItem.email && (
                 <a
                   href={`mailto:${inspectedItem.email}?subject=Yashmeen%20Fit-Out%20Brief%20Follow-up`}
-                  style={{
-                    flex: 1,
-                    background: "#18181b",
-                    color: "#ffffff",
-                    textAlign: "center",
-                    padding: "10px",
-                    borderRadius: "8px",
-                    fontSize: "12.5px",
-                    fontWeight: 600,
-                    textDecoration: "none",
-                  }}
+                  className="crm-btn-primary"
+                  style={{ flex: 1, textDecoration: "none", justifyContent: "center" }}
                 >
-                  Send Proposal ↗
+                  <span>Send Proposal ↗</span>
                 </a>
               )}
               {inspectedItem.mobile && (
                 <a
                   href={`tel:${inspectedItem.mobile}`}
-                  style={{
-                    background: "#ffffff",
-                    color: "#374151",
-                    border: "1px solid #d1d5db",
-                    padding: "10px 18px",
-                    borderRadius: "8px",
-                    fontSize: "12.5px",
-                    fontWeight: 600,
-                    textDecoration: "none",
-                  }}
+                  className="crm-btn-secondary"
+                  style={{ textDecoration: "none" }}
                 >
                   Call
                 </a>
@@ -1902,7 +2038,7 @@ export default function Dashboard() {
       )}
 
       {/* ======================================================================
-          8. QUICK ADD LEAD MODAL (SOFT & CLEAN)
+          8. QUICK ADD LEAD MODAL
           ====================================================================== */}
       {quickAddOpen && (
         <div
@@ -1925,7 +2061,7 @@ export default function Dashboard() {
               width: "100%",
               maxWidth: "480px",
               background: "#ffffff",
-              borderRadius: "12px",
+              borderRadius: "14px",
               padding: "24px",
               boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
             }}
@@ -2057,33 +2193,15 @@ export default function Dashboard() {
               <div style={{ display: "flex", gap: "8px" }}>
                 <button
                   type="submit"
-                  style={{
-                    flex: 1,
-                    background: "#18181b",
-                    color: "#ffffff",
-                    border: "none",
-                    borderRadius: "8px",
-                    padding: "10px",
-                    fontSize: "12.5px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
+                  className="crm-btn-primary"
+                  style={{ flex: 1, justifyContent: "center" }}
                 >
-                  Create Lead
+                  <span>Create Lead</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setQuickAddOpen(false)}
-                  style={{
-                    background: "#ffffff",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "8px",
-                    padding: "10px 16px",
-                    fontSize: "12.5px",
-                    fontWeight: 600,
-                    color: "#4b5563",
-                    cursor: "pointer",
-                  }}
+                  className="crm-btn-secondary"
                 >
                   Cancel
                 </button>

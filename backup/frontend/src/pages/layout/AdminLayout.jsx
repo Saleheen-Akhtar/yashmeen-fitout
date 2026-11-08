@@ -3,18 +3,19 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import useCreateStore from "../../store";
 import { getInitials } from "../../libs/helpers";
 import { FiExternalLink, FiLogOut, FiMenu, FiX, FiCheck } from "react-icons/fi";
+import "../../styles/shell.css";
+import "../../styles/home.css";
 import "../../styles/admin-architectural.css";
 
-const NAV_TABS = [
-  { label: "01 · ATELIER COMMAND", path: "/dashboard" },
-  { label: "02 · QUOTES", path: "/dashboard/quotes" },
-  { label: "03 · INQUIRIES", path: "/dashboard/enquiry" },
-  { label: "04 · PROJECTS", path: "/dashboard/project-manager" },
-  { label: "05 · JOURNAL", path: "/dashboard/blog-manager" },
-  { label: "06 · GALLERY", path: "/dashboard/gallery-manager" },
-  { label: "07 · VIDEO", path: "/dashboard/video-manager" },
-  { label: "08 · POPUP & BANNER", path: "/dashboard/popup-manager" },
-  { label: "09 · CATEGORIES", path: "/dashboard/categories" },
+const NAV_LINKS = [
+  { label: "Pipeline", href: "/dashboard" },
+  { label: "Commissions", href: "/dashboard/quotes" },
+  { label: "Inquiries", href: "/dashboard/enquiry" },
+  { label: "Projects", href: "/dashboard/project-manager" },
+  { label: "Journal", href: "/dashboard/blog-manager" },
+  { label: "Gallery", href: "/dashboard/gallery-manager" },
+  { label: "Video", href: "/dashboard/video-manager" },
+  { label: "Categories", href: "/dashboard/categories" },
 ];
 
 export default function AdminLayout() {
@@ -66,7 +67,7 @@ export default function AdminLayout() {
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 15);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -77,503 +78,354 @@ export default function AdminLayout() {
     navigate("/login");
   };
 
-  const isActiveTab = (tabPath) => {
-    if (tabPath === "/dashboard") {
+  const isLinkActive = (path) => {
+    if (path === "/dashboard") {
       return location.pathname === "/dashboard";
     }
-    return location.pathname.startsWith(tabPath);
+    return location.pathname.startsWith(path);
   };
 
   return (
-    <div className="admin-shell-container" style={styles.shell}>
+    <div
+      style={{
+        background: "var(--bg, #fcfcfc)",
+        color: "var(--ink, #080807)",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        fontFamily: "var(--font-sans, 'Plus Jakarta Sans', sans-serif)",
+      }}
+    >
       {/* ====================================================================
-          TOP ARCHITECTURAL COMMAND BAR (Matches Website Vibe - No Generic Sidebar!)
+          TOP LUXURY EDITORIAL HEADER (Exact Website Vibe)
           ==================================================================== */}
       <header
         style={{
-          ...styles.header,
-          boxShadow: scrolled ? "0 4px 20px rgba(0, 0, 0, 0.06)" : "none",
+          position: "sticky",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 120,
+          height: "78px",
+          display: "flex",
+          alignItems: "center",
+          background: scrolled
+            ? "rgba(252, 252, 252, 0.96)"
+            : "rgba(252, 252, 252, 0.90)",
+          backdropFilter: "saturate(160%) blur(16px)",
+          WebkitBackdropFilter: "saturate(160%) blur(16px)",
+          borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+          transition: "background 0.3s ease, box-shadow 0.3s ease",
+          boxShadow: scrolled ? "0 4px 20px rgba(0,0,0,0.04)" : "none",
         }}
       >
-        <div style={styles.headerInner}>
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "var(--max-width, 1440px)",
+            margin: "0 auto",
+            padding: "0 var(--site-margin, clamp(1.5rem, 4vw, 4rem))",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            boxSizing: "border-box",
+          }}
+        >
           {/* Brand Left */}
-          <div style={styles.brandGroup}>
-            <Link to="/" style={styles.brandLink}>
-              <span style={styles.brandText}>YASHMEEN FIT-OUT</span>
-              <span style={styles.brandCity}>DUBAI</span>
-            </Link>
-            <div style={styles.verticalSep}></div>
-            <span style={styles.consoleTag}>(ADMIN ATELIER · 01)</span>
-          </div>
+          <Link
+            to="/"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              textDecoration: "none",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "var(--font-display, 'Plus Jakarta Sans', sans-serif)",
+                fontSize: "14px",
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                color: "var(--ink, #080807)",
+                textTransform: "uppercase",
+              }}
+            >
+              YASHMEEN FIT-OUT
+            </span>
+            <span
+              style={{
+                fontSize: "9px",
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                color: "var(--muted, #545454)",
+                borderLeft: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
+                paddingLeft: "8px",
+                textTransform: "uppercase",
+              }}
+            >
+              ATELIER CMS
+            </span>
+          </Link>
 
-          {/* Center Telemetry & Proof (Desktop) */}
-          <div style={styles.telemetryGroup}>
-            <div style={styles.telemetryPill}>
+          {/* Center Links with comma separation (Desktop) */}
+          <nav
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+            className="admin-desktop-nav"
+          >
+            {NAV_LINKS.map((item, idx) => {
+              const active = isLinkActive(item.href);
+              return (
+                <span
+                  key={item.href}
+                  style={{ display: "inline-flex", alignItems: "center" }}
+                >
+                  <Link
+                    to={item.href}
+                    style={{
+                      fontSize: "13px",
+                      fontWeight: active ? 700 : 500,
+                      letterSpacing: "0.02em",
+                      textTransform: "capitalize",
+                      color: active ? "var(--ink, #080807)" : "var(--muted, #545454)",
+                      textDecoration: "none",
+                      padding: "6px 4px",
+                      transition: "color 0.2s ease",
+                      borderBottom: active
+                        ? "1.5px solid var(--ink, #080807)"
+                        : "1.5px solid transparent",
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                  {idx < NAV_LINKS.length - 1 && (
+                    <span
+                      style={{
+                        color: "var(--line-strong, rgba(8, 8, 7, 0.22))",
+                        margin: "0 4px",
+                        fontSize: "12px",
+                      }}
+                    >
+                      ,
+                    </span>
+                  )}
+                </span>
+              );
+            })}
+          </nav>
+
+          {/* Right Controls */}
+          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+            {/* Live Dubai Time Pill */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "6px 14px",
+                borderRadius: "var(--radius-pill, 9999px)",
+                border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                background: "var(--surface, #ffffff)",
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "var(--muted, #545454)",
+                letterSpacing: "0.04em",
+              }}
+              className="admin-telemetry-pill"
+            >
               <span
                 style={{
-                  ...styles.telemetryDot,
-                  background: isOpenOffice ? "#000000" : "#777777",
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: isOpenOffice ? "var(--ink, #080807)" : "#888888",
+                  display: "inline-block",
                 }}
               />
               <span>DUBAI {dubaiTime} GST</span>
-              <span style={styles.telemetrySep}>·</span>
-              <span style={{ fontWeight: 800 }}>
-                {isOpenOffice ? "ATELIER OPEN" : "STUDIO MODE"}
-              </span>
             </div>
-          </div>
 
-          {/* Actions Right */}
-          <div style={styles.actionsRight}>
+            {/* View Site Action */}
             <Link
               to="/"
               target="_blank"
               rel="noopener noreferrer"
-              style={styles.btnPublicSite}
+              style={{
+                fontSize: "11.5px",
+                fontWeight: 600,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+                textDecoration: "none",
+                color: "var(--ink, #080807)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
+              className="admin-view-site-link"
             >
-              <span>VIEW PUBLIC SITE</span>
-              <FiExternalLink size={12} />
+              <span>SITE</span>
+              <FiExternalLink size={11} />
             </Link>
 
-            <div style={styles.userBadge}>
-              <div style={styles.userAvatar}>
-                {getInitials(user?.name || "Admin")}
-              </div>
-              <span style={styles.userName}>{user?.name || "Director"}</span>
-            </div>
-
+            {/* Sign Out Action */}
             <button
               type="button"
               onClick={handleLogout}
-              style={styles.btnLogout}
-              title="Sign Out"
+              style={{
+                background: "transparent",
+                border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
+                borderRadius: "var(--radius-pill, 9999px)",
+                padding: "6px 16px",
+                fontSize: "11px",
+                fontWeight: 600,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "var(--ink, #080807)",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--ink, #080807)";
+                e.currentTarget.style.color = "#ffffff";
+                e.currentTarget.style.borderColor = "var(--ink, #080807)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = "var(--ink, #080807)";
+                e.currentTarget.style.borderColor = "var(--line-strong, rgba(8, 8, 7, 0.22))";
+              }}
             >
-              <FiLogOut size={14} />
-              <span style={styles.logoutText}>SIGN OUT</span>
+              <FiLogOut size={12} />
+              <span>LOGOUT</span>
             </button>
 
             {/* Mobile Hamburger */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              style={styles.mobileToggle}
-              aria-label="Toggle Navigation"
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--ink, #080807)",
+                display: "none",
+              }}
+              className="admin-mobile-menu-btn"
+              aria-label="Toggle Navigation Menu"
             >
-              {mobileMenuOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+              {mobileMenuOpen ? <FiX size={22} /> : <FiMenu size={22} />}
             </button>
-          </div>
-        </div>
-
-        {/* Second Row: Architectural Command Navigation Tabs Strip */}
-        <div style={styles.navStrip}>
-          <div style={styles.navStripInner}>
-            <nav style={styles.navTrack} aria-label="Atelier Navigation">
-              {NAV_TABS.map((tab) => {
-                const active = isActiveTab(tab.path);
-                return (
-                  <Link
-                    key={tab.path}
-                    to={tab.path}
-                    style={{
-                      ...styles.navPill,
-                      ...(active ? styles.navPillActive : {}),
-                    }}
-                  >
-                    <span>{tab.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
           </div>
         </div>
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div style={styles.mobileNavOverlay}>
-            <div style={styles.mobileNavContent}>
-              <div style={styles.mobileNavHeader}>
-                <span style={styles.mobileNavTitle}>ATELIER NAVIGATION</span>
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  style={styles.mobileNavClose}
-                >
-                  <FiX size={18} />
-                </button>
-              </div>
-              <div style={styles.mobileNavLinks}>
-                {NAV_TABS.map((tab) => {
-                  const active = isActiveTab(tab.path);
-                  return (
-                    <Link
-                      key={tab.path}
-                      to={tab.path}
-                      onClick={() => setMobileMenuOpen(false)}
-                      style={{
-                        ...styles.mobileNavLink,
-                        ...(active ? styles.mobileNavLinkActive : {}),
-                      }}
-                    >
-                      <span>{tab.label}</span>
-                      {active && <FiCheck size={14} />}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
+          <div
+            style={{
+              position: "fixed",
+              top: "78px",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(252, 252, 252, 0.98)",
+              backdropFilter: "blur(20px)",
+              zIndex: 110,
+              padding: "24px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+            }}
+          >
+            {NAV_LINKS.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  fontSize: "18px",
+                  fontWeight: isLinkActive(item.href) ? 800 : 500,
+                  color: "var(--ink, #080807)",
+                  textDecoration: "none",
+                  padding: "12px 0",
+                  borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                }}
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         )}
       </header>
 
       {/* ====================================================================
-          EXPANSIVE 12-COLUMN CAD GRID WORKSPACE (NO COMMON SIDEBAR!)
+          MAIN EDITORIAL WORKSPACE (Wrapped in .wrap for identical margins)
           ==================================================================== */}
-      <main style={styles.mainWorkspace}>
+      <main style={{ flex: 1 }}>
         <Outlet />
       </main>
 
       {/* ====================================================================
-          ARCHITECTURAL MONOLITHIC FOOTER (Exact Website Vibe)
+          MINIMALIST QUIET LUXURY FOOTER (Exact Website Vibe)
           ==================================================================== */}
-      <footer style={styles.footer}>
-        <div style={styles.footerInner}>
-          <div style={styles.footerBrandCol}>
-            <div style={styles.footerBrandTitle}>YASHMEEN FIT-OUT</div>
-            <div style={styles.footerBrandSub}>DUBAI · DESIGN · ENGINEERING · ATELIER</div>
-          </div>
-          <div style={styles.footerMetaCol}>
-            <div>AL QUOZ INDUSTRIAL AREA 4, DUBAI, UAE</div>
-            <div style={{ color: "#777777", marginTop: "4px" }}>
-              35,000 SQ. FT. JOINERY & MEP ATELIER · INTERNAL CONTROL SYSTEM
+      <footer
+        style={{
+          borderTop: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+          padding: "clamp(3rem, 6vw, 5rem) 0",
+          background: "var(--bg, #fcfcfc)",
+        }}
+      >
+        <div
+          className="wrap"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "20px",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontFamily: "var(--font-display, 'Plus Jakarta Sans', sans-serif)",
+                fontSize: "13px",
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+              }}
+            >
+              YASHMEEN FUTURE BUILDING & FIT-OUT
+            </div>
+            <div
+              style={{
+                fontSize: "12px",
+                color: "var(--muted, #545454)",
+                marginTop: "4px",
+              }}
+            >
+              Al Quoz 4, Dubai, UAE · 35,000 Sq. Ft. Joinery & MEP Atelier
             </div>
           </div>
-          <div style={styles.footerRightCol}>
-            <Link to="/" style={styles.footerSiteLink}>
-              <span>YASHMEEN.AE ↗</span>
-            </Link>
-            <div style={{ color: "#888888", fontSize: "11px", marginTop: "6px" }}>
-              © {new Date().getFullYear()} ALL RIGHTS RESERVED
-            </div>
+
+          <div
+            style={{
+              fontSize: "11px",
+              color: "var(--muted-light, #8a8a86)",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+            }}
+          >
+            © {new Date().getFullYear()} YASHMEEN · ATELIER CMS CONTROL
           </div>
         </div>
       </footer>
     </div>
   );
 }
-
-const styles = {
-  shell: {
-    fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
-    background: "#f7f7f6",
-    color: "#000000",
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-  },
-  header: {
-    background: "#ffffff",
-    borderBottom: "1px solid #000000",
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
-    transition: "box-shadow 0.2s ease",
-  },
-  headerInner: {
-    maxWidth: "1440px",
-    margin: "0 auto",
-    padding: "16px clamp(18px, 3.5vw, 48px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "16px",
-  },
-  brandGroup: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
-  brandLink: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    textDecoration: "none",
-  },
-  brandText: {
-    fontSize: "16px",
-    fontWeight: 800,
-    letterSpacing: "0.08em",
-    color: "#000000",
-  },
-  brandCity: {
-    fontSize: "9px",
-    fontWeight: 700,
-    letterSpacing: "0.12em",
-    color: "#000000",
-    border: "1px solid #000000",
-    padding: "2px 7px",
-    borderRadius: "9999px",
-  },
-  verticalSep: {
-    width: "1px",
-    height: "18px",
-    background: "rgba(0, 0, 0, 0.2)",
-    display: window.innerWidth > 900 ? "block" : "none",
-  },
-  consoleTag: {
-    fontSize: "10.5px",
-    fontWeight: 700,
-    letterSpacing: "0.1em",
-    color: "#666666",
-    display: window.innerWidth > 900 ? "inline-block" : "none",
-  },
-  telemetryGroup: {
-    display: window.innerWidth > 1024 ? "flex" : "none",
-    alignItems: "center",
-  },
-  telemetryPill: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "8px",
-    background: "#ffffff",
-    border: "1px solid #000000",
-    padding: "6px 16px",
-    borderRadius: "9999px",
-    fontSize: "11px",
-    letterSpacing: "0.06em",
-  },
-  telemetryDot: {
-    width: "6px",
-    height: "6px",
-    borderRadius: "50%",
-  },
-  telemetrySep: {
-    color: "#aaaaaa",
-  },
-  actionsRight: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
-  btnPublicSite: {
-    display: window.innerWidth > 640 ? "inline-flex" : "none",
-    alignItems: "center",
-    gap: "6px",
-    background: "#ffffff",
-    border: "1px solid #000000",
-    color: "#000000",
-    borderRadius: "9999px",
-    padding: "7px 16px",
-    fontSize: "11px",
-    fontWeight: 700,
-    letterSpacing: "0.06em",
-    textDecoration: "none",
-    transition: "all 0.15s ease",
-  },
-  userBadge: {
-    display: window.innerWidth > 768 ? "flex" : "none",
-    alignItems: "center",
-    gap: "8px",
-    background: "#f0f0f0",
-    border: "1px solid #e0e0e0",
-    borderRadius: "9999px",
-    padding: "3px 12px 3px 4px",
-  },
-  userAvatar: {
-    width: "24px",
-    height: "24px",
-    borderRadius: "50%",
-    background: "#000000",
-    color: "#ffffff",
-    fontSize: "10px",
-    fontWeight: 800,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  userName: {
-    fontSize: "11.5px",
-    fontWeight: 700,
-    color: "#000000",
-  },
-  btnLogout: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "6px",
-    background: "#000000",
-    border: "1px solid #000000",
-    color: "#ffffff",
-    borderRadius: "9999px",
-    padding: "7px 14px",
-    fontSize: "11px",
-    fontWeight: 700,
-    letterSpacing: "0.06em",
-    cursor: "pointer",
-    transition: "all 0.15s ease",
-  },
-  logoutText: {
-    display: window.innerWidth > 640 ? "inline" : "none",
-  },
-  mobileToggle: {
-    display: window.innerWidth <= 768 ? "flex" : "none",
-    background: "#ffffff",
-    border: "1px solid #000000",
-    borderRadius: "6px",
-    padding: "6px",
-    cursor: "pointer",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  /* Second Row Navigation Strip */
-  navStrip: {
-    borderTop: "1px solid #e5e5e5",
-    background: "#fafafa",
-    overflowX: "auto",
-  },
-  navStripInner: {
-    maxWidth: "1440px",
-    margin: "0 auto",
-    padding: "10px clamp(18px, 3.5vw, 48px)",
-  },
-  navTrack: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    whiteSpace: "nowrap",
-  },
-  navPill: {
-    display: "inline-flex",
-    alignItems: "center",
-    padding: "7px 14px",
-    borderRadius: "9999px",
-    fontSize: "11px",
-    fontWeight: 700,
-    letterSpacing: "0.06em",
-    textDecoration: "none",
-    border: "1px solid transparent",
-    color: "#555555",
-    transition: "all 0.15s ease",
-  },
-  navPillActive: {
-    background: "#000000",
-    color: "#ffffff",
-    border: "1px solid #000000",
-  },
-
-  /* Mobile Nav Drawer */
-  mobileNavOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0, 0, 0, 0.6)",
-    zIndex: 999,
-    display: "flex",
-    justifyContent: "flex-end",
-  },
-  mobileNavContent: {
-    width: "300px",
-    height: "100%",
-    background: "#ffffff",
-    borderLeft: "1px solid #000000",
-    padding: "24px 20px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-  },
-  mobileNavHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingBottom: "14px",
-    borderBottom: "1px solid #000000",
-  },
-  mobileNavTitle: {
-    fontSize: "12px",
-    fontWeight: 800,
-    letterSpacing: "0.08em",
-  },
-  mobileNavClose: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-  },
-  mobileNavLinks: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
-  mobileNavLink: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "10px 14px",
-    fontSize: "12px",
-    fontWeight: 600,
-    color: "#333333",
-    textDecoration: "none",
-    borderRadius: "6px",
-  },
-  mobileNavLinkActive: {
-    background: "#000000",
-    color: "#ffffff",
-    fontWeight: 700,
-  },
-
-  /* Expansive Main Workspace */
-  mainWorkspace: {
-    flex: 1,
-    maxWidth: "1440px",
-    margin: "0 auto",
-    width: "100%",
-    padding: "clamp(24px, 4vw, 56px) clamp(18px, 3.5vw, 48px) 80px",
-    boxSizing: "border-box",
-  },
-
-  /* Monolithic Footer */
-  footer: {
-    background: "#ffffff",
-    borderTop: "1px solid #000000",
-    padding: "36px clamp(18px, 3.5vw, 48px)",
-  },
-  footerInner: {
-    maxWidth: "1440px",
-    margin: "0 auto",
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-    gap: "24px",
-    alignItems: "center",
-  },
-  footerBrandCol: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-  footerBrandTitle: {
-    fontSize: "14px",
-    fontWeight: 800,
-    letterSpacing: "0.08em",
-    color: "#000000",
-  },
-  footerBrandSub: {
-    fontSize: "10px",
-    fontWeight: 700,
-    letterSpacing: "0.1em",
-    color: "#666666",
-  },
-  footerMetaCol: {
-    fontSize: "11px",
-    lineHeight: 1.6,
-    color: "#444444",
-  },
-  footerRightCol: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-  },
-  footerSiteLink: {
-    fontSize: "12px",
-    fontWeight: 700,
-    color: "#000000",
-    textDecoration: "none",
-    letterSpacing: "0.05em",
-  },
-};

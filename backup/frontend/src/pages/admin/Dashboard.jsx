@@ -23,53 +23,41 @@ import {
   FiClock,
   FiChevronLeft,
   FiChevronRight,
-  FiColumns,
-  FiGrid,
-  FiLayers,
-  FiActivity,
   FiSend,
 } from "react-icons/fi";
+import "../../styles/home.css";
 
-const KANBAN_STAGES = [
+const STAGES = [
   {
     id: "intake",
-    index: "01",
-    title: "INTAKE & BRIEFS",
-    subtitle: "New client submissions & incoming briefs",
+    num: "(01)",
+    name: "Intake & Briefs",
+    desc: "Raw client submissions & quotation requests",
   },
   {
     id: "estimation",
-    index: "02",
-    title: "ESTIMATION & MEP",
-    subtitle: "CAD drafting, spatial costing & MEP site surveys",
+    num: "(02)",
+    name: "Estimation & MEP",
+    desc: "Spatial feasibility, CAD drafting & technical costing",
   },
   {
-    id: "proposal",
-    index: "03",
-    title: "CLIENT PROPOSALS",
-    subtitle: "Turnkey fit-out quotes sent & negotiations",
+    id: "proposals",
+    num: "(03)",
+    name: "Client Proposals",
+    desc: "Turnkey concept proposals & contract review",
   },
   {
     id: "production",
-    index: "04",
-    title: "ATELIER PRODUCTION",
-    subtitle: "Joinery fabrication & active on-site fit-out",
+    num: "(04)",
+    name: "Atelier Production",
+    desc: "Bespoke Al Quoz joinery fabrication & on-site build",
   },
   {
     id: "delivered",
-    index: "05",
-    title: "ARCHIVED & DELIVERED",
-    subtitle: "Handed over spaces & catalogued archives",
+    num: "(05)",
+    name: "Delivered & Handover",
+    desc: "Snag-free handover & catalogued spatial archive",
   },
-];
-
-const TABS = [
-  { id: "kanban", num: "(01)", label: "CMS KANBAN PIPELINE" },
-  { id: "telemetry", num: "(02)", label: "CAD TELEMETRY & FEEDS" },
-  { id: "quotes", num: "(03)", label: "COMMISSIONS" },
-  { id: "enquiries", num: "(04)", label: "INQUIRIES" },
-  { id: "projects", num: "(05)", label: "SPATIAL PORTFOLIO" },
-  { id: "settings", num: "(06)", label: "ATELIER DIRECTORY" },
 ];
 
 const emptyDetails = {
@@ -112,18 +100,15 @@ const formatDate = (val) => {
   });
 };
 
-const formatTime = (val) => {
-  if (!val) return "";
-  const d = new Date(val);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("kanban");
+  // View mode: 'bento' (Editorial Bento matching Selected Works) or 'lanes' (Multi-lane kanban)
+  const [viewMode, setViewMode] = useState("bento");
+
+  // Selected stage filter ('ALL' or stage id)
+  const [selectedStage, setSelectedStage] = useState("ALL");
+
+  // Active section tab: 'pipeline', 'telemetry', 'directory'
+  const [sectionTab, setSectionTab] = useState("pipeline");
 
   // Live dynamic data states
   const [quotes, setQuotes] = useState([]);
@@ -143,7 +128,7 @@ export default function Dashboard() {
     }
   });
 
-  // Custom Atelier Dispatches (stored locally)
+  // Custom Atelier Dispatches
   const [customDispatches, setCustomDispatches] = useState(() => {
     try {
       const saved = localStorage.getItem("yashmeen_custom_dispatches");
@@ -153,32 +138,26 @@ export default function Dashboard() {
     }
   });
 
-  // Kanban filters & drag state
-  const [kanbanFilter, setKanbanFilter] = useState("ALL");
-  const [kanbanSearch, setKanbanSearch] = useState("");
+  // Search & Filter
+  const [searchQuery, setSearchQuery] = useState("");
   const [draggingItemId, setDraggingItemId] = useState(null);
   const [dragOverColId, setDragOverColId] = useState(null);
 
-  // Selected item inspection drawer
+  // Slide-over inspection drawer
   const [inspectedItem, setInspectedItem] = useState(null);
 
-  // Quick Add Dispatch Modal
+  // Quick Add Commission Modal
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [quickAddStage, setQuickAddStage] = useState("intake");
   const [newDispatchForm, setNewDispatchForm] = useState({
     title: "",
     client: "",
     type: "COMMISSION BRIEF",
     location: "Dubai, UAE",
     budget: "Under AED 150,000",
-    scope: "",
+    scope: "Turnkey Interior Fit-Out",
     notes: "",
+    stage: "intake",
   });
-
-  // Dedicated Tab Filters
-  const [quoteSearch, setQuoteSearch] = useState("");
-  const [quoteFilter, setQuoteFilter] = useState("ALL");
-  const [enquirySearch, setEnquirySearch] = useState("");
 
   // Settings form errors
   const [settingsErrors, setSettingsErrors] = useState({});
@@ -228,7 +207,7 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Sync stageMap to localStorage
+  // Update item stage
   const updateItemStage = (itemId, targetStageId, itemTitle = "Item") => {
     setStageMap((prev) => {
       const next = { ...prev, [itemId]: targetStageId };
@@ -240,26 +219,46 @@ export default function Dashboard() {
       return next;
     });
 
-    const targetStage = KANBAN_STAGES.find((s) => s.id === targetStageId);
-    toast.success(`Moved "${itemTitle}" to ${targetStage?.title || targetStageId}`);
+    const targetStage = STAGES.find((s) => s.id === targetStageId);
+    toast.success(`Moved "${itemTitle}" to ${targetStage?.name || targetStageId}`);
   };
 
-  // Convert raw Mongo items + custom items into Unified Kanban Items
-  const allKanbanItems = useMemo(() => {
+  // Advance to next stage helper
+  const advanceStage = (item) => {
+    const currentIndex = STAGES.findIndex((s) => s.id === item.stage);
+    if (currentIndex >= 0 && currentIndex < STAGES.length - 1) {
+      const nextStage = STAGES[currentIndex + 1];
+      updateItemStage(item.id, nextStage.id, item.title);
+    }
+  };
+
+  // Regress to prev stage helper
+  const regressStage = (item) => {
+    const currentIndex = STAGES.findIndex((s) => s.id === item.stage);
+    if (currentIndex > 0) {
+      const prevStage = STAGES[currentIndex - 1];
+      updateItemStage(item.id, prevStage.id, item.title);
+    }
+  };
+
+  // Convert raw Mongo items + custom items into Unified Pipeline Items
+  const allItems = useMemo(() => {
     const list = [];
 
     // 1. Quotes
-    quotes.forEach((q) => {
+    quotes.forEach((q, idx) => {
       const id = `quote-${q._id}`;
       const assignedStage = stageMap[id] || "intake";
+      const stageObj = STAGES.find((s) => s.id === assignedStage);
       list.push({
         id,
         rawId: q._id,
         itemType: "QUOTE",
         typeBadge: "COMMISSION BRIEF",
-        title: q.name || "Untitled Commission",
+        num: `(${String(idx + 1).padStart(2, "0")})`,
+        title: q.name || "Bespoke Commission",
         client: q.name,
-        subtitle: q.projectType ? `${q.projectType} Fit-Out` : "Bespoke Fit-Out",
+        subtitle: q.projectType ? `${q.projectType} Fit-Out` : "Commercial & Residential",
         location: q.location || "Dubai, UAE",
         budget: q.budget || "Custom Budget",
         services: Array.isArray(q.services) ? q.services : q.services ? [q.services] : [],
@@ -269,18 +268,22 @@ export default function Dashboard() {
         timeline: q.timeline || "Within 1-3 months",
         date: q.createdAt,
         stage: assignedStage,
+        stageName: stageObj ? stageObj.name : "Intake",
+        image: null,
       });
     });
 
     // 2. Enquiries
-    enquiries.forEach((e) => {
+    enquiries.forEach((e, idx) => {
       const id = `enquiry-${e._id}`;
       const assignedStage = stageMap[id] || "intake";
+      const stageObj = STAGES.find((s) => s.id === assignedStage);
       list.push({
         id,
         rawId: e._id,
         itemType: "ENQUIRY",
         typeBadge: "CLIENT INQUIRY",
+        num: `(${String(quotes.length + idx + 1).padStart(2, "0")})`,
         title: e.name || "Client Inquiry",
         client: e.name,
         subtitle: e.services || "Interior Fit-Out Consultation",
@@ -293,53 +296,59 @@ export default function Dashboard() {
         timeline: "Immediate Consultation",
         date: e.createdAt,
         stage: assignedStage,
+        stageName: stageObj ? stageObj.name : "Intake",
+        image: null,
       });
     });
 
-    // 3. Projects (Sample first 10 for Kanban production flow)
-    projects.slice(0, 10).forEach((p, idx) => {
+    // 3. Projects (Sample first 8 for spatial execution)
+    projects.slice(0, 8).forEach((p, idx) => {
       const id = `project-${p._id}`;
-      // default projects across estimation, proposal, production, delivered
-      const defaultProjectStage =
+      const defaultStage =
         idx % 4 === 0
           ? "production"
           : idx % 4 === 1
           ? "estimation"
           : idx % 4 === 2
-          ? "proposal"
+          ? "proposals"
           : "delivered";
 
-      const assignedStage = stageMap[id] || defaultProjectStage;
+      const assignedStage = stageMap[id] || defaultStage;
+      const stageObj = STAGES.find((s) => s.id === assignedStage);
       list.push({
         id,
         rawId: p._id,
         itemType: "PROJECT",
         typeBadge: "SPATIAL WORK",
+        num: `(${String(quotes.length + enquiries.length + idx + 1).padStart(2, "0")})`,
         title: p.title || "Spatial Project",
         client: "Yashmeen Atelier Archive",
         subtitle: p.category || "Fit-Out & Joinery",
         location: p.location || "Dubai, UAE",
-        budget: "Architectural Commission",
+        budget: "Turnkey Fit-Out",
         image: p.image,
-        services: ["Spatial Architecture", "Joinery & MEP"],
+        services: ["Spatial Architecture", "Bespoke Joinery & MEP"],
         message: p.description || "",
         email: details.email || "info@yfbfitoutcontracting.com",
         mobile: details.mobile || "+971543862870",
         timeline: "Completed or In-Build",
         date: p.createdAt,
         stage: assignedStage,
+        stageName: stageObj ? stageObj.name : "Production",
       });
     });
 
     // 4. Custom Dispatches
-    customDispatches.forEach((c) => {
+    customDispatches.forEach((c, idx) => {
       const id = `custom-${c.id}`;
       const assignedStage = stageMap[id] || c.stage || "intake";
+      const stageObj = STAGES.find((s) => s.id === assignedStage);
       list.push({
         id,
         rawId: c.id,
         itemType: "CUSTOM",
         typeBadge: c.type || "ATELIER DISPATCH",
+        num: `(C${idx + 1})`,
         title: c.title || "Custom Brief",
         client: c.client || "Studio Team",
         subtitle: c.scope || "Architectural Task",
@@ -352,51 +361,79 @@ export default function Dashboard() {
         timeline: "Active Milestone",
         date: c.createdAt,
         stage: assignedStage,
+        stageName: stageObj ? stageObj.name : "Intake",
+        image: null,
       });
     });
 
     return list;
   }, [quotes, enquiries, projects, customDispatches, stageMap, details]);
 
-  // Filtered items based on filter chips & search input
-  const filteredKanbanItems = useMemo(() => {
-    return allKanbanItems.filter((item) => {
-      // Type filter
-      if (kanbanFilter === "COMMISSIONS" && item.itemType !== "QUOTE") return false;
-      if (kanbanFilter === "INQUIRIES" && item.itemType !== "ENQUIRY") return false;
-      if (kanbanFilter === "PROJECTS" && item.itemType !== "PROJECT") return false;
-      if (kanbanFilter === "CUSTOM" && item.itemType !== "CUSTOM") return false;
-
-      // Search query
-      if (kanbanSearch.trim()) {
-        const query = kanbanSearch.toLowerCase();
+  // Filtered items
+  const filteredItems = useMemo(() => {
+    return allItems.filter((item) => {
+      if (selectedStage !== "ALL" && item.stage !== selectedStage) {
+        return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
         const match =
-          (item.title && item.title.toLowerCase().includes(query)) ||
-          (item.client && item.client.toLowerCase().includes(query)) ||
-          (item.subtitle && item.subtitle.toLowerCase().includes(query)) ||
-          (item.location && item.location.toLowerCase().includes(query)) ||
-          (item.email && item.email.toLowerCase().includes(query)) ||
-          (item.message && item.message.toLowerCase().includes(query));
+          (item.title && item.title.toLowerCase().includes(q)) ||
+          (item.client && item.client.toLowerCase().includes(q)) ||
+          (item.subtitle && item.subtitle.toLowerCase().includes(q)) ||
+          (item.location && item.location.toLowerCase().includes(q)) ||
+          (item.message && item.message.toLowerCase().includes(q));
         if (!match) return false;
       }
       return true;
     });
-  }, [allKanbanItems, kanbanFilter, kanbanSearch]);
+  }, [allItems, selectedStage, searchQuery]);
 
-  // Group items by stage column
-  const kanbanColumns = useMemo(() => {
-    return KANBAN_STAGES.map((stage) => {
-      const itemsInStage = filteredKanbanItems.filter(
-        (item) => item.stage === stage.id
-      );
-      return {
-        ...stage,
-        items: itemsInStage,
-      };
+  // Handle Quick Add Dispatch
+  const handleCreateDispatch = (e) => {
+    e.preventDefault();
+    if (!newDispatchForm.title.trim()) {
+      toast.error("Please enter a brief or project title.");
+      return;
+    }
+
+    const newEntry = {
+      id: Date.now().toString(),
+      title: newDispatchForm.title.trim(),
+      client: newDispatchForm.client.trim() || "Private Client",
+      type: newDispatchForm.type,
+      location: newDispatchForm.location.trim() || "Dubai, UAE",
+      budget: newDispatchForm.budget.trim() || "Under AED 150,000",
+      scope: newDispatchForm.scope.trim() || "Turnkey Fit-Out & Joinery",
+      notes: newDispatchForm.notes.trim() || "Logged from Atelier CMS console.",
+      createdAt: new Date().toISOString(),
+      stage: newDispatchForm.stage,
+    };
+
+    const updated = [newEntry, ...customDispatches];
+    setCustomDispatches(updated);
+    try {
+      localStorage.setItem("yashmeen_custom_dispatches", JSON.stringify(updated));
+    } catch (err) {
+      console.error(err);
+    }
+
+    updateItemStage(`custom-${newEntry.id}`, newDispatchForm.stage, newEntry.title);
+    setQuickAddOpen(false);
+    setNewDispatchForm({
+      title: "",
+      client: "",
+      type: "COMMISSION BRIEF",
+      location: "Dubai, UAE",
+      budget: "Under AED 150,000",
+      scope: "Turnkey Interior Fit-Out",
+      notes: "",
+      stage: "intake",
     });
-  }, [filteredKanbanItems]);
+    toast.success(`Logged "${newEntry.title}" into pipeline.`);
+  };
 
-  // Drag and Drop Handlers
+  // Drag and Drop Handlers for Lanes view
   const handleDragStart = (e, item) => {
     setDraggingItemId(item.id);
     e.dataTransfer.setData("text/plain", item.id);
@@ -416,13 +453,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleDragLeave = (e, colId) => {
-    if (e.currentTarget.contains(e.relatedTarget)) return;
-    if (dragOverColId === colId) {
-      setDragOverColId(null);
-    }
-  };
-
   const handleDrop = (e, targetColId) => {
     e.preventDefault();
     const itemId = e.dataTransfer.getData("text/plain") || draggingItemId;
@@ -430,178 +460,24 @@ export default function Dashboard() {
     setDraggingItemId(null);
 
     if (!itemId) return;
-    const item = allKanbanItems.find((i) => i.id === itemId);
+    const item = allItems.find((i) => i.id === itemId);
     if (item && item.stage !== targetColId) {
       updateItemStage(itemId, targetColId, item.title);
     }
   };
 
-  // Step Move Handler (Left / Right arrows)
-  const handleStepMove = (item, direction) => {
-    const currentIndex = KANBAN_STAGES.findIndex((s) => s.id === item.stage);
-    if (currentIndex === -1) return;
-
-    const newIndex = currentIndex + direction;
-    if (newIndex >= 0 && newIndex < KANBAN_STAGES.length) {
-      const targetStage = KANBAN_STAGES[newIndex];
-      updateItemStage(item.id, targetStage.id, item.title);
-    }
-  };
-
-  // Quick Add Dispatch submission
-  const handleCreateDispatch = (e) => {
-    e.preventDefault();
-    if (!newDispatchForm.title.trim()) {
-      toast.error("Please enter a dispatch title or project name.");
-      return;
-    }
-
-    const newEntry = {
-      id: Date.now().toString(),
-      title: newDispatchForm.title.trim(),
-      client: newDispatchForm.client.trim() || "Private Client",
-      type: newDispatchForm.type,
-      location: newDispatchForm.location.trim() || "Dubai, UAE",
-      budget: newDispatchForm.budget.trim() || "Under AED 150,000",
-      scope: newDispatchForm.scope.trim() || "Turnkey Fit-Out & Joinery",
-      notes: newDispatchForm.notes.trim() || "Logged from Atelier Command console.",
-      createdAt: new Date().toISOString(),
-      stage: quickAddStage,
-    };
-
-    const updated = [newEntry, ...customDispatches];
-    setCustomDispatches(updated);
-    try {
-      localStorage.setItem("yashmeen_custom_dispatches", JSON.stringify(updated));
-    } catch (err) {
-      console.error(err);
-    }
-
-    // Assign stage in stageMap
-    updateItemStage(`custom-${newEntry.id}`, quickAddStage, newEntry.title);
-    setQuickAddOpen(false);
-    setNewDispatchForm({
-      title: "",
-      client: "",
-      type: "COMMISSION BRIEF",
-      location: "Dubai, UAE",
-      budget: "Under AED 150,000",
-      scope: "",
-      notes: "",
-    });
-    toast.success(`Logged "${newEntry.title}" onto Kanban board.`);
-  };
-
-  // Dedicated Tab Data Handlers
-  const filteredQuotes = useMemo(() => {
-    return quotes.filter((q) => {
-      const matchSearch =
-        !quoteSearch.trim() ||
-        [q.name, q.email, q.mobile, q.location, q.projectType]
-          .filter(Boolean)
-          .some((val) =>
-            String(val).toLowerCase().includes(quoteSearch.toLowerCase())
-          );
-
-      const matchFilter =
-        quoteFilter === "ALL" ||
-        (q.projectType &&
-          q.projectType.toUpperCase().includes(quoteFilter.toUpperCase()));
-
-      return matchSearch && matchFilter;
-    });
-  }, [quotes, quoteSearch, quoteFilter]);
-
-  const filteredEnquiries = useMemo(() => {
-    return enquiries.filter((e) => {
-      if (!enquirySearch.trim()) return true;
-      return [e.name, e.email, e.mobile, e.services, e.message]
-        .filter(Boolean)
-        .some((val) =>
-          String(val).toLowerCase().includes(enquirySearch.toLowerCase())
-        );
-    });
-  }, [enquiries, enquirySearch]);
-
-  const handleDeleteOldQuotes = async () => {
-    if (!window.confirm("Permanently delete quotations older than 1 month?")) return;
-    try {
-      await quoteAPI.deleteOlderThanMonth();
-      toast.success("Old quotations purged successfully.");
-      const { data } = await quoteAPI.getAll({ limit: 100 });
-      setQuotes(Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []);
-    } catch {
-      toast.error("Failed to delete old quotations.");
-    }
-  };
-
-  const handleDeleteOldEnquiries = async () => {
-    if (!window.confirm("Permanently delete old inquiries?")) return;
-    try {
-      await enquiryAPI.deleteOld();
-      toast.success("Old inquiries purged successfully.");
-      const { data } = await enquiryAPI.getAll();
-      setEnquiries(Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []);
-    } catch {
-      toast.error("Failed to delete old inquiries.");
-    }
-  };
-
-  // Settings handlers
-  const setAddressField = (field) => (e) => {
-    const val = e.target.value;
-    setDetails((prev) => ({
-      ...prev,
-      address: { ...prev.address, [field]: val },
-    }));
-  };
-
-  const setContactField = (field) => (e) => {
-    const val = e.target.value;
-    setDetails((prev) => ({ ...prev, [field]: val }));
-    setSettingsErrors((prev) => ({ ...prev, [field]: undefined }));
-  };
-
-  const setSocialField = (idx, field) => (e) => {
-    const val = e.target.value;
-    setDetails((prev) => {
-      const socialLinks = [...prev.socialLinks];
-      socialLinks[idx] = { ...socialLinks[idx], [field]: val };
-      return { ...prev, socialLinks };
-    });
-  };
-
-  const addSocialLink = () => {
-    setDetails((prev) => ({
-      ...prev,
-      socialLinks: [...prev.socialLinks, { platform: "", url: "" }],
-    }));
-  };
-
-  const removeSocialLink = (idx) => {
-    setDetails((prev) => ({
-      ...prev,
-      socialLinks: prev.socialLinks.filter((_, i) => i !== idx),
-    }));
-  };
-
+  // Settings form handlers
   const handleSettingsSubmit = async (e) => {
     e.preventDefault();
-    const nextErrors = {};
     if (details.email && !EMAIL_RE.test(details.email)) {
-      nextErrors.email = "Valid email required.";
-    }
-    if (Object.keys(nextErrors).length > 0) {
-      setSettingsErrors(nextErrors);
+      setSettingsErrors({ email: "Valid email required." });
       return;
     }
-
     setSavingSettings(true);
     try {
       await webDetailsAPI.update(details);
-      toast.success("Atelier directory & contact profile updated.");
-    } catch (err) {
-      console.error(err);
+      toast.success("Atelier directory updated successfully.");
+    } catch {
       toast.error("Failed to update atelier directory.");
     } finally {
       setSavingSettings(false);
@@ -609,302 +485,201 @@ export default function Dashboard() {
   };
 
   return (
-    <div style={{ paddingBottom: "80px" }}>
+    <div style={{ paddingBottom: "120px" }}>
       {/* ======================================================================
-          TOP MANIFESTO & REAL-TIME ARCHITECTURAL TELEMETRY
+          1. HERO HEADER (Matches Home Page: "From brief to built.")
           ====================================================================== */}
       <section
+        className="wrap"
         style={{
-          borderBottom: "1px solid #111111",
-          paddingBottom: "32px",
-          marginBottom: "32px",
+          paddingTop: "clamp(3rem, 6vw, 6rem)",
+          paddingBottom: "clamp(2.5rem, 4vw, 4.5rem)",
+          borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
         }}
       >
         <div
           style={{
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "space-between",
             flexWrap: "wrap",
-            gap: "14px",
-            marginBottom: "16px",
-          }}
-        >
-          <div
-            style={{
-              fontFamily: "Outfit, 'Plus Jakarta Sans', monospace",
-              fontSize: "11px",
-              fontWeight: 800,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: "#555555",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            <span
-              style={{
-                width: "8px",
-                height: "8px",
-                borderRadius: "50%",
-                background: "#000000",
-                display: "inline-block",
-                boxShadow: "0 0 0 2px rgba(0,0,0,0.15)",
-              }}
-            />
-            (AL QUOZ ATELIER · CMS ARCHITECTURAL PIPELINE)
-          </div>
-
-          {/* Quick Action: New Dispatch */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <button
-              onClick={() => {
-                setQuickAddStage("intake");
-                setQuickAddOpen(true);
-              }}
-              style={{
-                background: "#000000",
-                color: "#ffffff",
-                border: "1px solid #000000",
-                borderRadius: "9999px",
-                padding: "8px 18px",
-                fontSize: "11px",
-                fontWeight: 800,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "7px",
-                transition: "all 0.22s cubic-bezier(0.16, 1, 0.3, 1)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#ffffff";
-                e.currentTarget.style.color = "#000000";
-                e.currentTarget.style.transform = "translateY(-1px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#000000";
-                e.currentTarget.style.color = "#ffffff";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-            >
-              <FiPlus size={14} />
-              + NEW CMS DISPATCH
-            </button>
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "24px",
-            alignItems: "end",
+            gap: "28px",
           }}
         >
           <div>
+            <span className="eyebrow" style={{ marginBottom: "1rem" }}>
+              (AL QUOZ ATELIER · CMS ARCHITECTURAL PIPELINE)
+            </span>
             <h1
+              className="u-text-h2"
               style={{
-                fontFamily: "Outfit, 'Plus Jakarta Sans', sans-serif",
-                fontSize: "clamp(32px, 4.5vw, 54px)",
-                fontWeight: 900,
+                fontSize: "clamp(2.8rem, 6vw, 5.5rem)",
+                lineHeight: 0.96,
                 letterSpacing: "-0.04em",
-                lineHeight: 1.02,
-                color: "#000000",
-                textTransform: "uppercase",
                 margin: 0,
+                textTransform: "uppercase",
               }}
             >
-              CMS KANBAN PIPELINE
+              FROM BRIEF TO BUILT.
             </h1>
             <p
               style={{
-                fontSize: "14.5px",
-                color: "#444444",
+                fontSize: "clamp(1rem, 1.25vw, 1.15rem)",
+                color: "var(--muted, #545454)",
                 lineHeight: 1.6,
-                marginTop: "12px",
+                marginTop: "1.25rem",
                 maxWidth: "680px",
                 marginBottom: 0,
               }}
             >
-              Smooth workflow pipeline for quotation commissions, client inquiries,
-              and bespoke Al Quoz fit-out production. Drag items between columns to
-              advance stages in real time.
+              One team shapes the space, makes the details and delivers the finished interior.
+              Real-time architectural control for quotation commissions, client consultations,
+              joinery fabrication, and spatial delivery across Dubai.
             </p>
           </div>
 
-          {/* Quick Stage Stats Strip */}
+          {/* Right Action & Proof */}
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(90px, 1fr))",
-              gap: "8px",
-              background: "#ffffff",
-              border: "1px solid rgba(0,0,0,0.14)",
-              borderRadius: "10px",
-              padding: "12px 14px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: "20px",
             }}
           >
-            {KANBAN_STAGES.map((stg) => {
-              const count = allKanbanItems.filter((i) => i.stage === stg.id).length;
-              return (
-                <div
-                  key={stg.id}
-                  style={{
-                    textAlign: "center",
-                    borderRight: "1px solid rgba(0,0,0,0.08)",
-                    padding: "4px 8px",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontFamily: "Outfit, monospace",
-                      fontSize: "10px",
-                      fontWeight: 800,
-                      color: "#666666",
-                    }}
-                  >
-                    {stg.index}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "Outfit, sans-serif",
-                      fontSize: "20px",
-                      fontWeight: 900,
-                      color: "#000000",
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {count}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "9px",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      color: "#888888",
-                      letterSpacing: "0.05em",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {stg.title.split(" ")[0]}
-                  </div>
-                </div>
-              );
-            })}
+            <button
+              type="button"
+              className="btn-pill btn-pill-dark"
+              onClick={() => setQuickAddOpen(true)}
+            >
+              <span>+ LOG NEW COMMISSION</span>
+              <span className="g-circle" aria-hidden="true" />
+            </button>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                textAlign: "right",
+                gap: "4px",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "var(--font-display, sans-serif)",
+                  fontSize: "18px",
+                  fontWeight: 700,
+                  letterSpacing: "-0.02em",
+                  color: "var(--ink, #080807)",
+                }}
+              >
+                35,000 SQ. FT.
+              </div>
+              <div
+                style={{
+                  fontSize: "11px",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: "var(--muted, #545454)",
+                }}
+              >
+                AL QUOZ ATELIER & JOINERY BAY
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Section Navigation Tabs: Pipeline / Telemetry / Directory */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            marginTop: "40px",
+          }}
+        >
+          {[
+            { id: "pipeline", label: `Commission Pipeline (${allItems.length})` },
+            { id: "telemetry", label: "Atelier Telemetry & Feeds" },
+            { id: "directory", label: "Studio Profile & Directory" },
+          ].map((tab) => {
+            const active = sectionTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                className={`works-switch-btn ${active ? "active" : ""}`}
+                onClick={() => setSectionTab(tab.id)}
+                style={{
+                  fontSize: "12px",
+                  padding: "8px 18px",
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
       </section>
 
       {/* ======================================================================
-          CONTROLLER NAVIGATION TABS (BRUTALIST EDITORIAL PILLS)
+          2. COMMISSION PIPELINE SECTION (Exact Works Bento / Lanes Vibe)
           ====================================================================== */}
-      <div
-        style={{
-          display: "flex",
-          gap: "8px",
-          overflowX: "auto",
-          paddingBottom: "14px",
-          marginBottom: "28px",
-          borderBottom: "1px solid rgba(0,0,0,0.1)",
-        }}
-      >
-        {TABS.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                fontFamily: "Outfit, 'Plus Jakarta Sans', monospace",
-                fontSize: "11px",
-                fontWeight: 800,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                padding: "10px 18px",
-                borderRadius: "9999px",
-                border: "1px solid #000000",
-                background: isActive ? "#000000" : "#ffffff",
-                color: isActive ? "#ffffff" : "#000000",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                transition: "all 0.22s cubic-bezier(0.16, 1, 0.3, 1)",
-                boxShadow: isActive
-                  ? "0 4px 12px rgba(0,0,0,0.14)"
-                  : "0 2px 6px rgba(0,0,0,0.03)",
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = "#f0f0ef";
-                  e.currentTarget.style.transform = "translateY(-1px)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = "#ffffff";
-                  e.currentTarget.style.transform = "translateY(0)";
-                }
-              }}
-            >
-              <span
-                style={{
-                  color: isActive ? "rgba(255,255,255,0.7)" : "#777777",
-                  fontSize: "10px",
-                }}
-              >
-                {tab.num}
-              </span>
-              <span>{tab.label}</span>
-              {tab.id === "kanban" && (
-                <span
-                  style={{
-                    background: isActive ? "#ffffff" : "#000000",
-                    color: isActive ? "#000000" : "#ffffff",
-                    borderRadius: "9999px",
-                    padding: "2px 7px",
-                    fontSize: "10px",
-                    fontWeight: 800,
-                  }}
-                >
-                  {allKanbanItems.length}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {sectionTab === "pipeline" && (
+        <section
+          className="works-bento-section wrap"
+          id="pipeline"
+          aria-label="Commission Pipeline"
+          style={{ paddingTop: "clamp(3rem, 6vw, 5rem)" }}
+        >
+          {/* Bento Header */}
+          <div className="works-bento-header" style={{ alignItems: "flex-end" }}>
+            <div>
+              <span className="eyebrow">(SPACES IN PROGRESS · FROM FIRST MEETING TO HANDOVER)</span>
+              <h2 className="u-text-h2">Selected workflow</h2>
+            </div>
 
-      {/* ======================================================================
-          TAB 1: CMS KANBAN BOARD (SMOOTH SOFT ANIMATED PIPELINE)
-          ====================================================================== */}
-      {activeTab === "kanban" && (
-        <section>
-          {/* Kanban Filter & Search Control Bar */}
+            <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+              <div className="works-view-switcher">
+                <button
+                  type="button"
+                  className={`works-switch-btn ${viewMode === "bento" ? "active" : ""}`}
+                  onClick={() => setViewMode("bento")}
+                >
+                  Editorial Bento
+                </button>
+                <button
+                  type="button"
+                  className={`works-switch-btn ${viewMode === "lanes" ? "active" : ""}`}
+                  onClick={() => setViewMode("lanes")}
+                >
+                  Pipeline Lanes
+                </button>
+              </div>
+              <span
+                className="works-bento-count"
+                aria-label={`${filteredItems.length} commissions`}
+              >
+                ({String(filteredItems.length).padStart(2, "0")})
+              </span>
+            </div>
+          </div>
+
+          {/* Stage Filter Rail & Search Bar */}
           <div
             style={{
-              background: "#ffffff",
-              border: "1px solid rgba(0,0,0,0.14)",
-              borderRadius: "12px",
-              padding: "16px 20px",
-              marginBottom: "24px",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               flexWrap: "wrap",
               gap: "16px",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+              marginBottom: "clamp(2.5rem, 5vw, 4rem)",
+              paddingBottom: "1.25rem",
+              borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
             }}
           >
-            {/* Filter Pills */}
+            {/* Stage Selector Pills */}
             <div
               style={{
                 display: "flex",
@@ -913,103 +688,68 @@ export default function Dashboard() {
                 flexWrap: "wrap",
               }}
             >
-              <span
-                style={{
-                  fontFamily: "Outfit, monospace",
-                  fontSize: "11px",
-                  fontWeight: 800,
-                  color: "#666666",
-                  marginRight: "4px",
-                }}
+              <button
+                type="button"
+                className={`works-switch-btn ${selectedStage === "ALL" ? "active" : ""}`}
+                onClick={() => setSelectedStage("ALL")}
+                style={{ fontSize: "11px", padding: "6px 14px" }}
               >
-                FILTER BY:
-              </span>
-              {[
-                { id: "ALL", label: `ALL PIPELINE (${allKanbanItems.length})` },
-                {
-                  id: "COMMISSIONS",
-                  label: `COMMISSIONS (${quotes.length})`,
-                },
-                {
-                  id: "INQUIRIES",
-                  label: `INQUIRIES (${enquiries.length})`,
-                },
-                {
-                  id: "PROJECTS",
-                  label: `SPATIAL PROJECTS (${Math.min(projects.length, 10)})`,
-                },
-                {
-                  id: "CUSTOM",
-                  label: `CUSTOM (${customDispatches.length})`,
-                },
-              ].map((flt) => {
-                const isSelected = kanbanFilter === flt.id;
+                ALL STAGES ({allItems.length})
+              </button>
+
+              {STAGES.map((stg) => {
+                const count = allItems.filter((i) => i.stage === stg.id).length;
+                const active = selectedStage === stg.id;
                 return (
                   <button
-                    key={flt.id}
-                    onClick={() => setKanbanFilter(flt.id)}
+                    key={stg.id}
+                    type="button"
+                    className={`works-switch-btn ${active ? "active" : ""}`}
+                    onClick={() => setSelectedStage(stg.id)}
                     style={{
-                      fontFamily: "Outfit, monospace",
-                      fontSize: "10.5px",
-                      fontWeight: 800,
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
+                      fontSize: "11px",
                       padding: "6px 14px",
-                      borderRadius: "9999px",
-                      border: "1px solid",
-                      borderColor: isSelected ? "#000000" : "rgba(0,0,0,0.15)",
-                      background: isSelected ? "#000000" : "#ffffff",
-                      color: isSelected ? "#ffffff" : "#333333",
-                      cursor: "pointer",
-                      transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isSelected) e.currentTarget.style.borderColor = "#000000";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isSelected) e.currentTarget.style.borderColor = "rgba(0,0,0,0.15)";
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
                     }}
                   >
-                    {flt.label}
+                    <span>{stg.num}</span>
+                    <span>{stg.name}</span>
+                    <span style={{ opacity: 0.65 }}>({count})</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Search Input */}
-            <div
-              style={{
-                position: "relative",
-                minWidth: "260px",
-                maxWidth: "360px",
-                flex: "1 1 260px",
-              }}
-            >
+            {/* Clean Architectural Search */}
+            <div style={{ position: "relative", minWidth: "240px" }}>
               <FiSearch
-                size={14}
+                size={13}
                 style={{
                   position: "absolute",
                   left: "14px",
                   top: "50%",
                   transform: "translateY(-50%)",
-                  color: "#777777",
+                  color: "var(--muted, #545454)",
                 }}
               />
               <input
                 type="text"
-                placeholder="Search pipeline by client, location, brief..."
-                value={kanbanSearch}
-                onChange={(e) => setKanbanSearch(e.target.value)}
+                placeholder="Search pipeline..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   width: "100%",
-                  paddingLeft: "38px",
+                  paddingLeft: "36px",
                   paddingRight: "14px",
-                  paddingTop: "9px",
-                  paddingBottom: "9px",
-                  fontSize: "13px",
-                  border: "1px solid rgba(0,0,0,0.18)",
-                  borderRadius: "9999px",
-                  background: "#ffffff",
+                  paddingTop: "7px",
+                  paddingBottom: "7px",
+                  fontSize: "12px",
+                  borderRadius: "var(--radius-pill, 9999px)",
+                  border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
+                  background: "var(--surface, #ffffff)",
+                  color: "var(--ink, #080807)",
                   outline: "none",
                   boxSizing: "border-box",
                 }}
@@ -1017,1389 +757,749 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Kanban Multi-Column Track */}
-          <div className="kanban-board-scroll">
-            {kanbanColumns.map((col) => {
-              const isOver = dragOverColId === col.id;
-              return (
+          {/* ==================================================================
+              VIEW MODE A: EDITORIAL BENTO GRID (Matches Website Selected Works)
+              ================================================================== */}
+          {viewMode === "bento" && (
+            <div className="works-bento-grid">
+              {filteredItems.length === 0 ? (
                 <div
-                  key={col.id}
-                  className={`kanban-column-box ${isOver ? "drag-over" : ""}`}
-                  onDragOver={(e) => handleDragOver(e, col.id)}
-                  onDragLeave={(e) => handleDragLeave(e, col.id)}
-                  onDrop={(e) => handleDrop(e, col.id)}
+                  style={{
+                    gridColumn: "1 / -1",
+                    padding: "80px 20px",
+                    textAlign: "center",
+                    color: "var(--muted, #545454)",
+                    border: "1px dashed var(--line, rgba(8, 8, 7, 0.12))",
+                    borderRadius: "var(--radius, 10px)",
+                  }}
                 >
-                  {/* Column Header */}
-                  <div className="kanban-column-header">
-                    <div>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          marginBottom: "3px",
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontFamily: "Outfit, monospace",
-                            fontSize: "11px",
-                            fontWeight: 800,
-                            color: "#666666",
-                          }}
-                        >
-                          ({col.index})
-                        </span>
-                        <h3
-                          style={{
-                            fontFamily: "Outfit, sans-serif",
-                            fontSize: "13.5px",
-                            fontWeight: 900,
-                            letterSpacing: "0.04em",
-                            textTransform: "uppercase",
-                            margin: 0,
-                            color: "#000000",
-                          }}
-                        >
-                          {col.title}
-                        </h3>
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "11px",
-                          color: "#777777",
-                          lineHeight: 1.3,
-                        }}
-                      >
-                        {col.subtitle}
-                      </div>
-                    </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: "Outfit, monospace",
-                          fontSize: "11px",
-                          fontWeight: 800,
-                          background: "#000000",
-                          color: "#ffffff",
-                          borderRadius: "9999px",
-                          padding: "3px 8px",
-                        }}
-                      >
-                        {col.items.length}
-                      </span>
-                      <button
-                        title={`Add dispatch to ${col.title}`}
-                        onClick={() => {
-                          setQuickAddStage(col.id);
-                          setQuickAddOpen(true);
-                        }}
-                        style={{
-                          background: "#ffffff",
-                          border: "1px solid rgba(0,0,0,0.2)",
-                          borderRadius: "50%",
-                          width: "24px",
-                          height: "24px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          cursor: "pointer",
-                          color: "#000000",
-                          transition: "all 0.18s ease",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#000000";
-                          e.currentTarget.style.color = "#ffffff";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "#ffffff";
-                          e.currentTarget.style.color = "#000000";
-                        }}
-                      >
-                        <FiPlus size={12} />
-                      </button>
-                    </div>
+                  <div style={{ fontSize: "14px", fontWeight: 600 }}>
+                    No commissions in this stage filter.
                   </div>
-
-                  {/* Cards Container */}
-                  <div
+                  <button
+                    onClick={() => setSelectedStage("ALL")}
                     style={{
-                      padding: "16px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "14px",
-                      flex: 1,
+                      background: "transparent",
+                      border: "none",
+                      color: "var(--ink, #080807)",
+                      fontWeight: 700,
+                      marginTop: "10px",
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      fontSize: "12px",
                     }}
                   >
-                    {col.items.length === 0 ? (
+                    View all pipeline commissions ↗
+                  </button>
+                </div>
+              ) : (
+                filteredItems.map((item, idx) => {
+                  const isLandscape = idx % 2 === 0;
+                  const isOffset = idx % 3 === 1;
+                  return (
+                    <article
+                      key={item.id}
+                      className={`works-card ${
+                        isLandscape ? "is-landscape" : "is-portrait is-monumental"
+                      } ${isOffset ? "offset-top" : ""}`}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {/* Image Frame or Architectural Paper Canvas */}
                       <div
+                        className="works-card-image-wrap"
                         style={{
-                          border: "1px dashed rgba(0,0,0,0.18)",
-                          borderRadius: "8px",
-                          padding: "36px 16px",
-                          textAlign: "center",
-                          color: "#888888",
-                          fontSize: "12px",
-                          background: "#fafaf9",
-                          marginTop: "8px",
+                          background: item.image
+                            ? "var(--surface-alt, #f1f0ee)"
+                            : "var(--ink, #080807)",
+                          minHeight: "280px",
+                          position: "relative",
                         }}
+                        onClick={() => setInspectedItem(item)}
                       >
-                        <div
-                          style={{
-                            fontFamily: "Outfit, monospace",
-                            fontSize: "18px",
-                            marginBottom: "6px",
-                            color: "#bbbbbb",
-                          }}
-                        >
-                          +
-                        </div>
-                        <div>No briefs in this stage</div>
-                        <div style={{ fontSize: "10.5px", marginTop: "4px" }}>
-                          Drag a card here or click + to add
-                        </div>
-                      </div>
-                    ) : (
-                      col.items.map((item, idx) => {
-                        const isDragging = draggingItemId === item.id;
-                        return (
+                        {item.image ? (
+                          <img
+                            src={imageUrl(item.image)}
+                            alt={item.title}
+                            onError={(e) => {
+                              e.target.src = "/static/hero-aperture.png";
+                            }}
+                          />
+                        ) : (
                           <div
-                            key={item.id}
-                            draggable
-                            onDragStart={(e) => handleDragStart(e, item)}
-                            onDragEnd={handleDragEnd}
-                            className={`kanban-card-item kanban-card-animated ${
-                              isDragging ? "is-dragging" : ""
-                            }`}
                             style={{
-                              animationDelay: `${idx * 0.04}s`,
+                              padding: "36px 32px",
+                              height: "100%",
+                              display: "flex",
+                              flexDirection: "column",
+                              justifyContent: "space-between",
+                              color: "#ffffff",
+                              boxSizing: "border-box",
+                              minHeight: "300px",
                             }}
                           >
-                            {/* Card Top: Type Badge & Date */}
                             <div
                               style={{
                                 display: "flex",
-                                alignItems: "center",
                                 justifyContent: "space-between",
-                                gap: "6px",
-                                marginBottom: "10px",
+                                alignItems: "center",
                               }}
                             >
                               <span
                                 style={{
-                                  fontFamily: "Outfit, monospace",
-                                  fontSize: "9.5px",
-                                  fontWeight: 800,
-                                  letterSpacing: "0.06em",
+                                  fontSize: "10px",
+                                  fontWeight: 700,
+                                  letterSpacing: "0.1em",
                                   textTransform: "uppercase",
-                                  padding: "3px 8px",
-                                  borderRadius: "9999px",
-                                  border: "1px solid #000000",
-                                  background: "#ffffff",
-                                  color: "#000000",
+                                  color: "rgba(255, 255, 255, 0.7)",
                                 }}
                               >
                                 {item.typeBadge}
                               </span>
                               <span
                                 style={{
-                                  fontSize: "10.5px",
-                                  color: "#777777",
-                                  fontFamily: "Outfit, monospace",
+                                  fontSize: "11px",
+                                  color: "rgba(255, 255, 255, 0.5)",
                                 }}
                               >
                                 {formatDate(item.date)}
                               </span>
                             </div>
 
-                            {/* Optional Project Thumbnail */}
-                            {item.image && (
-                              <div
+                            {item.message ? (
+                              <blockquote
                                 style={{
-                                  width: "100%",
-                                  height: "110px",
-                                  borderRadius: "6px",
-                                  overflow: "hidden",
-                                  marginBottom: "10px",
-                                  border: "1px solid rgba(0,0,0,0.1)",
-                                  background: "#111111",
+                                  fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)",
+                                  fontSize: "clamp(1.2rem, 2vw, 1.6rem)",
+                                  fontStyle: "italic",
+                                  lineHeight: 1.4,
+                                  margin: "24px 0",
+                                  color: "#f0f0ee",
+                                  fontWeight: 400,
                                 }}
                               >
-                                <img
-                                  src={imageUrl(item.image)}
-                                  alt={item.title}
-                                  style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "cover",
-                                  }}
-                                  onError={(e) => {
-                                    e.target.src = "/static/hero-aperture.png";
-                                  }}
-                                />
+                                "{item.message.slice(0, 180)}..."
+                              </blockquote>
+                            ) : (
+                              <div
+                                style={{
+                                  fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)",
+                                  fontSize: "1.4rem",
+                                  fontStyle: "italic",
+                                  color: "rgba(255,255,255,0.7)",
+                                  margin: "24px 0",
+                                }}
+                              >
+                                Bespoke Architectural Commission Brief
                               </div>
                             )}
 
-                            {/* Client & Title */}
-                            <h4
+                            <div
                               style={{
-                                fontFamily: "Outfit, 'Plus Jakarta Sans', sans-serif",
-                                fontSize: "14px",
-                                fontWeight: 800,
-                                color: "#000000",
+                                display: "flex",
+                                gap: "8px",
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontSize: "10.5px",
+                                  fontWeight: 600,
+                                  letterSpacing: "0.04em",
+                                  textTransform: "uppercase",
+                                  background: "rgba(255, 255, 255, 0.12)",
+                                  padding: "4px 10px",
+                                  borderRadius: "var(--radius-pill, 9999px)",
+                                }}
+                              >
+                                {item.location}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: "10.5px",
+                                  fontWeight: 600,
+                                  letterSpacing: "0.04em",
+                                  textTransform: "uppercase",
+                                  background: "rgba(255, 255, 255, 0.12)",
+                                  padding: "4px 10px",
+                                  borderRadius: "var(--radius-pill, 9999px)",
+                                }}
+                              >
+                                {item.budget}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Card Meta Row */}
+                      <div className="works-card-meta">
+                        <span>
+                          {item.num} / {item.subtitle}
+                        </span>
+                        <span>{item.stageName}</span>
+                      </div>
+
+                      {/* Card Title */}
+                      <h3
+                        className="works-card-title"
+                        onClick={() => setInspectedItem(item)}
+                      >
+                        {item.title}
+                      </h3>
+
+                      {/* Interactive Stage Advancement Bar */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          marginTop: "16px",
+                          paddingTop: "14px",
+                          borderTop: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <button
+                            type="button"
+                            title="Regress stage"
+                            disabled={item.stage === "intake"}
+                            onClick={() => regressStage(item)}
+                            style={{
+                              background: "transparent",
+                              border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
+                              borderRadius: "50%",
+                              width: "28px",
+                              height: "28px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              cursor: item.stage === "intake" ? "not-allowed" : "pointer",
+                              opacity: item.stage === "intake" ? 0.3 : 1,
+                              color: "var(--ink, #080807)",
+                            }}
+                          >
+                            <FiChevronLeft size={13} />
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={item.stage === "delivered"}
+                            onClick={() => advanceStage(item)}
+                            className="btn-pill btn-pill-outline-dark"
+                            style={{
+                              minHeight: "30px",
+                              padding: "0 12px",
+                              fontSize: "10.5px",
+                              opacity: item.stage === "delivered" ? 0.4 : 1,
+                            }}
+                          >
+                            <span>
+                              {item.stage === "delivered"
+                                ? "HANDED OVER ✓"
+                                : "NEXT STAGE →"}
+                            </span>
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setInspectedItem(item)}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            letterSpacing: "0.06em",
+                            textTransform: "uppercase",
+                            color: "var(--ink, #080807)",
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            textDecoration: "underline",
+                          }}
+                        >
+                          INSPECT <FiArrowUpRight size={11} />
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })
+              )}
+            </div>
+          )}
+
+          {/* ==================================================================
+              VIEW MODE B: PIPELINE LANES (Spacious Architectural Kanban Columns)
+              ================================================================== */}
+          {viewMode === "lanes" && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                gap: "24px",
+                alignItems: "start",
+              }}
+            >
+              {STAGES.map((stg) => {
+                const colItems = allItems.filter((i) => i.stage === stg.id);
+                const isOver = dragOverColId === stg.id;
+                return (
+                  <div
+                    key={stg.id}
+                    onDragOver={(e) => handleDragOver(e, stg.id)}
+                    onDragLeave={() => setDragOverColId(null)}
+                    onDrop={(e) => handleDrop(e, stg.id)}
+                    style={{
+                      background: isOver
+                        ? "var(--surface-alt, #f1f0ee)"
+                        : "var(--surface, #ffffff)",
+                      border: "1px solid",
+                      borderColor: isOver
+                        ? "var(--ink, #080807)"
+                        : "var(--line, rgba(8, 8, 7, 0.12))",
+                      borderRadius: "var(--radius, 10px)",
+                      padding: "20px",
+                      minHeight: "480px",
+                      transition: "all 0.25s ease",
+                      display: "flex",
+                      flexDirection: "column",
+                      boxShadow: isOver
+                        ? "0 12px 32px rgba(0,0,0,0.06)"
+                        : "0 2px 10px rgba(0,0,0,0.02)",
+                    }}
+                  >
+                    {/* Lane Header */}
+                    <div
+                      style={{
+                        paddingBottom: "14px",
+                        borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "baseline",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            letterSpacing: "0.06em",
+                            color: "var(--muted, #545454)",
+                          }}
+                        >
+                          {stg.num}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: 800,
+                            background: "var(--ink, #080807)",
+                            color: "#ffffff",
+                            padding: "2px 7px",
+                            borderRadius: "var(--radius-pill, 9999px)",
+                          }}
+                        >
+                          {colItems.length}
+                        </span>
+                      </div>
+                      <h4
+                        style={{
+                          fontFamily: "var(--font-display, sans-serif)",
+                          fontSize: "15px",
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          margin: "6px 0 2px 0",
+                          color: "var(--ink, #080807)",
+                        }}
+                      >
+                        {stg.name}
+                      </h4>
+                      <div style={{ fontSize: "11px", color: "var(--muted, #545454)" }}>
+                        {stg.desc}
+                      </div>
+                    </div>
+
+                    {/* Lane Items */}
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "14px",
+                        flex: 1,
+                      }}
+                    >
+                      {colItems.length === 0 ? (
+                        <div
+                          style={{
+                            border: "1px dashed var(--line, rgba(8, 8, 7, 0.12))",
+                            borderRadius: "8px",
+                            padding: "36px 12px",
+                            textAlign: "center",
+                            color: "var(--muted-light, #8a8a86)",
+                            fontSize: "11px",
+                            background: "var(--bg, #fcfcfc)",
+                          }}
+                        >
+                          + Drop commission here
+                        </div>
+                      ) : (
+                        colItems.map((item) => (
+                          <div
+                            key={item.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, item)}
+                            onDragEnd={handleDragEnd}
+                            style={{
+                              background: "var(--surface, #ffffff)",
+                              border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                              borderRadius: "8px",
+                              padding: "16px",
+                              cursor: "grab",
+                              transition: "all 0.2s ease",
+                              boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = "var(--ink, #080807)";
+                              e.currentTarget.style.transform = "translateY(-2px)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor =
+                                "var(--line, rgba(8, 8, 7, 0.12))";
+                              e.currentTarget.style.transform = "translateY(0)";
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                fontSize: "10px",
+                                textTransform: "uppercase",
+                                color: "var(--muted, #545454)",
+                                marginBottom: "6px",
+                              }}
+                            >
+                              <span>{item.typeBadge}</span>
+                              <span>{formatDate(item.date)}</span>
+                            </div>
+
+                            <h5
+                              style={{
                                 margin: "0 0 4px 0",
-                                lineHeight: 1.3,
+                                fontSize: "13.5px",
+                                fontWeight: 700,
+                                color: "var(--ink, #080807)",
                               }}
                             >
                               {item.title}
-                            </h4>
-
+                            </h5>
                             <div
                               style={{
-                                fontSize: "12px",
-                                color: "#555555",
+                                fontSize: "11.5px",
+                                color: "var(--muted, #545454)",
                                 marginBottom: "8px",
                               }}
                             >
                               {item.subtitle}
                             </div>
 
-                            {/* Location & Budget Tags */}
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px",
-                                flexWrap: "wrap",
-                                fontSize: "11px",
-                                color: "#444444",
-                                marginBottom: "12px",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "4px",
-                                }}
-                              >
-                                <FiMapPin size={11} color="#666666" />
-                                {item.location}
-                              </span>
-                              {item.budget && (
-                                <span
-                                  style={{
-                                    padding: "2px 6px",
-                                    borderRadius: "4px",
-                                    background: "#f0f0ef",
-                                    fontWeight: 600,
-                                    fontSize: "10px",
-                                  }}
-                                >
-                                  {item.budget}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Brief Excerpt */}
-                            {item.message && (
-                              <div
-                                style={{
-                                  fontSize: "11.5px",
-                                  color: "#666666",
-                                  lineHeight: 1.45,
-                                  marginBottom: "14px",
-                                  display: "-webkit-box",
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: "vertical",
-                                  overflow: "hidden",
-                                  fontStyle: "italic",
-                                  borderLeft: "2px solid #000000",
-                                  paddingLeft: "8px",
-                                }}
-                              >
-                                "{item.message}"
-                              </div>
-                            )}
-
-                            {/* Card Footer: Stage Step Movers + Inspect Button */}
                             <div
                               style={{
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "space-between",
-                                gap: "6px",
-                                borderTop: "1px solid rgba(0,0,0,0.08)",
-                                paddingTop: "10px",
+                                marginTop: "10px",
+                                paddingTop: "8px",
+                                borderTop: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
                               }}
                             >
-                              {/* Stage Mover Arrows */}
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "4px",
-                                }}
-                              >
+                              <div style={{ display: "flex", gap: "4px" }}>
                                 <button
-                                  title="Move to previous stage"
-                                  disabled={col.id === "intake"}
-                                  onClick={() => handleStepMove(item, -1)}
+                                  type="button"
+                                  disabled={stg.id === "intake"}
+                                  onClick={() => regressStage(item)}
                                   style={{
-                                    background: "#ffffff",
-                                    border: "1px solid rgba(0,0,0,0.18)",
+                                    background: "transparent",
+                                    border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
                                     borderRadius: "4px",
-                                    padding: "4px 8px",
-                                    cursor: col.id === "intake" ? "not-allowed" : "pointer",
-                                    opacity: col.id === "intake" ? 0.35 : 1,
-                                    color: "#000000",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    transition: "all 0.15s ease",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (col.id !== "intake") {
-                                      e.currentTarget.style.background = "#000000";
-                                      e.currentTarget.style.color = "#ffffff";
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (col.id !== "intake") {
-                                      e.currentTarget.style.background = "#ffffff";
-                                      e.currentTarget.style.color = "#000000";
-                                    }
+                                    padding: "3px 6px",
+                                    cursor: stg.id === "intake" ? "not-allowed" : "pointer",
+                                    opacity: stg.id === "intake" ? 0.3 : 1,
                                   }}
                                 >
-                                  <FiChevronLeft size={12} />
+                                  <FiChevronLeft size={11} />
                                 </button>
                                 <button
-                                  title="Move to next stage"
-                                  disabled={col.id === "delivered"}
-                                  onClick={() => handleStepMove(item, 1)}
+                                  type="button"
+                                  disabled={stg.id === "delivered"}
+                                  onClick={() => advanceStage(item)}
                                   style={{
-                                    background: "#ffffff",
-                                    border: "1px solid rgba(0,0,0,0.18)",
+                                    background: "transparent",
+                                    border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
                                     borderRadius: "4px",
-                                    padding: "4px 8px",
-                                    cursor: col.id === "delivered" ? "not-allowed" : "pointer",
-                                    opacity: col.id === "delivered" ? 0.35 : 1,
-                                    color: "#000000",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    transition: "all 0.15s ease",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (col.id !== "delivered") {
-                                      e.currentTarget.style.background = "#000000";
-                                      e.currentTarget.style.color = "#ffffff";
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (col.id !== "delivered") {
-                                      e.currentTarget.style.background = "#ffffff";
-                                      e.currentTarget.style.color = "#000000";
-                                    }
+                                    padding: "3px 6px",
+                                    cursor: stg.id === "delivered" ? "not-allowed" : "pointer",
+                                    opacity: stg.id === "delivered" ? 0.3 : 1,
                                   }}
                                 >
-                                  <FiChevronRight size={12} />
+                                  <FiChevronRight size={11} />
                                 </button>
                               </div>
 
-                              {/* Inspect Full Brief Drawer */}
                               <button
+                                type="button"
                                 onClick={() => setInspectedItem(item)}
                                 style={{
-                                  fontFamily: "Outfit, monospace",
-                                  fontSize: "10px",
-                                  fontWeight: 800,
-                                  letterSpacing: "0.06em",
+                                  background: "transparent",
+                                  border: "none",
+                                  fontSize: "10.5px",
+                                  fontWeight: 700,
                                   textTransform: "uppercase",
-                                  background: "#ffffff",
-                                  border: "1px solid #000000",
-                                  borderRadius: "9999px",
-                                  padding: "4px 10px",
                                   cursor: "pointer",
-                                  color: "#000000",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "4px",
-                                  transition: "all 0.18s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.background = "#000000";
-                                  e.currentTarget.style.color = "#ffffff";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.background = "#ffffff";
-                                  e.currentTarget.style.color = "#000000";
+                                  textDecoration: "underline",
                                 }}
                               >
-                                INSPECT <FiArrowUpRight size={11} />
+                                INSPECT ↗
                               </button>
                             </div>
                           </div>
-                        );
-                      })
-                    )}
+                        ))
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
 
       {/* ======================================================================
-          TAB 2: CAD TELEMETRY & DISPATCH OVERVIEW
+          3. ATELIER TELEMETRY SECTION (Matches Studio.jsx on website)
           ====================================================================== */}
-      {activeTab === "telemetry" && (
-        <section>
-          {/* Bento Metric Cards */}
+      {sectionTab === "telemetry" && (
+        <section
+          className="wrap"
+          style={{
+            paddingTop: "clamp(3rem, 6vw, 5rem)",
+            borderTop: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+          }}
+        >
+          <div style={{ marginBottom: "clamp(2rem, 4vw, 3.5rem)" }}>
+            <span className="eyebrow">(AL QUOZ 35,000 SQ. FT. ATELIER & STUDIO)</span>
+            <h2 className="u-text-h2">Studio manifesto & feeds</h2>
+          </div>
+
+          {/* 4 Metric Bento Cards */}
           <div
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-              gap: "20px",
-              marginBottom: "36px",
+              gap: "24px",
+              marginBottom: "48px",
             }}
           >
             <div
               style={{
-                background: "#ffffff",
-                border: "1px solid rgba(0,0,0,0.14)",
-                borderRadius: "12px",
-                padding: "24px",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+                border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                borderRadius: "var(--radius, 10px)",
+                padding: "28px",
+                background: "var(--surface, #ffffff)",
               }}
             >
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontFamily: "Outfit, monospace",
                   fontSize: "11px",
-                  fontWeight: 800,
-                  color: "#666666",
-                  marginBottom: "8px",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  color: "var(--muted, #545454)",
+                  letterSpacing: "0.06em",
                 }}
               >
-                <span>COMMISSIONS</span>
-                <span>↗</span>
+                (01) / COMMISSIONS
               </div>
               <div
                 style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "44px",
-                  fontWeight: 900,
-                  color: "#000000",
-                  lineHeight: 1,
+                  fontFamily: "var(--font-display, sans-serif)",
+                  fontSize: "clamp(2.5rem, 5vw, 4rem)",
+                  fontWeight: 500,
                   margin: "8px 0",
+                  lineHeight: 1,
                 }}
               >
                 {quotes.length}
               </div>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "#888888" }}>
-                QUOTATION BRIEFS LOGGED
+              <div style={{ fontSize: "12px", color: "var(--muted, #545454)" }}>
+                Active quotation briefs logged
               </div>
               {quotes[0] && (
-                <div style={{ fontSize: "12px", color: "#333333", marginTop: "10px" }}>
-                  Latest: <strong>{quotes[0].name}</strong>
+                <div style={{ fontSize: "12px", marginTop: "12px", fontWeight: 600 }}>
+                  Latest: {quotes[0].name}
                 </div>
               )}
             </div>
 
             <div
               style={{
-                background: "#ffffff",
-                border: "1px solid rgba(0,0,0,0.14)",
-                borderRadius: "12px",
-                padding: "24px",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+                border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                borderRadius: "var(--radius, 10px)",
+                padding: "28px",
+                background: "var(--surface, #ffffff)",
               }}
             >
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontFamily: "Outfit, monospace",
                   fontSize: "11px",
-                  fontWeight: 800,
-                  color: "#666666",
-                  marginBottom: "8px",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  color: "var(--muted, #545454)",
+                  letterSpacing: "0.06em",
                 }}
               >
-                <span>INQUIRIES</span>
-                <span>↗</span>
+                (02) / INQUIRIES
               </div>
               <div
                 style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "44px",
-                  fontWeight: 900,
-                  color: "#000000",
-                  lineHeight: 1,
+                  fontFamily: "var(--font-display, sans-serif)",
+                  fontSize: "clamp(2.5rem, 5vw, 4rem)",
+                  fontWeight: 500,
                   margin: "8px 0",
+                  lineHeight: 1,
                 }}
               >
                 {enquiries.length}
               </div>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "#888888" }}>
-                ACTIVE CLIENT INQUIRIES
+              <div style={{ fontSize: "12px", color: "var(--muted, #545454)" }}>
+                Direct client messages recorded
               </div>
               {enquiries[0] && (
-                <div style={{ fontSize: "12px", color: "#333333", marginTop: "10px" }}>
-                  Latest: <strong>{enquiries[0].name}</strong>
+                <div style={{ fontSize: "12px", marginTop: "12px", fontWeight: 600 }}>
+                  Latest: {enquiries[0].name}
                 </div>
               )}
             </div>
 
             <div
               style={{
-                background: "#ffffff",
-                border: "1px solid rgba(0,0,0,0.14)",
-                borderRadius: "12px",
-                padding: "24px",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+                border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                borderRadius: "var(--radius, 10px)",
+                padding: "28px",
+                background: "var(--surface, #ffffff)",
               }}
             >
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontFamily: "Outfit, monospace",
                   fontSize: "11px",
-                  fontWeight: 800,
-                  color: "#666666",
-                  marginBottom: "8px",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  color: "var(--muted, #545454)",
+                  letterSpacing: "0.06em",
                 }}
               >
-                <span>PORTFOLIO</span>
-                <span>↗</span>
+                (03) / SPATIAL ARCHIVE
               </div>
               <div
                 style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "44px",
-                  fontWeight: 900,
-                  color: "#000000",
-                  lineHeight: 1,
+                  fontFamily: "var(--font-display, sans-serif)",
+                  fontSize: "clamp(2.5rem, 5vw, 4rem)",
+                  fontWeight: 500,
                   margin: "8px 0",
+                  lineHeight: 1,
                 }}
               >
                 {projects.length}
               </div>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "#888888" }}>
-                SPATIAL WORKS ARCHIVED
+              <div style={{ fontSize: "12px", color: "var(--muted, #545454)" }}>
+                Archived projects & built spaces
               </div>
-              <div style={{ fontSize: "12px", color: "#333333", marginTop: "10px" }}>
-                Bespoke Commercial & Residential
-              </div>
+              <Link
+                to="/dashboard/project-manager"
+                style={{
+                  display: "inline-block",
+                  fontSize: "11.5px",
+                  marginTop: "12px",
+                  color: "var(--ink, #080807)",
+                  fontWeight: 700,
+                  textDecoration: "underline",
+                }}
+              >
+                Manage Portfolio ↗
+              </Link>
             </div>
 
             <div
               style={{
-                background: "#ffffff",
-                border: "1px solid rgba(0,0,0,0.14)",
-                borderRadius: "12px",
-                padding: "24px",
-                boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+                border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                borderRadius: "var(--radius, 10px)",
+                padding: "28px",
+                background: "var(--surface, #ffffff)",
               }}
             >
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontFamily: "Outfit, monospace",
                   fontSize: "11px",
-                  fontWeight: 800,
-                  color: "#666666",
-                  marginBottom: "8px",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  color: "var(--muted, #545454)",
+                  letterSpacing: "0.06em",
                 }}
               >
-                <span>DIRECTORY</span>
-                <span>↗</span>
+                (04) / DIRECTORY
               </div>
               <div
                 style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "26px",
-                  fontWeight: 900,
-                  color: "#000000",
-                  lineHeight: 1.2,
+                  fontFamily: "var(--font-display, sans-serif)",
+                  fontSize: "clamp(1.5rem, 3vw, 2.2rem)",
+                  fontWeight: 500,
                   margin: "8px 0",
+                  lineHeight: 1.1,
                 }}
               >
                 DUBAI, UAE
               </div>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "#888888" }}>
-                PUBLIC PROFILE & CHANNELS
-              </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#333333",
-                  marginTop: "10px",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
+              <div style={{ fontSize: "12px", color: "var(--muted, #545454)" }}>
                 {details.email || "info@yfbfitoutcontracting.com"}
               </div>
-            </div>
-          </div>
-
-          {/* Feeds: Quotes & Inquiries */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
-              gap: "24px",
-              marginBottom: "32px",
-            }}
-          >
-            {/* Recent Briefs Feed */}
-            <div
-              style={{
-                background: "#ffffff",
-                border: "1px solid rgba(0,0,0,0.14)",
-                borderRadius: "12px",
-                padding: "24px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "18px",
-                  borderBottom: "1px solid rgba(0,0,0,0.08)",
-                  paddingBottom: "12px",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span
-                    style={{
-                      fontFamily: "Outfit, monospace",
-                      fontSize: "11px",
-                      fontWeight: 800,
-                      color: "#666666",
-                    }}
-                  >
-                    (01)
-                  </span>
-                  <h3
-                    style={{
-                      fontFamily: "Outfit, sans-serif",
-                      fontSize: "14px",
-                      fontWeight: 800,
-                      margin: 0,
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    RECENT COMMISSIONS & QUOTES
-                  </h3>
-                </div>
-                <button
-                  onClick={() => setActiveTab("quotes")}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    fontFamily: "Outfit, monospace",
-                    fontSize: "11px",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                  }}
-                >
-                  VIEW ALL ↗
-                </button>
-              </div>
-
-              {quotes.slice(0, 3).map((q) => (
-                <div
-                  key={q._id}
-                  style={{
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    marginBottom: "12px",
-                    background: "#fdfdfd",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: "6px",
-                    }}
-                  >
-                    <strong>{q.name}</strong>
-                    <span
-                      style={{
-                        fontSize: "10px",
-                        fontWeight: 800,
-                        textTransform: "uppercase",
-                        background: "#000000",
-                        color: "#ffffff",
-                        padding: "2px 7px",
-                        borderRadius: "9999px",
-                      }}
-                    >
-                      {q.projectType || "Commercial"}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#555555", marginBottom: "8px" }}>
-                    {q.location || "Dubai"} · {q.budget || "Custom"} · {formatDate(q.createdAt)}
-                  </div>
-                  {q.message && (
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        color: "#444444",
-                        fontStyle: "italic",
-                        lineHeight: 1.45,
-                      }}
-                    >
-                      "{q.message.slice(0, 160)}..."
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Recent Inquiries Feed */}
-            <div
-              style={{
-                background: "#ffffff",
-                border: "1px solid rgba(0,0,0,0.14)",
-                borderRadius: "12px",
-                padding: "24px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "18px",
-                  borderBottom: "1px solid rgba(0,0,0,0.08)",
-                  paddingBottom: "12px",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span
-                    style={{
-                      fontFamily: "Outfit, monospace",
-                      fontSize: "11px",
-                      fontWeight: 800,
-                      color: "#666666",
-                    }}
-                  >
-                    (02)
-                  </span>
-                  <h3
-                    style={{
-                      fontFamily: "Outfit, sans-serif",
-                      fontSize: "14px",
-                      fontWeight: 800,
-                      margin: 0,
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    RECENT CLIENT INQUIRIES
-                  </h3>
-                </div>
-                <button
-                  onClick={() => setActiveTab("enquiries")}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    fontFamily: "Outfit, monospace",
-                    fontSize: "11px",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                  }}
-                >
-                  VIEW ALL ↗
-                </button>
-              </div>
-
-              {enquiries.slice(0, 3).map((e) => (
-                <div
-                  key={e._id}
-                  style={{
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    marginBottom: "12px",
-                    background: "#fdfdfd",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: "6px",
-                    }}
-                  >
-                    <strong>{e.name}</strong>
-                    <span style={{ fontSize: "11px", color: "#777777" }}>
-                      {formatDate(e.createdAt)}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#555555", marginBottom: "8px" }}>
-                    {e.email} · {e.mobile}
-                  </div>
-                  {e.message && (
-                    <div style={{ fontSize: "12px", color: "#444444", fontStyle: "italic" }}>
-                      "{e.message}"
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ======================================================================
-          TAB 3: COMMISSIONS (DEDICATED TABLE REGISTER)
-          ====================================================================== */}
-      {activeTab === "quotes" && (
-        <section
-          style={{
-            background: "#ffffff",
-            border: "1px solid rgba(0,0,0,0.14)",
-            borderRadius: "12px",
-            padding: "28px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: "14px",
-              marginBottom: "20px",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontFamily: "Outfit, monospace",
-                  fontSize: "11px",
-                  fontWeight: 800,
-                  color: "#666666",
-                }}
-              >
-                (COMMISSIONS REGISTER · 03)
-              </div>
-              <h2
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "22px",
-                  fontWeight: 900,
-                  margin: "4px 0 0 0",
-                  textTransform: "uppercase",
-                }}
-              >
-                CLIENT QUOTATION COMMISSIONS
-              </h2>
-            </div>
-            <button
-              onClick={handleDeleteOldQuotes}
-              style={{
-                background: "#ffffff",
-                border: "1px solid #000000",
-                borderRadius: "9999px",
-                padding: "8px 18px",
-                fontSize: "11px",
-                fontWeight: 800,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                cursor: "pointer",
-              }}
-            >
-              PURGE OLDER THAN 1 MONTH
-            </button>
-          </div>
-
-          {/* Search & Type filter */}
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              marginBottom: "20px",
-              flexWrap: "wrap",
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Search commissions by client, location, or email…"
-              value={quoteSearch}
-              onChange={(e) => setQuoteSearch(e.target.value)}
-              style={{
-                flex: "1 1 300px",
-                padding: "10px 16px",
-                border: "1px solid rgba(0,0,0,0.2)",
-                borderRadius: "9999px",
-                outline: "none",
-                fontSize: "13px",
-              }}
-            />
-            {["ALL", "COMMERCIAL", "RESIDENTIAL", "VILLA", "OFFICE"].map((typ) => (
               <button
-                key={typ}
-                onClick={() => setQuoteFilter(typ)}
+                type="button"
+                onClick={() => setSectionTab("directory")}
                 style={{
-                  padding: "8px 16px",
-                  borderRadius: "9999px",
-                  border: "1px solid #000000",
-                  background: quoteFilter === typ ? "#000000" : "#ffffff",
-                  color: quoteFilter === typ ? "#ffffff" : "#000000",
-                  fontSize: "11px",
-                  fontWeight: 800,
+                  background: "transparent",
+                  border: "none",
+                  fontSize: "11.5px",
+                  marginTop: "12px",
+                  color: "var(--ink, #080807)",
+                  fontWeight: 700,
+                  textDecoration: "underline",
                   cursor: "pointer",
+                  padding: 0,
                 }}
               >
-                {typ}
+                Edit Studio Details ↗
               </button>
-            ))}
-          </div>
-
-          {/* Table */}
-          <div style={{ overflowX: "auto" }}>
-            <table>
-              <thead>
-                <tr>
-                  <th>CLIENT NAME</th>
-                  <th>PROJECT TYPE</th>
-                  <th>SERVICES REQUIRED</th>
-                  <th>LOCATION</th>
-                  <th>BUDGET</th>
-                  <th>LOGGED DATE</th>
-                  <th>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredQuotes.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" style={{ textAlign: "center", padding: "36px" }}>
-                      No quotations match your filters.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredQuotes.map((q) => (
-                    <tr key={q._id}>
-                      <td style={{ fontWeight: 700 }}>{q.name}</td>
-                      <td>
-                        <span
-                          style={{
-                            padding: "3px 8px",
-                            borderRadius: "9999px",
-                            background: "#000000",
-                            color: "#ffffff",
-                            fontSize: "10px",
-                            fontWeight: 800,
-                          }}
-                        >
-                          {q.projectType || "Bespoke"}
-                        </span>
-                      </td>
-                      <td style={{ maxWidth: "220px" }}>
-                        {Array.isArray(q.services) ? q.services.join(", ") : q.services || "-"}
-                      </td>
-                      <td>{q.location || "Dubai"}</td>
-                      <td style={{ fontWeight: 600 }}>{q.budget || "Custom"}</td>
-                      <td>{formatDate(q.createdAt)}</td>
-                      <td>
-                        <button
-                          onClick={() => {
-                            const found = allKanbanItems.find((i) => i.rawId === q._id);
-                            if (found) setInspectedItem(found);
-                          }}
-                          style={{
-                            background: "#ffffff",
-                            border: "1px solid #000000",
-                            borderRadius: "9999px",
-                            padding: "4px 12px",
-                            fontSize: "11px",
-                            fontWeight: 800,
-                            cursor: "pointer",
-                          }}
-                        >
-                          INSPECT
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+            </div>
           </div>
         </section>
       )}
 
       {/* ======================================================================
-          TAB 4: INQUIRIES REGISTER
+          4. ATELIER DIRECTORY SETTINGS
           ====================================================================== */}
-      {activeTab === "enquiries" && (
+      {sectionTab === "directory" && (
         <section
+          className="wrap"
           style={{
-            background: "#ffffff",
-            border: "1px solid rgba(0,0,0,0.14)",
-            borderRadius: "12px",
-            padding: "28px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+            paddingTop: "clamp(3rem, 6vw, 5rem)",
+            borderTop: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: "14px",
-              marginBottom: "20px",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontFamily: "Outfit, monospace",
-                  fontSize: "11px",
-                  fontWeight: 800,
-                  color: "#666666",
-                }}
-              >
-                (COMMUNICATIONS REGISTER · 04)
-              </div>
-              <h2
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "22px",
-                  fontWeight: 900,
-                  margin: "4px 0 0 0",
-                  textTransform: "uppercase",
-                }}
-              >
-                CLIENT INQUIRIES & MESSAGES
-              </h2>
-            </div>
-            <button
-              onClick={handleDeleteOldEnquiries}
-              style={{
-                background: "#ffffff",
-                border: "1px solid #000000",
-                borderRadius: "9999px",
-                padding: "8px 18px",
-                fontSize: "11px",
-                fontWeight: 800,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                cursor: "pointer",
-              }}
-            >
-              PURGE OLD INQUIRIES
-            </button>
-          </div>
-
-          <div style={{ marginBottom: "20px" }}>
-            <input
-              type="text"
-              placeholder="Search inquiries by client name, email, or message…"
-              value={enquirySearch}
-              onChange={(e) => setEnquirySearch(e.target.value)}
-              style={{
-                width: "100%",
-                maxWidth: "480px",
-                padding: "10px 16px",
-                border: "1px solid rgba(0,0,0,0.2)",
-                borderRadius: "9999px",
-                outline: "none",
-                fontSize: "13px",
-              }}
-            />
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: "16px",
-            }}
-          >
-            {filteredEnquiries.map((e) => (
-              <div
-                key={e._id}
-                style={{
-                  border: "1px solid rgba(0,0,0,0.14)",
-                  borderRadius: "10px",
-                  padding: "20px",
-                  background: "#ffffff",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "start",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <h4 style={{ margin: 0, fontSize: "16px", fontWeight: 800 }}>
-                    {e.name}
-                  </h4>
-                  <span style={{ fontSize: "11px", color: "#777777" }}>
-                    {formatDate(e.createdAt)}
-                  </span>
-                </div>
-                <div style={{ fontSize: "12.5px", color: "#555555", marginBottom: "12px" }}>
-                  <a href={`mailto:${e.email}`} style={{ color: "#000000", fontWeight: 600 }}>
-                    {e.email}
-                  </a>
-                  {e.mobile && ` · ${e.mobile}`}
-                </div>
-                {e.services && (
-                  <div style={{ fontSize: "11.5px", fontWeight: 700, marginBottom: "8px" }}>
-                    SERVICE: <span style={{ color: "#555555" }}>{e.services}</span>
-                  </div>
-                )}
-                {e.message && (
-                  <div
-                    style={{
-                      fontSize: "12.5px",
-                      lineHeight: 1.5,
-                      color: "#333333",
-                      background: "#fafaf9",
-                      padding: "12px",
-                      borderRadius: "6px",
-                      marginBottom: "14px",
-                    }}
-                  >
-                    "{e.message}"
-                  </div>
-                )}
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <a
-                    href={`mailto:${e.email}?subject=Yashmeen%20Fit-Out%20Follow-up`}
-                    style={{
-                      background: "#000000",
-                      color: "#ffffff",
-                      borderRadius: "9999px",
-                      padding: "6px 14px",
-                      fontSize: "10.5px",
-                      fontWeight: 800,
-                      textDecoration: "none",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    REPLY VIA EMAIL
-                  </a>
-                  {e.mobile && (
-                    <a
-                      href={`tel:${e.mobile}`}
-                      style={{
-                        background: "#ffffff",
-                        color: "#000000",
-                        border: "1px solid #000000",
-                        borderRadius: "9999px",
-                        padding: "6px 14px",
-                        fontSize: "10.5px",
-                        fontWeight: 800,
-                        textDecoration: "none",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      CALL
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ======================================================================
-          TAB 5: SPATIAL PORTFOLIO
-          ====================================================================== */}
-      {activeTab === "projects" && (
-        <section
-          style={{
-            background: "#ffffff",
-            border: "1px solid rgba(0,0,0,0.14)",
-            borderRadius: "12px",
-            padding: "28px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: "24px",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontFamily: "Outfit, monospace",
-                  fontSize: "11px",
-                  fontWeight: 800,
-                  color: "#666666",
-                }}
-              >
-                (SPATIAL WORKS ARCHIVE · 05)
-              </div>
-              <h2
-                style={{
-                  fontFamily: "Outfit, sans-serif",
-                  fontSize: "22px",
-                  fontWeight: 900,
-                  margin: "4px 0 0 0",
-                  textTransform: "uppercase",
-                }}
-              >
-                ACTIVE SPATIAL PORTFOLIO ({projects.length})
-              </h2>
-            </div>
-            <Link
-              to="/dashboard/project-manager"
-              style={{
-                background: "#000000",
-                color: "#ffffff",
-                border: "1px solid #000000",
-                borderRadius: "9999px",
-                padding: "8px 18px",
-                fontSize: "11px",
-                fontWeight: 800,
-                textDecoration: "none",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-              }}
-            >
-              OPEN PROJECT MANAGER
-            </Link>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: "20px",
-            }}
-          >
-            {projects.map((proj) => (
-              <div
-                key={proj._id}
-                style={{
-                  border: "1px solid rgba(0,0,0,0.12)",
-                  borderRadius: "10px",
-                  overflow: "hidden",
-                  background: "#ffffff",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
-                }}
-              >
-                <div
-                  style={{
-                    height: "180px",
-                    width: "100%",
-                    background: "#111111",
-                    overflow: "hidden",
-                  }}
-                >
-                  <img
-                    src={imageUrl(proj.image)}
-                    alt={proj.title}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    onError={(e) => {
-                      e.target.src = "/static/hero-aperture.png";
-                    }}
-                  />
-                </div>
-                <div style={{ padding: "16px" }}>
-                  <div
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 800,
-                      textTransform: "uppercase",
-                      color: "#666666",
-                      letterSpacing: "0.06em",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    {proj.category || "Fit-Out"}
-                  </div>
-                  <h4
-                    style={{
-                      margin: "0 0 6px 0",
-                      fontSize: "15px",
-                      fontWeight: 800,
-                      color: "#000000",
-                    }}
-                  >
-                    {proj.title}
-                  </h4>
-                  <div style={{ fontSize: "12px", color: "#666666" }}>
-                    {proj.location || "UAE"}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ======================================================================
-          TAB 6: ATELIER DIRECTORY & CONTACT SETTINGS
-          ====================================================================== */}
-      {activeTab === "settings" && (
-        <section
-          style={{
-            background: "#ffffff",
-            border: "1px solid rgba(0,0,0,0.14)",
-            borderRadius: "12px",
-            padding: "28px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
-          }}
-        >
-          <div style={{ marginBottom: "24px" }}>
-            <div
-              style={{
-                fontFamily: "Outfit, monospace",
-                fontSize: "11px",
-                fontWeight: 800,
-                color: "#666666",
-              }}
-            >
-              (PUBLIC IDENTITY & ATELIER · 06)
-            </div>
-            <h2
-              style={{
-                fontFamily: "Outfit, sans-serif",
-                fontSize: "22px",
-                fontWeight: 900,
-                margin: "4px 0 0 0",
-                textTransform: "uppercase",
-              }}
-            >
-              ATELIER DIRECTORY & CONTACT SETTINGS
-            </h2>
+          <div style={{ marginBottom: "clamp(2rem, 4vw, 3.5rem)" }}>
+            <span className="eyebrow">(PUBLIC PROFILE & ATELIER IDENTITY)</span>
+            <h2 className="u-text-h2">Studio directory settings</h2>
           </div>
 
           <form onSubmit={handleSettingsSubmit}>
@@ -2407,27 +1507,32 @@ export default function Dashboard() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
-                gap: "28px",
+                gap: "36px",
               }}
             >
-              {/* Location */}
+              {/* Location Card */}
               <div
                 style={{
-                  border: "1px solid rgba(0,0,0,0.12)",
-                  borderRadius: "10px",
-                  padding: "20px",
-                  background: "#fafaf9",
+                  border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                  borderRadius: "var(--radius, 10px)",
+                  padding: "28px",
+                  background: "var(--surface, #ffffff)",
                 }}
               >
-                <div style={{ fontSize: "12px", fontWeight: 800, marginBottom: "14px" }}>
-                  (01) PHYSICAL LOCATION & ATELIER
+                <div className="eyebrow" style={{ marginBottom: "16px" }}>
+                  (01) PHYSICAL LOCATION
                 </div>
-                <div style={{ marginBottom: "14px" }}>
+                <div style={{ marginBottom: "16px" }}>
                   <label>STREET / BUILDING DETAILS</label>
                   <input
                     type="text"
                     value={details.address?.street || ""}
-                    onChange={setAddressField("street")}
+                    onChange={(e) =>
+                      setDetails((prev) => ({
+                        ...prev,
+                        address: { ...prev.address, street: e.target.value },
+                      }))
+                    }
                     style={{ width: "100%", marginTop: "6px" }}
                   />
                 </div>
@@ -2436,7 +1541,7 @@ export default function Dashboard() {
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
                     gap: "12px",
-                    marginBottom: "14px",
+                    marginBottom: "16px",
                   }}
                 >
                   <div>
@@ -2444,66 +1549,67 @@ export default function Dashboard() {
                     <input
                       type="text"
                       value={details.address?.city || ""}
-                      onChange={setAddressField("city")}
+                      onChange={(e) =>
+                        setDetails((prev) => ({
+                          ...prev,
+                          address: { ...prev.address, city: e.target.value },
+                        }))
+                      }
                       style={{ width: "100%", marginTop: "6px" }}
                     />
                   </div>
-                  <div>
-                    <label>STATE / REGION</label>
-                    <input
-                      type="text"
-                      value={details.address?.state || ""}
-                      onChange={setAddressField("state")}
-                      style={{ width: "100%", marginTop: "6px" }}
-                    />
-                  </div>
-                </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "12px",
-                  }}
-                >
                   <div>
                     <label>POSTAL CODE / P.O. BOX</label>
                     <input
                       type="text"
                       value={details.address?.zipCode || ""}
-                      onChange={setAddressField("zipCode")}
+                      onChange={(e) =>
+                        setDetails((prev) => ({
+                          ...prev,
+                          address: { ...prev.address, zipCode: e.target.value },
+                        }))
+                      }
                       style={{ width: "100%", marginTop: "6px" }}
                     />
                   </div>
-                  <div>
-                    <label>COUNTRY</label>
-                    <input
-                      type="text"
-                      value={details.address?.country || "United Arab Emirates"}
-                      onChange={setAddressField("country")}
-                      style={{ width: "100%", marginTop: "6px" }}
-                    />
-                  </div>
+                </div>
+                <div>
+                  <label>COUNTRY</label>
+                  <input
+                    type="text"
+                    value={details.address?.country || "United Arab Emirates"}
+                    onChange={(e) =>
+                      setDetails((prev) => ({
+                        ...prev,
+                        address: { ...prev.address, country: e.target.value },
+                      }))
+                    }
+                    style={{ width: "100%", marginTop: "6px" }}
+                  />
                 </div>
               </div>
 
-              {/* Public Contact */}
+              {/* Contact Card */}
               <div
                 style={{
-                  border: "1px solid rgba(0,0,0,0.12)",
-                  borderRadius: "10px",
-                  padding: "20px",
-                  background: "#fafaf9",
+                  border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                  borderRadius: "var(--radius, 10px)",
+                  padding: "28px",
+                  background: "var(--surface, #ffffff)",
                 }}
               >
-                <div style={{ fontSize: "12px", fontWeight: 800, marginBottom: "14px" }}>
-                  (02) PUBLIC CONTACT LINES
+                <div className="eyebrow" style={{ marginBottom: "16px" }}>
+                  (02) DIRECT CONTACT LINES
                 </div>
-                <div style={{ marginBottom: "14px" }}>
-                  <label>PUBLIC OFFICIAL EMAIL</label>
+                <div style={{ marginBottom: "16px" }}>
+                  <label>OFFICIAL EMAIL</label>
                   <input
                     type="email"
                     value={details.email || ""}
-                    onChange={setContactField("email")}
+                    onChange={(e) => {
+                      setDetails((prev) => ({ ...prev, email: e.target.value }));
+                      setSettingsErrors((prev) => ({ ...prev, email: undefined }));
+                    }}
                     style={{ width: "100%", marginTop: "6px" }}
                   />
                   {settingsErrors.email && (
@@ -2512,12 +1618,14 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
-                <div style={{ marginBottom: "14px" }}>
-                  <label>PHONE / MOBILE</label>
+                <div style={{ marginBottom: "16px" }}>
+                  <label>PHONE</label>
                   <input
                     type="text"
                     value={details.mobile || ""}
-                    onChange={setContactField("mobile")}
+                    onChange={(e) =>
+                      setDetails((prev) => ({ ...prev, mobile: e.target.value }))
+                    }
                     style={{ width: "100%", marginTop: "6px" }}
                   />
                 </div>
@@ -2526,110 +1634,23 @@ export default function Dashboard() {
                   <input
                     type="text"
                     value={details.whatsapp || ""}
-                    onChange={setContactField("whatsapp")}
+                    onChange={(e) =>
+                      setDetails((prev) => ({ ...prev, whatsapp: e.target.value }))
+                    }
                     style={{ width: "100%", marginTop: "6px" }}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Social channels */}
-            <div
-              style={{
-                marginTop: "24px",
-                border: "1px solid rgba(0,0,0,0.12)",
-                borderRadius: "10px",
-                padding: "20px",
-                background: "#fafaf9",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "14px",
-                }}
-              >
-                <div style={{ fontSize: "12px", fontWeight: 800 }}>
-                  (03) DIGITAL CHANNELS & SOCIALS
-                </div>
-                <button
-                  type="button"
-                  onClick={addSocialLink}
-                  style={{
-                    background: "#ffffff",
-                    border: "1px solid #000000",
-                    borderRadius: "9999px",
-                    padding: "4px 12px",
-                    fontSize: "11px",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                  }}
-                >
-                  ADD CHANNEL
-                </button>
-              </div>
-
-              {details.socialLinks.map((s, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "180px 1fr 40px",
-                    gap: "10px",
-                    marginBottom: "10px",
-                  }}
-                >
-                  <input
-                    type="text"
-                    value={s.platform || ""}
-                    placeholder="Platform"
-                    onChange={setSocialField(idx, "platform")}
-                  />
-                  <input
-                    type="text"
-                    value={s.url || ""}
-                    placeholder="URL"
-                    onChange={setSocialField(idx, "url")}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeSocialLink(idx)}
-                    style={{
-                      background: "#ffffff",
-                      border: "1px solid rgba(0,0,0,0.2)",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <FiTrash2 size={14} color="#666666" />
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ marginTop: "24px" }}>
+            <div style={{ marginTop: "28px" }}>
               <button
                 type="submit"
                 disabled={savingSettings}
-                style={{
-                  background: "#000000",
-                  color: "#ffffff",
-                  border: "1px solid #000000",
-                  borderRadius: "9999px",
-                  padding: "12px 28px",
-                  fontSize: "12px",
-                  fontWeight: 800,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                }}
+                className="btn-pill btn-pill-dark"
               >
-                {savingSettings ? "SAVING..." : "SAVE CHANGES ↗"}
+                <span>{savingSettings ? "SAVING..." : "SAVE DIRECTORY CHANGES"}</span>
+                <span className="g-circle" aria-hidden="true" />
               </button>
             </div>
           </form>
@@ -2637,17 +1658,16 @@ export default function Dashboard() {
       )}
 
       {/* ======================================================================
-          SLIDE-OVER INSPECTION DRAWER (SMOOTH SOFT ANIMATED)
+          5. SLIDE-OVER INSPECTION SHEET (Exact Questionnaire Modal Vibe)
           ====================================================================== */}
       {inspectedItem && (
         <div
-          className="kanban-drawer-backdrop"
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0, 0, 0, 0.45)",
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
+            background: "rgba(8, 8, 7, 0.45)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
             zIndex: 9999,
             display: "flex",
             justifyContent: "flex-end",
@@ -2655,69 +1675,57 @@ export default function Dashboard() {
           onClick={() => setInspectedItem(null)}
         >
           <div
-            className="kanban-drawer-panel"
             style={{
               width: "100%",
-              maxWidth: "520px",
-              background: "#ffffff",
+              maxWidth: "560px",
+              background: "var(--bg, #fcfcfc)",
               height: "100%",
               overflowY: "auto",
-              padding: "36px 32px",
-              boxShadow: "-12px 0 36px rgba(0, 0, 0, 0.2)",
+              padding: "clamp(2rem, 4vw, 3.5rem)",
+              boxShadow: "-12px 0 36px rgba(0, 0, 0, 0.15)",
               display: "flex",
               flexDirection: "column",
               boxSizing: "border-box",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Drawer Header */}
+            {/* Sheet Header */}
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
+                alignItems: "flex-start",
                 justifyContent: "space-between",
-                borderBottom: "1px solid rgba(0,0,0,0.1)",
-                paddingBottom: "18px",
-                marginBottom: "24px",
+                paddingBottom: "24px",
+                borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                marginBottom: "28px",
               }}
             >
               <div>
-                <span
-                  style={{
-                    fontFamily: "Outfit, monospace",
-                    fontSize: "10.5px",
-                    fontWeight: 800,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    padding: "3px 10px",
-                    borderRadius: "9999px",
-                    background: "#000000",
-                    color: "#ffffff",
-                  }}
-                >
-                  {inspectedItem.typeBadge}
+                <span className="eyebrow" style={{ marginBottom: "8px" }}>
+                  ({inspectedItem.typeBadge})
                 </span>
                 <h2
+                  className="u-text-h2"
                   style={{
-                    fontFamily: "Outfit, sans-serif",
-                    fontSize: "24px",
-                    fontWeight: 900,
-                    margin: "12px 0 4px 0",
-                    color: "#000000",
+                    fontSize: "clamp(1.8rem, 3.5vw, 2.5rem)",
+                    lineHeight: 1.05,
+                    margin: "4px 0",
+                    textTransform: "uppercase",
                   }}
                 >
                   {inspectedItem.title}
                 </h2>
-                <div style={{ fontSize: "13px", color: "#666666" }}>
+                <div style={{ fontSize: "13px", color: "var(--muted, #545454)" }}>
                   {inspectedItem.subtitle}
                 </div>
               </div>
 
               <button
+                type="button"
                 onClick={() => setInspectedItem(null)}
                 style={{
-                  background: "#ffffff",
-                  border: "1px solid rgba(0,0,0,0.2)",
+                  background: "transparent",
+                  border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
                   borderRadius: "50%",
                   width: "36px",
                   height: "36px",
@@ -2731,91 +1739,49 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {/* Quick Stage Shifter inside Drawer */}
+            {/* Pipeline Stage Shifter */}
             <div
               style={{
-                background: "#fafaf9",
-                border: "1px solid rgba(0,0,0,0.12)",
-                borderRadius: "10px",
-                padding: "16px",
-                marginBottom: "24px",
+                border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                borderRadius: "var(--radius, 10px)",
+                padding: "18px",
+                background: "var(--surface, #ffffff)",
+                marginBottom: "28px",
               }}
             >
-              <label style={{ display: "block", marginBottom: "8px" }}>
-                PIPELINE STAGE POSITION
-              </label>
               <div
                 style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "6px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: "12px",
                 }}
               >
-                {KANBAN_STAGES.map((stg) => {
-                  const isCurrent = inspectedItem.stage === stg.id;
+                CURRENT PIPELINE STAGE
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                {STAGES.map((stg) => {
+                  const active = inspectedItem.stage === stg.id;
                   return (
                     <button
                       key={stg.id}
+                      type="button"
+                      className={`works-switch-btn ${active ? "active" : ""}`}
                       onClick={() => {
                         updateItemStage(inspectedItem.id, stg.id, inspectedItem.title);
-                        setInspectedItem((prev) => ({ ...prev, stage: stg.id }));
+                        setInspectedItem((prev) => ({
+                          ...prev,
+                          stage: stg.id,
+                          stageName: stg.name,
+                        }));
                       }}
-                      className="kanban-stage-pill"
-                      style={{
-                        fontFamily: "Outfit, monospace",
-                        fontSize: "10.5px",
-                        fontWeight: 800,
-                        padding: "6px 12px",
-                        borderRadius: "9999px",
-                        border: "1px solid",
-                        borderColor: isCurrent ? "#000000" : "rgba(0,0,0,0.2)",
-                        background: isCurrent ? "#000000" : "#ffffff",
-                        color: isCurrent ? "#ffffff" : "#000000",
-                      }}
+                      style={{ fontSize: "11px", padding: "6px 12px" }}
                     >
-                      {stg.index} {stg.title.split(" ")[0]}
+                      {stg.num} {stg.name}
                     </button>
                   );
                 })}
-              </div>
-            </div>
-
-            {/* Specifications Grid */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "16px",
-                marginBottom: "24px",
-              }}
-            >
-              <div
-                style={{
-                  border: "1px solid rgba(0,0,0,0.08)",
-                  borderRadius: "8px",
-                  padding: "12px",
-                }}
-              >
-                <div style={{ fontSize: "10px", fontWeight: 800, color: "#888888" }}>
-                  LOCATION
-                </div>
-                <div style={{ fontSize: "13px", fontWeight: 700, marginTop: "2px" }}>
-                  {inspectedItem.location}
-                </div>
-              </div>
-              <div
-                style={{
-                  border: "1px solid rgba(0,0,0,0.08)",
-                  borderRadius: "8px",
-                  padding: "12px",
-                }}
-              >
-                <div style={{ fontSize: "10px", fontWeight: 800, color: "#888888" }}>
-                  BUDGET ESTIMATE
-                </div>
-                <div style={{ fontSize: "13px", fontWeight: 700, marginTop: "2px" }}>
-                  {inspectedItem.budget || "Custom"}
-                </div>
               </div>
             </div>
 
@@ -2823,30 +1789,35 @@ export default function Dashboard() {
             {(inspectedItem.email || inspectedItem.mobile) && (
               <div
                 style={{
-                  border: "1px solid rgba(0,0,0,0.1)",
-                  borderRadius: "10px",
-                  padding: "16px",
-                  marginBottom: "24px",
-                  background: "#ffffff",
+                  border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                  borderRadius: "var(--radius, 10px)",
+                  padding: "18px",
+                  background: "var(--surface, #ffffff)",
+                  marginBottom: "28px",
                 }}
               >
-                <div style={{ fontSize: "11px", fontWeight: 800, marginBottom: "10px" }}>
-                  DIRECT CLIENT CONTACT
-                </div>
                 <div
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                    fontSize: "13px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    marginBottom: "12px",
                   }}
                 >
+                  DIRECT CLIENT CONTACT
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {inspectedItem.email && (
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <FiMail size={14} color="#555555" />
+                      <FiMail size={13} color="var(--muted, #545454)" />
                       <a
                         href={`mailto:${inspectedItem.email}`}
-                        style={{ color: "#000000", fontWeight: 700 }}
+                        style={{
+                          color: "var(--ink, #080807)",
+                          fontWeight: 600,
+                          fontSize: "13px",
+                        }}
                       >
                         {inspectedItem.email}
                       </a>
@@ -2854,10 +1825,14 @@ export default function Dashboard() {
                   )}
                   {inspectedItem.mobile && (
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <FiPhone size={14} color="#555555" />
+                      <FiPhone size={13} color="var(--muted, #545454)" />
                       <a
                         href={`tel:${inspectedItem.mobile}`}
-                        style={{ color: "#000000", fontWeight: 700 }}
+                        style={{
+                          color: "var(--ink, #080807)",
+                          fontWeight: 600,
+                          fontSize: "13px",
+                        }}
                       >
                         {inspectedItem.mobile}
                       </a>
@@ -2867,95 +1842,57 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Scope / Services */}
-            {inspectedItem.services && inspectedItem.services.length > 0 && (
-              <div style={{ marginBottom: "24px" }}>
-                <div style={{ fontSize: "11px", fontWeight: 800, marginBottom: "8px" }}>
-                  SERVICES IN SCOPE
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                  {inspectedItem.services.map((srv, idx) => (
-                    <span
-                      key={idx}
-                      style={{
-                        fontSize: "10.5px",
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        padding: "4px 10px",
-                        borderRadius: "9999px",
-                        background: "#f0f0ef",
-                        color: "#000000",
-                        border: "1px solid rgba(0,0,0,0.1)",
-                      }}
-                    >
-                      {srv}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Client Brief or Notes */}
+            {/* Brief Specification Notes in Serif */}
             {inspectedItem.message && (
               <div style={{ marginBottom: "28px" }}>
-                <div style={{ fontSize: "11px", fontWeight: 800, marginBottom: "8px" }}>
-                  SPECIFICATION & BRIEF NOTES
-                </div>
                 <div
                   style={{
-                    fontSize: "13px",
-                    lineHeight: 1.6,
-                    color: "#333333",
-                    background: "#fafaf9",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    borderRadius: "8px",
-                    padding: "16px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    marginBottom: "10px",
                   }}
                 >
-                  {inspectedItem.message}
+                  CLIENT BRIEF & SPECIFICATION
                 </div>
+                <blockquote
+                  style={{
+                    fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)",
+                    fontSize: "1.3rem",
+                    fontStyle: "italic",
+                    lineHeight: 1.5,
+                    color: "var(--ink-soft, #30302e)",
+                    background: "var(--surface-alt, #f1f0ee)",
+                    padding: "20px",
+                    borderRadius: "8px",
+                    margin: 0,
+                  }}
+                >
+                  "{inspectedItem.message}"
+                </blockquote>
               </div>
             )}
 
-            {/* Direct Outreach Trigger Buttons */}
+            {/* Action Buttons */}
             <div style={{ marginTop: "auto", display: "flex", gap: "10px" }}>
               {inspectedItem.email && (
                 <a
                   href={`mailto:${inspectedItem.email}?subject=Yashmeen%20Fit-Out%20Brief%20Follow-up`}
-                  style={{
-                    flex: 1,
-                    background: "#000000",
-                    color: "#ffffff",
-                    textAlign: "center",
-                    padding: "12px",
-                    borderRadius: "9999px",
-                    fontSize: "11px",
-                    fontWeight: 800,
-                    textDecoration: "none",
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                  }}
+                  className="btn-pill btn-pill-dark"
+                  style={{ flex: 1, textDecoration: "none" }}
                 >
-                  SEND PROPOSAL ↗
+                  <span>SEND PROPOSAL ↗</span>
+                  <span className="g-circle" aria-hidden="true" />
                 </a>
               )}
               {inspectedItem.mobile && (
                 <a
                   href={`tel:${inspectedItem.mobile}`}
-                  style={{
-                    background: "#ffffff",
-                    color: "#000000",
-                    border: "1px solid #000000",
-                    padding: "12px 20px",
-                    borderRadius: "9999px",
-                    fontSize: "11px",
-                    fontWeight: 800,
-                    textDecoration: "none",
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                  }}
+                  className="btn-pill btn-pill-outline-dark"
+                  style={{ textDecoration: "none" }}
                 >
-                  CALL CLIENT
+                  <span>CALL CLIENT</span>
                 </a>
               )}
             </div>
@@ -2964,17 +1901,16 @@ export default function Dashboard() {
       )}
 
       {/* ======================================================================
-          QUICK ADD CMS DISPATCH MODAL
+          6. QUICK ADD COMMISSION MODAL
           ====================================================================== */}
       {quickAddOpen && (
         <div
-          className="kanban-drawer-backdrop"
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0, 0, 0, 0.5)",
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
+            background: "rgba(8, 8, 7, 0.45)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
             zIndex: 9999,
             display: "flex",
             alignItems: "center",
@@ -2987,11 +1923,11 @@ export default function Dashboard() {
             style={{
               width: "100%",
               maxWidth: "520px",
-              background: "#ffffff",
-              border: "1px solid #000000",
-              borderRadius: "14px",
-              padding: "28px",
-              boxShadow: "0 24px 48px rgba(0, 0, 0, 0.25)",
+              background: "var(--surface, #ffffff)",
+              border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
+              borderRadius: "var(--radius, 10px)",
+              padding: "32px",
+              boxShadow: "0 24px 48px rgba(0, 0, 0, 0.15)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -3001,38 +1937,31 @@ export default function Dashboard() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 marginBottom: "20px",
-                borderBottom: "1px solid rgba(0,0,0,0.1)",
-                paddingBottom: "12px",
+                paddingBottom: "14px",
+                borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
               }}
             >
               <div>
-                <div
-                  style={{
-                    fontFamily: "Outfit, monospace",
-                    fontSize: "10.5px",
-                    fontWeight: 800,
-                    color: "#666666",
-                  }}
-                >
-                  (NEW DISPATCH LOG)
-                </div>
+                <span className="eyebrow" style={{ marginBottom: "4px" }}>
+                  (NEW COMMISSION)
+                </span>
                 <h3
+                  className="u-text-h2"
                   style={{
-                    fontFamily: "Outfit, sans-serif",
-                    fontSize: "18px",
-                    fontWeight: 900,
-                    margin: "4px 0 0 0",
+                    fontSize: "20px",
+                    margin: 0,
                     textTransform: "uppercase",
                   }}
                 >
-                  LOG CMS PIPELINE DISPATCH
+                  Log pipeline commission
                 </h3>
               </div>
               <button
+                type="button"
                 onClick={() => setQuickAddOpen(false)}
                 style={{
-                  background: "#ffffff",
-                  border: "1px solid rgba(0,0,0,0.2)",
+                  background: "transparent",
+                  border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
                   borderRadius: "50%",
                   width: "30px",
                   height: "30px",
@@ -3047,8 +1976,8 @@ export default function Dashboard() {
             </div>
 
             <form onSubmit={handleCreateDispatch}>
-              <div style={{ marginBottom: "14px" }}>
-                <label>PROJECT / BRIEF TITLE *</label>
+              <div style={{ marginBottom: "16px" }}>
+                <label>PROJECT / COMMISSION TITLE *</label>
                 <input
                   type="text"
                   placeholder="e.g. Palm Jumeirah Penthouse Joinery"
@@ -3066,14 +1995,14 @@ export default function Dashboard() {
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
                   gap: "12px",
-                  marginBottom: "14px",
+                  marginBottom: "16px",
                 }}
               >
                 <div>
                   <label>CLIENT NAME</label>
                   <input
                     type="text"
-                    placeholder="e.g. Emaar Private Client"
+                    placeholder="e.g. Private Homeowner"
                     value={newDispatchForm.client}
                     onChange={(e) =>
                       setNewDispatchForm((prev) => ({ ...prev, client: e.target.value }))
@@ -3082,18 +2011,19 @@ export default function Dashboard() {
                   />
                 </div>
                 <div>
-                  <label>DISPATCH TYPE</label>
+                  <label>INITIAL STAGE</label>
                   <select
-                    value={newDispatchForm.type}
+                    value={newDispatchForm.stage}
                     onChange={(e) =>
-                      setNewDispatchForm((prev) => ({ ...prev, type: e.target.value }))
+                      setNewDispatchForm((prev) => ({ ...prev, stage: e.target.value }))
                     }
                     style={{ width: "100%", marginTop: "6px" }}
                   >
-                    <option value="COMMISSION BRIEF">COMMISSION BRIEF</option>
-                    <option value="CLIENT INQUIRY">CLIENT INQUIRY</option>
-                    <option value="SPATIAL FIT-OUT">SPATIAL FIT-OUT</option>
-                    <option value="ATELIER JOINERY">ATELIER JOINERY</option>
+                    {STAGES.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.num} {s.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -3103,14 +2033,14 @@ export default function Dashboard() {
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
                   gap: "12px",
-                  marginBottom: "14px",
+                  marginBottom: "16px",
                 }}
               >
                 <div>
                   <label>LOCATION</label>
                   <input
                     type="text"
-                    placeholder="e.g. Downtown Dubai"
+                    placeholder="e.g. Dubai Hills"
                     value={newDispatchForm.location}
                     onChange={(e) =>
                       setNewDispatchForm((prev) => ({ ...prev, location: e.target.value }))
@@ -3119,10 +2049,10 @@ export default function Dashboard() {
                   />
                 </div>
                 <div>
-                  <label>BUDGET ESTIMATE</label>
+                  <label>BUDGET</label>
                   <input
                     type="text"
-                    placeholder="e.g. AED 250,000"
+                    placeholder="e.g. Under AED 250,000"
                     value={newDispatchForm.budget}
                     onChange={(e) =>
                       setNewDispatchForm((prev) => ({ ...prev, budget: e.target.value }))
@@ -3132,26 +2062,11 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div style={{ marginBottom: "14px" }}>
-                <label>INITIAL PIPELINE COLUMN</label>
-                <select
-                  value={quickAddStage}
-                  onChange={(e) => setQuickAddStage(e.target.value)}
-                  style={{ width: "100%", marginTop: "6px" }}
-                >
-                  {KANBAN_STAGES.map((stg) => (
-                    <option key={stg.id} value={stg.id}>
-                      {stg.index} · {stg.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div style={{ marginBottom: "20px" }}>
-                <label>SPECIFICATION BRIEF & NOTES</label>
+                <label>BRIEF & SPECIFICATION NOTES</label>
                 <textarea
                   rows={3}
-                  placeholder="Key architectural requirements, MEP specs, or client notes..."
+                  placeholder="Architectural scope, materials, MEP requirements..."
                   value={newDispatchForm.notes}
                   onChange={(e) =>
                     setNewDispatchForm((prev) => ({ ...prev, notes: e.target.value }))
@@ -3163,36 +2078,18 @@ export default function Dashboard() {
               <div style={{ display: "flex", gap: "10px" }}>
                 <button
                   type="submit"
-                  style={{
-                    flex: 1,
-                    background: "#000000",
-                    color: "#ffffff",
-                    border: "1px solid #000000",
-                    borderRadius: "9999px",
-                    padding: "12px",
-                    fontSize: "11px",
-                    fontWeight: 800,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    cursor: "pointer",
-                  }}
+                  className="btn-pill btn-pill-dark"
+                  style={{ flex: 1 }}
                 >
-                  DISPATCH TO KANBAN BOARD ↗
+                  <span>LOG TO PIPELINE</span>
+                  <span className="g-circle" aria-hidden="true" />
                 </button>
                 <button
                   type="button"
                   onClick={() => setQuickAddOpen(false)}
-                  style={{
-                    background: "#ffffff",
-                    border: "1px solid rgba(0,0,0,0.2)",
-                    borderRadius: "9999px",
-                    padding: "12px 18px",
-                    fontSize: "11px",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                  }}
+                  className="btn-pill btn-pill-outline-dark"
                 >
-                  CANCEL
+                  <span>CANCEL</span>
                 </button>
               </div>
             </form>

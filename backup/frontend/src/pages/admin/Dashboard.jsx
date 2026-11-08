@@ -9,54 +9,70 @@ import {
 } from "../../services/api";
 import { toast } from "sonner";
 import {
-  FiExternalLink,
   FiSearch,
-  FiTrash2,
   FiPlus,
-  FiCheck,
-  FiX,
   FiMail,
   FiPhone,
   FiMapPin,
-  FiArrowUpRight,
-  FiEye,
-  FiClock,
   FiChevronLeft,
   FiChevronRight,
-  FiSend,
+  FiX,
+  FiArrowUpRight,
+  FiLayers,
+  FiFileText,
+  FiMessageSquare,
+  FiSettings,
+  FiCheckCircle,
+  FiDollarSign,
+  FiBriefcase,
+  FiCalendar,
 } from "react-icons/fi";
-import "../../styles/home.css";
 
 const STAGES = [
   {
-    id: "intake",
-    num: "(01)",
-    name: "Intake & Briefs",
-    desc: "Raw client submissions & quotation requests",
+    id: "leads",
+    name: "New Leads",
+    badgeClass: "badge-lavender",
+    color: "#58437d",
+    bg: "#f4f2f9",
+    border: "#e4def1",
+    desc: "Incoming quotation briefs & web inquiries",
   },
   {
-    id: "estimation",
-    num: "(02)",
-    name: "Estimation & MEP",
-    desc: "Spatial feasibility, CAD drafting & technical costing",
+    id: "feasibility",
+    name: "Feasibility & Costing",
+    badgeClass: "badge-mist",
+    color: "#1e5c8a",
+    bg: "#edf5fc",
+    border: "#d2e6f7",
+    desc: "CAD site survey, MEP planning & spatial pricing",
   },
   {
-    id: "proposals",
-    num: "(03)",
-    name: "Client Proposals",
-    desc: "Turnkey concept proposals & contract review",
+    id: "proposal",
+    name: "Proposal & Consultation",
+    badgeClass: "badge-amber",
+    color: "#8c581e",
+    bg: "#fdf6ec",
+    border: "#fae5cb",
+    desc: "Turnkey fit-out quotes sent & negotiations",
   },
   {
-    id: "production",
-    num: "(04)",
-    name: "Atelier Production",
-    desc: "Bespoke Al Quoz joinery fabrication & on-site build",
+    id: "construction",
+    name: "In Construction",
+    badgeClass: "badge-neutral",
+    color: "#374151",
+    bg: "#f0f2f5",
+    border: "#e2e5e9",
+    desc: "Al Quoz joinery fabrication & on-site build",
   },
   {
-    id: "delivered",
-    num: "(05)",
-    name: "Delivered & Handover",
-    desc: "Snag-free handover & catalogued spatial archive",
+    id: "completed",
+    name: "Completed & Handed Over",
+    badgeClass: "badge-sage",
+    color: "#2e6930",
+    bg: "#edf6ee",
+    border: "#d4ebd5",
+    desc: "Snag-free handover & signed off spaces",
   },
 ];
 
@@ -96,19 +112,16 @@ const formatDate = (val) => {
   return d.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
-    year: "numeric",
   });
 };
 
 export default function Dashboard() {
-  // View mode: 'bento' (Editorial Bento matching Selected Works) or 'lanes' (Multi-lane kanban)
-  const [viewMode, setViewMode] = useState("bento");
+  // Current view: 'pipeline' (Kanban), 'table' (List), 'inquiries', 'directory'
+  const [activeTab, setActiveTab] = useState("pipeline");
 
-  // Selected stage filter ('ALL' or stage id)
-  const [selectedStage, setSelectedStage] = useState("ALL");
-
-  // Active section tab: 'pipeline', 'telemetry', 'directory'
-  const [sectionTab, setSectionTab] = useState("pipeline");
+  // Filter & Search states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [stageFilter, setStageFilter] = useState("ALL");
 
   // Live dynamic data states
   const [quotes, setQuotes] = useState([]);
@@ -118,37 +131,36 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
 
-  // Kanban persistent stages mapping: { [itemId]: stageId }
+  // Persistent stage map: { [itemId]: stageId }
   const [stageMap, setStageMap] = useState(() => {
     try {
-      const saved = localStorage.getItem("yashmeen_kanban_stage_map");
+      const saved = localStorage.getItem("yashmeen_crm_stages");
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
     }
   });
 
-  // Custom Atelier Dispatches
-  const [customDispatches, setCustomDispatches] = useState(() => {
+  // Custom Leads
+  const [customLeads, setCustomLeads] = useState(() => {
     try {
-      const saved = localStorage.getItem("yashmeen_custom_dispatches");
+      const saved = localStorage.getItem("yashmeen_crm_custom_leads");
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
     }
   });
 
-  // Search & Filter
-  const [searchQuery, setSearchQuery] = useState("");
+  // Drag and drop states
   const [draggingItemId, setDraggingItemId] = useState(null);
   const [dragOverColId, setDragOverColId] = useState(null);
 
   // Slide-over inspection drawer
   const [inspectedItem, setInspectedItem] = useState(null);
 
-  // Quick Add Commission Modal
+  // Quick Add Lead Modal
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [newDispatchForm, setNewDispatchForm] = useState({
+  const [newLeadForm, setNewLeadForm] = useState({
     title: "",
     client: "",
     type: "COMMISSION BRIEF",
@@ -156,7 +168,7 @@ export default function Dashboard() {
     budget: "Under AED 150,000",
     scope: "Turnkey Interior Fit-Out",
     notes: "",
-    stage: "intake",
+    stage: "leads",
   });
 
   // Settings form errors
@@ -195,7 +207,7 @@ export default function Dashboard() {
           }
         }
       } catch (err) {
-        console.error("Dashboard data load error:", err);
+        console.error("CRM data load error:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -208,11 +220,11 @@ export default function Dashboard() {
   }, []);
 
   // Update item stage
-  const updateItemStage = (itemId, targetStageId, itemTitle = "Item") => {
+  const updateItemStage = (itemId, targetStageId, itemTitle = "Lead") => {
     setStageMap((prev) => {
       const next = { ...prev, [itemId]: targetStageId };
       try {
-        localStorage.setItem("yashmeen_kanban_stage_map", JSON.stringify(next));
+        localStorage.setItem("yashmeen_crm_stages", JSON.stringify(next));
       } catch (e) {
         console.error("Failed to save stage map:", e);
       }
@@ -223,43 +235,35 @@ export default function Dashboard() {
     toast.success(`Moved "${itemTitle}" to ${targetStage?.name || targetStageId}`);
   };
 
-  // Advance to next stage helper
-  const advanceStage = (item) => {
+  // Move forward / backward
+  const handleStepMove = (item, direction) => {
     const currentIndex = STAGES.findIndex((s) => s.id === item.stage);
-    if (currentIndex >= 0 && currentIndex < STAGES.length - 1) {
-      const nextStage = STAGES[currentIndex + 1];
-      updateItemStage(item.id, nextStage.id, item.title);
+    if (currentIndex === -1) return;
+
+    const nextIndex = currentIndex + direction;
+    if (nextIndex >= 0 && nextIndex < STAGES.length) {
+      updateItemStage(item.id, STAGES[nextIndex].id, item.title);
     }
   };
 
-  // Regress to prev stage helper
-  const regressStage = (item) => {
-    const currentIndex = STAGES.findIndex((s) => s.id === item.stage);
-    if (currentIndex > 0) {
-      const prevStage = STAGES[currentIndex - 1];
-      updateItemStage(item.id, prevStage.id, item.title);
-    }
-  };
-
-  // Convert raw Mongo items + custom items into Unified Pipeline Items
-  const allItems = useMemo(() => {
+  // Compile all CRM items from quotes, enquiries, projects, and custom leads
+  const allCRMItems = useMemo(() => {
     const list = [];
 
     // 1. Quotes
-    quotes.forEach((q, idx) => {
+    quotes.forEach((q) => {
       const id = `quote-${q._id}`;
-      const assignedStage = stageMap[id] || "intake";
-      const stageObj = STAGES.find((s) => s.id === assignedStage);
+      const assignedStage = stageMap[id] || "leads";
       list.push({
         id,
         rawId: q._id,
         itemType: "QUOTE",
-        typeBadge: "COMMISSION BRIEF",
-        num: `(${String(idx + 1).padStart(2, "0")})`,
-        title: q.name || "Bespoke Commission",
+        typeBadge: "Commission",
+        badgeStyle: "badge-amber",
+        title: q.name || "Client Commission",
         client: q.name,
-        subtitle: q.projectType ? `${q.projectType} Fit-Out` : "Commercial & Residential",
-        location: q.location || "Dubai, UAE",
+        subtitle: q.projectType ? `${q.projectType} Fit-Out` : "Turnkey Fit-Out",
+        location: q.location || "Dubai",
         budget: q.budget || "Custom Budget",
         services: Array.isArray(q.services) ? q.services : q.services ? [q.services] : [],
         message: q.message || "",
@@ -268,25 +272,22 @@ export default function Dashboard() {
         timeline: q.timeline || "Within 1-3 months",
         date: q.createdAt,
         stage: assignedStage,
-        stageName: stageObj ? stageObj.name : "Intake",
-        image: null,
       });
     });
 
     // 2. Enquiries
-    enquiries.forEach((e, idx) => {
+    enquiries.forEach((e) => {
       const id = `enquiry-${e._id}`;
-      const assignedStage = stageMap[id] || "intake";
-      const stageObj = STAGES.find((s) => s.id === assignedStage);
+      const assignedStage = stageMap[id] || "leads";
       list.push({
         id,
         rawId: e._id,
         itemType: "ENQUIRY",
-        typeBadge: "CLIENT INQUIRY",
-        num: `(${String(quotes.length + idx + 1).padStart(2, "0")})`,
+        typeBadge: "Inquiry",
+        badgeStyle: "badge-lavender",
         title: e.name || "Client Inquiry",
         client: e.name,
-        subtitle: e.services || "Interior Fit-Out Consultation",
+        subtitle: e.services || "Fit-Out Consultation",
         location: "Dubai, UAE",
         budget: "Direct Inquiry",
         services: e.services ? [e.services] : ["Turnkey Fit-Out"],
@@ -296,64 +297,59 @@ export default function Dashboard() {
         timeline: "Immediate Consultation",
         date: e.createdAt,
         stage: assignedStage,
-        stageName: stageObj ? stageObj.name : "Intake",
-        image: null,
       });
     });
 
-    // 3. Projects (Sample first 8 for spatial execution)
+    // 3. Projects (Sample first 8 for studio progress)
     projects.slice(0, 8).forEach((p, idx) => {
       const id = `project-${p._id}`;
       const defaultStage =
         idx % 4 === 0
-          ? "production"
+          ? "construction"
           : idx % 4 === 1
-          ? "estimation"
+          ? "feasibility"
           : idx % 4 === 2
-          ? "proposals"
-          : "delivered";
+          ? "proposal"
+          : "completed";
 
       const assignedStage = stageMap[id] || defaultStage;
-      const stageObj = STAGES.find((s) => s.id === assignedStage);
       list.push({
         id,
         rawId: p._id,
         itemType: "PROJECT",
-        typeBadge: "SPATIAL WORK",
-        num: `(${String(quotes.length + enquiries.length + idx + 1).padStart(2, "0")})`,
+        typeBadge: "Spatial Fit-Out",
+        badgeStyle: "badge-mist",
         title: p.title || "Spatial Project",
-        client: "Yashmeen Atelier Archive",
+        client: "Yashmeen Atelier",
         subtitle: p.category || "Fit-Out & Joinery",
         location: p.location || "Dubai, UAE",
-        budget: "Turnkey Fit-Out",
+        budget: "Turnkey Execution",
         image: p.image,
         services: ["Spatial Architecture", "Bespoke Joinery & MEP"],
         message: p.description || "",
         email: details.email || "info@yfbfitoutcontracting.com",
         mobile: details.mobile || "+971543862870",
-        timeline: "Completed or In-Build",
+        timeline: "In-Progress / Handed Over",
         date: p.createdAt,
         stage: assignedStage,
-        stageName: stageObj ? stageObj.name : "Production",
       });
     });
 
-    // 4. Custom Dispatches
-    customDispatches.forEach((c, idx) => {
+    // 4. Custom Leads
+    customLeads.forEach((c) => {
       const id = `custom-${c.id}`;
-      const assignedStage = stageMap[id] || c.stage || "intake";
-      const stageObj = STAGES.find((s) => s.id === assignedStage);
+      const assignedStage = stageMap[id] || c.stage || "leads";
       list.push({
         id,
         rawId: c.id,
         itemType: "CUSTOM",
-        typeBadge: c.type || "ATELIER DISPATCH",
-        num: `(C${idx + 1})`,
-        title: c.title || "Custom Brief",
-        client: c.client || "Studio Team",
+        typeBadge: c.type || "Lead",
+        badgeStyle: "badge-neutral",
+        title: c.title || "Custom Lead",
+        client: c.client || "Private Client",
         subtitle: c.scope || "Architectural Task",
         location: c.location || "Dubai, UAE",
-        budget: c.budget || "Internal Atelier",
+        budget: c.budget || "AED 150,000",
         services: [c.scope || "Joinery Specification"],
         message: c.notes || "",
         email: details.email || "",
@@ -361,20 +357,16 @@ export default function Dashboard() {
         timeline: "Active Milestone",
         date: c.createdAt,
         stage: assignedStage,
-        stageName: stageObj ? stageObj.name : "Intake",
-        image: null,
       });
     });
 
     return list;
-  }, [quotes, enquiries, projects, customDispatches, stageMap, details]);
+  }, [quotes, enquiries, projects, customLeads, stageMap, details]);
 
-  // Filtered items
+  // Filtered CRM Items
   const filteredItems = useMemo(() => {
-    return allItems.filter((item) => {
-      if (selectedStage !== "ALL" && item.stage !== selectedStage) {
-        return false;
-      }
+    return allCRMItems.filter((item) => {
+      if (stageFilter !== "ALL" && item.stage !== stageFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const match =
@@ -382,58 +374,15 @@ export default function Dashboard() {
           (item.client && item.client.toLowerCase().includes(q)) ||
           (item.subtitle && item.subtitle.toLowerCase().includes(q)) ||
           (item.location && item.location.toLowerCase().includes(q)) ||
+          (item.email && item.email.toLowerCase().includes(q)) ||
           (item.message && item.message.toLowerCase().includes(q));
         if (!match) return false;
       }
       return true;
     });
-  }, [allItems, selectedStage, searchQuery]);
+  }, [allCRMItems, stageFilter, searchQuery]);
 
-  // Handle Quick Add Dispatch
-  const handleCreateDispatch = (e) => {
-    e.preventDefault();
-    if (!newDispatchForm.title.trim()) {
-      toast.error("Please enter a brief or project title.");
-      return;
-    }
-
-    const newEntry = {
-      id: Date.now().toString(),
-      title: newDispatchForm.title.trim(),
-      client: newDispatchForm.client.trim() || "Private Client",
-      type: newDispatchForm.type,
-      location: newDispatchForm.location.trim() || "Dubai, UAE",
-      budget: newDispatchForm.budget.trim() || "Under AED 150,000",
-      scope: newDispatchForm.scope.trim() || "Turnkey Fit-Out & Joinery",
-      notes: newDispatchForm.notes.trim() || "Logged from Atelier CMS console.",
-      createdAt: new Date().toISOString(),
-      stage: newDispatchForm.stage,
-    };
-
-    const updated = [newEntry, ...customDispatches];
-    setCustomDispatches(updated);
-    try {
-      localStorage.setItem("yashmeen_custom_dispatches", JSON.stringify(updated));
-    } catch (err) {
-      console.error(err);
-    }
-
-    updateItemStage(`custom-${newEntry.id}`, newDispatchForm.stage, newEntry.title);
-    setQuickAddOpen(false);
-    setNewDispatchForm({
-      title: "",
-      client: "",
-      type: "COMMISSION BRIEF",
-      location: "Dubai, UAE",
-      budget: "Under AED 150,000",
-      scope: "Turnkey Interior Fit-Out",
-      notes: "",
-      stage: "intake",
-    });
-    toast.success(`Logged "${newEntry.title}" into pipeline.`);
-  };
-
-  // Drag and Drop Handlers for Lanes view
+  // Drag and drop handlers
   const handleDragStart = (e, item) => {
     setDraggingItemId(item.id);
     e.dataTransfer.setData("text/plain", item.id);
@@ -460,13 +409,70 @@ export default function Dashboard() {
     setDraggingItemId(null);
 
     if (!itemId) return;
-    const item = allItems.find((i) => i.id === itemId);
+    const item = allCRMItems.find((i) => i.id === itemId);
     if (item && item.stage !== targetColId) {
       updateItemStage(itemId, targetColId, item.title);
     }
   };
 
-  // Settings form handlers
+  // Add new lead handler
+  const handleCreateLead = (e) => {
+    e.preventDefault();
+    if (!newLeadForm.title.trim()) {
+      toast.error("Please enter a lead or project name.");
+      return;
+    }
+
+    const newEntry = {
+      id: Date.now().toString(),
+      title: newLeadForm.title.trim(),
+      client: newLeadForm.client.trim() || "Private Client",
+      type: newLeadForm.type,
+      location: newLeadForm.location.trim() || "Dubai, UAE",
+      budget: newLeadForm.budget.trim() || "Under AED 150,000",
+      scope: newLeadForm.scope.trim() || "Turnkey Fit-Out & Joinery",
+      notes: newLeadForm.notes.trim() || "Logged into Atelier CRM.",
+      createdAt: new Date().toISOString(),
+      stage: newLeadForm.stage,
+    };
+
+    const updated = [newEntry, ...customLeads];
+    setCustomLeads(updated);
+    try {
+      localStorage.setItem("yashmeen_crm_custom_leads", JSON.stringify(updated));
+    } catch (err) {
+      console.error(err);
+    }
+
+    updateItemStage(`custom-${newEntry.id}`, newLeadForm.stage, newEntry.title);
+    setQuickAddOpen(false);
+    setNewLeadForm({
+      title: "",
+      client: "",
+      type: "COMMISSION BRIEF",
+      location: "Dubai, UAE",
+      budget: "Under AED 150,000",
+      scope: "Turnkey Interior Fit-Out",
+      notes: "",
+      stage: "leads",
+    });
+    toast.success(`Created "${newEntry.title}" in pipeline.`);
+  };
+
+  // Delete handlers
+  const handleDeleteOldQuotes = async () => {
+    if (!window.confirm("Permanently delete quotations older than 1 month?")) return;
+    try {
+      await quoteAPI.deleteOlderThanMonth();
+      toast.success("Old quotations purged successfully.");
+      const { data } = await quoteAPI.getAll({ limit: 100 });
+      setQuotes(Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []);
+    } catch {
+      toast.error("Failed to delete old quotations.");
+    }
+  };
+
+  // Settings submit handler
   const handleSettingsSubmit = async (e) => {
     e.preventDefault();
     if (details.email && !EMAIL_RE.test(details.email)) {
@@ -485,135 +491,331 @@ export default function Dashboard() {
   };
 
   return (
-    <div style={{ paddingBottom: "120px" }}>
+    <div style={{ maxWidth: "1480px", margin: "0 auto", padding: "32px 28px" }}>
       {/* ======================================================================
-          1. HERO HEADER (Matches Home Page: "From brief to built.")
+          1. CALMING HEADER & KPI METRICS
           ====================================================================== */}
-      <section
-        className="wrap"
-        style={{
-          paddingTop: "clamp(3rem, 6vw, 6rem)",
-          paddingBottom: "clamp(2.5rem, 4vw, 4.5rem)",
-          borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "28px",
-          }}
-        >
-          <div>
-            <span className="eyebrow" style={{ marginBottom: "1rem" }}>
-              (AL QUOZ ATELIER · CMS ARCHITECTURAL PIPELINE)
-            </span>
-            <h1
-              className="u-text-h2"
-              style={{
-                fontSize: "clamp(2.8rem, 6vw, 5.5rem)",
-                lineHeight: 0.96,
-                letterSpacing: "-0.04em",
-                margin: 0,
-                textTransform: "uppercase",
-              }}
-            >
-              FROM BRIEF TO BUILT.
-            </h1>
-            <p
-              style={{
-                fontSize: "clamp(1rem, 1.25vw, 1.15rem)",
-                color: "var(--muted, #545454)",
-                lineHeight: 1.6,
-                marginTop: "1.25rem",
-                maxWidth: "680px",
-                marginBottom: 0,
-              }}
-            >
-              One team shapes the space, makes the details and delivers the finished interior.
-              Real-time architectural control for quotation commissions, client consultations,
-              joinery fabrication, and spatial delivery across Dubai.
-            </p>
-          </div>
-
-          {/* Right Action & Proof */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-end",
-              gap: "20px",
-            }}
-          >
-            <button
-              type="button"
-              className="btn-pill btn-pill-dark"
-              onClick={() => setQuickAddOpen(true)}
-            >
-              <span>+ LOG NEW COMMISSION</span>
-              <span className="g-circle" aria-hidden="true" />
-            </button>
-
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end",
-                textAlign: "right",
-                gap: "4px",
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "var(--font-display, sans-serif)",
-                  fontSize: "18px",
-                  fontWeight: 700,
-                  letterSpacing: "-0.02em",
-                  color: "var(--ink, #080807)",
-                }}
-              >
-                35,000 SQ. FT.
-              </div>
-              <div
-                style={{
-                  fontSize: "11px",
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  color: "var(--muted, #545454)",
-                }}
-              >
-                AL QUOZ ATELIER & JOINERY BAY
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Section Navigation Tabs: Pipeline / Telemetry / Directory */}
+      <section style={{ marginBottom: "32px" }}>
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "12px",
-            marginTop: "40px",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "16px",
+            marginBottom: "24px",
           }}
         >
+          <div>
+            <h1
+              style={{
+                fontSize: "24px",
+                fontWeight: 700,
+                color: "#18181b",
+                margin: 0,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Atelier Operations & CRM
+            </h1>
+            <p
+              style={{
+                fontSize: "13.5px",
+                color: "#6b7280",
+                margin: "4px 0 0 0",
+              }}
+            >
+              Manage quotations, active client inquiries, joinery production, and spatial handovers.
+            </p>
+          </div>
+
+          {/* Quick Actions Right */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <button
+              onClick={() => setQuickAddOpen(true)}
+              style={{
+                background: "#18181b",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "8px",
+                padding: "8px 16px",
+                fontSize: "12.5px",
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                transition: "all 0.15s ease",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#27272a";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#18181b";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <FiPlus size={14} />
+              <span>New Lead / Deal</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 4 Soft & Soothing KPI Cards */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: "16px",
+          }}
+        >
+          {/* Card 1 */}
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid rgba(0,0,0,0.06)",
+              borderRadius: "12px",
+              padding: "20px",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "8px",
+              }}
+            >
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
+                Total Deals in Pipeline
+              </span>
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "8px",
+                  background: "#edf5fc",
+                  color: "#1e5c8a",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <FiLayers size={14} />
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: "26px",
+                fontWeight: 700,
+                color: "#18181b",
+                lineHeight: 1.1,
+              }}
+            >
+              {allCRMItems.length}
+            </div>
+            <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
+              Active quotes, messages & works
+            </div>
+          </div>
+
+          {/* Card 2 */}
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid rgba(0,0,0,0.06)",
+              borderRadius: "12px",
+              padding: "20px",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "8px",
+              }}
+            >
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
+                Quotation Briefs
+              </span>
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "8px",
+                  background: "#fdf6ec",
+                  color: "#8c581e",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <FiFileText size={14} />
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: "26px",
+                fontWeight: 700,
+                color: "#18181b",
+                lineHeight: 1.1,
+              }}
+            >
+              {quotes.length}
+            </div>
+            <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
+              {quotes[0] ? `Latest: ${quotes[0].name}` : "Awaiting requests"}
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid rgba(0,0,0,0.06)",
+              borderRadius: "12px",
+              padding: "20px",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "8px",
+              }}
+            >
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
+                Client Inquiries
+              </span>
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "8px",
+                  background: "#f4f2f9",
+                  color: "#58437d",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <FiMessageSquare size={14} />
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: "26px",
+                fontWeight: 700,
+                color: "#18181b",
+                lineHeight: 1.1,
+              }}
+            >
+              {enquiries.length}
+            </div>
+            <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
+              {enquiries[0] ? `Latest: ${enquiries[0].name}` : "All responded"}
+            </div>
+          </div>
+
+          {/* Card 4 */}
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid rgba(0,0,0,0.06)",
+              borderRadius: "12px",
+              padding: "20px",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "8px",
+              }}
+            >
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
+                Spatial Works
+              </span>
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "8px",
+                  background: "#edf6ee",
+                  color: "#2e6930",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <FiCheckCircle size={14} />
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: "26px",
+                fontWeight: 700,
+                color: "#18181b",
+                lineHeight: 1.1,
+              }}
+            >
+              {projects.length}
+            </div>
+            <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
+              Archived portfolio & fit-out projects
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================================================
+          2. VIEW CONTROLS (TABS & SEARCH)
+          ====================================================================== */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "16px",
+          marginBottom: "20px",
+          paddingBottom: "16px",
+          borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
+        }}
+      >
+        {/* View Switchers */}
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           {[
-            { id: "pipeline", label: `Commission Pipeline (${allItems.length})` },
-            { id: "telemetry", label: "Atelier Telemetry & Feeds" },
+            { id: "pipeline", label: `Kanban Pipeline (${allCRMItems.length})` },
+            { id: "table", label: `Quotes Register (${quotes.length})` },
+            { id: "inquiries", label: `Inquiries Feed (${enquiries.length})` },
             { id: "directory", label: "Studio Profile & Directory" },
           ].map((tab) => {
-            const active = sectionTab === tab.id;
+            const active = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                type="button"
-                className={`works-switch-btn ${active ? "active" : ""}`}
-                onClick={() => setSectionTab(tab.id)}
+                onClick={() => setActiveTab(tab.id)}
                 style={{
-                  fontSize: "12px",
-                  padding: "8px 18px",
+                  background: active ? "#ffffff" : "transparent",
+                  color: active ? "#18181b" : "#6b7280",
+                  border: active ? "1px solid #e5e7eb" : "1px solid transparent",
+                  borderRadius: "8px",
+                  padding: "7px 14px",
+                  fontSize: "12.5px",
+                  fontWeight: active ? 600 : 500,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                  boxShadow: active ? "0 1px 4px rgba(0,0,0,0.04)" : "none",
                 }}
               >
                 {tab.label}
@@ -621,909 +823,655 @@ export default function Dashboard() {
             );
           })}
         </div>
-      </section>
+
+        {/* Search Input */}
+        <div style={{ position: "relative", minWidth: "260px" }}>
+          <FiSearch
+            size={13}
+            style={{
+              position: "absolute",
+              left: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "#9ca3af",
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Search leads, clients, locations..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: "100%",
+              paddingLeft: "34px",
+              paddingRight: "14px",
+              paddingTop: "7px",
+              paddingBottom: "7px",
+              fontSize: "12.5px",
+              border: "1px solid #e5e7eb",
+              borderRadius: "8px",
+              background: "#ffffff",
+              color: "#18181b",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+        </div>
+      </div>
 
       {/* ======================================================================
-          2. COMMISSION PIPELINE SECTION (Exact Works Bento / Lanes Vibe)
+          3. MAIN VIEW TAB A: SOFT & SOOTHING KANBAN PIPELINE
           ====================================================================== */}
-      {sectionTab === "pipeline" && (
-        <section
-          className="works-bento-section wrap"
-          id="pipeline"
-          aria-label="Commission Pipeline"
-          style={{ paddingTop: "clamp(3rem, 6vw, 5rem)" }}
+      {activeTab === "pipeline" && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: "16px",
+            alignItems: "start",
+          }}
         >
-          {/* Bento Header */}
-          <div className="works-bento-header" style={{ alignItems: "flex-end" }}>
-            <div>
-              <span className="eyebrow">(SPACES IN PROGRESS · FROM FIRST MEETING TO HANDOVER)</span>
-              <h2 className="u-text-h2">Selected workflow</h2>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-              <div className="works-view-switcher">
-                <button
-                  type="button"
-                  className={`works-switch-btn ${viewMode === "bento" ? "active" : ""}`}
-                  onClick={() => setViewMode("bento")}
-                >
-                  Editorial Bento
-                </button>
-                <button
-                  type="button"
-                  className={`works-switch-btn ${viewMode === "lanes" ? "active" : ""}`}
-                  onClick={() => setViewMode("lanes")}
-                >
-                  Pipeline Lanes
-                </button>
-              </div>
-              <span
-                className="works-bento-count"
-                aria-label={`${filteredItems.length} commissions`}
+          {STAGES.map((stg) => {
+            const colItems = filteredItems.filter((i) => i.stage === stg.id);
+            const isOver = dragOverColId === stg.id;
+            return (
+              <div
+                key={stg.id}
+                onDragOver={(e) => handleDragOver(e, stg.id)}
+                onDragLeave={() => setDragOverColId(null)}
+                onDrop={(e) => handleDrop(e, stg.id)}
+                style={{
+                  background: isOver ? "#f3f4f6" : "#f8f9fa",
+                  border: "1px solid",
+                  borderColor: isOver ? "#d1d5db" : "rgba(0, 0, 0, 0.05)",
+                  borderRadius: "12px",
+                  padding: "16px",
+                  minHeight: "520px",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "background 0.2s ease, border-color 0.2s ease",
+                }}
               >
-                ({String(filteredItems.length).padStart(2, "0")})
-              </span>
-            </div>
-          </div>
+                {/* Column Header */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    paddingBottom: "12px",
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span
+                      style={{
+                        width: "8px",
+                        height: "8px",
+                        borderRadius: "50%",
+                        background: stg.color,
+                        display: "inline-block",
+                      }}
+                    />
+                    <h3
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        color: "#1f2937",
+                        margin: 0,
+                      }}
+                    >
+                      {stg.name}
+                    </h3>
+                  </div>
 
-          {/* Stage Filter Rail & Search Bar */}
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: stg.color,
+                      background: stg.bg,
+                      border: `1px solid ${stg.border}`,
+                      padding: "2px 7px",
+                      borderRadius: "9999px",
+                    }}
+                  >
+                    {colItems.length}
+                  </span>
+                </div>
+
+                {/* Cards Container */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "10px",
+                    flex: 1,
+                  }}
+                >
+                  {colItems.length === 0 ? (
+                    <div
+                      style={{
+                        border: "1px dashed rgba(0, 0, 0, 0.08)",
+                        borderRadius: "8px",
+                        padding: "36px 12px",
+                        textAlign: "center",
+                        color: "#9ca3af",
+                        fontSize: "12px",
+                        background: "rgba(255, 255, 255, 0.5)",
+                      }}
+                    >
+                      No active deals in stage
+                    </div>
+                  ) : (
+                    colItems.map((item) => (
+                      <div
+                        key={item.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, item)}
+                        onDragEnd={handleDragEnd}
+                        style={{
+                          background: "#ffffff",
+                          border: "1px solid rgba(0, 0, 0, 0.06)",
+                          borderRadius: "10px",
+                          padding: "14px",
+                          cursor: "grab",
+                          transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                          boxShadow: "0 1px 4px rgba(0, 0, 0, 0.02)",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "translateY(-2px)";
+                          e.currentTarget.style.boxShadow =
+                            "0 6px 18px rgba(0, 0, 0, 0.05)";
+                          e.currentTarget.style.borderColor = "rgba(0, 0, 0, 0.12)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "translateY(0)";
+                          e.currentTarget.style.boxShadow =
+                            "0 1px 4px rgba(0, 0, 0, 0.02)";
+                          e.currentTarget.style.borderColor = "rgba(0, 0, 0, 0.06)";
+                        }}
+                      >
+                        {/* Card Header: Type chip + Date */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            marginBottom: "8px",
+                          }}
+                        >
+                          <span
+                            className={item.badgeStyle}
+                            style={{
+                              fontSize: "10px",
+                              fontWeight: 600,
+                              padding: "2px 8px",
+                              borderRadius: "9999px",
+                            }}
+                          >
+                            {item.typeBadge}
+                          </span>
+                          <span style={{ fontSize: "11px", color: "#9ca3af" }}>
+                            {formatDate(item.date)}
+                          </span>
+                        </div>
+
+                        {/* Title & Scope */}
+                        <h4
+                          onClick={() => setInspectedItem(item)}
+                          style={{
+                            fontSize: "13.5px",
+                            fontWeight: 600,
+                            color: "#18181b",
+                            margin: "0 0 2px 0",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {item.title}
+                        </h4>
+                        <div
+                          style={{
+                            fontSize: "11.5px",
+                            color: "#6b7280",
+                            marginBottom: "10px",
+                          }}
+                        >
+                          {item.subtitle}
+                        </div>
+
+                        {/* Meta Tags: Location & Budget */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            flexWrap: "wrap",
+                            marginBottom: "10px",
+                            fontSize: "11px",
+                            color: "#4b5563",
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "3px",
+                            }}
+                          >
+                            <FiMapPin size={10} color="#9ca3af" />
+                            {item.location}
+                          </span>
+                          {item.budget && (
+                            <span
+                              style={{
+                                background: "#f3f4f6",
+                                padding: "2px 6px",
+                                borderRadius: "4px",
+                                fontSize: "10.5px",
+                                fontWeight: 500,
+                              }}
+                            >
+                              {item.budget}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Brief Excerpt */}
+                        {item.message && (
+                          <div
+                            style={{
+                              fontSize: "11px",
+                              color: "#6b7280",
+                              lineHeight: 1.45,
+                              marginBottom: "12px",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                              background: "#f9fafb",
+                              padding: "6px 8px",
+                              borderRadius: "6px",
+                            }}
+                          >
+                            "{item.message}"
+                          </div>
+                        )}
+
+                        {/* Card Footer: Step Movers & Inspect */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            paddingTop: "8px",
+                            borderTop: "1px solid #f3f4f6",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                            <button
+                              type="button"
+                              title="Previous stage"
+                              disabled={stg.id === "leads"}
+                              onClick={() => handleStepMove(item, -1)}
+                              style={{
+                                background: "#f9fafb",
+                                border: "1px solid #e5e7eb",
+                                borderRadius: "4px",
+                                width: "22px",
+                                height: "22px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                cursor: stg.id === "leads" ? "not-allowed" : "pointer",
+                                opacity: stg.id === "leads" ? 0.35 : 1,
+                                color: "#4b5563",
+                              }}
+                            >
+                              <FiChevronLeft size={11} />
+                            </button>
+                            <button
+                              type="button"
+                              title="Next stage"
+                              disabled={stg.id === "completed"}
+                              onClick={() => handleStepMove(item, 1)}
+                              style={{
+                                background: "#f9fafb",
+                                border: "1px solid #e5e7eb",
+                                borderRadius: "4px",
+                                width: "22px",
+                                height: "22px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                cursor: stg.id === "completed" ? "not-allowed" : "pointer",
+                                opacity: stg.id === "completed" ? 0.35 : 1,
+                                color: "#4b5563",
+                              }}
+                            >
+                              <FiChevronRight size={11} />
+                            </button>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setInspectedItem(item)}
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              color: "#4b5563",
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "3px",
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.color = "#18181b")}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = "#4b5563")}
+                          >
+                            <span>Inspect</span>
+                            <FiArrowUpRight size={11} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ======================================================================
+          4. TAB B: QUOTATIONS LIST REGISTER
+          ====================================================================== */}
+      {activeTab === "table" && (
+        <div
+          style={{
+            background: "#ffffff",
+            border: "1px solid rgba(0, 0, 0, 0.06)",
+            borderRadius: "12px",
+            padding: "24px",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
+          }}
+        >
           <div
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: "16px",
-              marginBottom: "clamp(2.5rem, 5vw, 4rem)",
-              paddingBottom: "1.25rem",
-              borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+              marginBottom: "16px",
             }}
           >
-            {/* Stage Selector Pills */}
-            <div
+            <div>
+              <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>
+                Client Quotation Requests
+              </h3>
+              <p style={{ fontSize: "12.5px", color: "#6b7280", margin: "2px 0 0 0" }}>
+                Received from public quotation questionnaire.
+              </p>
+            </div>
+            <button
+              onClick={handleDeleteOldQuotes}
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                flexWrap: "wrap",
+                background: "#ffffff",
+                border: "1px solid #e5e7eb",
+                borderRadius: "6px",
+                padding: "6px 12px",
+                fontSize: "11.5px",
+                fontWeight: 600,
+                color: "#6b7280",
+                cursor: "pointer",
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#dc2626")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#6b7280")}
             >
-              <button
-                type="button"
-                className={`works-switch-btn ${selectedStage === "ALL" ? "active" : ""}`}
-                onClick={() => setSelectedStage("ALL")}
-                style={{ fontSize: "11px", padding: "6px 14px" }}
-              >
-                ALL STAGES ({allItems.length})
-              </button>
-
-              {STAGES.map((stg) => {
-                const count = allItems.filter((i) => i.stage === stg.id).length;
-                const active = selectedStage === stg.id;
-                return (
-                  <button
-                    key={stg.id}
-                    type="button"
-                    className={`works-switch-btn ${active ? "active" : ""}`}
-                    onClick={() => setSelectedStage(stg.id)}
-                    style={{
-                      fontSize: "11px",
-                      padding: "6px 14px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
-                  >
-                    <span>{stg.num}</span>
-                    <span>{stg.name}</span>
-                    <span style={{ opacity: 0.65 }}>({count})</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Clean Architectural Search */}
-            <div style={{ position: "relative", minWidth: "240px" }}>
-              <FiSearch
-                size={13}
-                style={{
-                  position: "absolute",
-                  left: "14px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "var(--muted, #545454)",
-                }}
-              />
-              <input
-                type="text"
-                placeholder="Search pipeline..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: "100%",
-                  paddingLeft: "36px",
-                  paddingRight: "14px",
-                  paddingTop: "7px",
-                  paddingBottom: "7px",
-                  fontSize: "12px",
-                  borderRadius: "var(--radius-pill, 9999px)",
-                  border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
-                  background: "var(--surface, #ffffff)",
-                  color: "var(--ink, #080807)",
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-              />
-            </div>
+              Purge older than 1 month
+            </button>
           </div>
 
-          {/* ==================================================================
-              VIEW MODE A: EDITORIAL BENTO GRID (Matches Website Selected Works)
-              ================================================================== */}
-          {viewMode === "bento" && (
-            <div className="works-bento-grid">
-              {filteredItems.length === 0 ? (
-                <div
-                  style={{
-                    gridColumn: "1 / -1",
-                    padding: "80px 20px",
-                    textAlign: "center",
-                    color: "var(--muted, #545454)",
-                    border: "1px dashed var(--line, rgba(8, 8, 7, 0.12))",
-                    borderRadius: "var(--radius, 10px)",
-                  }}
-                >
-                  <div style={{ fontSize: "14px", fontWeight: 600 }}>
-                    No commissions in this stage filter.
-                  </div>
-                  <button
-                    onClick={() => setSelectedStage("ALL")}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: "var(--ink, #080807)",
-                      fontWeight: 700,
-                      marginTop: "10px",
-                      textDecoration: "underline",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                    }}
-                  >
-                    View all pipeline commissions ↗
-                  </button>
-                </div>
-              ) : (
-                filteredItems.map((item, idx) => {
-                  const isLandscape = idx % 2 === 0;
-                  const isOffset = idx % 3 === 1;
-                  return (
-                    <article
-                      key={item.id}
-                      className={`works-card ${
-                        isLandscape ? "is-landscape" : "is-portrait is-monumental"
-                      } ${isOffset ? "offset-top" : ""}`}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {/* Image Frame or Architectural Paper Canvas */}
-                      <div
-                        className="works-card-image-wrap"
-                        style={{
-                          background: item.image
-                            ? "var(--surface-alt, #f1f0ee)"
-                            : "var(--ink, #080807)",
-                          minHeight: "280px",
-                          position: "relative",
-                        }}
-                        onClick={() => setInspectedItem(item)}
-                      >
-                        {item.image ? (
-                          <img
-                            src={imageUrl(item.image)}
-                            alt={item.title}
-                            onError={(e) => {
-                              e.target.src = "/static/hero-aperture.png";
-                            }}
-                          />
-                        ) : (
-                          <div
+          <div style={{ overflowX: "auto" }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Client Name</th>
+                  <th>Project Type</th>
+                  <th>Location</th>
+                  <th>Budget</th>
+                  <th>Pipeline Stage</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {quotes.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: "center", padding: "32px", color: "#9ca3af" }}>
+                      No quotations received yet.
+                    </td>
+                  </tr>
+                ) : (
+                  quotes.map((q) => {
+                    const match = allCRMItems.find((i) => i.rawId === q._id);
+                    const stageObj = STAGES.find((s) => s.id === match?.stage);
+                    return (
+                      <tr key={q._id}>
+                        <td style={{ fontWeight: 600 }}>{q.name}</td>
+                        <td>{q.projectType || "Bespoke"}</td>
+                        <td>{q.location || "Dubai"}</td>
+                        <td>{q.budget || "Custom"}</td>
+                        <td>
+                          <span
+                            className={stageObj?.badgeClass || "badge-neutral"}
                             style={{
-                              padding: "36px 32px",
-                              height: "100%",
-                              display: "flex",
-                              flexDirection: "column",
-                              justifyContent: "space-between",
-                              color: "#ffffff",
-                              boxSizing: "border-box",
-                              minHeight: "300px",
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              padding: "2px 8px",
+                              borderRadius: "9999px",
                             }}
                           >
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  fontSize: "10px",
-                                  fontWeight: 700,
-                                  letterSpacing: "0.1em",
-                                  textTransform: "uppercase",
-                                  color: "rgba(255, 255, 255, 0.7)",
-                                }}
-                              >
-                                {item.typeBadge}
-                              </span>
-                              <span
-                                style={{
-                                  fontSize: "11px",
-                                  color: "rgba(255, 255, 255, 0.5)",
-                                }}
-                              >
-                                {formatDate(item.date)}
-                              </span>
-                            </div>
-
-                            {item.message ? (
-                              <blockquote
-                                style={{
-                                  fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)",
-                                  fontSize: "clamp(1.2rem, 2vw, 1.6rem)",
-                                  fontStyle: "italic",
-                                  lineHeight: 1.4,
-                                  margin: "24px 0",
-                                  color: "#f0f0ee",
-                                  fontWeight: 400,
-                                }}
-                              >
-                                "{item.message.slice(0, 180)}..."
-                              </blockquote>
-                            ) : (
-                              <div
-                                style={{
-                                  fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)",
-                                  fontSize: "1.4rem",
-                                  fontStyle: "italic",
-                                  color: "rgba(255,255,255,0.7)",
-                                  margin: "24px 0",
-                                }}
-                              >
-                                Bespoke Architectural Commission Brief
-                              </div>
-                            )}
-
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "8px",
-                                flexWrap: "wrap",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  fontSize: "10.5px",
-                                  fontWeight: 600,
-                                  letterSpacing: "0.04em",
-                                  textTransform: "uppercase",
-                                  background: "rgba(255, 255, 255, 0.12)",
-                                  padding: "4px 10px",
-                                  borderRadius: "var(--radius-pill, 9999px)",
-                                }}
-                              >
-                                {item.location}
-                              </span>
-                              <span
-                                style={{
-                                  fontSize: "10.5px",
-                                  fontWeight: 600,
-                                  letterSpacing: "0.04em",
-                                  textTransform: "uppercase",
-                                  background: "rgba(255, 255, 255, 0.12)",
-                                  padding: "4px 10px",
-                                  borderRadius: "var(--radius-pill, 9999px)",
-                                }}
-                              >
-                                {item.budget}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Card Meta Row */}
-                      <div className="works-card-meta">
-                        <span>
-                          {item.num} / {item.subtitle}
-                        </span>
-                        <span>{item.stageName}</span>
-                      </div>
-
-                      {/* Card Title */}
-                      <h3
-                        className="works-card-title"
-                        onClick={() => setInspectedItem(item)}
-                      >
-                        {item.title}
-                      </h3>
-
-                      {/* Interactive Stage Advancement Bar */}
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          marginTop: "16px",
-                          paddingTop: "14px",
-                          borderTop: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                        }}
-                      >
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            {stageObj?.name || "New Leads"}
+                          </span>
+                        </td>
+                        <td style={{ color: "#6b7280" }}>{formatDate(q.createdAt)}</td>
+                        <td>
                           <button
-                            type="button"
-                            title="Regress stage"
-                            disabled={item.stage === "intake"}
-                            onClick={() => regressStage(item)}
+                            onClick={() => {
+                              if (match) setInspectedItem(match);
+                            }}
                             style={{
-                              background: "transparent",
-                              border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
-                              borderRadius: "50%",
-                              width: "28px",
-                              height: "28px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              cursor: item.stage === "intake" ? "not-allowed" : "pointer",
-                              opacity: item.stage === "intake" ? 0.3 : 1,
-                              color: "var(--ink, #080807)",
+                              background: "#f9fafb",
+                              border: "1px solid #e5e7eb",
+                              borderRadius: "6px",
+                              padding: "4px 10px",
+                              fontSize: "11.5px",
+                              fontWeight: 600,
+                              color: "#374151",
+                              cursor: "pointer",
                             }}
                           >
-                            <FiChevronLeft size={13} />
+                            View
                           </button>
-
-                          <button
-                            type="button"
-                            disabled={item.stage === "delivered"}
-                            onClick={() => advanceStage(item)}
-                            className="btn-pill btn-pill-outline-dark"
-                            style={{
-                              minHeight: "30px",
-                              padding: "0 12px",
-                              fontSize: "10.5px",
-                              opacity: item.stage === "delivered" ? 0.4 : 1,
-                            }}
-                          >
-                            <span>
-                              {item.stage === "delivered"
-                                ? "HANDED OVER ✓"
-                                : "NEXT STAGE →"}
-                            </span>
-                          </button>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => setInspectedItem(item)}
-                          style={{
-                            background: "transparent",
-                            border: "none",
-                            fontSize: "11px",
-                            fontWeight: 700,
-                            letterSpacing: "0.06em",
-                            textTransform: "uppercase",
-                            color: "var(--ink, #080807)",
-                            cursor: "pointer",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            textDecoration: "underline",
-                          }}
-                        >
-                          INSPECT <FiArrowUpRight size={11} />
-                        </button>
-                      </div>
-                    </article>
-                  );
-                })
-              )}
-            </div>
-          )}
-
-          {/* ==================================================================
-              VIEW MODE B: PIPELINE LANES (Spacious Architectural Kanban Columns)
-              ================================================================== */}
-          {viewMode === "lanes" && (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-                gap: "24px",
-                alignItems: "start",
-              }}
-            >
-              {STAGES.map((stg) => {
-                const colItems = allItems.filter((i) => i.stage === stg.id);
-                const isOver = dragOverColId === stg.id;
-                return (
-                  <div
-                    key={stg.id}
-                    onDragOver={(e) => handleDragOver(e, stg.id)}
-                    onDragLeave={() => setDragOverColId(null)}
-                    onDrop={(e) => handleDrop(e, stg.id)}
-                    style={{
-                      background: isOver
-                        ? "var(--surface-alt, #f1f0ee)"
-                        : "var(--surface, #ffffff)",
-                      border: "1px solid",
-                      borderColor: isOver
-                        ? "var(--ink, #080807)"
-                        : "var(--line, rgba(8, 8, 7, 0.12))",
-                      borderRadius: "var(--radius, 10px)",
-                      padding: "20px",
-                      minHeight: "480px",
-                      transition: "all 0.25s ease",
-                      display: "flex",
-                      flexDirection: "column",
-                      boxShadow: isOver
-                        ? "0 12px 32px rgba(0,0,0,0.06)"
-                        : "0 2px 10px rgba(0,0,0,0.02)",
-                    }}
-                  >
-                    {/* Lane Header */}
-                    <div
-                      style={{
-                        paddingBottom: "14px",
-                        borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                        marginBottom: "16px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "baseline",
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: "12px",
-                            fontWeight: 700,
-                            letterSpacing: "0.06em",
-                            color: "var(--muted, #545454)",
-                          }}
-                        >
-                          {stg.num}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: "11px",
-                            fontWeight: 800,
-                            background: "var(--ink, #080807)",
-                            color: "#ffffff",
-                            padding: "2px 7px",
-                            borderRadius: "var(--radius-pill, 9999px)",
-                          }}
-                        >
-                          {colItems.length}
-                        </span>
-                      </div>
-                      <h4
-                        style={{
-                          fontFamily: "var(--font-display, sans-serif)",
-                          fontSize: "15px",
-                          fontWeight: 700,
-                          textTransform: "uppercase",
-                          margin: "6px 0 2px 0",
-                          color: "var(--ink, #080807)",
-                        }}
-                      >
-                        {stg.name}
-                      </h4>
-                      <div style={{ fontSize: "11px", color: "var(--muted, #545454)" }}>
-                        {stg.desc}
-                      </div>
-                    </div>
-
-                    {/* Lane Items */}
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "14px",
-                        flex: 1,
-                      }}
-                    >
-                      {colItems.length === 0 ? (
-                        <div
-                          style={{
-                            border: "1px dashed var(--line, rgba(8, 8, 7, 0.12))",
-                            borderRadius: "8px",
-                            padding: "36px 12px",
-                            textAlign: "center",
-                            color: "var(--muted-light, #8a8a86)",
-                            fontSize: "11px",
-                            background: "var(--bg, #fcfcfc)",
-                          }}
-                        >
-                          + Drop commission here
-                        </div>
-                      ) : (
-                        colItems.map((item) => (
-                          <div
-                            key={item.id}
-                            draggable
-                            onDragStart={(e) => handleDragStart(e, item)}
-                            onDragEnd={handleDragEnd}
-                            style={{
-                              background: "var(--surface, #ffffff)",
-                              border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                              borderRadius: "8px",
-                              padding: "16px",
-                              cursor: "grab",
-                              transition: "all 0.2s ease",
-                              boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.borderColor = "var(--ink, #080807)";
-                              e.currentTarget.style.transform = "translateY(-2px)";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.borderColor =
-                                "var(--line, rgba(8, 8, 7, 0.12))";
-                              e.currentTarget.style.transform = "translateY(0)";
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                fontSize: "10px",
-                                textTransform: "uppercase",
-                                color: "var(--muted, #545454)",
-                                marginBottom: "6px",
-                              }}
-                            >
-                              <span>{item.typeBadge}</span>
-                              <span>{formatDate(item.date)}</span>
-                            </div>
-
-                            <h5
-                              style={{
-                                margin: "0 0 4px 0",
-                                fontSize: "13.5px",
-                                fontWeight: 700,
-                                color: "var(--ink, #080807)",
-                              }}
-                            >
-                              {item.title}
-                            </h5>
-                            <div
-                              style={{
-                                fontSize: "11.5px",
-                                color: "var(--muted, #545454)",
-                                marginBottom: "8px",
-                              }}
-                            >
-                              {item.subtitle}
-                            </div>
-
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                marginTop: "10px",
-                                paddingTop: "8px",
-                                borderTop: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                              }}
-                            >
-                              <div style={{ display: "flex", gap: "4px" }}>
-                                <button
-                                  type="button"
-                                  disabled={stg.id === "intake"}
-                                  onClick={() => regressStage(item)}
-                                  style={{
-                                    background: "transparent",
-                                    border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
-                                    borderRadius: "4px",
-                                    padding: "3px 6px",
-                                    cursor: stg.id === "intake" ? "not-allowed" : "pointer",
-                                    opacity: stg.id === "intake" ? 0.3 : 1,
-                                  }}
-                                >
-                                  <FiChevronLeft size={11} />
-                                </button>
-                                <button
-                                  type="button"
-                                  disabled={stg.id === "delivered"}
-                                  onClick={() => advanceStage(item)}
-                                  style={{
-                                    background: "transparent",
-                                    border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
-                                    borderRadius: "4px",
-                                    padding: "3px 6px",
-                                    cursor: stg.id === "delivered" ? "not-allowed" : "pointer",
-                                    opacity: stg.id === "delivered" ? 0.3 : 1,
-                                  }}
-                                >
-                                  <FiChevronRight size={11} />
-                                </button>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() => setInspectedItem(item)}
-                                style={{
-                                  background: "transparent",
-                                  border: "none",
-                                  fontSize: "10.5px",
-                                  fontWeight: 700,
-                                  textTransform: "uppercase",
-                                  cursor: "pointer",
-                                  textDecoration: "underline",
-                                }}
-                              >
-                                INSPECT ↗
-                              </button>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
       {/* ======================================================================
-          3. ATELIER TELEMETRY SECTION (Matches Studio.jsx on website)
+          5. TAB C: INQUIRIES FEED
           ====================================================================== */}
-      {sectionTab === "telemetry" && (
-        <section
-          className="wrap"
+      {activeTab === "inquiries" && (
+        <div
           style={{
-            paddingTop: "clamp(3rem, 6vw, 5rem)",
-            borderTop: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+            background: "#ffffff",
+            border: "1px solid rgba(0, 0, 0, 0.06)",
+            borderRadius: "12px",
+            padding: "24px",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
           }}
         >
-          <div style={{ marginBottom: "clamp(2rem, 4vw, 3.5rem)" }}>
-            <span className="eyebrow">(AL QUOZ 35,000 SQ. FT. ATELIER & STUDIO)</span>
-            <h2 className="u-text-h2">Studio manifesto & feeds</h2>
+          <div style={{ marginBottom: "20px" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>
+              Client Messages & Inquiries
+            </h3>
+            <p style={{ fontSize: "12.5px", color: "#6b7280", margin: "2px 0 0 0" }}>
+              Direct submissions from the contact page.
+            </p>
           </div>
 
-          {/* 4 Metric Bento Cards */}
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-              gap: "24px",
-              marginBottom: "48px",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: "16px",
             }}
           >
-            <div
-              style={{
-                border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                borderRadius: "var(--radius, 10px)",
-                padding: "28px",
-                background: "var(--surface, #ffffff)",
-              }}
-            >
+            {enquiries.map((e) => (
               <div
+                key={e._id}
                 style={{
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  color: "var(--muted, #545454)",
-                  letterSpacing: "0.06em",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "10px",
+                  padding: "18px",
+                  background: "#ffffff",
                 }}
               >
-                (01) / COMMISSIONS
-              </div>
-              <div
-                style={{
-                  fontFamily: "var(--font-display, sans-serif)",
-                  fontSize: "clamp(2.5rem, 5vw, 4rem)",
-                  fontWeight: 500,
-                  margin: "8px 0",
-                  lineHeight: 1,
-                }}
-              >
-                {quotes.length}
-              </div>
-              <div style={{ fontSize: "12px", color: "var(--muted, #545454)" }}>
-                Active quotation briefs logged
-              </div>
-              {quotes[0] && (
-                <div style={{ fontSize: "12px", marginTop: "12px", fontWeight: 600 }}>
-                  Latest: {quotes[0].name}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "start",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <h4 style={{ margin: 0, fontSize: "15px", fontWeight: 600 }}>
+                    {e.name}
+                  </h4>
+                  <span style={{ fontSize: "11px", color: "#9ca3af" }}>
+                    {formatDate(e.createdAt)}
+                  </span>
                 </div>
-              )}
-            </div>
 
-            <div
-              style={{
-                border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                borderRadius: "var(--radius, 10px)",
-                padding: "28px",
-                background: "var(--surface, #ffffff)",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  color: "var(--muted, #545454)",
-                  letterSpacing: "0.06em",
-                }}
-              >
-                (02) / INQUIRIES
-              </div>
-              <div
-                style={{
-                  fontFamily: "var(--font-display, sans-serif)",
-                  fontSize: "clamp(2.5rem, 5vw, 4rem)",
-                  fontWeight: 500,
-                  margin: "8px 0",
-                  lineHeight: 1,
-                }}
-              >
-                {enquiries.length}
-              </div>
-              <div style={{ fontSize: "12px", color: "var(--muted, #545454)" }}>
-                Direct client messages recorded
-              </div>
-              {enquiries[0] && (
-                <div style={{ fontSize: "12px", marginTop: "12px", fontWeight: 600 }}>
-                  Latest: {enquiries[0].name}
+                <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "10px" }}>
+                  <a href={`mailto:${e.email}`} style={{ color: "#2563eb", textDecoration: "none" }}>
+                    {e.email}
+                  </a>
+                  {e.mobile && ` · ${e.mobile}`}
                 </div>
-              )}
-            </div>
 
-            <div
-              style={{
-                border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                borderRadius: "var(--radius, 10px)",
-                padding: "28px",
-                background: "var(--surface, #ffffff)",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  color: "var(--muted, #545454)",
-                  letterSpacing: "0.06em",
-                }}
-              >
-                (03) / SPATIAL ARCHIVE
-              </div>
-              <div
-                style={{
-                  fontFamily: "var(--font-display, sans-serif)",
-                  fontSize: "clamp(2.5rem, 5vw, 4rem)",
-                  fontWeight: 500,
-                  margin: "8px 0",
-                  lineHeight: 1,
-                }}
-              >
-                {projects.length}
-              </div>
-              <div style={{ fontSize: "12px", color: "var(--muted, #545454)" }}>
-                Archived projects & built spaces
-              </div>
-              <Link
-                to="/dashboard/project-manager"
-                style={{
-                  display: "inline-block",
-                  fontSize: "11.5px",
-                  marginTop: "12px",
-                  color: "var(--ink, #080807)",
-                  fontWeight: 700,
-                  textDecoration: "underline",
-                }}
-              >
-                Manage Portfolio ↗
-              </Link>
-            </div>
+                {e.services && (
+                  <div style={{ fontSize: "11.5px", marginBottom: "8px" }}>
+                    <strong>Service:</strong> <span style={{ color: "#4b5563" }}>{e.services}</span>
+                  </div>
+                )}
 
-            <div
-              style={{
-                border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                borderRadius: "var(--radius, 10px)",
-                padding: "28px",
-                background: "var(--surface, #ffffff)",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  color: "var(--muted, #545454)",
-                  letterSpacing: "0.06em",
-                }}
-              >
-                (04) / DIRECTORY
+                {e.message && (
+                  <div
+                    style={{
+                      fontSize: "12.5px",
+                      color: "#374151",
+                      background: "#f9fafb",
+                      padding: "10px",
+                      borderRadius: "6px",
+                      lineHeight: 1.45,
+                      marginBottom: "12px",
+                    }}
+                  >
+                    "{e.message}"
+                  </div>
+                )}
+
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <a
+                    href={`mailto:${e.email}?subject=Yashmeen%20Fit-Out%20Follow-up`}
+                    style={{
+                      background: "#18181b",
+                      color: "#ffffff",
+                      borderRadius: "6px",
+                      padding: "6px 12px",
+                      fontSize: "11.5px",
+                      fontWeight: 600,
+                      textDecoration: "none",
+                    }}
+                  >
+                    Reply via Email
+                  </a>
+                  {e.mobile && (
+                    <a
+                      href={`tel:${e.mobile}`}
+                      style={{
+                        background: "#ffffff",
+                        color: "#374151",
+                        border: "1px solid #d1d5db",
+                        borderRadius: "6px",
+                        padding: "6px 12px",
+                        fontSize: "11.5px",
+                        fontWeight: 600,
+                        textDecoration: "none",
+                      }}
+                    >
+                      Call
+                    </a>
+                  )}
+                </div>
               </div>
-              <div
-                style={{
-                  fontFamily: "var(--font-display, sans-serif)",
-                  fontSize: "clamp(1.5rem, 3vw, 2.2rem)",
-                  fontWeight: 500,
-                  margin: "8px 0",
-                  lineHeight: 1.1,
-                }}
-              >
-                DUBAI, UAE
-              </div>
-              <div style={{ fontSize: "12px", color: "var(--muted, #545454)" }}>
-                {details.email || "info@yfbfitoutcontracting.com"}
-              </div>
-              <button
-                type="button"
-                onClick={() => setSectionTab("directory")}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  fontSize: "11.5px",
-                  marginTop: "12px",
-                  color: "var(--ink, #080807)",
-                  fontWeight: 700,
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                  padding: 0,
-                }}
-              >
-                Edit Studio Details ↗
-              </button>
-            </div>
+            ))}
           </div>
-        </section>
+        </div>
       )}
 
       {/* ======================================================================
-          4. ATELIER DIRECTORY SETTINGS
+          6. TAB D: STUDIO DIRECTORY SETTINGS
           ====================================================================== */}
-      {sectionTab === "directory" && (
-        <section
-          className="wrap"
+      {activeTab === "directory" && (
+        <div
           style={{
-            paddingTop: "clamp(3rem, 6vw, 5rem)",
-            borderTop: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+            background: "#ffffff",
+            border: "1px solid rgba(0, 0, 0, 0.06)",
+            borderRadius: "12px",
+            padding: "24px",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
           }}
         >
-          <div style={{ marginBottom: "clamp(2rem, 4vw, 3.5rem)" }}>
-            <span className="eyebrow">(PUBLIC PROFILE & ATELIER IDENTITY)</span>
-            <h2 className="u-text-h2">Studio directory settings</h2>
+          <div style={{ marginBottom: "20px" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>
+              Atelier Directory & Public Profile
+            </h3>
+            <p style={{ fontSize: "12.5px", color: "#6b7280", margin: "2px 0 0 0" }}>
+              Official contact numbers, address, and channels displayed across the website.
+            </p>
           </div>
 
           <form onSubmit={handleSettingsSubmit}>
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
-                gap: "36px",
+                gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+                gap: "24px",
               }}
             >
-              {/* Location Card */}
+              {/* Address */}
               <div
                 style={{
-                  border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                  borderRadius: "var(--radius, 10px)",
-                  padding: "28px",
-                  background: "var(--surface, #ffffff)",
+                  border: "1px solid #f3f4f6",
+                  borderRadius: "10px",
+                  padding: "18px",
+                  background: "#fafafa",
                 }}
               >
-                <div className="eyebrow" style={{ marginBottom: "16px" }}>
-                  (01) PHYSICAL LOCATION
+                <div style={{ fontSize: "12.5px", fontWeight: 700, marginBottom: "14px", color: "#374151" }}>
+                  Physical Location
                 </div>
-                <div style={{ marginBottom: "16px" }}>
-                  <label>STREET / BUILDING DETAILS</label>
+                <div style={{ marginBottom: "12px" }}>
+                  <label>Street / Building</label>
                   <input
                     type="text"
                     value={details.address?.street || ""}
@@ -1533,19 +1481,12 @@ export default function Dashboard() {
                         address: { ...prev.address, street: e.target.value },
                       }))
                     }
-                    style={{ width: "100%", marginTop: "6px" }}
+                    style={{ width: "100%", marginTop: "4px" }}
                   />
                 </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "12px",
-                    marginBottom: "16px",
-                  }}
-                >
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>
                   <div>
-                    <label>CITY / EMIRATE</label>
+                    <label>City / Emirate</label>
                     <input
                       type="text"
                       value={details.address?.city || ""}
@@ -1555,11 +1496,11 @@ export default function Dashboard() {
                           address: { ...prev.address, city: e.target.value },
                         }))
                       }
-                      style={{ width: "100%", marginTop: "6px" }}
+                      style={{ width: "100%", marginTop: "4px" }}
                     />
                   </div>
                   <div>
-                    <label>POSTAL CODE / P.O. BOX</label>
+                    <label>Postal Code / P.O. Box</label>
                     <input
                       type="text"
                       value={details.address?.zipCode || ""}
@@ -1569,12 +1510,12 @@ export default function Dashboard() {
                           address: { ...prev.address, zipCode: e.target.value },
                         }))
                       }
-                      style={{ width: "100%", marginTop: "6px" }}
+                      style={{ width: "100%", marginTop: "4px" }}
                     />
                   </div>
                 </div>
                 <div>
-                  <label>COUNTRY</label>
+                  <label>Country</label>
                   <input
                     type="text"
                     value={details.address?.country || "United Arab Emirates"}
@@ -1584,25 +1525,25 @@ export default function Dashboard() {
                         address: { ...prev.address, country: e.target.value },
                       }))
                     }
-                    style={{ width: "100%", marginTop: "6px" }}
+                    style={{ width: "100%", marginTop: "4px" }}
                   />
                 </div>
               </div>
 
-              {/* Contact Card */}
+              {/* Contact */}
               <div
                 style={{
-                  border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                  borderRadius: "var(--radius, 10px)",
-                  padding: "28px",
-                  background: "var(--surface, #ffffff)",
+                  border: "1px solid #f3f4f6",
+                  borderRadius: "10px",
+                  padding: "18px",
+                  background: "#fafafa",
                 }}
               >
-                <div className="eyebrow" style={{ marginBottom: "16px" }}>
-                  (02) DIRECT CONTACT LINES
+                <div style={{ fontSize: "12.5px", fontWeight: 700, marginBottom: "14px", color: "#374151" }}>
+                  Direct Contact Lines
                 </div>
-                <div style={{ marginBottom: "16px" }}>
-                  <label>OFFICIAL EMAIL</label>
+                <div style={{ marginBottom: "12px" }}>
+                  <label>Official Email</label>
                   <input
                     type="email"
                     value={details.email || ""}
@@ -1610,64 +1551,72 @@ export default function Dashboard() {
                       setDetails((prev) => ({ ...prev, email: e.target.value }));
                       setSettingsErrors((prev) => ({ ...prev, email: undefined }));
                     }}
-                    style={{ width: "100%", marginTop: "6px" }}
+                    style={{ width: "100%", marginTop: "4px" }}
                   />
                   {settingsErrors.email && (
-                    <div style={{ color: "#d32f2f", fontSize: "11px", marginTop: "4px" }}>
+                    <div style={{ color: "#dc2626", fontSize: "11px", marginTop: "4px" }}>
                       {settingsErrors.email}
                     </div>
                   )}
                 </div>
-                <div style={{ marginBottom: "16px" }}>
-                  <label>PHONE</label>
+                <div style={{ marginBottom: "12px" }}>
+                  <label>Phone / Mobile</label>
                   <input
                     type="text"
                     value={details.mobile || ""}
                     onChange={(e) =>
                       setDetails((prev) => ({ ...prev, mobile: e.target.value }))
                     }
-                    style={{ width: "100%", marginTop: "6px" }}
+                    style={{ width: "100%", marginTop: "4px" }}
                   />
                 </div>
                 <div>
-                  <label>WHATSAPP BUSINESS</label>
+                  <label>WhatsApp Business</label>
                   <input
                     type="text"
                     value={details.whatsapp || ""}
                     onChange={(e) =>
                       setDetails((prev) => ({ ...prev, whatsapp: e.target.value }))
                     }
-                    style={{ width: "100%", marginTop: "6px" }}
+                    style={{ width: "100%", marginTop: "4px" }}
                   />
                 </div>
               </div>
             </div>
 
-            <div style={{ marginTop: "28px" }}>
+            <div style={{ marginTop: "20px" }}>
               <button
                 type="submit"
                 disabled={savingSettings}
-                className="btn-pill btn-pill-dark"
+                style={{
+                  background: "#18181b",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "10px 20px",
+                  fontSize: "12.5px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
               >
-                <span>{savingSettings ? "SAVING..." : "SAVE DIRECTORY CHANGES"}</span>
-                <span className="g-circle" aria-hidden="true" />
+                {savingSettings ? "Saving..." : "Save Directory Changes"}
               </button>
             </div>
           </form>
-        </section>
+        </div>
       )}
 
       {/* ======================================================================
-          5. SLIDE-OVER INSPECTION SHEET (Exact Questionnaire Modal Vibe)
+          7. SLIDE-OVER INSPECTION SHEET (SOFT & SOOTHING)
           ====================================================================== */}
       {inspectedItem && (
         <div
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(8, 8, 7, 0.45)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
+            background: "rgba(15, 23, 42, 0.35)",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
             zIndex: 9999,
             display: "flex",
             justifyContent: "flex-end",
@@ -1677,45 +1626,52 @@ export default function Dashboard() {
           <div
             style={{
               width: "100%",
-              maxWidth: "560px",
-              background: "var(--bg, #fcfcfc)",
+              maxWidth: "520px",
+              background: "#ffffff",
               height: "100%",
               overflowY: "auto",
-              padding: "clamp(2rem, 4vw, 3.5rem)",
-              boxShadow: "-12px 0 36px rgba(0, 0, 0, 0.15)",
+              padding: "32px 28px",
+              boxShadow: "-8px 0 28px rgba(0, 0, 0, 0.12)",
               display: "flex",
               flexDirection: "column",
               boxSizing: "border-box",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Sheet Header */}
+            {/* Header */}
             <div
               style={{
                 display: "flex",
                 alignItems: "flex-start",
                 justifyContent: "space-between",
-                paddingBottom: "24px",
-                borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                marginBottom: "28px",
+                paddingBottom: "18px",
+                borderBottom: "1px solid #f3f4f6",
+                marginBottom: "20px",
               }}
             >
               <div>
-                <span className="eyebrow" style={{ marginBottom: "8px" }}>
-                  ({inspectedItem.typeBadge})
+                <span
+                  className={inspectedItem.badgeStyle}
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    padding: "3px 10px",
+                    borderRadius: "9999px",
+                  }}
+                >
+                  {inspectedItem.typeBadge}
                 </span>
                 <h2
-                  className="u-text-h2"
                   style={{
-                    fontSize: "clamp(1.8rem, 3.5vw, 2.5rem)",
-                    lineHeight: 1.05,
-                    margin: "4px 0",
-                    textTransform: "uppercase",
+                    fontSize: "20px",
+                    fontWeight: 700,
+                    color: "#18181b",
+                    margin: "10px 0 2px 0",
                   }}
                 >
                   {inspectedItem.title}
                 </h2>
-                <div style={{ fontSize: "13px", color: "var(--muted, #545454)" }}>
+                <div style={{ fontSize: "12.5px", color: "#6b7280" }}>
                   {inspectedItem.subtitle}
                 </div>
               </div>
@@ -1724,115 +1680,147 @@ export default function Dashboard() {
                 type="button"
                 onClick={() => setInspectedItem(null)}
                 style={{
-                  background: "transparent",
-                  border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
+                  background: "#f9fafb",
+                  border: "1px solid #e5e7eb",
                   borderRadius: "50%",
-                  width: "36px",
-                  height: "36px",
+                  width: "32px",
+                  height: "32px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
                 }}
               >
-                <FiX size={16} />
+                <FiX size={15} color="#4b5563" />
               </button>
             </div>
 
             {/* Pipeline Stage Shifter */}
             <div
               style={{
-                border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                borderRadius: "var(--radius, 10px)",
-                padding: "18px",
-                background: "var(--surface, #ffffff)",
-                marginBottom: "28px",
+                background: "#f9fafb",
+                border: "1px solid #e5e7eb",
+                borderRadius: "10px",
+                padding: "16px",
+                marginBottom: "20px",
               }}
             >
               <div
                 style={{
                   fontSize: "11px",
-                  fontWeight: 700,
+                  fontWeight: 600,
                   textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  marginBottom: "12px",
+                  color: "#6b7280",
+                  marginBottom: "10px",
                 }}
               >
-                CURRENT PIPELINE STAGE
+                Pipeline Stage Position
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                 {STAGES.map((stg) => {
-                  const active = inspectedItem.stage === stg.id;
+                  const isCurrent = inspectedItem.stage === stg.id;
                   return (
                     <button
                       key={stg.id}
                       type="button"
-                      className={`works-switch-btn ${active ? "active" : ""}`}
                       onClick={() => {
                         updateItemStage(inspectedItem.id, stg.id, inspectedItem.title);
-                        setInspectedItem((prev) => ({
-                          ...prev,
-                          stage: stg.id,
-                          stageName: stg.name,
-                        }));
+                        setInspectedItem((prev) => ({ ...prev, stage: stg.id }));
                       }}
-                      style={{ fontSize: "11px", padding: "6px 12px" }}
+                      style={{
+                        background: isCurrent ? "#18181b" : "#ffffff",
+                        color: isCurrent ? "#ffffff" : "#4b5563",
+                        border: isCurrent ? "1px solid #18181b" : "1px solid #d1d5db",
+                        borderRadius: "6px",
+                        padding: "5px 10px",
+                        fontSize: "11.5px",
+                        fontWeight: isCurrent ? 600 : 500,
+                        cursor: "pointer",
+                      }}
                     >
-                      {stg.num} {stg.name}
+                      {stg.name}
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Client Contact Lines */}
+            {/* Details Grid */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "12px",
+                marginBottom: "20px",
+              }}
+            >
+              <div
+                style={{
+                  background: "#f9fafb",
+                  border: "1px solid #f3f4f6",
+                  borderRadius: "8px",
+                  padding: "12px",
+                }}
+              >
+                <div style={{ fontSize: "11px", color: "#6b7280" }}>Location</div>
+                <div style={{ fontSize: "13px", fontWeight: 600, marginTop: "2px" }}>
+                  {inspectedItem.location}
+                </div>
+              </div>
+              <div
+                style={{
+                  background: "#f9fafb",
+                  border: "1px solid #f3f4f6",
+                  borderRadius: "8px",
+                  padding: "12px",
+                }}
+              >
+                <div style={{ fontSize: "11px", color: "#6b7280" }}>Budget Estimate</div>
+                <div style={{ fontSize: "13px", fontWeight: 600, marginTop: "2px" }}>
+                  {inspectedItem.budget || "Custom"}
+                </div>
+              </div>
+            </div>
+
+            {/* Direct Contact */}
             {(inspectedItem.email || inspectedItem.mobile) && (
               <div
                 style={{
-                  border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                  borderRadius: "var(--radius, 10px)",
-                  padding: "18px",
-                  background: "var(--surface, #ffffff)",
-                  marginBottom: "28px",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "10px",
+                  padding: "16px",
+                  marginBottom: "20px",
                 }}
               >
                 <div
                   style={{
                     fontSize: "11px",
-                    fontWeight: 700,
+                    fontWeight: 600,
                     textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                    marginBottom: "12px",
+                    color: "#6b7280",
+                    marginBottom: "8px",
                   }}
                 >
-                  DIRECT CLIENT CONTACT
+                  Client Contact
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "13px" }}>
                   {inspectedItem.email && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <FiMail size={13} color="var(--muted, #545454)" />
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <FiMail size={13} color="#9ca3af" />
                       <a
                         href={`mailto:${inspectedItem.email}`}
-                        style={{
-                          color: "var(--ink, #080807)",
-                          fontWeight: 600,
-                          fontSize: "13px",
-                        }}
+                        style={{ color: "#2563eb", textDecoration: "none" }}
                       >
                         {inspectedItem.email}
                       </a>
                     </div>
                   )}
                   {inspectedItem.mobile && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <FiPhone size={13} color="var(--muted, #545454)" />
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <FiPhone size={13} color="#9ca3af" />
                       <a
                         href={`tel:${inspectedItem.mobile}`}
-                        style={{
-                          color: "var(--ink, #080807)",
-                          fontWeight: 600,
-                          fontSize: "13px",
-                        }}
+                        style={{ color: "#374151", textDecoration: "none" }}
                       >
                         {inspectedItem.mobile}
                       </a>
@@ -1842,57 +1830,70 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Brief Specification Notes in Serif */}
+            {/* Brief Notes */}
             {inspectedItem.message && (
-              <div style={{ marginBottom: "28px" }}>
+              <div style={{ marginBottom: "24px" }}>
                 <div
                   style={{
                     fontSize: "11px",
-                    fontWeight: 700,
+                    fontWeight: 600,
                     textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                    marginBottom: "10px",
+                    color: "#6b7280",
+                    marginBottom: "8px",
                   }}
                 >
-                  CLIENT BRIEF & SPECIFICATION
+                  Brief & Notes
                 </div>
-                <blockquote
+                <div
                   style={{
-                    fontFamily: "var(--font-serif, 'Cormorant Garamond', serif)",
-                    fontSize: "1.3rem",
-                    fontStyle: "italic",
-                    lineHeight: 1.5,
-                    color: "var(--ink-soft, #30302e)",
-                    background: "var(--surface-alt, #f1f0ee)",
-                    padding: "20px",
+                    fontSize: "13px",
+                    color: "#374151",
+                    background: "#f9fafb",
+                    padding: "14px",
                     borderRadius: "8px",
-                    margin: 0,
+                    lineHeight: 1.5,
                   }}
                 >
                   "{inspectedItem.message}"
-                </blockquote>
+                </div>
               </div>
             )}
 
-            {/* Action Buttons */}
+            {/* Bottom Actions */}
             <div style={{ marginTop: "auto", display: "flex", gap: "10px" }}>
               {inspectedItem.email && (
                 <a
                   href={`mailto:${inspectedItem.email}?subject=Yashmeen%20Fit-Out%20Brief%20Follow-up`}
-                  className="btn-pill btn-pill-dark"
-                  style={{ flex: 1, textDecoration: "none" }}
+                  style={{
+                    flex: 1,
+                    background: "#18181b",
+                    color: "#ffffff",
+                    textAlign: "center",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    fontSize: "12.5px",
+                    fontWeight: 600,
+                    textDecoration: "none",
+                  }}
                 >
-                  <span>SEND PROPOSAL ↗</span>
-                  <span className="g-circle" aria-hidden="true" />
+                  Send Proposal ↗
                 </a>
               )}
               {inspectedItem.mobile && (
                 <a
                   href={`tel:${inspectedItem.mobile}`}
-                  className="btn-pill btn-pill-outline-dark"
-                  style={{ textDecoration: "none" }}
+                  style={{
+                    background: "#ffffff",
+                    color: "#374151",
+                    border: "1px solid #d1d5db",
+                    padding: "10px 18px",
+                    borderRadius: "8px",
+                    fontSize: "12.5px",
+                    fontWeight: 600,
+                    textDecoration: "none",
+                  }}
                 >
-                  <span>CALL CLIENT</span>
+                  Call
                 </a>
               )}
             </div>
@@ -1901,16 +1902,16 @@ export default function Dashboard() {
       )}
 
       {/* ======================================================================
-          6. QUICK ADD COMMISSION MODAL
+          8. QUICK ADD LEAD MODAL (SOFT & CLEAN)
           ====================================================================== */}
       {quickAddOpen && (
         <div
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(8, 8, 7, 0.45)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
+            background: "rgba(15, 23, 42, 0.4)",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
             zIndex: 9999,
             display: "flex",
             alignItems: "center",
@@ -1922,12 +1923,11 @@ export default function Dashboard() {
           <div
             style={{
               width: "100%",
-              maxWidth: "520px",
-              background: "var(--surface, #ffffff)",
-              border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
-              borderRadius: "var(--radius, 10px)",
-              padding: "32px",
-              boxShadow: "0 24px 48px rgba(0, 0, 0, 0.15)",
+              maxWidth: "480px",
+              background: "#ffffff",
+              borderRadius: "12px",
+              padding: "24px",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1936,160 +1936,156 @@ export default function Dashboard() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                marginBottom: "20px",
-                paddingBottom: "14px",
-                borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                marginBottom: "16px",
+                paddingBottom: "12px",
+                borderBottom: "1px solid #f3f4f6",
               }}
             >
               <div>
-                <span className="eyebrow" style={{ marginBottom: "4px" }}>
-                  (NEW COMMISSION)
-                </span>
-                <h3
-                  className="u-text-h2"
-                  style={{
-                    fontSize: "20px",
-                    margin: 0,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Log pipeline commission
+                <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>
+                  Create New Lead / Deal
                 </h3>
+                <p style={{ fontSize: "12px", color: "#6b7280", margin: "2px 0 0 0" }}>
+                  Log a prospective client or custom fit-out project.
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => setQuickAddOpen(false)}
                 style={{
-                  background: "transparent",
-                  border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
+                  background: "#f9fafb",
+                  border: "1px solid #e5e7eb",
                   borderRadius: "50%",
-                  width: "30px",
-                  height: "30px",
+                  width: "28px",
+                  height: "28px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
                 }}
               >
-                <FiX size={14} />
+                <FiX size={14} color="#6b7280" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateDispatch}>
-              <div style={{ marginBottom: "16px" }}>
-                <label>PROJECT / COMMISSION TITLE *</label>
+            <form onSubmit={handleCreateLead}>
+              <div style={{ marginBottom: "12px" }}>
+                <label>Lead / Project Title *</label>
                 <input
                   type="text"
-                  placeholder="e.g. Palm Jumeirah Penthouse Joinery"
-                  value={newDispatchForm.title}
+                  placeholder="e.g. Palm Jumeirah Penthouse Fit-Out"
+                  value={newLeadForm.title}
                   onChange={(e) =>
-                    setNewDispatchForm((prev) => ({ ...prev, title: e.target.value }))
+                    setNewLeadForm((prev) => ({ ...prev, title: e.target.value }))
                   }
                   required
-                  style={{ width: "100%", marginTop: "6px" }}
+                  style={{ width: "100%", marginTop: "4px" }}
                 />
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                  marginBottom: "16px",
-                }}
-              >
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>
                 <div>
-                  <label>CLIENT NAME</label>
+                  <label>Client Name</label>
                   <input
                     type="text"
-                    placeholder="e.g. Private Homeowner"
-                    value={newDispatchForm.client}
+                    placeholder="e.g. Emaar Private Client"
+                    value={newLeadForm.client}
                     onChange={(e) =>
-                      setNewDispatchForm((prev) => ({ ...prev, client: e.target.value }))
+                      setNewLeadForm((prev) => ({ ...prev, client: e.target.value }))
                     }
-                    style={{ width: "100%", marginTop: "6px" }}
+                    style={{ width: "100%", marginTop: "4px" }}
                   />
                 </div>
                 <div>
-                  <label>INITIAL STAGE</label>
+                  <label>Pipeline Stage</label>
                   <select
-                    value={newDispatchForm.stage}
+                    value={newLeadForm.stage}
                     onChange={(e) =>
-                      setNewDispatchForm((prev) => ({ ...prev, stage: e.target.value }))
+                      setNewLeadForm((prev) => ({ ...prev, stage: e.target.value }))
                     }
-                    style={{ width: "100%", marginTop: "6px" }}
+                    style={{ width: "100%", marginTop: "4px" }}
                   >
                     {STAGES.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {s.num} {s.name}
+                        {s.name}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                  marginBottom: "16px",
-                }}
-              >
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>
                 <div>
-                  <label>LOCATION</label>
+                  <label>Location</label>
                   <input
                     type="text"
                     placeholder="e.g. Dubai Hills"
-                    value={newDispatchForm.location}
+                    value={newLeadForm.location}
                     onChange={(e) =>
-                      setNewDispatchForm((prev) => ({ ...prev, location: e.target.value }))
+                      setNewLeadForm((prev) => ({ ...prev, location: e.target.value }))
                     }
-                    style={{ width: "100%", marginTop: "6px" }}
+                    style={{ width: "100%", marginTop: "4px" }}
                   />
                 </div>
                 <div>
-                  <label>BUDGET</label>
+                  <label>Budget Estimate</label>
                   <input
                     type="text"
                     placeholder="e.g. Under AED 250,000"
-                    value={newDispatchForm.budget}
+                    value={newLeadForm.budget}
                     onChange={(e) =>
-                      setNewDispatchForm((prev) => ({ ...prev, budget: e.target.value }))
+                      setNewLeadForm((prev) => ({ ...prev, budget: e.target.value }))
                     }
-                    style={{ width: "100%", marginTop: "6px" }}
+                    style={{ width: "100%", marginTop: "4px" }}
                   />
                 </div>
               </div>
 
-              <div style={{ marginBottom: "20px" }}>
-                <label>BRIEF & SPECIFICATION NOTES</label>
+              <div style={{ marginBottom: "18px" }}>
+                <label>Brief / Scope Notes</label>
                 <textarea
                   rows={3}
-                  placeholder="Architectural scope, materials, MEP requirements..."
-                  value={newDispatchForm.notes}
+                  placeholder="Key requirements, joinery scope, MEP specifications..."
+                  value={newLeadForm.notes}
                   onChange={(e) =>
-                    setNewDispatchForm((prev) => ({ ...prev, notes: e.target.value }))
+                    setNewLeadForm((prev) => ({ ...prev, notes: e.target.value }))
                   }
-                  style={{ width: "100%", marginTop: "6px" }}
+                  style={{ width: "100%", marginTop: "4px" }}
                 />
               </div>
 
-              <div style={{ display: "flex", gap: "10px" }}>
+              <div style={{ display: "flex", gap: "8px" }}>
                 <button
                   type="submit"
-                  className="btn-pill btn-pill-dark"
-                  style={{ flex: 1 }}
+                  style={{
+                    flex: 1,
+                    background: "#18181b",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: "8px",
+                    padding: "10px",
+                    fontSize: "12.5px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
                 >
-                  <span>LOG TO PIPELINE</span>
-                  <span className="g-circle" aria-hidden="true" />
+                  Create Lead
                 </button>
                 <button
                   type="button"
                   onClick={() => setQuickAddOpen(false)}
-                  className="btn-pill btn-pill-outline-dark"
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    padding: "10px 16px",
+                    fontSize: "12.5px",
+                    fontWeight: 600,
+                    color: "#4b5563",
+                    cursor: "pointer",
+                  }}
                 >
-                  <span>CANCEL</span>
+                  Cancel
                 </button>
               </div>
             </form>

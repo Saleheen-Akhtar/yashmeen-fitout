@@ -1,31 +1,29 @@
 /* ==========================================================================
-   Yashmeen Future Building & Fit-Out: Brutalist Editorial Admin System
-   Black & White Architectural CAD Grid Aesthetic:
-   - Stark Pure White Canvas (#ffffff) & Crisp Paper Tone (#f8f8f8)
-   - Monumental Jet Black Ink (#000000 & #080807)
-   - Precision 1px CAD Hairline Rules (#000000 & #e0e0e0)
-   - Brutalist Inverting Buttons (Black -> White on hover)
-   - Plus Jakarta Sans Monumental Typography & Editorial Parentheticals
-   - ZERO Yellow / Brass / Gold
+   Yashmeen Atelier CRM & Management Console: Soft, Soothing & Serene
+   - Clean Airy Canvas (#f8f9fa) & Pure White Surfaces (#ffffff)
+   - Gentle Charcoal Ink (#1e2022) & Muted Grays (#6b7280)
+   - Ultra-Soft Delicate Borders (rgba(0,0,0,0.06) & #e5e7eb)
+   - Calming Desaturated Pastel Badges (Sage, Mist Blue, Warm Amber, Lavender)
+   - Smooth Micro-Interactions (Fluid Easing, Soft Ambient Elevations)
    ========================================================================== */
 
 :root {
-  --adm-bg: #f7f7f6;
+  --adm-bg: #f8f9fa;
   --adm-surface: #ffffff;
-  --adm-surface-alt: #f0f0ef;
-  --adm-ink: #000000;
-  --adm-ink-soft: #222222;
-  --adm-muted: #555555;
-  --adm-muted-light: #888888;
-  --adm-line-black: #000000;
-  --adm-line-strong: rgba(0, 0, 0, 0.25);
-  --adm-line: rgba(0, 0, 0, 0.12);
-  --adm-line-subtle: #e5e5e5;
-  --adm-radius-sm: 2px;
-  --adm-radius-md: 6px;
-  --adm-radius-lg: 10px;
+  --adm-surface-alt: #f3f4f6;
+  --adm-ink: #1e2022;
+  --adm-ink-soft: #374151;
+  --adm-muted: #6b7280;
+  --adm-muted-light: #9ca3af;
+  --adm-line: rgba(0, 0, 0, 0.07);
+  --adm-line-strong: rgba(0, 0, 0, 0.12);
+  --adm-line-subtle: #f0f2f5;
+  --adm-radius-sm: 6px;
+  --adm-radius-md: 10px;
+  --adm-radius-lg: 14px;
   --adm-radius-pill: 9999px;
-  --adm-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  --adm-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+  --adm-shadow-hover: 0 12px 32px -4px rgba(0, 0, 0, 0.07);
 }
 
 /* Base Admin Container */
@@ -37,28 +35,21 @@
   letter-spacing: -0.01em;
 }
 
-/* Global Cards in Clean White with Architectural 1px Border */
+/* Global Cards in Clean White with Soft Borders */
 .admin-shell-container .wdCard,
 .admin-shell-container [class*="Card"],
-.admin-shell-container [class*="tableCard"],
-.admin-shell-container [style*="border-radius: 16px"],
-.admin-shell-container [style*="borderRadius: 16px"],
-.admin-shell-container [style*="borderRadius: \"16px\""],
-.admin-shell-container [style*="borderRadius: '16px'"],
-.admin-shell-container [style*="border-radius: 14px"],
-.admin-shell-container [style*="borderRadius: 14px"],
-.admin-shell-container [style*="borderRadius: \"14px\""],
-.admin-shell-container [style*="borderRadius: '14px'"] {
+.admin-shell-container [class*="tableCard"] {
   background: var(--adm-surface) !important;
-  border: 1px solid var(--adm-line-subtle) !important;
+  border: 1px solid var(--adm-line) !important;
   border-radius: var(--adm-radius-lg) !important;
   box-shadow: var(--adm-shadow) !important;
 }
 
-/* Headings across Admin */
+/* Headings across Admin: Soft Charcoal */
 .admin-shell-container h1,
 .admin-shell-container h2,
 .admin-shell-container h3,
+.admin-shell-container h4,
 .admin-shell-container .cardTitle,
 .admin-shell-container [class*="cardTitle"],
 .admin-shell-container [class*="Title"],
@@ -69,7 +60,7 @@
   letter-spacing: -0.02em !important;
 }
 
-/* Inputs across Admin: Crisp White, Black Focus */
+/* Inputs across Admin: Crisp White, Soft Focus */
 .admin-shell-container input,
 .admin-shell-container select,
 .admin-shell-container textarea,
@@ -79,12 +70,12 @@
 .admin-shell-container [class*="searchInput"] {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
   background: #ffffff !important;
-  border: 1px solid #d4d4d4 !important;
+  border: 1px solid #e5e7eb !important;
   border-radius: var(--adm-radius-md) !important;
-  color: #000000 !important;
+  color: var(--adm-ink) !important;
   font-size: 13.5px !important;
-  padding: 10px 14px !important;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+  padding: 9px 14px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
   outline: none !important;
 }
 
@@ -95,26 +86,26 @@
 .admin-shell-container [class*="Input"]:focus,
 .admin-shell-container [class*="input"]:focus,
 .admin-shell-container [class*="searchInput"]:focus {
-  border-color: #000000 !important;
+  border-color: #3b82f6 !important;
   outline: none !important;
-  box-shadow: 0 0 0 2px #000000 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
   background: #ffffff !important;
 }
 
-/* Labels: Clean Uppercase Sans */
+/* Labels: Clean & Soothing */
 .admin-shell-container label,
 .admin-shell-container [class*="label"],
 .admin-shell-container [class*="Label"] {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.08em !important;
-  color: #000000 !important;
-  margin-bottom: 5px !important;
+  letter-spacing: 0.05em !important;
+  color: var(--adm-muted) !important;
+  margin-bottom: 6px !important;
 }
 
-/* Primary Action Buttons: Solid Jet Black, inverting to White on hover */
+/* Primary Action Buttons: Soft Charcoal */
 .admin-shell-container button[type="submit"],
 .admin-shell-container .wdBtnPrimary,
 .admin-shell-container [class*="btnPrimary"],
@@ -122,18 +113,17 @@
 .admin-shell-container [class*="BtnPrimary"],
 .admin-shell-container [class*="primaryBtn"] {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-  background: #000000 !important;
+  background: #18181b !important;
   color: #ffffff !important;
-  border: 1px solid #000000 !important;
-  border-radius: var(--adm-radius-pill) !important;
-  font-weight: 700 !important;
-  font-size: 11.5px !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-  padding: 11px 26px !important;
+  border: 1px solid #18181b !important;
+  border-radius: var(--adm-radius-md) !important;
+  font-weight: 600 !important;
+  font-size: 12.5px !important;
+  letter-spacing: 0.02em !important;
+  padding: 9px 20px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
 }
 
 .admin-shell-container button[type="submit"]:hover:not(:disabled),
@@ -142,13 +132,14 @@
 .admin-shell-container [class*="btn-primary"]:hover:not(:disabled),
 .admin-shell-container [class*="BtnPrimary"]:hover:not(:disabled),
 .admin-shell-container [class*="primaryBtn"]:hover:not(:disabled) {
-  background: #ffffff !important;
-  border-color: #000000 !important;
-  color: #000000 !important;
+  background: #27272a !important;
+  border-color: #27272a !important;
+  color: #ffffff !important;
   transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Secondary / Outline / Add Buttons: White with 1px Black Border */
+/* Secondary / Outline Buttons */
 .admin-shell-container .wdAddBtn,
 .admin-shell-container [class*="addBtn"],
 .admin-shell-container [class*="AddBtn"],
@@ -156,14 +147,13 @@
 .admin-shell-container [class*="btn-outline"] {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
   background: #ffffff !important;
-  border: 1px solid #000000 !important;
-  color: #000000 !important;
-  border-radius: var(--adm-radius-pill) !important;
-  font-weight: 700 !important;
-  font-size: 11px !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-  padding: 6px 16px !important;
+  border: 1px solid #e5e7eb !important;
+  color: var(--adm-ink-soft) !important;
+  border-radius: var(--adm-radius-md) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.02em !important;
+  padding: 7px 16px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
 }
@@ -173,39 +163,40 @@
 .admin-shell-container [class*="AddBtn"]:hover,
 .admin-shell-container [class*="btnOutline"]:hover,
 .admin-shell-container [class*="btn-outline"]:hover {
-  background: #000000 !important;
-  color: #ffffff !important;
+  background: #f9fafb !important;
+  border-color: #d1d5db !important;
+  color: #111827 !important;
 }
 
-/* Tables across Admin: Brutalist CAD Grid */
+/* Tables across Admin */
 .admin-shell-container table {
   width: 100% !important;
   border-collapse: separate !important;
   border-spacing: 0 !important;
-  border: 1px solid #e0e0e0 !important;
+  border: 1px solid #e5e7eb !important;
   border-radius: var(--adm-radius-lg) !important;
   overflow: hidden !important;
   background: #ffffff !important;
 }
 
 .admin-shell-container th {
-  background: #f8f8f8 !important;
-  color: #000000 !important;
+  background: #f9fafb !important;
+  color: var(--adm-muted) !important;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.08em !important;
-  padding: 14px 18px !important;
-  border-bottom: 1px solid #e0e0e0 !important;
+  letter-spacing: 0.04em !important;
+  padding: 12px 18px !important;
+  border-bottom: 1px solid #e5e7eb !important;
   text-align: left !important;
 }
 
 .admin-shell-container td {
   padding: 14px 18px !important;
   font-size: 13.5px !important;
-  color: #111111 !important;
-  border-bottom: 1px solid #f0f0f0 !important;
+  color: var(--adm-ink) !important;
+  border-bottom: 1px solid #f3f4f6 !important;
   vertical-align: middle !important;
 }
 
@@ -214,244 +205,60 @@
 }
 
 .admin-shell-container tr:hover td {
-  background: #fbfbfb !important;
+  background: #fafafa !important;
 }
 
-/* Chips & Badges: Black & White Editorial Pills */
-.admin-shell-container .status-badge,
-.admin-shell-container [class*="badge"],
-.admin-shell-container [class*="Badge"],
-.admin-shell-container [class*="chip"],
-.admin-shell-container [class*="Chip"] {
-  border-radius: var(--adm-radius-pill) !important;
-  font-size: 10.5px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.06em !important;
-  text-transform: uppercase !important;
-  padding: 4px 10px !important;
-  border: 1px solid #000000 !important;
-  background: #ffffff !important;
-  color: #000000 !important;
+/* Status Badges: Desaturated Soothing Pastels */
+.badge-sage {
+  background: #edf6ee !important;
+  color: #2e6930 !important;
+  border: 1px solid #d4ebd5 !important;
 }
 
-/* Action Icon Buttons */
-.admin-shell-container [class*="iconBtn"],
-.admin-shell-container [class*="IconBtn"] {
-  background: #ffffff !important;
-  border: 1px solid #d4d4d4 !important;
-  border-radius: 6px !important;
-  color: #000000 !important;
-  transition: all 0.15s ease !important;
-}
-.admin-shell-container [class*="iconBtn"]:hover,
-.admin-shell-container [class*="IconBtn"]:hover {
-  border-color: #000000 !important;
-  background: #000000 !important;
-  color: #ffffff !important;
+.badge-mist {
+  background: #edf5fc !important;
+  color: #1e5c8a !important;
+  border: 1px solid #d2e6f7 !important;
 }
 
-/* Pager Buttons: Black & White */
-.admin-shell-container [class*="pagerBtn"],
-.admin-shell-container [class*="PagerBtn"] {
-  background: #ffffff !important;
-  border: 1px solid #000000 !important;
-  border-radius: var(--adm-radius-pill) !important;
-  color: #000000 !important;
-  font-weight: 700 !important;
-  font-size: 11px !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.06em !important;
-  padding: 6px 14px !important;
-  transition: all 0.2s ease !important;
-}
-.admin-shell-container [class*="pagerBtn"]:hover:not(:disabled),
-.admin-shell-container [class*="PagerBtn"]:hover:not(:disabled) {
-  background: #000000 !important;
-  color: #ffffff !important;
+.badge-amber {
+  background: #fdf6ec !important;
+  color: #8c581e !important;
+  border: 1px solid #fae5cb !important;
 }
 
-/* Modals */
+.badge-lavender {
+  background: #f4f2f9 !important;
+  color: #58437d !important;
+  border: 1px solid #e4def1 !important;
+}
+
+.badge-neutral {
+  background: #f3f4f6 !important;
+  color: #4b5563 !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+/* Modals & Overlays */
 .admin-shell-container [class*="overlay"],
 .admin-shell-container [class*="Overlay"] {
-  background: rgba(0, 0, 0, 0.6) !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
+  background: rgba(15, 23, 42, 0.35) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
 }
 
-.admin-shell-container [class*="modal"],
-.admin-shell-container [class*="Modal"] {
-  background: #ffffff !important;
-  border: 1px solid #000000 !important;
-  border-radius: var(--adm-radius-lg) !important;
-  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.25) !important;
-}
-
-/* Delete / Remove Buttons */
-.admin-shell-container .wdRemoveBtn,
-.admin-shell-container [class*="removeBtn"],
-.admin-shell-container [class*="btnDanger"],
-.admin-shell-container [class*="BtnDanger"] {
-  color: #777777 !important;
-  transition: color 0.15s ease !important;
-}
-.admin-shell-container .wdRemoveBtn:hover,
-.admin-shell-container [class*="removeBtn"]:hover,
-.admin-shell-container [class*="btnDanger"]:hover,
-.admin-shell-container [class*="BtnDanger"]:hover {
-  color: #000000 !important;
-}
-
-/* Scrollbar */
+/* Scrollbars */
 .admin-shell-container ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
   height: 6px;
 }
 .admin-shell-container ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.03);
-  border-radius: 9999px;
+  background: transparent;
 }
 .admin-shell-container ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 9999px;
 }
 .admin-shell-container ::-webkit-scrollbar-thumb:hover {
-  background: #000000;
+  background: rgba(0, 0, 0, 0.25);
 }
-
-/* ==========================================================================
-   Architectural CMS Kanban Board & Smooth Animation Engine
-   ========================================================================== */
-
-@keyframes kanbanCardSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes kanbanDrawerSlide {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes kanbanFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes kanbanPulseSoft {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.04);
-    opacity: 0.85;
-  }
-}
-
-.kanban-board-scroll {
-  display: flex;
-  gap: 22px;
-  overflow-x: auto;
-  padding-bottom: 24px;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-.kanban-column-box {
-  flex: 0 0 320px;
-  width: 320px;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  min-height: 520px;
-  position: relative;
-}
-
-.kanban-column-box.drag-over {
-  background: #fbfbfa !important;
-  border-color: #000000 !important;
-  box-shadow: 0 0 0 2px #000000, 0 12px 30px -10px rgba(0, 0, 0, 0.1) !important;
-  transform: translateY(-2px);
-}
-
-.kanban-column-header {
-  padding: 16px 18px;
-  background: #fafaf9;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 12px 12px 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.kanban-card-item {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 10px;
-  padding: 18px;
-  cursor: grab;
-  position: relative;
-  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.26s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.2s ease,
-              opacity 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-}
-
-.kanban-card-item:hover {
-  transform: translateY(-4px) scale(1.008);
-  border-color: #000000;
-  box-shadow: 0 18px 36px -10px rgba(0, 0, 0, 0.12);
-}
-
-.kanban-card-item.is-dragging {
-  opacity: 0.45;
-  cursor: grabbing;
-  transform: scale(0.97) rotate(1deg);
-  border-style: dashed;
-  border-color: #000000;
-}
-
-.kanban-card-animated {
-  animation: kanbanCardSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.kanban-stage-pill {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
-}
-
-.kanban-stage-pill:hover {
-  background: #000000 !important;
-  color: #ffffff !important;
-  border-color: #000000 !important;
-  transform: translateY(-1px);
-}
-
-.kanban-drawer-backdrop {
-  animation: kanbanFadeIn 0.25s ease-out both;
-}
-
-.kanban-drawer-panel {
-  animation: kanbanDrawerSlide 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-

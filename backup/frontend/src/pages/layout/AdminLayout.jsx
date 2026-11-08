@@ -2,19 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import useCreateStore from "../../store";
 import { getInitials } from "../../libs/helpers";
-import { FiExternalLink, FiLogOut, FiMenu, FiX, FiCheck } from "react-icons/fi";
-import "../../styles/shell.css";
-import "../../styles/home.css";
+import { FiExternalLink, FiLogOut, FiMenu, FiX } from "react-icons/fi";
 import "../../styles/admin-architectural.css";
 
 const NAV_LINKS = [
-  { label: "Pipeline", href: "/dashboard" },
-  { label: "Commissions", href: "/dashboard/quotes" },
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Quotations", href: "/dashboard/quotes" },
   { label: "Inquiries", href: "/dashboard/enquiry" },
   { label: "Projects", href: "/dashboard/project-manager" },
   { label: "Journal", href: "/dashboard/blog-manager" },
   { label: "Gallery", href: "/dashboard/gallery-manager" },
-  { label: "Video", href: "/dashboard/video-manager" },
   { label: "Categories", href: "/dashboard/categories" },
 ];
 
@@ -22,7 +19,6 @@ export default function AdminLayout() {
   const [dubaiTime, setDubaiTime] = useState("");
   const [isOpenOffice, setIsOpenOffice] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -65,14 +61,6 @@ export default function AdminLayout() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 15);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -87,44 +75,36 @@ export default function AdminLayout() {
 
   return (
     <div
+      className="admin-shell-container"
       style={{
-        background: "var(--bg, #fcfcfc)",
-        color: "var(--ink, #080807)",
+        background: "#f8f9fa",
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        fontFamily: "var(--font-sans, 'Plus Jakarta Sans', sans-serif)",
+        color: "#1e2022",
       }}
     >
-      {/* ====================================================================
-          TOP LUXURY EDITORIAL HEADER (Exact Website Vibe)
-          ==================================================================== */}
+      {/* Top Calming Navigation Bar */}
       <header
         style={{
           position: "sticky",
           top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 120,
-          height: "78px",
+          zIndex: 100,
+          height: "68px",
+          background: "rgba(255, 255, 255, 0.95)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
           display: "flex",
           alignItems: "center",
-          background: scrolled
-            ? "rgba(252, 252, 252, 0.96)"
-            : "rgba(252, 252, 252, 0.90)",
-          backdropFilter: "saturate(160%) blur(16px)",
-          WebkitBackdropFilter: "saturate(160%) blur(16px)",
-          borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-          transition: "background 0.3s ease, box-shadow 0.3s ease",
-          boxShadow: scrolled ? "0 4px 20px rgba(0,0,0,0.04)" : "none",
         }}
       >
         <div
           style={{
             width: "100%",
-            maxWidth: "var(--max-width, 1440px)",
+            maxWidth: "1480px",
             margin: "0 auto",
-            padding: "0 var(--site-margin, clamp(1.5rem, 4vw, 4rem))",
+            padding: "0 28px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -132,179 +112,170 @@ export default function AdminLayout() {
           }}
         >
           {/* Brand Left */}
-          <Link
-            to="/"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              textDecoration: "none",
-            }}
-          >
-            <span
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <Link
+              to="/dashboard"
               style={{
-                fontFamily: "var(--font-display, 'Plus Jakarta Sans', sans-serif)",
-                fontSize: "14px",
-                fontWeight: 700,
-                letterSpacing: "0.08em",
-                color: "var(--ink, #080807)",
-                textTransform: "uppercase",
+                textDecoration: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
               }}
             >
-              YASHMEEN FIT-OUT
-            </span>
-            <span
-              style={{
-                fontSize: "9px",
-                fontWeight: 700,
-                letterSpacing: "0.12em",
-                color: "var(--muted, #545454)",
-                borderLeft: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
-                paddingLeft: "8px",
-                textTransform: "uppercase",
-              }}
-            >
-              ATELIER CMS
-            </span>
-          </Link>
+              <span
+                style={{
+                  fontSize: "15px",
+                  fontWeight: 800,
+                  letterSpacing: "-0.01em",
+                  color: "#18181b",
+                }}
+              >
+                YASHMEEN
+              </span>
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  color: "#6b7280",
+                  background: "#f3f4f6",
+                  padding: "2px 8px",
+                  borderRadius: "6px",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                CRM
+              </span>
+            </Link>
+          </div>
 
-          {/* Center Links with comma separation (Desktop) */}
+          {/* Center Links */}
           <nav
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "6px",
+              gap: "4px",
             }}
             className="admin-desktop-nav"
           >
-            {NAV_LINKS.map((item, idx) => {
+            {NAV_LINKS.map((item) => {
               const active = isLinkActive(item.href);
               return (
-                <span
+                <Link
                   key={item.href}
-                  style={{ display: "inline-flex", alignItems: "center" }}
+                  to={item.href}
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: active ? 600 : 500,
+                    color: active ? "#18181b" : "#6b7280",
+                    background: active ? "#f3f4f6" : "transparent",
+                    textDecoration: "none",
+                    padding: "6px 14px",
+                    borderRadius: "8px",
+                    transition: "all 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!active) e.currentTarget.style.color = "#18181b";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!active) e.currentTarget.style.color = "#6b7280";
+                  }}
                 >
-                  <Link
-                    to={item.href}
-                    style={{
-                      fontSize: "13px",
-                      fontWeight: active ? 700 : 500,
-                      letterSpacing: "0.02em",
-                      textTransform: "capitalize",
-                      color: active ? "var(--ink, #080807)" : "var(--muted, #545454)",
-                      textDecoration: "none",
-                      padding: "6px 4px",
-                      transition: "color 0.2s ease",
-                      borderBottom: active
-                        ? "1.5px solid var(--ink, #080807)"
-                        : "1.5px solid transparent",
-                    }}
-                  >
-                    {item.label}
-                  </Link>
-                  {idx < NAV_LINKS.length - 1 && (
-                    <span
-                      style={{
-                        color: "var(--line-strong, rgba(8, 8, 7, 0.22))",
-                        margin: "0 4px",
-                        fontSize: "12px",
-                      }}
-                    >
-                      ,
-                    </span>
-                  )}
-                </span>
+                  {item.label}
+                </Link>
               );
             })}
           </nav>
 
           {/* Right Controls */}
           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-            {/* Live Dubai Time Pill */}
+            {/* Live Dubai Status Pill */}
             <div
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
-                padding: "6px 14px",
-                borderRadius: "var(--radius-pill, 9999px)",
-                border: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-                background: "var(--surface, #ffffff)",
+                gap: "6px",
+                background: "#f9fafb",
+                border: "1px solid #e5e7eb",
+                padding: "4px 12px",
+                borderRadius: "9999px",
                 fontSize: "11px",
-                fontWeight: 600,
-                color: "var(--muted, #545454)",
-                letterSpacing: "0.04em",
+                fontWeight: 500,
+                color: "#4b5563",
               }}
-              className="admin-telemetry-pill"
             >
               <span
                 style={{
                   width: "6px",
                   height: "6px",
                   borderRadius: "50%",
-                  background: isOpenOffice ? "var(--ink, #080807)" : "#888888",
+                  background: isOpenOffice ? "#10b981" : "#9ca3af",
                   display: "inline-block",
                 }}
               />
-              <span>DUBAI {dubaiTime} GST</span>
+              <span>Dubai {dubaiTime}</span>
             </div>
 
-            {/* View Site Action */}
+            {/* View Public Site */}
             <Link
               to="/"
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                fontSize: "11.5px",
-                fontWeight: 600,
-                letterSpacing: "0.04em",
-                textTransform: "uppercase",
+                fontSize: "12px",
+                fontWeight: 500,
+                color: "#6b7280",
                 textDecoration: "none",
-                color: "var(--ink, #080807)",
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "5px",
+                gap: "4px",
               }}
-              className="admin-view-site-link"
             >
-              <span>SITE</span>
-              <FiExternalLink size={11} />
+              <span>Site</span>
+              <FiExternalLink size={12} />
             </Link>
 
-            {/* Sign Out Action */}
-            <button
-              type="button"
-              onClick={handleLogout}
-              style={{
-                background: "transparent",
-                border: "1px solid var(--line-strong, rgba(8, 8, 7, 0.22))",
-                borderRadius: "var(--radius-pill, 9999px)",
-                padding: "6px 16px",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                color: "var(--ink, #080807)",
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "var(--ink, #080807)";
-                e.currentTarget.style.color = "#ffffff";
-                e.currentTarget.style.borderColor = "var(--ink, #080807)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "var(--ink, #080807)";
-                e.currentTarget.style.borderColor = "var(--line-strong, rgba(8, 8, 7, 0.22))";
-              }}
-            >
-              <FiLogOut size={12} />
-              <span>LOGOUT</span>
-            </button>
+            {/* User Avatar + Sign out */}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  background: "#e5e7eb",
+                  color: "#374151",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                }}
+              >
+                {getInitials(user?.name || "Admin")}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  color: "#6b7280",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  padding: "4px 8px",
+                  borderRadius: "6px",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#dc2626")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#6b7280")}
+              >
+                <FiLogOut size={13} />
+                <span>Sign out</span>
+              </button>
+            </div>
 
             {/* Mobile Hamburger */}
             <button
@@ -314,13 +285,13 @@ export default function AdminLayout() {
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
-                color: "var(--ink, #080807)",
+                color: "#18181b",
                 display: "none",
               }}
               className="admin-mobile-menu-btn"
-              aria-label="Toggle Navigation Menu"
+              aria-label="Toggle Navigation"
             >
-              {mobileMenuOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+              {mobileMenuOpen ? <FiX size={20} /> : <FiMenu size={20} />}
             </button>
           </div>
         </div>
@@ -330,17 +301,17 @@ export default function AdminLayout() {
           <div
             style={{
               position: "fixed",
-              top: "78px",
+              top: "68px",
               left: 0,
               right: 0,
               bottom: 0,
-              background: "rgba(252, 252, 252, 0.98)",
-              backdropFilter: "blur(20px)",
+              background: "#ffffff",
               zIndex: 110,
-              padding: "24px",
+              padding: "20px",
               display: "flex",
               flexDirection: "column",
-              gap: "12px",
+              gap: "10px",
+              borderBottom: "1px solid #e5e7eb",
             }}
           >
             {NAV_LINKS.map((item) => (
@@ -349,12 +320,12 @@ export default function AdminLayout() {
                 to={item.href}
                 onClick={() => setMobileMenuOpen(false)}
                 style={{
-                  fontSize: "18px",
-                  fontWeight: isLinkActive(item.href) ? 800 : 500,
-                  color: "var(--ink, #080807)",
+                  fontSize: "15px",
+                  fontWeight: isLinkActive(item.href) ? 600 : 500,
+                  color: "#18181b",
                   textDecoration: "none",
-                  padding: "12px 0",
-                  borderBottom: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
+                  padding: "10px 0",
+                  borderBottom: "1px solid #f3f4f6",
                 }}
               >
                 {item.label}
@@ -364,66 +335,35 @@ export default function AdminLayout() {
         )}
       </header>
 
-      {/* ====================================================================
-          MAIN EDITORIAL WORKSPACE (Wrapped in .wrap for identical margins)
-          ==================================================================== */}
+      {/* Main Container */}
       <main style={{ flex: 1 }}>
         <Outlet />
       </main>
 
-      {/* ====================================================================
-          MINIMALIST QUIET LUXURY FOOTER (Exact Website Vibe)
-          ==================================================================== */}
+      {/* Subtle Tranquil Footer */}
       <footer
         style={{
-          borderTop: "1px solid var(--line, rgba(8, 8, 7, 0.12))",
-          padding: "clamp(3rem, 6vw, 5rem) 0",
-          background: "var(--bg, #fcfcfc)",
+          borderTop: "1px solid rgba(0, 0, 0, 0.05)",
+          padding: "24px 0",
+          background: "#ffffff",
+          color: "#9ca3af",
+          fontSize: "12px",
         }}
       >
         <div
-          className="wrap"
           style={{
+            maxWidth: "1480px",
+            margin: "0 auto",
+            padding: "0 28px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             flexWrap: "wrap",
-            gap: "20px",
+            gap: "12px",
           }}
         >
-          <div>
-            <div
-              style={{
-                fontFamily: "var(--font-display, 'Plus Jakarta Sans', sans-serif)",
-                fontSize: "13px",
-                fontWeight: 700,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-              }}
-            >
-              YASHMEEN FUTURE BUILDING & FIT-OUT
-            </div>
-            <div
-              style={{
-                fontSize: "12px",
-                color: "var(--muted, #545454)",
-                marginTop: "4px",
-              }}
-            >
-              Al Quoz 4, Dubai, UAE · 35,000 Sq. Ft. Joinery & MEP Atelier
-            </div>
-          </div>
-
-          <div
-            style={{
-              fontSize: "11px",
-              color: "var(--muted-light, #8a8a86)",
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-            }}
-          >
-            © {new Date().getFullYear()} YASHMEEN · ATELIER CMS CONTROL
-          </div>
+          <div>Yashmeen Future Building & Fit-Out · Atelier CRM Console</div>
+          <div>Al Quoz Industrial Area 4, Dubai, UAE</div>
         </div>
       </footer>
     </div>

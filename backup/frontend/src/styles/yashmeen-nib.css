@@ -39,10 +39,12 @@
   --parrafo-l-lh: 1.35rem;
   --parrafo-lh: 1.25rem;
 
-  /* Calibrated Yashmeen Architectural Luxury Palette */
-  --white: #FAF8F5;
+  /* Exact Color Progression matching normalisboring.es */
+  --white: #FFFFFF;
   --black: #0A0A0B;
   --beige: #ECE4DA;
+  --grey: #DCD8D3;
+  --blue: #C7D7E9;
   --sand: #E2D9CC;
   --bronze: #A4824D;
   --bronze-glow: rgba(164, 130, 77, 0.25);
@@ -64,7 +66,7 @@
 }
 
 html, body {
-  background-color: var(--beige);
+  background-color: var(--white);
   color: var(--black);
   font-family: var(--f-izmir);
   font-size: 16px;
@@ -78,7 +80,7 @@ html, body {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  background-color: var(--beige);
+  background-color: var(--white);
 }
 
 /* Typography Utility Classes */
@@ -109,9 +111,12 @@ html, body {
 .t-right { text-align: right; }
 .t-normal { font-weight: normal; }
 
-.bg-white { background-color: var(--white); }
-.bg-black { background-color: var(--black); }
-.bg-beige { background-color: var(--beige); }
+/* Dynamic Background Color Helpers */
+.bg-white { background-color: var(--white) !important; }
+.bg-black { background-color: var(--black) !important; }
+.bg-beige { background-color: var(--beige) !important; }
+.bg-grey { background-color: var(--grey) !important; }
+.bg-blue { background-color: var(--blue) !important; }
 .c-white { color: var(--white) !important; }
 .c-black { color: var(--black) !important; }
 
@@ -258,7 +263,7 @@ header .header__logo .logo__group {
 
 .header__lang-btn:hover {
   background: currentColor;
-  color: var(--beige) !important;
+  color: var(--white) !important;
 }
 
 .header__btn {
@@ -511,12 +516,12 @@ main .mod-scroll > * {
 }
 
 /* ==========================================================================
-   CHAPTER 0: INTRO MANIFESTO (.mod-scroll__intro)
+   CHAPTER 0: INTRO MANIFESTO (.mod-scroll__intro bg-white)
    ========================================================================== */
 main .mod-scroll__intro {
   width: 82vw;
   min-width: 82vw;
-  background-color: var(--beige);
+  background-color: var(--white);
   display: flex;
   align-items: center;
   position: relative;
@@ -529,7 +534,7 @@ main .mod-scroll__intro {
   right: var(--wrapper-padd);
   list-style: none;
   display: flex;
-  gap: 1.8rem;
+  gap: 2rem;
   transform: rotate(-90deg);
   transform-origin: top right;
   z-index: 10;
@@ -551,14 +556,14 @@ main .mod-scroll__intro {
   position: absolute;
   top: calc(var(--wrapper-padd) + 4rem);
   left: var(--wrapper-padd);
-  opacity: 0.4;
+  opacity: 0.45;
 }
 
 .mod-scroll__intro__copyright {
   position: absolute;
   bottom: var(--wrapper-padd);
   left: var(--wrapper-padd);
-  opacity: 0.5;
+  opacity: 0.55;
   letter-spacing: 0.05em;
 }
 
@@ -570,7 +575,7 @@ main .mod-scroll__intro {
 
 .mod-scroll__intro__wrap-titles {
   display: grid;
-  grid-template-columns: 1fr 1.1fr;
+  grid-template-columns: 1fr 1.15fr;
   grid-template-rows: auto auto;
   column-gap: 5vw;
   row-gap: 2.5vh;
@@ -578,8 +583,8 @@ main .mod-scroll__intro {
 }
 
 .mod-scroll__intro__title {
-  font-family: var(--f-medium);
-  letter-spacing: -0.02em;
+  font-family: var(--f-izmir);
+  letter-spacing: -0.01em;
 }
 
 .mod-scroll__intro__title .splitline {
@@ -597,10 +602,10 @@ main .mod-scroll__intro {
 }
 
 .mod-scroll__intro__text {
-  font-family: var(--f-edit);
-  font-size: var(--parrafo-xl);
-  line-height: 1.7;
-  max-width: 44ch;
+  font-family: var(--f-izmir);
+  font-size: var(--parrafo);
+  line-height: 1.6;
+  max-width: 46ch;
   color: rgba(10, 10, 11, 0.85);
   align-self: center;
 }
@@ -608,16 +613,15 @@ main .mod-scroll__intro {
 .mod-scroll__intro__logo {
   position: absolute;
   bottom: var(--wrapper-padd);
-  right: 10vw;
+  right: var(--wrapper-padd);
   display: flex;
   align-items: baseline;
   gap: 0.75rem;
-  opacity: 0.25;
 }
 
 .mod-scroll__intro__logo .logo__normal {
   font-family: var(--f-medium);
-  font-size: 2.2rem;
+  font-size: clamp(2.5rem, 3.8vw, 4.5rem);
   letter-spacing: -0.02em;
 }
 
@@ -625,17 +629,17 @@ main .mod-scroll__intro {
   display: flex;
   gap: 0.35rem;
   font-family: var(--f-izmir);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
 /* ==========================================================================
-   CHAPTER 1: PRINCIPAL IMAGES & VERTICAL PARALLAX (.mod-scroll__images.principal)
+   CHAPTER 1: PRINCIPAL IMAGES & VERTICAL PARALLAX (.mod-scroll__images.principal bg-white)
    ========================================================================== */
 main .mod-scroll__images.principal {
   width: 85vw;
   min-width: 85vw;
-  background-color: var(--beige);
+  background-color: var(--white);
   display: flex;
   align-items: center;
   gap: 4vw;
@@ -685,12 +689,12 @@ main .mod-scroll__images.principal {
 }
 
 /* ==========================================================================
-   CHAPTER 2: EDITORIAL STUDIO MANIFESTO (.mod-scroll__text)
+   CHAPTER 2: EDITORIAL STUDIO MANIFESTO (.mod-scroll__text bg-white)
    ========================================================================== */
 main .mod-scroll__text {
-  width: 80vw;
-  min-width: 80vw;
-  background-color: var(--beige);
+  width: 82vw;
+  min-width: 82vw;
+  background-color: var(--white);
   display: flex;
   align-items: center;
   padding: 0 5vw;
@@ -732,9 +736,9 @@ main .mod-scroll__text {
 }
 
 .mod-scroll__text__text {
-  font-family: var(--f-edit);
-  font-size: var(--parrafo-xl);
-  line-height: 1.7;
+  font-family: var(--f-izmir);
+  font-size: var(--parrafo);
+  line-height: 1.65;
   max-width: 58ch;
   margin-top: 1vh;
 }
@@ -781,24 +785,30 @@ main .mod-scroll__text {
 }
 
 /* ==========================================================================
-   CHAPTER 3: DARK ATELIER (.mod-scroll__images-text)
+   CHAPTER 3: DARK ATELIER (.mod-scroll__images-text bg-black c-white)
+   Two Dual FlipMedia sets THEN large glowing serif text!
    ========================================================================== */
 main .mod-scroll__images-text {
-  width: 125vw;
-  min-width: 125vw;
+  width: 160vw;
+  min-width: 160vw;
   background-color: var(--black);
   color: var(--white);
   display: flex;
   align-items: center;
-  padding: 0 6vw;
+  padding: 0 5vw;
 }
 
 main .mod-scroll__images-text .wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   align-items: center;
-  column-gap: 6vw;
+  gap: 4vw;
   height: 84vh;
+}
+
+.mod-scroll__images-text__flip {
+  display: flex;
+  gap: 2vw;
+  height: 100%;
 }
 
 .mod-scroll__images-text__text {
@@ -806,7 +816,8 @@ main .mod-scroll__images-text .wrapper {
   font-size: var(--titulo-xl);
   line-height: 1.45;
   letter-spacing: -0.01em;
-  padding-right: 2vw;
+  padding-left: 2vw;
+  max-width: 44vw;
 }
 
 .mod-scroll__images-text__text p span {
@@ -814,53 +825,50 @@ main .mod-scroll__images-text .wrapper {
   will-change: opacity;
 }
 
-.mod-scroll__images-text__images {
-  height: 100%;
-}
-
-.mod-scroll__images-text__flip {
-  display: flex;
-  gap: 2.5vw;
-  height: 100%;
-}
-
 /* ==========================================================================
-   CHAPTER 4: VERTICAL KINETIC VALUES RIBBON (.mod-scroll__carousel)
+   CHAPTER 4: VERTICAL KINETIC VALUES RIBBON (.mod-scroll__carousel bg-beige)
    ========================================================================== */
 main .mod-scroll__carousel {
-  width: 18rem;
-  min-width: 18rem;
+  width: 214px;
+  min-width: 214px;
   background-color: var(--beige);
   color: var(--black);
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  border-left: 1px solid rgba(0, 0, 0, 0.1);
-  border-right: 1px solid rgba(0, 0, 0, 0.1);
   position: relative;
 }
 
 .mod-scroll__carousel__content {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-family: var(--f-medium);
-  font-size: clamp(3.2rem, 5.5vw, 5.5rem);
-  letter-spacing: 0.25em;
-  white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 3.5rem;
+  white-space: nowrap;
+  transform: translate3d(0, 175vh, 0) rotate(-90deg);
   will-change: transform;
 }
 
-.mod-scroll__carousel__content .star {
+.mod-scroll__carousel__content span {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.mod-scroll__carousel__text {
+  font-family: var(--f-regular);
+  font-size: clamp(3.8rem, 6.5vw, 6.5rem);
+  letter-spacing: 0.12em;
+  line-height: 1;
+}
+
+.mod-scroll__carousel__star {
+  font-size: 2.2rem;
   color: var(--bronze);
-  font-size: 2rem;
 }
 
 /* ==========================================================================
-   CHAPTER 5: SECONDARY IMAGES (.mod-scroll__images.secundario)
+   CHAPTER 5: SECONDARY IMAGES (.mod-scroll__images.secundario bg-beige)
    ========================================================================== */
 main .mod-scroll__images.secundario {
   width: 85vw;
@@ -873,12 +881,12 @@ main .mod-scroll__images.secundario {
 }
 
 /* ==========================================================================
-   CHAPTER 6: ARCHITECTURAL TENETS (.mod-scroll__terms)
+   CHAPTER 6: ARCHITECTURAL TENETS (.mod-scroll__terms bg-blue)
    ========================================================================== */
 main .mod-scroll__terms {
-  width: 110vw;
-  min-width: 110vw;
-  background-color: var(--beige);
+  width: 115vw;
+  min-width: 115vw;
+  background-color: var(--blue);
   color: var(--black);
   display: flex;
   justify-content: space-around;
@@ -888,40 +896,39 @@ main .mod-scroll__terms {
 }
 
 .mod-scroll__terms__term {
-  width: 28vw;
+  width: 30vw;
   display: flex;
   flex-direction: column;
-  gap: 1.8rem;
+  justify-content: space-between;
+  height: 65vh;
+  padding: 2rem 1.5rem;
   cursor: pointer;
-  padding: 2.5rem 1.5rem;
-  border-radius: 4px;
   transition: all 0.4s ease;
 }
 
-.mod-scroll__terms__term.is-hovered {
-  background: rgba(0, 0, 0, 0.03);
+.mod-scroll__terms__term__text {
+  font-family: var(--f-izmir);
+  font-size: var(--parrafo);
+  line-height: 1.6;
+  max-width: 36ch;
+}
+
+.mod-scroll__terms__term__wrap-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.mod-scroll__terms__term__num {
+  font-family: var(--f-edit);
+  font-size: var(--parrafo-l);
+  color: var(--bronze);
+  font-weight: 600;
 }
 
 .mod-scroll__terms__term__title {
-  display: flex;
-  align-items: baseline;
-  gap: 1.2rem;
-  font-family: var(--f-izmir);
-  font-size: var(--titulo-xl);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-}
-
-.mod-scroll__terms__term__title span:first-child {
-  color: var(--bronze);
-  font-size: 1.2rem;
-}
-
-.mod-scroll__terms__term__text {
-  font-family: var(--f-edit);
-  font-size: var(--parrafo-xl);
-  line-height: 1.7;
-  color: rgba(10, 10, 11, 0.85);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
 }
 
 /* Floating Mouse Cursor Follower Specimen Image */
@@ -933,12 +940,17 @@ main .mod-scroll__terms {
   height: 380px;
   pointer-events: none;
   z-index: 10;
-  margin-left: -140px;
-  margin-top: -190px;
   border-radius: 4px;
   overflow: hidden;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
-  transition: transform 0.12s ease-out;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+.mod-scroll__terms .follow__mouse.is-active {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
 }
 
 .mod-scroll__terms .follow__mouse img {
@@ -963,8 +975,8 @@ main .mod-scroll__terms {
    ========================================================================== */
 main .mod-scroll__projects {
   width: auto;
-  min-width: 320vw;
-  background-color: var(--beige);
+  min-width: 350vw;
+  background-color: transparent;
   display: flex;
   align-items: center;
   padding: 0 5vw;
@@ -992,14 +1004,13 @@ main .mod-scroll__projects {
 
 /* Expanding Accordion Item */
 .mod-scroll__projects__item {
-  width: 18vw;
-  min-width: 18vw;
+  width: 16vw;
+  min-width: 16vw;
   height: 87vh;
   position: relative;
   overflow: hidden;
   border-radius: 4px;
   cursor: pointer;
-  background: var(--sand);
   transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1013,49 +1024,11 @@ main .mod-scroll__projects {
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-}
-
-.mod-scroll__projects__item__text {
-  padding: 2.2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.mod-scroll__projects__item__text__data {
-  display: flex;
-  gap: 2rem;
-  font-family: var(--f-edit);
-  font-size: var(--parrafo-l);
-  opacity: 0.7;
-}
-
-.mod-scroll__projects__item__text__data .data-number {
-  color: var(--bronze);
-  font-weight: 600;
-}
-
-.mod-scroll__projects__item__text__title h3 {
-  font-family: var(--f-izmir);
-  font-size: var(--titulo-xl);
-  letter-spacing: -0.01em;
-}
-
-.mod-scroll__projects__item__action a {
-  color: var(--black);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-}
-
-.mod-scroll__projects__item__action a:hover {
-  color: var(--bronze);
+  justify-content: flex-start;
 }
 
 .mod-scroll__projects__item__image {
   width: 100%;
-  height: 100%;
   overflow: hidden;
 }
 
@@ -1070,6 +1043,138 @@ main .mod-scroll__projects {
   height: 87vh;
   object-fit: cover;
   transition: height 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mod-scroll__projects__item__text {
+  padding: 1.8rem 2.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.mod-scroll__projects__item__text__data {
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
+  font-family: var(--f-edit);
+  font-size: var(--parrafo-l);
+}
+
+.mod-scroll__projects__item__text__data .data-number {
+  color: var(--bronze);
+  font-weight: 600;
+}
+
+.mod-scroll__projects__item__text__title {
+  letter-spacing: -0.01em;
+}
+
+.btn--bg-inv {
+  display: inline-block;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid currentColor;
+  border-radius: 9999px;
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.btn--bg-inv:hover {
+  background: var(--black);
+  color: var(--white) !important;
+}
+
+/* Iconic .last-item Layout */
+.mod-scroll__projects__item.last-item {
+  width: 88vw;
+  min-width: 88vw;
+  display: flex;
+  background-color: var(--grey);
+}
+
+.mod-scroll__projects__item.last-item .mod-scroll__projects__item__content {
+  width: 32vw;
+  min-width: 32vw;
+}
+
+.last-item__carousel {
+  width: 20vw;
+  min-width: 20vw;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.last-item__carousel__item {
+  width: 100%;
+  height: 38vh;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.last-item__carousel__item .image,
+.last-item__carousel__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.last-item__carousel__item--link {
+  height: auto;
+  padding: 1rem 1.5rem;
+  background: var(--blue);
+  color: var(--black);
+  text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.last-item__carousel__item--link:hover {
+  background: var(--black);
+  color: var(--white);
+}
+
+.last-item__content {
+  width: 36vw;
+  min-width: 36vw;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 4vw;
+  box-sizing: border-box;
+}
+
+.last-item__content__wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.last-item__content__section {
+  color: var(--bronze);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.last-item__content__title .line {
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.last-item__content__text p {
+  font-family: var(--f-izmir);
+  font-size: var(--parrafo);
+  line-height: 1.7;
+  max-width: 44ch;
+  color: rgba(10, 10, 11, 0.85);
 }
 
 .mod-scroll__cierre {
@@ -1289,7 +1394,7 @@ main .mod-scroll__projects {
    ========================================================================== */
 @media (max-width: 991px) {
   header .header {
-    background: rgba(236, 228, 218, 0.95);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
@@ -1345,12 +1450,19 @@ main .mod-scroll__projects {
   }
 
   main .mod-scroll__images-text .wrapper {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     row-gap: 3rem;
     height: auto;
   }
 
+  .mod-scroll__images-text__text {
+    max-width: 100%;
+    padding-left: 0;
+  }
+
   main .mod-scroll__carousel {
+    width: 100% !important;
+    min-width: unset !important;
     padding: 4rem var(--wrapper-padd);
   }
 
@@ -1363,10 +1475,12 @@ main .mod-scroll__projects {
   main .mod-scroll__terms {
     flex-direction: column;
     gap: 3rem;
+    height: auto !important;
   }
 
   .mod-scroll__terms__term {
     width: 100%;
+    height: auto;
     padding: 1.5rem 0;
   }
 
@@ -1381,13 +1495,23 @@ main .mod-scroll__projects {
 
   .mod-scroll__projects__wrap-text,
   .mod-scroll__projects__item,
-  .mod-scroll__projects__item.is-active {
+  .mod-scroll__projects__item.is-active,
+  .mod-scroll__projects__item.last-item {
     width: 100% !important;
     min-width: unset !important;
+    flex-direction: column;
   }
 
   .mod-scroll__projects__item__image .media__source {
     height: 50vh !important;
+  }
+
+  .last-item__carousel,
+  .last-item__content {
+    width: 100% !important;
+    min-width: unset !important;
+    height: auto !important;
+    padding: 2rem 0;
   }
 
   .mod-media--double {

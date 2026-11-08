@@ -18,6 +18,7 @@ export default function YashmeenNibExperience() {
   const [hoveredMenuProject, setHoveredMenuProject] = useState(0);
   const [hoveredTerm, setHoveredTerm] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isMouseInTerms, setIsMouseInTerms] = useState(false);
   const [activeProjectIdx, setActiveProjectIdx] = useState(0);
 
   const containerRef = useRef(null);
@@ -29,7 +30,7 @@ export default function YashmeenNibExperience() {
   const lenisRef = useRef(null);
   const timelineRef = useRef(null);
 
-  // Bilingual text dictionary
+  // Bilingual text dictionary matching normalisboring.es high editorial tone
   const texts = {
     en: {
       navStudio: "STUDIO",
@@ -62,7 +63,7 @@ export default function YashmeenNibExperience() {
       line3_lead: "THE",
       line3_climax: "ORDINARY",
       heroCopy:
-        "In a world where everything has become disposable, Yashmeen builds interiors to endure. Bespoke joinery from our 35,000 sq.ft Al Quoz atelier, architectural engineering and single-source certainty.",
+        "In a fleeting world where everything has become disposable, Yashmeen builds interiors to endure. Bespoke joinery from our 35,000 sq.ft Al Quoz atelier, architectural engineering and single-source certainty.",
 
       // Chapter 2: Studio Manifesto
       textSectionLabel: "The Studio",
@@ -71,14 +72,14 @@ export default function YashmeenNibExperience() {
       textLine3: "TIME IN STILLNESS",
       textLine4: "AND DISCONNECT",
       textParagraph:
-        "Every space must be singular and meaningful, just like the people who inhabit it. We are the benchmark for quiet architectural luxury, where design discipline, sustainable engineering and craftsmanship unite to offer something truly exceptional.",
+        "Every space must be singular and meaningful, just like the people who inhabit it. We are the benchmark for quiet architectural luxury, where design discipline, sustainable engineering and craftsmanship unite to offer something truly exceptional. We want each client to find an interior that elevates and calms daily life.",
       telemetry1Label: "AL QUOZ MASTER ATELIER",
       telemetry2Label: "BESPOKE ARTISANS & JOINERS",
       telemetry3Label: "SHADOW GAP PRECISION",
 
       // Chapter 3: Dark Atelier
       imagesTextParagraph:
-        "At Yashmeen, we shape spaces that stand apart through bespoke joinery craftsmanship and disciplined execution. Contemporary volumes, tactile materiality, open to light. Environments that elevate daily life with permanence and genuine emotion.",
+        "At Yashmeen, we shape spaces that stand apart through bespoke joinery craftsmanship and disciplined execution. Contemporary volumes, tactile materiality, open to light. Environments that elevate daily life with permanence, sustainable excellence and genuine emotion.",
 
       // Chapter 4: Values Ribbon
       carouselText: "VALUES",
@@ -123,6 +124,14 @@ export default function YashmeenNibExperience() {
       proj5Year: "2026",
       proj5Loc: "PRIVATE ISLAND",
       proj5Num: "05",
+
+      // Last Item Manifesto
+      lastItemTitle1: "WHO SAID THAT",
+      lastItemTitle2: "LUXURY CANNOT",
+      lastItemTitle3: "BE ENDURING",
+      lastItemParagraph:
+        "We shape spaces that do not surrender to fleeting trends, but rather take the path of craftsmanship, local ateliers, sustainability, and absolute architectural peace.",
+      lastItemViewAll: "View All Projects",
 
       // Chapter 7: Unpinned Vertical Finale
       finaleChapter: "(08 Commission)",
@@ -169,23 +178,23 @@ export default function YashmeenNibExperience() {
       line3_lead: "LO",
       line3_climax: "ORDINARIO",
       heroCopy:
-        "En un mundo fugaz en el que lo efímero lo ha empapado todo, construimos interiores para durar, preservando la artesanía a medida y la certeza arquitectónica.",
+        "En un mundo fugaz en el que lo efímero lo ha empapado todo, hacemos interiores para durar más y más, preservar la artesanía noble y generar certeza arquitectónica que no se vea afectada por tendencias pasajeras.",
 
       // Chapter 2: Studio Manifesto
       textSectionLabel: "El Estudio",
-      textLine1: "ESPACIOS QUE INVITAN",
+      textLine1: "CASAS QUE INVITAN",
       textLine2: "A SOSTENER Y VIVIR",
       textLine3: "EL TIEMPO EN CALMA",
       textLine4: "Y DESCONECTAR",
       textParagraph:
-        "Cada vivienda debe ser única y especial, al igual que las personas que la habitan. Somos el referente del lujo silencioso, donde diseño, ingeniería y artesanía se unen para ofrecer algo excepcional.",
+        "Cada vivienda debe ser única y especial, al igual que las personas que la habitan. Somos el referente del lujo sosegado, donde diseño, ingeniería y artesanía se unen para ofrecer algo verdaderamente excepcional. Queremos que cada espacio inspire y mejore el día a día.",
       telemetry1Label: "ATELIER PRINCIPAL EN AL QUOZ",
       telemetry2Label: "ARTESANOS Y EBANISTAS EXPERTOS",
       telemetry3Label: "PRECISIÓN DE FRANJA DE 0.5MM",
 
       // Chapter 3: Dark Atelier
       imagesTextParagraph:
-        "En Yashmeen creamos espacios que sobresalen por la calidad y el diseño a medida. Volúmenes contemporáneos, texturas naturales, abiertos a la luz. Entornos concebidos para elevar la vida diaria con permanencia y autenticidad.",
+        "En Yashmeen construimos espacios que sobresalen por la calidad y el diseño a medida. Volúmenes contemporáneos, texturas naturales, abiertos a la luz. Entornos concebidos para elevar la vida diaria ofreciendo más confort, más belleza, más permanencia y genuina emoción.",
 
       // Chapter 4: Values Ribbon
       carouselText: "VALORES",
@@ -194,15 +203,15 @@ export default function YashmeenNibExperience() {
       term1Num: "01",
       term1Title: "ELEGANCIA",
       term1Desc:
-        "Una arquitectura sobria y silenciosa y una sensibilidad estética que se manifiestan en roble francés, piedra caliza y tonos tierra.",
+        "Una arquitectura sobria y silenciosa y una sensibilidad estética que se manifiesta en materiales como el roble o la piedra caliza, acompañados de una paleta de colores en tonos tierra.",
       term2Num: "02",
       term2Title: "AUTENTICIDAD",
       term2Desc:
-        "La unión de arquitectura atemporal y fabricación artesanal propia, dando lugar a espacios con identidad imborrable.",
+        "Combinación de arquitectura elegante, sostenible y serena, creando espacios refinados, eficientes y armoniosos que se integran con el entorno y promueven un lujo sosegado.",
       term3Num: "03",
       term3Title: "FUNCIONALIDAD",
       term3Desc:
-        "Espacios abiertos, armónicos y funcionales donde cada detalle técnico responde a las necesidades cotidianas con naturalidad.",
+        "Espacios abiertos, menos jerarquizados y con un enfoque pragmático. Zonas multifuncionales y flexibles concebidas para un disfrute cotidiano sin fricciones.",
 
       // Chapter 6: Projects
       projectsLabel: "Proyectos",
@@ -231,6 +240,14 @@ export default function YashmeenNibExperience() {
       proj5Loc: "ISLA PRIVADA",
       proj5Num: "05",
 
+      // Last Item Manifesto
+      lastItemTitle1: "QUIEN DIJO QUE",
+      lastItemTitle2: "EL PLACER NO PUEDE",
+      lastItemTitle3: "SER DURADERO",
+      lastItemParagraph:
+        "Creamos espacios que no se someten a las tendencias, sino que prefieren tomar el camino de la artesanía, de los talleres locales, de la sostenibilidad y de servir al disfrute de sus ocupantes.",
+      lastItemViewAll: "Ver Todos los Proyectos",
+
       // Chapter 7: Unpinned Vertical Finale
       finaleChapter: "(08 Comisión)",
       finaleTitle: "FORJANDO LO EXCEPCIONAL",
@@ -249,46 +266,51 @@ export default function YashmeenNibExperience() {
 
   const currentText = texts[lang];
 
-  // Projects dataset
+  // Projects dataset with authentic background color palette
   const projectsList = [
     {
       num: currentText.proj1Num,
       year: currentText.proj1Year,
       location: currentText.proj1Loc,
       title: currentText.proj1Title,
-      image: "/static/work-stanley.jpg"
+      image: "/static/work-stanley.jpg",
+      bgClass: "bg-beige"
     },
     {
       num: currentText.proj2Num,
       year: currentText.proj2Year,
       location: currentText.proj2Loc,
       title: currentText.proj2Title,
-      image: "/static/work-samford.jpg"
+      image: "/static/work-samford.jpg",
+      bgClass: "bg-grey"
     },
     {
       num: currentText.proj3Num,
       year: currentText.proj3Year,
       location: currentText.proj3Loc,
       title: currentText.proj3Title,
-      image: "/static/work-runic.jpg"
+      image: "/static/work-runic.jpg",
+      bgClass: "bg-blue"
     },
     {
       num: currentText.proj4Num,
       year: currentText.proj4Year,
       location: currentText.proj4Loc,
       title: currentText.proj4Title,
-      image: "/static/Office-fit-out.jpg"
+      image: "/static/Office-fit-out.jpg",
+      bgClass: "bg-beige"
     },
     {
       num: currentText.proj5Num,
       year: currentText.proj5Year,
       location: currentText.proj5Loc,
       title: currentText.proj5Title,
-      image: "/static/Residential-Fit-Out.jpg"
+      image: "/static/Residential-Fit-Out.jpg",
+      bgClass: "bg-grey"
     }
   ];
 
-  // Tenets specimen images
+  // Tenets specimen images for cursor reveal
   const tenetImages = [
     "/static/Residential-Fit-Out.jpg",
     "/static/work-myrtle.jpg",
@@ -327,7 +349,7 @@ export default function YashmeenNibExperience() {
 
     timelineRef.current = tl;
 
-    // Fast, crisp preloader count (1.2s total)
+    // Fast, crisp preloader count (1.1s total)
     const progressObj = { val: 0 };
     tl.to(progressObj, {
       val: 100,
@@ -339,7 +361,7 @@ export default function YashmeenNibExperience() {
     // Fade out backdrop
     tl.to(backdropRef.current, {
       opacity: 0,
-      duration: 0.6,
+      duration: 0.5,
       ease: "power2.inOut",
       onComplete: () => {
         if (backdropRef.current) backdropRef.current.style.display = "none";
@@ -411,7 +433,6 @@ export default function YashmeenNibExperience() {
     const modScroll = modScrollRef.current;
     if (!modScroll) return;
 
-    // Master horizontal pin
     let scrollTl = null;
     let scrollHTrigger = null;
 
@@ -442,7 +463,7 @@ export default function YashmeenNibExperience() {
           const darkSec = document.querySelector(".mod-scroll__images-text");
           if (darkSec) {
             const rect = darkSec.getBoundingClientRect();
-            if (rect.left <= 120 && rect.right >= 120) {
+            if (rect.left <= 180 && rect.right >= 80) {
               setIsHeaderDark(true);
             } else {
               setIsHeaderDark(false);
@@ -522,7 +543,7 @@ export default function YashmeenNibExperience() {
         if (line4Span) {
           gsap.fromTo(
             line4Span,
-            { x: 220 },
+            { x: -260 },
             {
               x: 0,
               ease: "power1.inOut",
@@ -538,7 +559,7 @@ export default function YashmeenNibExperience() {
         }
       }
 
-      // Section 3: Dark Atelier Paragraph Text Stagger & Vertical FlipMedia
+      // Section 3: Dark Atelier Paragraph Text Stagger & Vertical FlipMedia Pairs
       const atelierSec = document.querySelector(".mod-scroll__images-text");
       if (atelierSec) {
         const textLines = atelierSec.querySelectorAll(
@@ -563,14 +584,14 @@ export default function YashmeenNibExperience() {
           );
         }
 
-        const flipDown2 = atelierSec.querySelector(".flipMedia__media--down");
-        const flipUp2 = atelierSec.querySelector(".flipMedia__media--up");
-        if (flipDown2) {
+        const flips = atelierSec.querySelectorAll(".flipMedia__media");
+        flips.forEach((media, i) => {
+          const isDown = media.classList.contains("flipMedia__media--down");
           gsap.fromTo(
-            flipDown2.querySelector(".media__source"),
-            { yPercent: -20 },
+            media.querySelector(".media__source"),
+            { yPercent: isDown ? -20 : 20 },
             {
-              yPercent: 20,
+              yPercent: isDown ? 20 : -20,
               ease: "none",
               scrollTrigger: {
                 containerAnimation: scrollTl,
@@ -581,27 +602,10 @@ export default function YashmeenNibExperience() {
               }
             }
           );
-        }
-        if (flipUp2) {
-          gsap.fromTo(
-            flipUp2.querySelector(".media__source"),
-            { yPercent: 20 },
-            {
-              yPercent: -20,
-              ease: "none",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: atelierSec,
-                start: "left right",
-                end: "right left",
-                scrub: 0.5
-              }
-            }
-          );
-        }
+        });
       }
 
-      // Section 4: Vertical Kinetic Values Ribbon
+      // Section 4: Vertical Kinetic Values Ribbon (Rotated -90deg translating y: 175vh -> -100%)
       const carouselSec = document.querySelector(".mod-scroll__carousel");
       if (carouselSec) {
         const ribbonContent = carouselSec.querySelector(
@@ -635,9 +639,9 @@ export default function YashmeenNibExperience() {
         if (flips.length >= 2) {
           gsap.fromTo(
             flips[0].querySelector(".media__source"),
-            { yPercent: -15 },
+            { yPercent: -18 },
             {
-              yPercent: 15,
+              yPercent: 18,
               ease: "none",
               scrollTrigger: {
                 containerAnimation: scrollTl,
@@ -650,9 +654,9 @@ export default function YashmeenNibExperience() {
           );
           gsap.fromTo(
             flips[1].querySelector(".media__source"),
-            { yPercent: 15 },
+            { yPercent: 18 },
             {
-              yPercent: -15,
+              yPercent: -18,
               ease: "none",
               scrollTrigger: {
                 containerAnimation: scrollTl,
@@ -679,7 +683,6 @@ export default function YashmeenNibExperience() {
             ".mod-scroll__projects__item__text"
           );
 
-          // Card expands when scrolling into view
           ScrollTrigger.create({
             containerAnimation: scrollTl,
             trigger: elem,
@@ -693,7 +696,7 @@ export default function YashmeenNibExperience() {
           if (media) {
             gsap.fromTo(
               elem,
-              { width: "18vw" },
+              { width: "16vw" },
               {
                 width: "58vw",
                 ease: "power1.inOut",
@@ -860,6 +863,7 @@ export default function YashmeenNibExperience() {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     });
+    setIsMouseInTerms(true);
   };
 
   return (
@@ -1114,8 +1118,8 @@ export default function YashmeenNibExperience() {
                 </div>
               </div>
 
-              {/* Landmark Big Brand Identity */}
-              <div className="mod-scroll__intro__logo logo c-white">
+              {/* Landmark Big Brand Identity at Bottom-Right */}
+              <div className="mod-scroll__intro__logo logo c-black">
                 <div className="logo__normal">
                   {renderChars("YASHMEEN")}
                 </div>
@@ -1134,7 +1138,7 @@ export default function YashmeenNibExperience() {
               CHAPTER 1: PRIMARY IMAGES (.mod-scroll__images bg-white principal)
              =============================================================== */}
           <div className="mod-scroll__images bg-white principal">
-            {/* Single Large Scrubbing Image */}
+            {/* Single Large Scrubbing Image (-15vw -> 0vw) */}
             <div className="media mod-scroll__images__image-single noAspect">
               <div className="media__wrap-source image">
                 <img
@@ -1169,7 +1173,7 @@ export default function YashmeenNibExperience() {
           </div>
 
           {/* ===============================================================
-              CHAPTER 2: EDITORIAL TEXT (.mod-scroll__text bg-white)
+              CHAPTER 2: EDITORIAL STUDIO MANIFESTO (.mod-scroll__text bg-white)
              =============================================================== */}
           <div className="mod-scroll__text bg-white" id="studio">
             <div className="wrapper">
@@ -1178,7 +1182,7 @@ export default function YashmeenNibExperience() {
               </div>
 
               <div className="mod-scroll__text__wrap-text">
-                <div className="mod-scroll__text__title t-supertitulo-l f-regular">
+                <div className="mod-scroll__text__title t-supertitulo f-regular">
                   <div className="line t-upper col-12 align-left t-left">
                     <span className="cont">{currentText.textLine1}</span>
                   </div>
@@ -1227,57 +1231,88 @@ export default function YashmeenNibExperience() {
 
           {/* ===============================================================
               CHAPTER 3: DARK ATELIER (.mod-scroll__images-text bg-black c-white)
+              Authentic reference structure: 2 Dual FlipMedia pairs THEN narrative text!
              =============================================================== */}
           <div className="mod-scroll__images-text bg-black c-white" id="atelier">
             <div className="wrapper">
-              {/* Left Column: Split-Text Lines Narrative */}
+              {/* Flip Media Pair 1: Production Machine & Joinery Bay */}
+              <div className="mod-scroll__images-text__flip flipMedia flipMedia--rightLeft">
+                <div className="media flipMedia__media flipMedia__media--down noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source w-100"
+                      src="/static/production-facility.jpg"
+                      alt="Joinery Machine Production Bay"
+                    />
+                  </div>
+                </div>
+                <div className="media flipMedia__media flipMedia__media--up noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source w-100"
+                      src="/static/joinery-bay.jpg"
+                      alt="Artisanal Hand-Assembly Workstation"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Flip Media Pair 2: Custom Furniture & Atelier Engineering */}
+              <div className="mod-scroll__images-text__flip flipMedia flipMedia--leftRight">
+                <div className="media flipMedia__media flipMedia__media--down noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source w-100"
+                      src="/static/Custom-Furniture.jpg"
+                      alt="Bespoke Joinery Details"
+                    />
+                  </div>
+                </div>
+                <div className="media flipMedia__media flipMedia__media--up noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source w-100"
+                      src="/static/atelier-render.jpg"
+                      alt="Architectural Precision Milling"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Glowing Editorial Serif Narrative with Stagger */}
               <div className="mod-scroll__images-text__text f-regular t-titulo-xl">
                 <p>
                   <span>{currentText.imagesTextParagraph}</span>
                 </p>
               </div>
-
-              {/* Right Column: Dual Vertical FlipMedia */}
-              <div className="mod-scroll__images-text__images">
-                <div className="mod-scroll__images-text__flip flipMedia flipMedia--upDown">
-                  <div className="media flipMedia__media flipMedia__media--down noAspect">
-                    <div className="media__wrap-source image">
-                      <img
-                        className="media__source w-100"
-                        src="/static/production-facility.jpg"
-                        alt="Joinery Machine Production Bay"
-                      />
-                    </div>
-                  </div>
-                  <div className="media flipMedia__media flipMedia__media--up noAspect">
-                    <div className="media__wrap-source image">
-                      <img
-                        className="media__source w-100"
-                        src="/static/joinery-bay.jpg"
-                        alt="Artisanal Hand-Assembly Workstation"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
           {/* ===============================================================
-              CHAPTER 4: VALUES VERTICAL RIBBON (.mod-scroll__carousel)
+              CHAPTER 4: VERTICAL KINETIC VALUES RIBBON (.mod-scroll__carousel)
+              Exact 214px width, rotated -90deg, traversing 175vh to -100%
              =============================================================== */}
           <div
             className="mod-scroll__carousel bg-beige c-black t-supertitulo-l"
             id="values"
           >
             <div className="mod-scroll__carousel__content">
-              <span>{currentText.carouselText}</span>
-              <span className="star"> ★ </span>
-              <span>{currentText.carouselText}</span>
-              <span className="star"> ★ </span>
-              <span>{currentText.carouselText}</span>
-              <span className="star"> ★ </span>
-              <span>{currentText.carouselText}</span>
+              <span>
+                <p className="mod-scroll__carousel__text f-regular t-supertitulo t-upper">{currentText.carouselText}</p>
+                <span className="mod-scroll__carousel__star">★</span>
+              </span>
+              <span>
+                <p className="mod-scroll__carousel__text f-regular t-supertitulo t-upper">{currentText.carouselText}</p>
+                <span className="mod-scroll__carousel__star">★</span>
+              </span>
+              <span>
+                <p className="mod-scroll__carousel__text f-regular t-supertitulo t-upper">{currentText.carouselText}</p>
+                <span className="mod-scroll__carousel__star">★</span>
+              </span>
+              <span>
+                <p className="mod-scroll__carousel__text f-regular t-supertitulo t-upper">{currentText.carouselText}</p>
+                <span className="mod-scroll__carousel__star">★</span>
+              </span>
             </div>
           </div>
 
@@ -1310,60 +1345,75 @@ export default function YashmeenNibExperience() {
           </div>
 
           {/* ===============================================================
-              CHAPTER 6: ARCHITECTURAL TENETS (.mod-scroll__terms follow__wrap)
+              CHAPTER 6: ARCHITECTURAL TENETS (.mod-scroll__terms bg-blue)
+              Authentic layout: Description text on top, number & title below
+              with 3 distinct font styles (f-edit ultralight, f-regular serif, f-izmir sans)
              =============================================================== */}
           <div
-            className="mod-scroll__terms follow__wrap bg-beige c-black"
+            className="mod-scroll__terms follow__wrap bg-blue c-black"
             id="tenets"
             onMouseMove={handleTermsMouseMove}
+            onMouseLeave={() => setIsMouseInTerms(false)}
           >
-            {/* Term 1: ELEGANCE */}
+            {/* Term 1: ELEGANCE (f-edit ultralight serif) */}
             <div
               className={`mod-scroll__terms__term ${hoveredTerm === 0 ? "is-hovered" : ""}`}
               onMouseEnter={() => setHoveredTerm(0)}
             >
-              <div className="mod-scroll__terms__term__title f-izmir t-titulo-xl t-upper">
-                <span>{currentText.term1Num}</span>
-                <span className="title-text">{currentText.term1Title}</span>
+              <div className="mod-scroll__terms__term__text f-izmir t-parrafo">
+                <div className="mod-scroll__terms__term__text__single">
+                  {currentText.term1Desc}
+                </div>
               </div>
-              <div className="mod-scroll__terms__term__text f-edit t-parrafo-l">
-                <p>{currentText.term1Desc}</p>
+              <div className="mod-scroll__terms__term__wrap-title">
+                <div className="mod-scroll__terms__term__num f-edit t-parrafo">{currentText.term1Num}</div>
+                <div className="mod-scroll__terms__term__title t-supertitulo-l f-edit">
+                  <span className="mod-scroll__terms__term__title__color">{currentText.term1Title}</span>
+                </div>
               </div>
             </div>
 
-            {/* Term 2: AUTHENTICITY */}
+            {/* Term 2: AUTHENTICITY (f-regular bold serif display) */}
             <div
               className={`mod-scroll__terms__term ${hoveredTerm === 1 ? "is-hovered" : ""}`}
               onMouseEnter={() => setHoveredTerm(1)}
             >
-              <div className="mod-scroll__terms__term__title f-izmir t-titulo-xl t-upper">
-                <span>{currentText.term2Num}</span>
-                <span className="title-text">{currentText.term2Title}</span>
+              <div className="mod-scroll__terms__term__text f-izmir t-parrafo">
+                <div className="mod-scroll__terms__term__text__single">
+                  {currentText.term2Desc}
+                </div>
               </div>
-              <div className="mod-scroll__terms__term__text f-edit t-parrafo-l">
-                <p>{currentText.term2Desc}</p>
+              <div className="mod-scroll__terms__term__wrap-title">
+                <div className="mod-scroll__terms__term__num f-edit t-parrafo">{currentText.term2Num}</div>
+                <div className="mod-scroll__terms__term__title t-supertitulo-l f-regular">
+                  <span className="mod-scroll__terms__term__title__color">{currentText.term2Title}</span>
+                </div>
               </div>
             </div>
 
-            {/* Term 3: FUNCTIONALITY */}
+            {/* Term 3: FUNCTIONALITY (f-izmir clean geometric sans) */}
             <div
               className={`mod-scroll__terms__term ${hoveredTerm === 2 ? "is-hovered" : ""}`}
               onMouseEnter={() => setHoveredTerm(2)}
             >
-              <div className="mod-scroll__terms__term__title f-izmir t-titulo-xl t-upper">
-                <span>{currentText.term3Num}</span>
-                <span className="title-text">{currentText.term3Title}</span>
+              <div className="mod-scroll__terms__term__text f-izmir t-parrafo">
+                <div className="mod-scroll__terms__term__text__single">
+                  {currentText.term3Desc}
+                </div>
               </div>
-              <div className="mod-scroll__terms__term__text f-edit t-parrafo-l">
-                <p>{currentText.term3Desc}</p>
+              <div className="mod-scroll__terms__term__wrap-title">
+                <div className="mod-scroll__terms__term__num f-edit t-parrafo">{currentText.term3Num}</div>
+                <div className="mod-scroll__terms__term__title t-supertitulo-l f-izmir">
+                  <span className="mod-scroll__terms__term__title__color">{currentText.term3Title}</span>
+                </div>
               </div>
             </div>
 
             {/* Floating Mouse Cursor Follower Specimen Image */}
             <div
-              className="follow__mouse"
+              className={`follow__mouse ${isMouseInTerms ? "is-active" : ""}`}
               style={{
-                transform: `translate3d(${mousePos.x}px, ${mousePos.y}px, 0)`
+                transform: `translate(-50%, -50%) translate3d(${mousePos.x}px, ${mousePos.y}px, 0)`
               }}
             >
               {tenetImages.map((src, idx) => (
@@ -1378,7 +1428,7 @@ export default function YashmeenNibExperience() {
           </div>
 
           {/* ===============================================================
-              CHAPTER 7: EXPANDING PROJECT MONOLITHS (.mod-scroll__projects)
+              CHAPTER 7: EXPANDING PROJECT MONOLITHS WITH .last-item CAROUSEL
              =============================================================== */}
           <div className="mod-scroll__projects" id="projects">
             {/* Left Manifesto */}
@@ -1391,57 +1441,157 @@ export default function YashmeenNibExperience() {
               </div>
             </div>
 
-            {/* Expanding Project Cards Accordion */}
-            {projectsList.map((proj, idx) => (
+            {/* Expanding Project Cards 1 to 4 */}
+            {projectsList.slice(0, 4).map((proj, idx) => (
               <div
                 key={idx}
-                className={`mod-scroll__projects__item bg-beige c-black ${
+                className={`mod-scroll__projects__item ${proj.bgClass} c-black ${
                   activeProjectIdx === idx ? "is-active" : ""
                 }`}
                 onClick={() => setActiveProjectIdx(idx)}
               >
                 <div className="mod-scroll__projects__item__content">
-                  <div className="mod-scroll__projects__item__text">
-                    <div className="mod-scroll__projects__item__text__data f-edit t-parrafo-l">
-                      <div className="data-year">
-                        <span>{proj.year}</span>
-                      </div>
-                      <div className="data-location">
-                        <span>{proj.location}</span>
-                      </div>
-                      <div className="data-number">
-                        <span>({proj.num})</span>
-                      </div>
-                    </div>
-
-                    <div className="mod-scroll__projects__item__text__title f-izmir t-titulo-xl t-upper">
-                      <h3>{proj.title}</h3>
-                    </div>
-
-                    <div className="mod-scroll__projects__item__action">
-                      <Link
-                        to="/contact"
-                        className="btn btn--underline f-edit t-parrafo-l"
-                      >
-                        <span>{currentText.btnInspectSpec}</span>
-                      </Link>
+                  <div className="media mod-scroll__projects__item__image noAspect">
+                    <div className="media__wrap-source image">
+                      <img
+                        className="media__source w-100"
+                        src={proj.image}
+                        alt={proj.title}
+                      />
                     </div>
                   </div>
 
-                  <div className="mod-scroll__projects__item__image">
-                    <div className="media">
-                      <div className="media__wrap-source image">
-                        <img
-                          className="media__source w-100"
-                          src={proj.image}
-                          alt={proj.title}
-                        />
+                  <div className="mod-scroll__projects__item__text">
+                    <div className="mod-scroll__projects__item__text__data">
+                      <div className="f-edit t-parrafo-l">
+                        <span>{proj.year}</span>
                       </div>
+                      <div className="f-izmir t-parrafo-l">
+                        <span>{proj.location}</span>
+                      </div>
+                      <div className="f-izmir t-parrafo data-number">
+                        {proj.num}
+                      </div>
+                      <span>
+                        <Link
+                          to="/contact"
+                          className="btn btn--bg btn--bg-inv f-edit t-parrafo-l"
+                        >
+                          <span>{currentText.btnInspectSpec}</span>
+                        </Link>
+                      </span>
+                    </div>
+
+                    <div className="mod-scroll__projects__item__text__title t-upper f-regular t-titulo-xxl">
+                      <div>{proj.title}</div>
                     </div>
                   </div>
                 </div>
               </div>
             ))}
+
+            {/* Card 5: The Authentic .last-item with Upward Carousel & Manifesto */}
+            <div
+              className={`mod-scroll__projects__item last-item bg-grey c-black ${
+                activeProjectIdx === 4 ? "is-active" : ""
+              }`}
+              onClick={() => setActiveProjectIdx(4)}
+            >
+              <div className="mod-scroll__projects__item__content">
+                <div className="media mod-scroll__projects__item__image noAspect">
+                  <div className="media__wrap-source image">
+                    <img
+                      className="media__source w-100"
+                      src={projectsList[4].image}
+                      alt={projectsList[4].title}
+                    />
+                  </div>
+                </div>
+
+                <div className="mod-scroll__projects__item__text">
+                  <div className="mod-scroll__projects__item__text__data">
+                    <div className="f-edit t-parrafo-l">
+                      <span>{projectsList[4].year}</span>
+                    </div>
+                    <div className="f-izmir t-parrafo-l">
+                      <span>{projectsList[4].location}</span>
+                    </div>
+                    <div className="f-izmir t-parrafo data-number">
+                      {projectsList[4].num}
+                    </div>
+                    <span>
+                      <Link
+                        to="/contact"
+                        className="btn btn--bg btn--bg-inv f-edit t-parrafo-l"
+                      >
+                        <span>{currentText.btnInspectSpec}</span>
+                      </Link>
+                    </span>
+                  </div>
+
+                  <div className="mod-scroll__projects__item__text__title t-upper f-izmir t-titulo-xxl">
+                    <div>{projectsList[4].title}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upward Carousel Strip */}
+              <div className="last-item__carousel">
+                <div className="last-item__carousel__item">
+                  <div className="media last-item__carousel__item__image noAspect">
+                    <div className="media__wrap-source image">
+                      <img
+                        className="media__source w-100"
+                        src="/static/work-clifton.jpg"
+                        alt="Preview 1"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="last-item__carousel__item">
+                  <div className="media last-item__carousel__item__image noAspect">
+                    <div className="media__wrap-source image">
+                      <img
+                        className="media__source w-100"
+                        src="/static/work-myrtle.jpg"
+                        alt="Preview 2"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <Link
+                  to="/contact"
+                  className="last-item__carousel__item last-item__carousel__item--link btn btn--bg btn--bg-inv bg-blue f-edit"
+                >
+                  <span className="last-item__carousel__item__text t-titulo-l">
+                    {currentText.lastItemViewAll} →
+                  </span>
+                </Link>
+              </div>
+
+              {/* Last Item Content Manifesto */}
+              <div className="last-item__content">
+                <div className="last-item__content__wrap">
+                  <div className="last-item__content__section f-edit t-parrafo">
+                    {currentText.projectsLabel}
+                  </div>
+                  <div className="last-item__content__title">
+                    <div className="line f-regular t-titulo-xxl t-upper col-12">
+                      {currentText.lastItemTitle1}
+                    </div>
+                    <div className="line f-regular t-titulo-xxl t-upper col-12">
+                      {currentText.lastItemTitle2}
+                    </div>
+                    <div className="line f-regular t-titulo-xxl t-upper col-12 t-right">
+                      {currentText.lastItemTitle3}
+                    </div>
+                  </div>
+                  <div className="last-item__content__text f-izmir t-parrafo">
+                    <p>{currentText.lastItemParagraph}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Pinned spacer */}
             <div className="mod-scroll__pin" />

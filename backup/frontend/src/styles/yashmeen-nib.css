@@ -100,15 +100,27 @@
   --parrafo-lh: 1.25rem;
   --subtitulo-lh: 0.9rem;
 
-  /* Exact Color System */
-  --black: #000000;
-  --beige: #ECE4DA;
-  --red: #DB5C59;
-  --blue: #C7D7E9;
-  --grey: #dfdeda;
-  --dark-grey: #707070;
+  /* Yashmeen Architectural Luxury Color System */
+  --black: #0a0a0a;
+  --obsidian: #080807;
   --white: #ffffff;
-  --accent-dot: #2a8b9a;
+  --paper: #fcfcfc;
+  --beige: #ece4da;           /* Honed Roman Travertine */
+  --stone: #ded7ce;           /* Natural Calcareous Stone */
+  --oak: #cfc4b2;             /* Smoked French Oak */
+  --bronze: #a4824d;          /* Architectural Patinated Bronze */
+  --bronze-dark: #6e5531;     /* Burnished Antique Bronze */
+  --bronze-light: #c5a87a;    /* Champagne Brass */
+  --walnut: #2d221b;          /* Kiln-Dried Fluted Walnut */
+  --charcoal: #151618;        /* Atelier 35,000 sq.ft Dark Bay */
+  --slate: #1c1d20;           /* Precision Monolith Slate */
+  
+  /* Brand Harmony Mapping (Purging Spanish Primary Colors) */
+  --red: var(--walnut);       /* Replaces Spanish Red with Rich Fluted Walnut */
+  --blue: var(--slate);       /* Replaces Spanish Blue with Deep Monolith Slate */
+  --grey: var(--stone);       /* Natural Calcareous Stone */
+  --dark-grey: #403e3b;
+  --accent-dot: var(--bronze); /* Luxury Patinated Bronze Dot */
 
   --grid-gap: 1.5rem;
   --wrapper-padd: 1.65rem;
@@ -163,12 +175,14 @@ html, body {
 .t-normal { font-style: normal; font-weight: normal; }
 .t-italic { font-style: italic; }
 
-.bg-white { background-color: var(--white); color: var(--black); }
+.bg-white { background-color: var(--paper); color: var(--black); }
 .bg-beige { background-color: var(--beige); color: var(--black); }
 .bg-black { background-color: var(--black); color: var(--white); }
-.bg-blue { background-color: var(--blue); color: var(--black); }
-.bg-red { background-color: var(--red); color: var(--black); }
+.bg-blue { background-color: var(--blue); color: var(--white); }
+.bg-red { background-color: var(--red); color: var(--white); }
 .bg-grey { background-color: var(--grey); color: var(--black); }
+.bg-charcoal { background-color: var(--charcoal); color: var(--white); }
+.bg-bronze { background-color: var(--bronze); color: var(--white); }
 
 .c-white { color: var(--white); }
 .c-black { color: var(--black); }
@@ -428,6 +442,9 @@ main .mod-scroll {
   display: flex;
   z-index: 2;
   overflow: clip;
+  perspective: 1600px;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 main .mod-scroll > div,
@@ -711,6 +728,13 @@ main .mod-scroll__text__text p {
 /* ==========================================================================
    SECTION 3: DARK ATELIER (.mod-scroll__images-text)
    ========================================================================== */
+main .mod-scroll__images-text {
+  position: relative;
+  perspective: 1400px;
+  transform-style: preserve-3d;
+  will-change: transform, clip-path;
+}
+
 main .mod-scroll__images-text .wrapper {
   display: flex;
   flex-wrap: nowrap;
@@ -823,6 +847,8 @@ main .mod-scroll__carousel__text {
   justify-content: center;
   gap: 2.5rem;
   max-width: 960px;
+  perspective: 1200px;
+  transform-style: preserve-3d;
 }
 
 .values__header {
@@ -867,6 +893,8 @@ main .mod-scroll__carousel__text {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
   min-height: 240px;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .value-card:hover {
@@ -953,6 +981,8 @@ main .mod-scroll__terms {
   overflow: unset;
   height: var(--100vh);
   min-width: 1400px;
+  perspective: 1200px;
+  transform-style: preserve-3d;
 }
 
 main .mod-scroll__terms__term {
@@ -962,6 +992,8 @@ main .mod-scroll__terms__term {
   flex-wrap: nowrap;
   align-items: center;
   cursor: pointer;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 main .mod-scroll__terms__term__title {

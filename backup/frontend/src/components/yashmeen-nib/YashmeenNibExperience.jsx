@@ -636,6 +636,10 @@ export default function YashmeenNibExperience() {
       ease: "none"
     });
 
+    const skewSetter = gsap.quickSetter(modScroll, "skewX", "deg");
+    const clampSkew = gsap.utils.clamp(-2.5, 2.5);
+    let proxySkew = { skew: 0 };
+
     const scrollHTrigger = ScrollTrigger.create({
       id: "normal-scroll-horizontal",
       animation: scrollTl,
@@ -648,6 +652,20 @@ export default function YashmeenNibExperience() {
       onUpdate: (self) => {
         const currentScroll = self.scroll();
         setScrollPercent(Math.round(self.progress * 100));
+
+        // Spatial Velocity Skew Inertia
+        const vel = self.getVelocity();
+        const skew = clampSkew(vel / -300);
+        if (Math.abs(skew) > Math.abs(proxySkew.skew)) {
+          proxySkew.skew = skew;
+          gsap.to(proxySkew, {
+            skew: 0,
+            duration: 0.8,
+            ease: "power3",
+            overwrite: true,
+            onUpdate: () => skewSetter(proxySkew.skew)
+          });
+        }
 
         // Fixed header logo & Menú button reveal
         const headerLogo = headerLogoRef.current;
@@ -750,7 +768,7 @@ export default function YashmeenNibExperience() {
       );
     });
 
-    // 2. Chapter 0: Intro Vertical Typography Split Exit
+    // 2. Chapter 0: Intro Vertical-to-Horizontal Aperture Elevation Shift
     const introTitles = modScroll.querySelectorAll(".mod-scroll__intro__wrap-titles .mod-scroll__intro__title");
     if (introTitles.length >= 3) {
       gsap.to(introTitles[0], {
@@ -788,7 +806,37 @@ export default function YashmeenNibExperience() {
       });
     }
 
-    // 3. Chapter 1: Primary Images Scrub (horizontal -15vw -> 0vw with vertical float)
+    // Intro wrapper elevation retreat
+    gsap.to(".mod-scroll__intro > .wrapper", {
+      yPercent: -14,
+      scale: 0.94,
+      ease: "none",
+      scrollTrigger: {
+        containerAnimation: scrollTl,
+        trigger: ".mod-scroll__intro",
+        start: "0% 0%",
+        end: "100% 0%",
+        scrub: 0.5
+      }
+    });
+
+    // 3. Chapter 1: Primary Images Scrub (Ascending from below into horizontal rail)
+    gsap.fromTo(
+      ".mod-scroll__images.principal",
+      { y: "10vh" },
+      {
+        y: "-5vh",
+        ease: "none",
+        scrollTrigger: {
+          containerAnimation: scrollTl,
+          trigger: ".mod-scroll__images.principal",
+          start: "0% 100%",
+          end: "100% 0%",
+          scrub: 0.6
+        }
+      }
+    );
+
     const singleImg = modScroll.querySelector(".mod-scroll__images__image-single");
     if (singleImg) {
       gsap.fromTo(
@@ -886,20 +934,22 @@ export default function YashmeenNibExperience() {
       );
     });
 
-    // 6. Chapter 3: Dark Atelier Vertical Aperture & Center Text Float
+    // 6. Chapter 3: Dark Atelier 3D Perspective Rotation & Iris Shutter
     const darkAtelier = modScroll.querySelector(".mod-scroll__images-text");
     if (darkAtelier) {
       gsap.fromTo(
         darkAtelier,
-        { clipPath: "inset(4% 0% 4% 0%)" },
+        { rotateY: -8, scale: 0.94, clipPath: "inset(4% 0% 4% 0%)", transformOrigin: "left center" },
         {
+          rotateY: 0,
+          scale: 1.0,
           clipPath: "inset(0% 0% 0% 0%)",
           ease: "power2.out",
           scrollTrigger: {
             containerAnimation: scrollTl,
             trigger: darkAtelier,
-            start: "0% 90%",
-            end: "40% 50%",
+            start: "0% 95%",
+            end: "35% 50%",
             scrub: 0.5
           }
         }
@@ -925,7 +975,7 @@ export default function YashmeenNibExperience() {
       );
     }
 
-    // 7. Chapter 4: Values Vertical Ribbon Ticker & Cascading Pillar Stagger
+    // 7. Chapter 4: Values Vertical Ribbon Ticker & 3D Tectonic Pillar Stacking
     const carouselContent = modScroll.querySelector(".mod-scroll__carousel__content");
     if (carouselContent) {
       gsap.fromTo(
@@ -949,90 +999,110 @@ export default function YashmeenNibExperience() {
     if (valueCards.length >= 3) {
       gsap.fromTo(
         valueCards[0],
-        { y: "12vh" },
+        { y: "24vh", rotateZ: -2, scale: 0.92 },
         {
-          y: "-6vh",
-          ease: "none",
+          y: "-4vh",
+          rotateZ: 0,
+          scale: 1.0,
+          ease: "power2.out",
           scrollTrigger: {
             containerAnimation: scrollTl,
             trigger: ".mod-scroll__carousel",
-            start: "0% 90%",
-            end: "100% 10%",
-            scrub: 0.7
+            start: "0% 95%",
+            end: "65% 35%",
+            scrub: 0.6
           }
         }
       );
       gsap.fromTo(
         valueCards[1],
-        { y: "-10vh" },
+        { y: "-22vh", scale: 0.94 },
         {
-          y: "10vh",
-          ease: "none",
+          y: "6vh",
+          scale: 1.0,
+          ease: "power2.out",
           scrollTrigger: {
             containerAnimation: scrollTl,
             trigger: ".mod-scroll__carousel",
-            start: "0% 90%",
-            end: "100% 10%",
-            scrub: 0.7
+            start: "0% 95%",
+            end: "75% 35%",
+            scrub: 0.6
           }
         }
       );
       gsap.fromTo(
         valueCards[2],
-        { y: "14vh" },
+        { y: "26vh", rotateZ: 2, scale: 0.92 },
         {
-          y: "-8vh",
-          ease: "none",
+          y: "-6vh",
+          rotateZ: 0,
+          scale: 1.0,
+          ease: "power2.out",
           scrollTrigger: {
             containerAnimation: scrollTl,
             trigger: ".mod-scroll__carousel",
-            start: "0% 90%",
-            end: "100% 10%",
-            scrub: 0.7
+            start: "0% 95%",
+            end: "85% 35%",
+            scrub: 0.6
           }
         }
       );
     }
 
-    // 8. Chapter 5: Spatial Tenets Multi-Axis Counter Drift
+    // 8. Chapter 5: Spatial Tenets Dual-Axis Counter-Flow in Deep Slate
     const terms = modScroll.querySelectorAll(".mod-scroll__terms__term");
     if (terms.length >= 3) {
-      gsap.to(terms[0], {
-        paddingLeft: "12vw",
-        y: "8vh",
-        ease: "none",
-        scrollTrigger: {
-          containerAnimation: scrollTl,
-          trigger: terms[0],
-          start: "0% 100%",
-          end: "100% 0%",
-          scrub: 1
+      gsap.fromTo(
+        terms[0],
+        { paddingLeft: "4vw", y: "-18vh", opacity: 0.7 },
+        {
+          paddingLeft: "14vw",
+          y: "18vh",
+          opacity: 1,
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: terms[0],
+            start: "0% 100%",
+            end: "100% 0%",
+            scrub: 0.8
+          }
         }
-      });
-      gsap.to(terms[1], {
-        paddingRight: "3vw",
-        y: "-10vh",
-        ease: "none",
-        scrollTrigger: {
-          containerAnimation: scrollTl,
-          trigger: terms[1],
-          start: "0% 100%",
-          end: "100% 0%",
-          scrub: 1
+      );
+      gsap.fromTo(
+        terms[1],
+        { paddingRight: "10vw", y: "20vh", opacity: 0.7 },
+        {
+          paddingRight: "2vw",
+          y: "-20vh",
+          opacity: 1,
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: terms[1],
+            start: "0% 100%",
+            end: "100% 0%",
+            scrub: 0.8
+          }
         }
-      });
-      gsap.to(terms[2], {
-        paddingLeft: "20vw",
-        y: "11vh",
-        ease: "none",
-        scrollTrigger: {
-          containerAnimation: scrollTl,
-          trigger: terms[2],
-          start: "0% 100%",
-          end: "100% 0%",
-          scrub: 1
+      );
+      gsap.fromTo(
+        terms[2],
+        { paddingLeft: "6vw", y: "-22vh", opacity: 0.7 },
+        {
+          paddingLeft: "22vw",
+          y: "22vh",
+          opacity: 1,
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: terms[2],
+            start: "0% 100%",
+            end: "100% 0%",
+            scrub: 0.8
+          }
         }
-      });
+      );
     }
 
     // 9. Chapter 6: Expanding Monolith Cards & Vertical Image Parallax
@@ -1996,10 +2066,10 @@ export default function YashmeenNibExperience() {
           </div>
 
           {/* ===============================================================
-              CHAPTER 6: SPATIAL TENETS (.mod-scroll__terms bg-blue)
+              CHAPTER 6: SPATIAL TENETS (.mod-scroll__terms bg-blue c-white)
              =============================================================== */}
           <div
-            className="mod-scroll__terms follow__wrap bg-blue"
+            className="mod-scroll__terms follow__wrap bg-blue c-white"
             ref={termsRef}
             onMouseMove={handleTermsMouseMove}
             onMouseEnter={() => setHoveredTermImage("/static/work-clifton.jpg")}
@@ -2236,7 +2306,7 @@ export default function YashmeenNibExperience() {
             </div>
 
             {/* Project 3: OH Workplace */}
-            <div className="mod-scroll__projects__item bg-blue">
+            <div className="mod-scroll__projects__item bg-blue c-white">
               <div className="mod-scroll__projects__item__content">
                 <button
                   type="button"
@@ -2433,8 +2503,8 @@ export default function YashmeenNibExperience() {
               </div>
             </div>
 
-            {/* Section 8: Closing Cierre (.mod-scroll__cierre bg-red c-black) */}
-            <div className="mod-scroll__cierre bg-red c-black">
+            {/* Section 8: Closing Cierre (.mod-scroll__cierre bg-red c-white) */}
+            <div className="mod-scroll__cierre bg-red c-white">
               <div className="mod-scroll__cierre__content">
                 <div className="mod-scroll__cierre__content__image flipMedia flipMedia--upDown">
                   <div className="media flipMedia__media flipMedia__media--down noAspect">

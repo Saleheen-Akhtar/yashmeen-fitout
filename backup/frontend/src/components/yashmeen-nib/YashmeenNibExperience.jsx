@@ -3,7 +3,18 @@ import { Link } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { FiArrowRight, FiRotateCcw, FiLayers, FiMaximize2, FiX } from "react-icons/fi";
+import {
+  FiArrowRight,
+  FiRotateCcw,
+  FiLayers,
+  FiMaximize2,
+  FiX,
+  FiGrid,
+  FiSliders,
+  FiCompass,
+  FiVolume2,
+  FiVolumeX
+} from "react-icons/fi";
 import "../../styles/yashmeen-nib.css";
 
 // Register GreenSock ScrollTrigger
@@ -25,6 +36,12 @@ export default function YashmeenNibExperience() {
   const [openSpecProjectIdx, setOpenSpecProjectIdx] = useState(null);
   const [activeCommissionType, setActiveCommissionType] = useState("residential");
 
+  // Floating Dynamic Nav & Soundscape States
+  const [navDockPosition, setNavDockPosition] = useState("top"); // "top" | "bottom"
+  const [isNavExpanded, setIsNavExpanded] = useState(false);
+  const [isSoundOn, setIsSoundOn] = useState(false);
+  const [scrollPercent, setScrollPercent] = useState(0);
+
   const containerRef = useRef(null);
   const backdropRef = useRef(null);
   const timelineRef = useRef(null);
@@ -32,6 +49,8 @@ export default function YashmeenNibExperience() {
   const termsRef = useRef(null);
   const headerLogoRef = useRef(null);
   const lenisRef = useRef(null);
+  const audioCtxRef = useRef(null);
+  const gainNodeRef = useRef(null);
 
   // Bilingual text dictionary
   const texts = {
@@ -175,7 +194,27 @@ export default function YashmeenNibExperience() {
       guidanceMillwork:
         "Dedicated bespoke fabrication from our 35,000 sq.ft Al Quoz atelier for architects, interior designers and private commissioners.",
       finaleCta: "Request Private Consultation",
-      footerTagline: "BESPOKE INTERIORS & ARCHITECTURAL FIT-OUT • DUBAI, UAE"
+      footerTagline: "BESPOKE INTERIORS & ARCHITECTURAL FIT-OUT • DUBAI, UAE",
+
+      // Interactive Navigation & Drawer
+      navExplore: "INDEX",
+      navScrubber: "JOURNEY TIMELINE",
+      navDockTop: "DOCK TOP",
+      navDockBottom: "DOCK BOTTOM",
+      navSoundOn: "AMBIENCE ON",
+      navSoundOff: "AMBIENCE OFF",
+      navBlueprintOn: "CAD WIREFRAME",
+      navBlueprintOff: "BUILT REALITY",
+      navClose: "CLOSE ×",
+      navJump: "Glide to chapter",
+      chapterSub0: "Considered Spaces That Challenge The Ordinary",
+      chapterSub1: "The Alchemy of Raw Substance & European Quarries",
+      chapterSub2: "Spaces That Invite Stillness & Architectural Discipline",
+      chapterSub3: "Bespoke Joinery Bay & 5-Axis Precision Engineering",
+      chapterSub4: "Sub-Millimeter Tolerances & Single-Source Integrity",
+      chapterSub5: "Spatial Elegance, Authenticity & Pragmatic Function",
+      chapterSub6: "Monolithic Residences & Bespoke Architectural Volumes",
+      chapterSub7: "Exclusivity in Its Highest Expression & Private Inquiry"
     },
     es: {
       navStudio: "ESTUDIO",
@@ -317,7 +356,27 @@ export default function YashmeenNibExperience() {
       guidanceMillwork:
         "Fabricación dedicada desde nuestro atelier de 35,000 pies cuadrados en Al Quoz para arquitectos y promotores privados.",
       finaleCta: "Solicitar Consulta Privada",
-      footerTagline: "INTERIORES A MEDIDA Y CONTRATACIÓN ARQUITECTÓNICA • DUBÁI, EAU"
+      footerTagline: "INTERIORES A MEDIDA Y CONTRATACIÓN ARQUITECTÓNICA • DUBÁI, EAU",
+
+      // Interactive Navigation & Drawer
+      navExplore: "ÍNDICE",
+      navScrubber: "TIMELINE DE VIAJE",
+      navDockTop: "ANCLAR ARRIBA",
+      navDockBottom: "ANCLAR ABAJO",
+      navSoundOn: "AMBIENTE ON",
+      navSoundOff: "AMBIENTE OFF",
+      navBlueprintOn: "CAD WIREFRAME",
+      navBlueprintOff: "REALIDAD CONSTRUIDA",
+      navClose: "CERRAR ×",
+      navJump: "Desplazarse al capítulo",
+      chapterSub0: "Espacios Considerados Que Desafían Lo Ordinario",
+      chapterSub1: "La Alquimia de la Materia Prima y Canteras Europeas",
+      chapterSub2: "Espacios Que Invitan a la Quietud y Disciplina",
+      chapterSub3: "Taller de Ebanistería y Precisión CNC de 5 Ejes",
+      chapterSub4: "Tolerancias Submilimétricas e Integridad Integral",
+      chapterSub5: "Elegancia Espacial, Autenticidad y Función Pragmática",
+      chapterSub6: "Residencias Monolíticas y Volúmenes Arquitectónicos",
+      chapterSub7: "Exclusividad en su Máxima Expresión y Consulta Privada"
     }
   };
 
@@ -588,6 +647,7 @@ export default function YashmeenNibExperience() {
       invalidateOnRefresh: true,
       onUpdate: (self) => {
         const currentScroll = self.scroll();
+        setScrollPercent(Math.round(self.progress * 100));
 
         // Fixed header logo & Menú button reveal
         const headerLogo = headerLogoRef.current;
@@ -647,14 +707,96 @@ export default function YashmeenNibExperience() {
       }
     });
 
-    // Section 1 Image scrub (moves -15vw -> 0vw)
+    // ------------------------------------------------------------------------
+    // MULTI-AXIS VERTICAL PARALLAX & COUNTER-SCROLL CHOREOGRAPHY
+    // ------------------------------------------------------------------------
+
+    // 1. Vertical Counter-Scrolling Flip Media (Defining hallmark of reference)
+    const flipMediaDownList = modScroll.querySelectorAll(".flipMedia__media--down");
+    flipMediaDownList.forEach((el) => {
+      gsap.fromTo(
+        el,
+        { yPercent: -18 },
+        {
+          yPercent: 18,
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: el.closest(".flipMedia") || el,
+            start: "0% 100%",
+            end: "100% 0%",
+            scrub: 0.5
+          }
+        }
+      );
+    });
+
+    const flipMediaUpList = modScroll.querySelectorAll(".flipMedia__media--up");
+    flipMediaUpList.forEach((el) => {
+      gsap.fromTo(
+        el,
+        { yPercent: 18 },
+        {
+          yPercent: -18,
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: el.closest(".flipMedia") || el,
+            start: "0% 100%",
+            end: "100% 0%",
+            scrub: 0.5
+          }
+        }
+      );
+    });
+
+    // 2. Chapter 0: Intro Vertical Typography Split Exit
+    const introTitles = modScroll.querySelectorAll(".mod-scroll__intro__wrap-titles .mod-scroll__intro__title");
+    if (introTitles.length >= 3) {
+      gsap.to(introTitles[0], {
+        yPercent: -24,
+        ease: "none",
+        scrollTrigger: {
+          containerAnimation: scrollTl,
+          trigger: ".mod-scroll__intro",
+          start: "0% 0%",
+          end: "100% 0%",
+          scrub: 0.5
+        }
+      });
+      gsap.to(introTitles[1], {
+        yPercent: 28,
+        ease: "none",
+        scrollTrigger: {
+          containerAnimation: scrollTl,
+          trigger: ".mod-scroll__intro",
+          start: "0% 0%",
+          end: "100% 0%",
+          scrub: 0.5
+        }
+      });
+      gsap.to(introTitles[2], {
+        yPercent: -32,
+        ease: "none",
+        scrollTrigger: {
+          containerAnimation: scrollTl,
+          trigger: ".mod-scroll__intro",
+          start: "0% 0%",
+          end: "100% 0%",
+          scrub: 0.5
+        }
+      });
+    }
+
+    // 3. Chapter 1: Primary Images Scrub (horizontal -15vw -> 0vw with vertical float)
     const singleImg = modScroll.querySelector(".mod-scroll__images__image-single");
     if (singleImg) {
       gsap.fromTo(
         singleImg,
-        { x: "-15vw" },
+        { x: "-15vw", y: "-6vh" },
         {
           x: "0vw",
+          y: "6vh",
           ease: "none",
           scrollTrigger: {
             containerAnimation: scrollTl,
@@ -667,7 +809,123 @@ export default function YashmeenNibExperience() {
       );
     }
 
-    // Section 4 Vertical Carousel Ticker
+    // 4. Chapter 1: Materiality Specimen Vertical Float & Narrative Glide
+    const matVisual = modScroll.querySelector(".materiality__col-visual-shell");
+    const matContent = modScroll.querySelector(".materiality__col-content");
+    if (matVisual && matContent) {
+      gsap.fromTo(
+        matVisual,
+        { y: "9vh", scale: 0.96 },
+        {
+          y: "-9vh",
+          scale: 1.02,
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: ".mod-scroll__materiality",
+            start: "0% 100%",
+            end: "100% 0%",
+            scrub: 0.8
+          }
+        }
+      );
+      gsap.fromTo(
+        matContent,
+        { y: "-6vh" },
+        {
+          y: "6vh",
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: ".mod-scroll__materiality",
+            start: "0% 100%",
+            end: "100% 0%",
+            scrub: 0.8
+          }
+        }
+      );
+    }
+
+    // 5. Chapter 2: Studio Manifesto Editorial Typography Wave & Floating Telemetry
+    const textLines = modScroll.querySelectorAll(".mod-scroll__text__title .line");
+    textLines.forEach((line, idx) => {
+      const yDist = (idx % 2 === 0 ? -1 : 1) * (7 + idx * 3);
+      gsap.fromTo(
+        line,
+        { y: `${yDist}vh` },
+        {
+          y: `${-yDist}vh`,
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: ".mod-scroll__text",
+            start: "0% 100%",
+            end: "100% 0%",
+            scrub: 0.6
+          }
+        }
+      );
+    });
+
+    const telemetryItems = modScroll.querySelectorAll(".telemetry-item");
+    telemetryItems.forEach((tItem, idx) => {
+      gsap.fromTo(
+        tItem,
+        { y: idx === 1 ? "-5vh" : "5vh" },
+        {
+          y: idx === 1 ? "5vh" : "-5vh",
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: ".mod-scroll__text",
+            start: "0% 100%",
+            end: "100% 0%",
+            scrub: 0.6
+          }
+        }
+      );
+    });
+
+    // 6. Chapter 3: Dark Atelier Vertical Aperture & Center Text Float
+    const darkAtelier = modScroll.querySelector(".mod-scroll__images-text");
+    if (darkAtelier) {
+      gsap.fromTo(
+        darkAtelier,
+        { clipPath: "inset(4% 0% 4% 0%)" },
+        {
+          clipPath: "inset(0% 0% 0% 0%)",
+          ease: "power2.out",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: darkAtelier,
+            start: "0% 90%",
+            end: "40% 50%",
+            scrub: 0.5
+          }
+        }
+      );
+    }
+
+    const atelierText = modScroll.querySelector(".mod-scroll__images-text__text");
+    if (atelierText) {
+      gsap.fromTo(
+        atelierText,
+        { y: "7vh" },
+        {
+          y: "-7vh",
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: atelierText,
+            start: "0% 100%",
+            end: "100% 0%",
+            scrub: 0.5
+          }
+        }
+      );
+    }
+
+    // 7. Chapter 4: Values Vertical Ribbon Ticker & Cascading Pillar Stagger
     const carouselContent = modScroll.querySelector(".mod-scroll__carousel__content");
     if (carouselContent) {
       gsap.fromTo(
@@ -687,11 +945,61 @@ export default function YashmeenNibExperience() {
       );
     }
 
-    // Section 6 Terms Parallax
+    const valueCards = modScroll.querySelectorAll(".value-card");
+    if (valueCards.length >= 3) {
+      gsap.fromTo(
+        valueCards[0],
+        { y: "12vh" },
+        {
+          y: "-6vh",
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: ".mod-scroll__carousel",
+            start: "0% 90%",
+            end: "100% 10%",
+            scrub: 0.7
+          }
+        }
+      );
+      gsap.fromTo(
+        valueCards[1],
+        { y: "-10vh" },
+        {
+          y: "10vh",
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: ".mod-scroll__carousel",
+            start: "0% 90%",
+            end: "100% 10%",
+            scrub: 0.7
+          }
+        }
+      );
+      gsap.fromTo(
+        valueCards[2],
+        { y: "14vh" },
+        {
+          y: "-8vh",
+          ease: "none",
+          scrollTrigger: {
+            containerAnimation: scrollTl,
+            trigger: ".mod-scroll__carousel",
+            start: "0% 90%",
+            end: "100% 10%",
+            scrub: 0.7
+          }
+        }
+      );
+    }
+
+    // 8. Chapter 5: Spatial Tenets Multi-Axis Counter Drift
     const terms = modScroll.querySelectorAll(".mod-scroll__terms__term");
     if (terms.length >= 3) {
       gsap.to(terms[0], {
         paddingLeft: "12vw",
+        y: "8vh",
         ease: "none",
         scrollTrigger: {
           containerAnimation: scrollTl,
@@ -703,6 +1011,7 @@ export default function YashmeenNibExperience() {
       });
       gsap.to(terms[1], {
         paddingRight: "3vw",
+        y: "-10vh",
         ease: "none",
         scrollTrigger: {
           containerAnimation: scrollTl,
@@ -714,6 +1023,7 @@ export default function YashmeenNibExperience() {
       });
       gsap.to(terms[2], {
         paddingLeft: "20vw",
+        y: "11vh",
         ease: "none",
         scrollTrigger: {
           containerAnimation: scrollTl,
@@ -725,7 +1035,7 @@ export default function YashmeenNibExperience() {
       });
     }
 
-    // Section 7: Expanding Project Cards (15vw -> 60vw)
+    // 9. Chapter 6: Expanding Monolith Cards & Vertical Image Parallax
     const projectItems = modScroll.querySelectorAll(".mod-scroll__projects__item:not(.last-item)");
     projectItems.forEach((item, idx) => {
       const media = item.querySelector(".media__source");
@@ -751,9 +1061,11 @@ export default function YashmeenNibExperience() {
       if (media) {
         gsap.fromTo(
           media,
-          { height: "87vh" },
+          { height: "87vh", yPercent: idx % 2 === 0 ? -12 : 12, scale: 1.08 },
           {
             height: "66vh",
+            yPercent: idx % 2 === 0 ? 12 : -12,
+            scale: 1.0,
             ease: "power1.inOut",
             scrollTrigger: {
               containerAnimation: scrollTl,
@@ -761,6 +1073,26 @@ export default function YashmeenNibExperience() {
               start: "0% 80%",
               end: "100% 40%",
               scrub: true
+            }
+          }
+        );
+      }
+
+      const titleBlock = item.querySelector(".mod-scroll__projects__item__text");
+      if (titleBlock) {
+        gsap.fromTo(
+          titleBlock,
+          { y: "5vh", opacity: 0.7 },
+          {
+            y: "0vh",
+            opacity: 1,
+            ease: "power2.out",
+            scrollTrigger: {
+              containerAnimation: scrollTl,
+              trigger: item,
+              start: "0% 70%",
+              end: "100% 30%",
+              scrub: 0.4
             }
           }
         );
@@ -825,6 +1157,116 @@ export default function YashmeenNibExperience() {
       y: e.clientY - rect.top
     });
   };
+
+  // Procedural Web Audio Soundscape Synthesizer
+  const toggleSound = useCallback(() => {
+    if (isSoundOn) {
+      if (gainNodeRef.current && audioCtxRef.current) {
+        try {
+          gainNodeRef.current.gain.linearRampToValueAtTime(0.0001, audioCtxRef.current.currentTime + 0.4);
+          setTimeout(() => {
+            if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
+              audioCtxRef.current.suspend();
+            }
+          }, 450);
+        } catch (e) {
+          console.warn("Sound ramp error", e);
+        }
+      }
+      setIsSoundOn(false);
+    } else {
+      try {
+        if (!audioCtxRef.current) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          const ctx = new AudioCtx();
+          audioCtxRef.current = ctx;
+
+          // Warm 55Hz architectural drone + 110Hz harmonic
+          const osc1 = ctx.createOscillator();
+          osc1.type = "sine";
+          osc1.frequency.setValueAtTime(55, ctx.currentTime);
+
+          const osc2 = ctx.createOscillator();
+          osc2.type = "sine";
+          osc2.frequency.setValueAtTime(110, ctx.currentTime);
+
+          const filter = ctx.createBiquadFilter();
+          filter.type = "lowpass";
+          filter.frequency.setValueAtTime(240, ctx.currentTime);
+
+          const masterGain = ctx.createGain();
+          masterGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+          gainNodeRef.current = masterGain;
+
+          osc1.connect(filter);
+          osc2.connect(filter);
+          filter.connect(masterGain);
+          masterGain.connect(ctx.destination);
+
+          osc1.start();
+          osc2.start();
+        }
+
+        if (audioCtxRef.current.state === "suspended") {
+          audioCtxRef.current.resume();
+        }
+
+        if (gainNodeRef.current && audioCtxRef.current) {
+          gainNodeRef.current.gain.linearRampToValueAtTime(0.06, audioCtxRef.current.currentTime + 0.6);
+        }
+        setIsSoundOn(true);
+      } catch (err) {
+        console.warn("AudioContext error", err);
+      }
+    }
+  }, [isSoundOn]);
+
+  // Cleanup Web Audio context on unmount
+  useEffect(() => {
+    return () => {
+      if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
+        audioCtxRef.current.close().catch(() => {});
+      }
+    };
+  }, []);
+
+  // Escape key closes chapter index drawer
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsNavExpanded(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Interactive scrubber click handler
+  const handleScrubberClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+    const modScroll = modScrollRef.current;
+    if (!modScroll) return;
+    const totalScroll = modScroll.scrollWidth - window.innerWidth + 1200;
+    const targetY = ratio * totalScroll;
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(targetY, { duration: 1.2 });
+    } else {
+      window.scrollTo({ top: targetY, behavior: "smooth" });
+    }
+  };
+
+  const chapterData = [
+    { num: "01", name: currentText.chapters[0], image: "/static/hero-editorial.png", subtitle: currentText.chapterSub0 },
+    { num: "02", name: currentText.chapters[1], image: "/static/raw-space.jpg", subtitle: currentText.chapterSub1 },
+    { num: "03", name: currentText.chapters[2], image: "/static/yashmeen-studio.jpg", subtitle: currentText.chapterSub2 },
+    { num: "04", name: currentText.chapters[3], image: "/static/joinery-bay.jpg", subtitle: currentText.chapterSub3 },
+    { num: "05", name: currentText.chapters[4], image: "/static/Residential-Fit-Out.jpg", subtitle: currentText.chapterSub4 },
+    { num: "06", name: currentText.chapters[5], image: "/static/work-clifton.jpg", subtitle: currentText.chapterSub5 },
+    { num: "07", name: currentText.chapters[6], image: "/static/work-myrtle.jpg", subtitle: currentText.chapterSub6 },
+    { num: "08", name: currentText.chapters[7], image: "/static/hero-cinematic.jpg", subtitle: currentText.chapterSub7 }
+  ];
 
   const currentMat = materialSpecs[activeMaterial];
 
@@ -898,21 +1340,191 @@ export default function YashmeenNibExperience() {
       </div>
 
       {/* ------------------------------------------------------------------
-          3. FIXED BOTTOM STORYTELLING CHAPTER HUD
+          3. FLOATING ARCHITECTURAL DYNAMIC NAV & SCRUBBER (REPLACES STATIC HUD)
          ------------------------------------------------------------------ */}
-      <nav className="nib-story-hud" aria-label="Experience Chapters">
-        {currentText.chapters.map((chapterName, idx) => (
+      <div
+        className={`nib-dynamic-nav ${
+          navDockPosition === "top" ? "is-dock-top" : "is-dock-bottom"
+        } ${isNavExpanded ? "is-expanded" : ""} ${
+          isHeaderDark ? "theme-dark-active" : ""
+        }`}
+      >
+        {/* Floating Capsule Bar */}
+        <div className="dynamic-nav__capsule">
+          {/* Chapter Compass & Circular Progress Ring */}
           <button
-            key={idx}
             type="button"
-            className={`nib-story-hud__btn ${activeChapter === idx ? "is-active" : ""}`}
-            onClick={() => jumpToChapter(idx)}
-            title={`Glide to ${chapterName}`}
+            className="nav-capsule__chapter-indicator"
+            onClick={() => setIsNavExpanded(!isNavExpanded)}
+            title="Open Chapter Index"
           >
-            {chapterName}
+            <div className="nav-capsule__ring-wrap">
+              <svg className="nav-ring-svg" viewBox="0 0 36 36">
+                <circle className="nav-ring-bg" cx="18" cy="18" r="15.915" />
+                <circle
+                  className="nav-ring-val"
+                  cx="18"
+                  cy="18"
+                  r="15.915"
+                  strokeDasharray="100 100"
+                  strokeDashoffset={100 - scrollPercent}
+                />
+              </svg>
+              <span className="nav-ring-label">{activeChapter + 1}</span>
+            </div>
+
+            <div className="nav-capsule__meta">
+              <span className="nav-capsule__chapter-num">0{activeChapter + 1} / 08</span>
+              <span className="nav-capsule__chapter-title">
+                {currentText.chapters[activeChapter]?.replace(/^\d+\s*/, "")}
+              </span>
+            </div>
           </button>
-        ))}
-      </nav>
+
+          {/* Live Scroll Percentage Tag */}
+          <div className="nav-capsule__pct-chip">
+            <span>{scrollPercent}%</span>
+          </div>
+
+          {/* Procedural Web Audio Soundscape Toggle */}
+          <button
+            type="button"
+            className={`nav-capsule__btn ${isSoundOn ? "is-active" : ""}`}
+            onClick={toggleSound}
+            title={isSoundOn ? currentText.navSoundOff : currentText.navSoundOn}
+          >
+            <div className={`nav-sound-wave ${isSoundOn ? "is-playing" : ""}`}>
+              <span className="wave-bar bar-1" />
+              <span className="wave-bar bar-2" />
+              <span className="wave-bar bar-3" />
+              <span className="wave-bar bar-4" />
+            </div>
+            <span className="btn-label">{isSoundOn ? "AMBIENCE" : "MUTED"}</span>
+          </button>
+
+          {/* CAD Blueprint / Built Reality X-Ray Switch */}
+          <button
+            type="button"
+            className={`nav-capsule__btn ${isBlueprintMode ? "is-active" : ""}`}
+            onClick={() => setIsBlueprintMode(!isBlueprintMode)}
+            title={isBlueprintMode ? currentText.navBlueprintOff : currentText.navBlueprintOn}
+          >
+            <FiLayers size={12} />
+            <span className="btn-label">{isBlueprintMode ? "REALITY" : "X-RAY"}</span>
+          </button>
+
+          {/* Dock Position Switcher: Top vs Bottom */}
+          <button
+            type="button"
+            className="nav-capsule__btn nav-capsule__dock-btn"
+            onClick={() => setNavDockPosition(navDockPosition === "top" ? "bottom" : "top")}
+            title={`Flip Docking to ${navDockPosition === "top" ? "Bottom" : "Top"}`}
+          >
+            <FiSliders size={12} />
+            <span className="btn-label">{navDockPosition === "top" ? "DOCK ↓" : "DOCK ↑"}</span>
+          </button>
+
+          {/* Chapter Index Trigger */}
+          <button
+            type="button"
+            className="nav-capsule__btn nav-capsule__index-trigger"
+            onClick={() => setIsNavExpanded(!isNavExpanded)}
+            title={isNavExpanded ? currentText.navClose : currentText.navExplore}
+          >
+            <FiGrid size={12} />
+            <span className="btn-label">{isNavExpanded ? currentText.navClose : currentText.navExplore}</span>
+          </button>
+        </div>
+
+        {/* Expanded Architectural Chapter Drawer & Scrubber Overlay */}
+        {isNavExpanded && (
+          <div className="nib-nav-drawer">
+            <div className="drawer-inner">
+              {/* Scrubber Header Bar */}
+              <div className="drawer-scrubber-header">
+                <div className="scrubber-title-wrap">
+                  <span className="scrubber-eyebrow">ARCHITECTURAL JOURNEY</span>
+                  <span className="scrubber-title">{currentText.navScrubber}</span>
+                </div>
+                <button
+                  type="button"
+                  className="drawer-close-btn"
+                  onClick={() => setIsNavExpanded(false)}
+                >
+                  <FiX size={15} />
+                  <span>{currentText.navClose}</span>
+                </button>
+              </div>
+
+              {/* High-Precision Interactive Scrubber Track */}
+              <div
+                className="interactive-scrubber-track"
+                onClick={handleScrubberClick}
+                title="Click anywhere to glide"
+              >
+                <div
+                  className="scrubber-fill"
+                  style={{ width: `${scrollPercent}%` }}
+                />
+                <div
+                  className="scrubber-handle"
+                  style={{ left: `${scrollPercent}%` }}
+                >
+                  <span className="scrubber-handle-tag">{scrollPercent}%</span>
+                </div>
+
+                <div className="scrubber-ticks">
+                  {currentText.chapters.map((ch, idx) => (
+                    <div
+                      key={idx}
+                      className={`scrubber-tick ${activeChapter === idx ? "is-active" : ""}`}
+                      style={{ left: `${(idx / 7) * 100}%` }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        jumpToChapter(idx);
+                        setIsNavExpanded(false);
+                      }}
+                    >
+                      <span className="tick-mark" />
+                      <span className="tick-label">0{idx + 1}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 8 Architectural Chapter Bento Cards */}
+              <div className="drawer-chapters-grid">
+                {chapterData.map((ch, idx) => (
+                  <div
+                    key={idx}
+                    className={`drawer-chapter-card ${activeChapter === idx ? "is-current" : ""}`}
+                    onClick={() => {
+                      jumpToChapter(idx);
+                      setIsNavExpanded(false);
+                    }}
+                  >
+                    <div className="card-thumb-wrap">
+                      <img src={ch.image} alt={ch.name} className="card-thumb-img" />
+                      <span className="card-num-badge">{ch.num}</span>
+                      {activeChapter === idx && (
+                        <span className="card-live-badge">VIEWING</span>
+                      )}
+                    </div>
+                    <div className="card-body">
+                      <h4 className="card-title">{ch.name}</h4>
+                      <p className="card-subtitle">{ch.subtitle}</p>
+                      <span className="card-jump-link">
+                        <span>{currentText.navJump}</span>
+                        <FiArrowRight size={11} />
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* ------------------------------------------------------------------
           4. MAIN HORIZONTAL SCROLL WRAPPER (.mod-scroll)

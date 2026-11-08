@@ -498,7 +498,7 @@ export default function YashmeenNibExperience() {
           const darkSec = document.querySelector(".mod-scroll__images-text");
           if (darkSec) {
             const rect = darkSec.getBoundingClientRect();
-            if (rect.left <= 250 && rect.right >= 60) {
+            if (rect.left <= window.innerWidth * 0.85 && rect.right >= window.innerWidth * 0.15) {
               setIsHeaderDark(true);
             } else {
               setIsHeaderDark(false);
@@ -507,17 +507,15 @@ export default function YashmeenNibExperience() {
         }
       });
 
-      // Top Header Logo & Menu Reveal - slides down into view only after scrolling past the hero intro
+      // Top Header Logo & Menu Reveal - slides into view only after scrolling past the hero intro
       const headerLogo = headerLogoRef.current;
       const headerControls = headerControlsRef.current;
       if (headerLogo && headerControls) {
-        const headerTl = gsap.timeline({ paused: true });
-        headerTl.to([headerLogo, headerControls], {
-          y: "0%",
-          opacity: 1,
-          duration: 0.65,
-          stagger: 0.05,
-          ease: "power3.out",
+        const normal = headerLogo.querySelector(".logo__normal");
+        const group = headerLogo.querySelector(".logo__group");
+
+        const headerTl = gsap.timeline({
+          paused: true,
           onStart: () => {
             headerLogo.classList.add("is-visible");
             headerControls.classList.add("is-visible");
@@ -525,8 +523,36 @@ export default function YashmeenNibExperience() {
           onReverseComplete: () => {
             headerLogo.classList.remove("is-visible");
             headerControls.classList.remove("is-visible");
+            gsap.set(headerLogo, { opacity: 0 });
+            if (normal) gsap.set(normal, { y: "-180%", opacity: 0 });
+            if (group) gsap.set(group, { y: "130%", opacity: 0 });
+            gsap.set(headerControls, { y: "-180%", opacity: 0 });
           }
         });
+
+        headerTl.to(headerLogo, { opacity: 1, duration: 0.2, ease: "none" }, 0);
+        if (normal) {
+          headerTl.fromTo(
+            normal,
+            { y: "-180%", opacity: 0 },
+            { y: "0%", opacity: 1, duration: 0.75, ease: "power3.out" },
+            0
+          );
+        }
+        if (group) {
+          headerTl.fromTo(
+            group,
+            { y: "130%", opacity: 0 },
+            { y: "0%", opacity: 1, duration: 0.75, ease: "power3.out" },
+            0
+          );
+        }
+        headerTl.fromTo(
+          headerControls,
+          { y: "-180%", opacity: 0 },
+          { y: "0%", opacity: 1, duration: 0.65, ease: "power3.out" },
+          0
+        );
 
         ScrollTrigger.create({
           containerAnimation: scrollTl,
@@ -535,7 +561,15 @@ export default function YashmeenNibExperience() {
           end: "126% 0%",
           onEnter: () => headerTl.play(),
           onEnterBack: () => headerTl.reverse(),
-          onLeaveBack: () => headerTl.reverse()
+          onLeaveBack: () => {
+            headerLogo.classList.remove("is-visible");
+            headerControls.classList.remove("is-visible");
+            headerTl.progress(0).pause();
+            gsap.set(headerLogo, { opacity: 0 });
+            if (normal) gsap.set(normal, { y: "-180%", opacity: 0 });
+            if (group) gsap.set(group, { y: "130%", opacity: 0 });
+            gsap.set(headerControls, { y: "-180%", opacity: 0 });
+          }
         });
       }
 
@@ -1000,6 +1034,15 @@ export default function YashmeenNibExperience() {
     if (mouseRef.current) mouseRef.current.classList.remove("is-hidden");
   };
 
+  // Directional button hover listener matching normalisboring.es
+  const handleBtnMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    e.currentTarget.style.setProperty("--posX", `${x}px`);
+    e.currentTarget.style.setProperty("--posY", `${y}px`);
+  };
+
   return (
     <div
       className={`nib-page-wrapper ${isPreloading ? "is-preloading" : ""} ${
@@ -1017,17 +1060,25 @@ export default function YashmeenNibExperience() {
          ------------------------------------------------------------------ */}
       <header>
         <div className="header">
-          {/* Top-Left Editorial Logo */}
+          {/* Canonical Diagonal Frame Header Logo */}
           <div
-            className={`header__logo logo ${isHeaderDark ? "c-white" : ""}`}
+            className={`header__logo logo small ${isHeaderDark ? "c-white" : ""}`}
             ref={headerLogoRef}
           >
-            <Link to="/" className="logo__normal" aria-label="Yashmeen Home">
-              <span>YASHMEEN</span>
+            <Link to="/" className="logo__normal link" aria-label="Yashmeen Home">
+              <div className="line">
+                <span>YASHMEEN</span>
+              </div>
+              <div className="line">
+                <span>YASHMEEN</span>
+              </div>
             </Link>
             <div className="logo__group">
-              <span className="logo__is">ATELIER</span>
-              <span className="logo__boring">DUBAI®</span>
+              <div className="logo__is">ATELIER</div>
+              <div className="logo__boring">
+                DUBAI
+                <div className="reg">®</div>
+              </div>
             </div>
           </div>
 
@@ -1036,7 +1087,8 @@ export default function YashmeenNibExperience() {
             <button
               type="button"
               onClick={() => setLang(lang === "en" ? "es" : "en")}
-              className={`header__btn header__lang-btn btn btn--bg f-edit t-parrafo-l ${
+              onMouseMove={handleBtnMouseMove}
+              className={`header__btn header__lang-btn btn f-edit t-parrafo-l ${
                 isHeaderDark ? "c-white" : ""
               }`}
               title="Toggle Language"
@@ -1047,7 +1099,8 @@ export default function YashmeenNibExperience() {
             <button
               type="button"
               onClick={toggleMenu}
-              className={`header__btn btn btn--bg f-edit t-parrafo-l ${
+              onMouseMove={handleBtnMouseMove}
+              className={`header__btn btn f-edit t-parrafo-l ${
                 isMenuOpen ? "btn--menu-active" : ""
               } ${isHeaderDark ? "c-white" : ""}`}
               aria-label="Toggle Navigation Menu"
@@ -1170,7 +1223,7 @@ export default function YashmeenNibExperience() {
             <div className="wrapper">
               {/* Rotated Top-Right Navigation Menu (-90deg hallmark) */}
               <ul className="mod-scroll__intro__menu f-izmir t-parrafo t-upper">
-                <li className="menu-item">
+                <li className="menu-item link">
                   <a
                     href="#studio"
                     onClick={(e) => {
@@ -1178,10 +1231,15 @@ export default function YashmeenNibExperience() {
                       glideToSection("#studio");
                     }}
                   >
-                    {currentText.navStudio}
+                    <div className="line">
+                      <span>{currentText.navStudio}</span>
+                    </div>
+                    <div className="line">
+                      <span>{currentText.navStudio}</span>
+                    </div>
                   </a>
                 </li>
-                <li className="menu-item">
+                <li className="menu-item link">
                   <a
                     href="#projects"
                     onClick={(e) => {
@@ -1189,11 +1247,23 @@ export default function YashmeenNibExperience() {
                       glideToSection("#projects");
                     }}
                   >
-                    {currentText.navProjects}
+                    <div className="line">
+                      <span>{currentText.navProjects}</span>
+                    </div>
+                    <div className="line">
+                      <span>{currentText.navProjects}</span>
+                    </div>
                   </a>
                 </li>
-                <li className="menu-item">
-                  <Link to="/contact">{currentText.navContact}</Link>
+                <li className="menu-item link">
+                  <Link to="/contact">
+                    <div className="line">
+                      <span>{currentText.navContact}</span>
+                    </div>
+                    <div className="line">
+                      <span>{currentText.navContact}</span>
+                    </div>
+                  </Link>
                 </li>
               </ul>
 
@@ -1248,15 +1318,23 @@ export default function YashmeenNibExperience() {
                 </div>
               </div>
 
-              {/* Landmark Big Brand Identity at Bottom-Right */}
+              {/* Landmark Big Brand Identity spanning the viewport */}
               <div className="mod-scroll__intro__logo logo c-black">
-                <div className="logo__normal">
-                  {renderChars("YASHMEEN")}
+                <div
+                  className="logo__normal link"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                >
+                  <div className="line">
+                    <span>YASHMEEN</span>
+                  </div>
+                  <div className="line">
+                    <span>YASHMEEN</span>
+                  </div>
                 </div>
                 <div className="logo__group">
-                  <div className="logo__is">{renderChars("ATELIER")}</div>
+                  <div className="logo__is">ATELIER</div>
                   <div className="logo__boring">
-                    {renderChars("DUBAI")}
+                    DUBAI
                     <div className="reg">®</div>
                   </div>
                 </div>

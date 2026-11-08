@@ -21,14 +21,55 @@ import {
   FiArrowUpRight,
   FiEye,
   FiClock,
+  FiChevronLeft,
+  FiChevronRight,
+  FiColumns,
+  FiGrid,
+  FiLayers,
+  FiActivity,
+  FiSend,
 } from "react-icons/fi";
 
+const KANBAN_STAGES = [
+  {
+    id: "intake",
+    index: "01",
+    title: "INTAKE & BRIEFS",
+    subtitle: "New client submissions & incoming briefs",
+  },
+  {
+    id: "estimation",
+    index: "02",
+    title: "ESTIMATION & MEP",
+    subtitle: "CAD drafting, spatial costing & MEP site surveys",
+  },
+  {
+    id: "proposal",
+    index: "03",
+    title: "CLIENT PROPOSALS",
+    subtitle: "Turnkey fit-out quotes sent & negotiations",
+  },
+  {
+    id: "production",
+    index: "04",
+    title: "ATELIER PRODUCTION",
+    subtitle: "Joinery fabrication & active on-site fit-out",
+  },
+  {
+    id: "delivered",
+    index: "05",
+    title: "ARCHIVED & DELIVERED",
+    subtitle: "Handed over spaces & catalogued archives",
+  },
+];
+
 const TABS = [
-  { id: "overview", num: "(01)", label: "DISPATCH OVERVIEW" },
-  { id: "quotes", num: "(02)", label: "COMMISSIONS" },
-  { id: "enquiries", num: "(03)", label: "INQUIRIES" },
-  { id: "projects", num: "(04)", label: "PORTFOLIO" },
-  { id: "settings", num: "(05)", label: "ATELIER DIRECTORY" },
+  { id: "kanban", num: "(01)", label: "CMS KANBAN PIPELINE" },
+  { id: "telemetry", num: "(02)", label: "CAD TELEMETRY & FEEDS" },
+  { id: "quotes", num: "(03)", label: "COMMISSIONS" },
+  { id: "enquiries", num: "(04)", label: "INQUIRIES" },
+  { id: "projects", num: "(05)", label: "SPATIAL PORTFOLIO" },
+  { id: "settings", num: "(06)", label: "ATELIER DIRECTORY" },
 ];
 
 const emptyDetails = {
@@ -45,7 +86,6 @@ const emptyDetails = {
   socialLinks: [],
 };
 
-const URL_RE = /^https?:\/\/.+/;
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
 const normalizeDetails = (data = {}) => ({
@@ -72,8 +112,18 @@ const formatDate = (val) => {
   });
 };
 
+const formatTime = (val) => {
+  if (!val) return "";
+  const d = new Date(val);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("kanban");
 
   // Live dynamic data states
   const [quotes, setQuotes] = useState([]);
@@ -83,12 +133,51 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [savingSettings, setSavingSettings] = useState(false);
 
-  // Quote detail inspection modal
-  const [selectedQuote, setSelectedQuote] = useState(null);
+  // Kanban persistent stages mapping: { [itemId]: stageId }
+  const [stageMap, setStageMap] = useState(() => {
+    try {
+      const saved = localStorage.getItem("yashmeen_kanban_stage_map");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  // Custom Atelier Dispatches (stored locally)
+  const [customDispatches, setCustomDispatches] = useState(() => {
+    try {
+      const saved = localStorage.getItem("yashmeen_custom_dispatches");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Kanban filters & drag state
+  const [kanbanFilter, setKanbanFilter] = useState("ALL");
+  const [kanbanSearch, setKanbanSearch] = useState("");
+  const [draggingItemId, setDraggingItemId] = useState(null);
+  const [dragOverColId, setDragOverColId] = useState(null);
+
+  // Selected item inspection drawer
+  const [inspectedItem, setInspectedItem] = useState(null);
+
+  // Quick Add Dispatch Modal
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [quickAddStage, setQuickAddStage] = useState("intake");
+  const [newDispatchForm, setNewDispatchForm] = useState({
+    title: "",
+    client: "",
+    type: "COMMISSION BRIEF",
+    location: "Dubai, UAE",
+    budget: "Under AED 150,000",
+    scope: "",
+    notes: "",
+  });
+
+  // Dedicated Tab Filters
   const [quoteSearch, setQuoteSearch] = useState("");
   const [quoteFilter, setQuoteFilter] = useState("ALL");
-
-  // Enquiry search
   const [enquirySearch, setEnquirySearch] = useState("");
 
   // Settings form errors
@@ -139,7 +228,271 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Filtered quotes
+  // Sync stageMap to localStorage
+  const updateItemStage = (itemId, targetStageId, itemTitle = "Item") => {
+    setStageMap((prev) => {
+      const next = { ...prev, [itemId]: targetStageId };
+      try {
+        localStorage.setItem("yashmeen_kanban_stage_map", JSON.stringify(next));
+      } catch (e) {
+        console.error("Failed to save stage map:", e);
+      }
+      return next;
+    });
+
+    const targetStage = KANBAN_STAGES.find((s) => s.id === targetStageId);
+    toast.success(`Moved "${itemTitle}" to ${targetStage?.title || targetStageId}`);
+  };
+
+  // Convert raw Mongo items + custom items into Unified Kanban Items
+  const allKanbanItems = useMemo(() => {
+    const list = [];
+
+    // 1. Quotes
+    quotes.forEach((q) => {
+      const id = `quote-${q._id}`;
+      const assignedStage = stageMap[id] || "intake";
+      list.push({
+        id,
+        rawId: q._id,
+        itemType: "QUOTE",
+        typeBadge: "COMMISSION BRIEF",
+        title: q.name || "Untitled Commission",
+        client: q.name,
+        subtitle: q.projectType ? `${q.projectType} Fit-Out` : "Bespoke Fit-Out",
+        location: q.location || "Dubai, UAE",
+        budget: q.budget || "Custom Budget",
+        services: Array.isArray(q.services) ? q.services : q.services ? [q.services] : [],
+        message: q.message || "",
+        email: q.email || "",
+        mobile: q.mobile || "",
+        timeline: q.timeline || "Within 1-3 months",
+        date: q.createdAt,
+        stage: assignedStage,
+      });
+    });
+
+    // 2. Enquiries
+    enquiries.forEach((e) => {
+      const id = `enquiry-${e._id}`;
+      const assignedStage = stageMap[id] || "intake";
+      list.push({
+        id,
+        rawId: e._id,
+        itemType: "ENQUIRY",
+        typeBadge: "CLIENT INQUIRY",
+        title: e.name || "Client Inquiry",
+        client: e.name,
+        subtitle: e.services || "Interior Fit-Out Consultation",
+        location: "Dubai, UAE",
+        budget: "Direct Inquiry",
+        services: e.services ? [e.services] : ["Turnkey Fit-Out"],
+        message: e.message || "",
+        email: e.email || "",
+        mobile: e.mobile || "",
+        timeline: "Immediate Consultation",
+        date: e.createdAt,
+        stage: assignedStage,
+      });
+    });
+
+    // 3. Projects (Sample first 10 for Kanban production flow)
+    projects.slice(0, 10).forEach((p, idx) => {
+      const id = `project-${p._id}`;
+      // default projects across estimation, proposal, production, delivered
+      const defaultProjectStage =
+        idx % 4 === 0
+          ? "production"
+          : idx % 4 === 1
+          ? "estimation"
+          : idx % 4 === 2
+          ? "proposal"
+          : "delivered";
+
+      const assignedStage = stageMap[id] || defaultProjectStage;
+      list.push({
+        id,
+        rawId: p._id,
+        itemType: "PROJECT",
+        typeBadge: "SPATIAL WORK",
+        title: p.title || "Spatial Project",
+        client: "Yashmeen Atelier Archive",
+        subtitle: p.category || "Fit-Out & Joinery",
+        location: p.location || "Dubai, UAE",
+        budget: "Architectural Commission",
+        image: p.image,
+        services: ["Spatial Architecture", "Joinery & MEP"],
+        message: p.description || "",
+        email: details.email || "info@yfbfitoutcontracting.com",
+        mobile: details.mobile || "+971543862870",
+        timeline: "Completed or In-Build",
+        date: p.createdAt,
+        stage: assignedStage,
+      });
+    });
+
+    // 4. Custom Dispatches
+    customDispatches.forEach((c) => {
+      const id = `custom-${c.id}`;
+      const assignedStage = stageMap[id] || c.stage || "intake";
+      list.push({
+        id,
+        rawId: c.id,
+        itemType: "CUSTOM",
+        typeBadge: c.type || "ATELIER DISPATCH",
+        title: c.title || "Custom Brief",
+        client: c.client || "Studio Team",
+        subtitle: c.scope || "Architectural Task",
+        location: c.location || "Dubai, UAE",
+        budget: c.budget || "Internal Atelier",
+        services: [c.scope || "Joinery Specification"],
+        message: c.notes || "",
+        email: details.email || "",
+        mobile: details.mobile || "",
+        timeline: "Active Milestone",
+        date: c.createdAt,
+        stage: assignedStage,
+      });
+    });
+
+    return list;
+  }, [quotes, enquiries, projects, customDispatches, stageMap, details]);
+
+  // Filtered items based on filter chips & search input
+  const filteredKanbanItems = useMemo(() => {
+    return allKanbanItems.filter((item) => {
+      // Type filter
+      if (kanbanFilter === "COMMISSIONS" && item.itemType !== "QUOTE") return false;
+      if (kanbanFilter === "INQUIRIES" && item.itemType !== "ENQUIRY") return false;
+      if (kanbanFilter === "PROJECTS" && item.itemType !== "PROJECT") return false;
+      if (kanbanFilter === "CUSTOM" && item.itemType !== "CUSTOM") return false;
+
+      // Search query
+      if (kanbanSearch.trim()) {
+        const query = kanbanSearch.toLowerCase();
+        const match =
+          (item.title && item.title.toLowerCase().includes(query)) ||
+          (item.client && item.client.toLowerCase().includes(query)) ||
+          (item.subtitle && item.subtitle.toLowerCase().includes(query)) ||
+          (item.location && item.location.toLowerCase().includes(query)) ||
+          (item.email && item.email.toLowerCase().includes(query)) ||
+          (item.message && item.message.toLowerCase().includes(query));
+        if (!match) return false;
+      }
+      return true;
+    });
+  }, [allKanbanItems, kanbanFilter, kanbanSearch]);
+
+  // Group items by stage column
+  const kanbanColumns = useMemo(() => {
+    return KANBAN_STAGES.map((stage) => {
+      const itemsInStage = filteredKanbanItems.filter(
+        (item) => item.stage === stage.id
+      );
+      return {
+        ...stage,
+        items: itemsInStage,
+      };
+    });
+  }, [filteredKanbanItems]);
+
+  // Drag and Drop Handlers
+  const handleDragStart = (e, item) => {
+    setDraggingItemId(item.id);
+    e.dataTransfer.setData("text/plain", item.id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragEnd = () => {
+    setDraggingItemId(null);
+    setDragOverColId(null);
+  };
+
+  const handleDragOver = (e, colId) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverColId !== colId) {
+      setDragOverColId(colId);
+    }
+  };
+
+  const handleDragLeave = (e, colId) => {
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    if (dragOverColId === colId) {
+      setDragOverColId(null);
+    }
+  };
+
+  const handleDrop = (e, targetColId) => {
+    e.preventDefault();
+    const itemId = e.dataTransfer.getData("text/plain") || draggingItemId;
+    setDragOverColId(null);
+    setDraggingItemId(null);
+
+    if (!itemId) return;
+    const item = allKanbanItems.find((i) => i.id === itemId);
+    if (item && item.stage !== targetColId) {
+      updateItemStage(itemId, targetColId, item.title);
+    }
+  };
+
+  // Step Move Handler (Left / Right arrows)
+  const handleStepMove = (item, direction) => {
+    const currentIndex = KANBAN_STAGES.findIndex((s) => s.id === item.stage);
+    if (currentIndex === -1) return;
+
+    const newIndex = currentIndex + direction;
+    if (newIndex >= 0 && newIndex < KANBAN_STAGES.length) {
+      const targetStage = KANBAN_STAGES[newIndex];
+      updateItemStage(item.id, targetStage.id, item.title);
+    }
+  };
+
+  // Quick Add Dispatch submission
+  const handleCreateDispatch = (e) => {
+    e.preventDefault();
+    if (!newDispatchForm.title.trim()) {
+      toast.error("Please enter a dispatch title or project name.");
+      return;
+    }
+
+    const newEntry = {
+      id: Date.now().toString(),
+      title: newDispatchForm.title.trim(),
+      client: newDispatchForm.client.trim() || "Private Client",
+      type: newDispatchForm.type,
+      location: newDispatchForm.location.trim() || "Dubai, UAE",
+      budget: newDispatchForm.budget.trim() || "Under AED 150,000",
+      scope: newDispatchForm.scope.trim() || "Turnkey Fit-Out & Joinery",
+      notes: newDispatchForm.notes.trim() || "Logged from Atelier Command console.",
+      createdAt: new Date().toISOString(),
+      stage: quickAddStage,
+    };
+
+    const updated = [newEntry, ...customDispatches];
+    setCustomDispatches(updated);
+    try {
+      localStorage.setItem("yashmeen_custom_dispatches", JSON.stringify(updated));
+    } catch (err) {
+      console.error(err);
+    }
+
+    // Assign stage in stageMap
+    updateItemStage(`custom-${newEntry.id}`, quickAddStage, newEntry.title);
+    setQuickAddOpen(false);
+    setNewDispatchForm({
+      title: "",
+      client: "",
+      type: "COMMISSION BRIEF",
+      location: "Dubai, UAE",
+      budget: "Under AED 150,000",
+      scope: "",
+      notes: "",
+    });
+    toast.success(`Logged "${newEntry.title}" onto Kanban board.`);
+  };
+
+  // Dedicated Tab Data Handlers
   const filteredQuotes = useMemo(() => {
     return quotes.filter((q) => {
       const matchSearch =
@@ -159,7 +512,6 @@ export default function Dashboard() {
     });
   }, [quotes, quoteSearch, quoteFilter]);
 
-  // Filtered enquiries
   const filteredEnquiries = useMemo(() => {
     return enquiries.filter((e) => {
       if (!enquirySearch.trim()) return true;
@@ -171,7 +523,6 @@ export default function Dashboard() {
     });
   }, [enquiries, enquirySearch]);
 
-  // Delete old quotes handler
   const handleDeleteOldQuotes = async () => {
     if (!window.confirm("Permanently delete quotations older than 1 month?")) return;
     try {
@@ -184,7 +535,6 @@ export default function Dashboard() {
     }
   };
 
-  // Delete old enquiries handler
   const handleDeleteOldEnquiries = async () => {
     if (!window.confirm("Permanently delete old inquiries?")) return;
     try {
@@ -197,7 +547,7 @@ export default function Dashboard() {
     }
   };
 
-  // Settings form handlers
+  // Settings handlers
   const setAddressField = (field) => (e) => {
     const val = e.target.value;
     setDetails((prev) => ({
@@ -248,1836 +598,2607 @@ export default function Dashboard() {
 
     setSavingSettings(true);
     try {
-      const payload = {
-        address: details.address,
-        email: details.email.trim(),
-        mobile: details.mobile.trim(),
-        whatsapp: details.whatsapp.trim(),
-        socialLinks: details.socialLinks.map((s) => ({
-          platform: s.platform.trim(),
-          url: s.url.trim(),
-        })),
-      };
-      await webDetailsAPI.update(payload);
-      toast.success("Atelier directory & public details updated.");
-    } catch {
-      toast.error("Failed to save atelier details.");
+      await webDetailsAPI.update(details);
+      toast.success("Atelier directory & contact profile updated.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update atelier directory.");
     } finally {
       setSavingSettings(false);
     }
   };
 
   return (
-    <div className="atelier-console-root">
-      {/* ====================================================================
-          1. BRUTALIST EDITORIAL HERO & MANIFESTO (Exact Website Home Vibe)
-          ==================================================================== */}
-      <section className="atelier-manifesto-hero">
-        <div className="manifesto-left">
-          <div className="manifesto-eyebrow">
-            <span>(AL QUOZ ATELIER · ARCHITECTURAL CONTROL SYSTEM)</span>
-            <div className="manifesto-hairline"></div>
+    <div style={{ paddingBottom: "80px" }}>
+      {/* ======================================================================
+          TOP MANIFESTO & REAL-TIME ARCHITECTURAL TELEMETRY
+          ====================================================================== */}
+      <section
+        style={{
+          borderBottom: "1px solid #111111",
+          paddingBottom: "32px",
+          marginBottom: "32px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "14px",
+            marginBottom: "16px",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "Outfit, 'Plus Jakarta Sans', monospace",
+              fontSize: "11px",
+              fontWeight: 800,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "#555555",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <span
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: "#000000",
+                display: "inline-block",
+                boxShadow: "0 0 0 2px rgba(0,0,0,0.15)",
+              }}
+            />
+            (AL QUOZ ATELIER · CMS ARCHITECTURAL PIPELINE)
           </div>
-          <h1 className="manifesto-display-title">
-            ATELIER
-            <br />
-            DISPATCH & CONTROL
-          </h1>
-          <p className="manifesto-description">
-            From brief to built. Real-time telemetry, spatial portfolio curation, quotation review, client inquiries, and official atelier directory settings.
-          </p>
+
+          {/* Quick Action: New Dispatch */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <button
+              onClick={() => {
+                setQuickAddStage("intake");
+                setQuickAddOpen(true);
+              }}
+              style={{
+                background: "#000000",
+                color: "#ffffff",
+                border: "1px solid #000000",
+                borderRadius: "9999px",
+                padding: "8px 18px",
+                fontSize: "11px",
+                fontWeight: 800,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "7px",
+                transition: "all 0.22s cubic-bezier(0.16, 1, 0.3, 1)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#ffffff";
+                e.currentTarget.style.color = "#000000";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#000000";
+                e.currentTarget.style.color = "#ffffff";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <FiPlus size={14} />
+              + NEW CMS DISPATCH
+            </button>
+          </div>
         </div>
 
-        <div className="manifesto-right-proof">
-          <div className="proof-box">
-            <span className="proof-num">35,000 SQ. FT.</span>
-            <span className="proof-label">AL QUOZ ATELIER & JOINERY BAY</span>
-            <div className="proof-status-row">
-              <span className="proof-dot"></span>
-              <span className="proof-status-text">MUNICIPALITY REGISTERED · IN-HOUSE MEP</span>
-            </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gap: "24px",
+            alignItems: "end",
+          }}
+        >
+          <div>
+            <h1
+              style={{
+                fontFamily: "Outfit, 'Plus Jakarta Sans', sans-serif",
+                fontSize: "clamp(32px, 4.5vw, 54px)",
+                fontWeight: 900,
+                letterSpacing: "-0.04em",
+                lineHeight: 1.02,
+                color: "#000000",
+                textTransform: "uppercase",
+                margin: 0,
+              }}
+            >
+              CMS KANBAN PIPELINE
+            </h1>
+            <p
+              style={{
+                fontSize: "14.5px",
+                color: "#444444",
+                lineHeight: 1.6,
+                marginTop: "12px",
+                maxWidth: "680px",
+                marginBottom: 0,
+              }}
+            >
+              Smooth workflow pipeline for quotation commissions, client inquiries,
+              and bespoke Al Quoz fit-out production. Drag items between columns to
+              advance stages in real time.
+            </p>
+          </div>
+
+          {/* Quick Stage Stats Strip */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(90px, 1fr))",
+              gap: "8px",
+              background: "#ffffff",
+              border: "1px solid rgba(0,0,0,0.14)",
+              borderRadius: "10px",
+              padding: "12px 14px",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+            }}
+          >
+            {KANBAN_STAGES.map((stg) => {
+              const count = allKanbanItems.filter((i) => i.stage === stg.id).length;
+              return (
+                <div
+                  key={stg.id}
+                  style={{
+                    textAlign: "center",
+                    borderRight: "1px solid rgba(0,0,0,0.08)",
+                    padding: "4px 8px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "Outfit, monospace",
+                      fontSize: "10px",
+                      fontWeight: 800,
+                      color: "#666666",
+                    }}
+                  >
+                    {stg.index}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "Outfit, sans-serif",
+                      fontSize: "20px",
+                      fontWeight: 900,
+                      color: "#000000",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {count}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "9px",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      color: "#888888",
+                      letterSpacing: "0.05em",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {stg.title.split(" ")[0]}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* ====================================================================
-          2. LIVE METRIC BENTO GRID (Wired to Real MongoDB Data!)
-          ==================================================================== */}
-      <section className="atelier-bento-grid">
-        {/* Metric 1: Quotes */}
-        <div
-          className={`bento-card ${activeTab === "quotes" ? "is-active-tile" : ""}`}
-          onClick={() => setActiveTab("quotes")}
-        >
-          <div className="bento-card-top">
-            <span className="bento-badge">COMMISSIONS</span>
-            <span className="bento-arrow">↗</span>
-          </div>
-          <div className="bento-metric">{quotes.length}</div>
-          <div className="bento-label">QUOTATION BRIEFS LOGGED</div>
-          <div className="bento-sub">
-            {quotes.length > 0 ? `Latest: ${quotes[0]?.name || "Client"}` : "No pending quotes"}
-          </div>
-        </div>
-
-        {/* Metric 2: Inquiries */}
-        <div
-          className={`bento-card ${activeTab === "enquiries" ? "is-active-tile" : ""}`}
-          onClick={() => setActiveTab("enquiries")}
-        >
-          <div className="bento-card-top">
-            <span className="bento-badge">INQUIRIES</span>
-            <span className="bento-arrow">↗</span>
-          </div>
-          <div className="bento-metric">{enquiries.length}</div>
-          <div className="bento-label">ACTIVE CLIENT INQUIRIES</div>
-          <div className="bento-sub">
-            {enquiries.length > 0 ? `Latest: ${enquiries[0]?.name || "Client"}` : "All inquiries cleared"}
-          </div>
-        </div>
-
-        {/* Metric 3: Spatial Projects */}
-        <div
-          className={`bento-card ${activeTab === "projects" ? "is-active-tile" : ""}`}
-          onClick={() => setActiveTab("projects")}
-        >
-          <div className="bento-card-top">
-            <span className="bento-badge">PORTFOLIO</span>
-            <span className="bento-arrow">↗</span>
-          </div>
-          <div className="bento-metric">{projects.length}</div>
-          <div className="bento-label">SPATIAL WORKS ARCHIVED</div>
-          <div className="bento-sub">Bespoke Commercial & Residential</div>
-        </div>
-
-        {/* Metric 4: Atelier Status */}
-        <div
-          className={`bento-card ${activeTab === "settings" ? "is-active-tile" : ""}`}
-          onClick={() => setActiveTab("settings")}
-        >
-          <div className="bento-card-top">
-            <span className="bento-badge">DIRECTORY</span>
-            <span className="bento-arrow">↗</span>
-          </div>
-          <div className="bento-metric" style={{ fontSize: "24px", paddingTop: "6px" }}>
-            DUBAI, UAE
-          </div>
-          <div className="bento-label">PUBLIC PROFILE & CHANNELS</div>
-          <div className="bento-sub">{details.email || "Official contact active"}</div>
-        </div>
-      </section>
-
-      {/* ====================================================================
-          3. INTERACTIVE BRUTALIST PILL CONTROLLER (Same as Homepage Bento)
-          ==================================================================== */}
-      <section className="atelier-tab-controller">
-        <div className="controller-track">
-          {TABS.map((t) => {
-            const count =
-              t.id === "quotes"
-                ? quotes.length
-                : t.id === "enquiries"
-                ? enquiries.length
-                : t.id === "projects"
-                ? projects.length
-                : null;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                className={`controller-pill ${activeTab === t.id ? "is-active" : ""}`}
-                onClick={() => setActiveTab(t.id)}
+      {/* ======================================================================
+          CONTROLLER NAVIGATION TABS (BRUTALIST EDITORIAL PILLS)
+          ====================================================================== */}
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          overflowX: "auto",
+          paddingBottom: "14px",
+          marginBottom: "28px",
+          borderBottom: "1px solid rgba(0,0,0,0.1)",
+        }}
+      >
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                fontFamily: "Outfit, 'Plus Jakarta Sans', monospace",
+                fontSize: "11px",
+                fontWeight: 800,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                padding: "10px 18px",
+                borderRadius: "9999px",
+                border: "1px solid #000000",
+                background: isActive ? "#000000" : "#ffffff",
+                color: isActive ? "#ffffff" : "#000000",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                transition: "all 0.22s cubic-bezier(0.16, 1, 0.3, 1)",
+                boxShadow: isActive
+                  ? "0 4px 12px rgba(0,0,0,0.14)"
+                  : "0 2px 6px rgba(0,0,0,0.03)",
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.background = "#f0f0ef";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.background = "#ffffff";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }
+              }}
+            >
+              <span
+                style={{
+                  color: isActive ? "rgba(255,255,255,0.7)" : "#777777",
+                  fontSize: "10px",
+                }}
               >
-                <span className="pill-num">{t.num}</span>
-                <span className="pill-label">{t.label}</span>
-                {count !== null && <span className="pill-count">({count})</span>}
-              </button>
-            );
-          })}
-        </div>
-      </section>
+                {tab.num}
+              </span>
+              <span>{tab.label}</span>
+              {tab.id === "kanban" && (
+                <span
+                  style={{
+                    background: isActive ? "#ffffff" : "#000000",
+                    color: isActive ? "#000000" : "#ffffff",
+                    borderRadius: "9999px",
+                    padding: "2px 7px",
+                    fontSize: "10px",
+                    fontWeight: 800,
+                  }}
+                >
+                  {allKanbanItems.length}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
-      {/* ====================================================================
-          4. TAB MODULES (WIRED UP TO LIVE BACKEND APIS)
-          ==================================================================== */}
-
-      {/* TAB 1: OVERVIEW & TELEMETRY */}
-      {activeTab === "overview" && (
-        <section className="atelier-tab-module">
-          <div className="dispatch-overview-grid">
-            {/* Left Col: Recent Commission & Inquiries Feed */}
-            <div className="dispatch-col">
-              <div className="cad-box">
-                <div className="cad-box-header">
-                  <span className="cad-box-num">(01)</span>
-                  <h3 className="cad-box-title">RECENT COMMISSIONS & QUOTES</h3>
+      {/* ======================================================================
+          TAB 1: CMS KANBAN BOARD (SMOOTH SOFT ANIMATED PIPELINE)
+          ====================================================================== */}
+      {activeTab === "kanban" && (
+        <section>
+          {/* Kanban Filter & Search Control Bar */}
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid rgba(0,0,0,0.14)",
+              borderRadius: "12px",
+              padding: "16px 20px",
+              marginBottom: "24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "16px",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+            }}
+          >
+            {/* Filter Pills */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                flexWrap: "wrap",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "Outfit, monospace",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "#666666",
+                  marginRight: "4px",
+                }}
+              >
+                FILTER BY:
+              </span>
+              {[
+                { id: "ALL", label: `ALL PIPELINE (${allKanbanItems.length})` },
+                {
+                  id: "COMMISSIONS",
+                  label: `COMMISSIONS (${quotes.length})`,
+                },
+                {
+                  id: "INQUIRIES",
+                  label: `INQUIRIES (${enquiries.length})`,
+                },
+                {
+                  id: "PROJECTS",
+                  label: `SPATIAL PROJECTS (${Math.min(projects.length, 10)})`,
+                },
+                {
+                  id: "CUSTOM",
+                  label: `CUSTOM (${customDispatches.length})`,
+                },
+              ].map((flt) => {
+                const isSelected = kanbanFilter === flt.id;
+                return (
                   <button
-                    type="button"
-                    className="cad-action-link"
-                    onClick={() => setActiveTab("quotes")}
+                    key={flt.id}
+                    onClick={() => setKanbanFilter(flt.id)}
+                    style={{
+                      fontFamily: "Outfit, monospace",
+                      fontSize: "10.5px",
+                      fontWeight: 800,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      padding: "6px 14px",
+                      borderRadius: "9999px",
+                      border: "1px solid",
+                      borderColor: isSelected ? "#000000" : "rgba(0,0,0,0.15)",
+                      background: isSelected ? "#000000" : "#ffffff",
+                      color: isSelected ? "#ffffff" : "#333333",
+                      cursor: "pointer",
+                      transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSelected) e.currentTarget.style.borderColor = "#000000";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) e.currentTarget.style.borderColor = "rgba(0,0,0,0.15)";
+                    }}
                   >
-                    VIEW ALL ↗
+                    {flt.label}
                   </button>
-                </div>
+                );
+              })}
+            </div>
 
-                {quotes.length === 0 ? (
-                  <div className="empty-cad-state">No commissions received yet.</div>
-                ) : (
-                  <div className="briefs-stream">
-                    {quotes.slice(0, 3).map((q) => (
+            {/* Search Input */}
+            <div
+              style={{
+                position: "relative",
+                minWidth: "260px",
+                maxWidth: "360px",
+                flex: "1 1 260px",
+              }}
+            >
+              <FiSearch
+                size={14}
+                style={{
+                  position: "absolute",
+                  left: "14px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#777777",
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Search pipeline by client, location, brief..."
+                value={kanbanSearch}
+                onChange={(e) => setKanbanSearch(e.target.value)}
+                style={{
+                  width: "100%",
+                  paddingLeft: "38px",
+                  paddingRight: "14px",
+                  paddingTop: "9px",
+                  paddingBottom: "9px",
+                  fontSize: "13px",
+                  border: "1px solid rgba(0,0,0,0.18)",
+                  borderRadius: "9999px",
+                  background: "#ffffff",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Kanban Multi-Column Track */}
+          <div className="kanban-board-scroll">
+            {kanbanColumns.map((col) => {
+              const isOver = dragOverColId === col.id;
+              return (
+                <div
+                  key={col.id}
+                  className={`kanban-column-box ${isOver ? "drag-over" : ""}`}
+                  onDragOver={(e) => handleDragOver(e, col.id)}
+                  onDragLeave={(e) => handleDragLeave(e, col.id)}
+                  onDrop={(e) => handleDrop(e, col.id)}
+                >
+                  {/* Column Header */}
+                  <div className="kanban-column-header">
+                    <div>
                       <div
-                        key={q._id}
-                        className="brief-card"
-                        onClick={() => setSelectedQuote(q)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          marginBottom: "3px",
+                        }}
                       >
-                        <div className="brief-card-header">
-                          <span className="brief-client-name">{q.name}</span>
-                          <span className="brief-type-badge">
-                            {q.projectType || "COMMERCIAL"}
-                          </span>
-                        </div>
-                        <div className="brief-meta-row">
-                          <span>{q.location || "Dubai"}</span>
-                          <span>·</span>
-                          <span>{q.budget || "Budget Unspecified"}</span>
-                          <span>·</span>
-                          <span style={{ color: "#777777" }}>{formatDate(q.createdAt)}</span>
-                        </div>
-                        {q.message && (
-                          <p className="brief-excerpt">{q.message}</p>
-                        )}
-                        <div className="brief-inspect-cta">INSPECT BRIEF ↗</div>
+                        <span
+                          style={{
+                            fontFamily: "Outfit, monospace",
+                            fontSize: "11px",
+                            fontWeight: 800,
+                            color: "#666666",
+                          }}
+                        >
+                          ({col.index})
+                        </span>
+                        <h3
+                          style={{
+                            fontFamily: "Outfit, sans-serif",
+                            fontSize: "13.5px",
+                            fontWeight: 900,
+                            letterSpacing: "0.04em",
+                            textTransform: "uppercase",
+                            margin: 0,
+                            color: "#000000",
+                          }}
+                        >
+                          {col.title}
+                        </h3>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          color: "#777777",
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {col.subtitle}
+                      </div>
+                    </div>
 
-              {/* Recent Inquiries */}
-              <div className="cad-box" style={{ marginTop: "24px" }}>
-                <div className="cad-box-header">
-                  <span className="cad-box-num">(02)</span>
-                  <h3 className="cad-box-title">RECENT CLIENT INQUIRIES</h3>
-                  <button
-                    type="button"
-                    className="cad-action-link"
-                    onClick={() => setActiveTab("enquiries")}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: "Outfit, monospace",
+                          fontSize: "11px",
+                          fontWeight: 800,
+                          background: "#000000",
+                          color: "#ffffff",
+                          borderRadius: "9999px",
+                          padding: "3px 8px",
+                        }}
+                      >
+                        {col.items.length}
+                      </span>
+                      <button
+                        title={`Add dispatch to ${col.title}`}
+                        onClick={() => {
+                          setQuickAddStage(col.id);
+                          setQuickAddOpen(true);
+                        }}
+                        style={{
+                          background: "#ffffff",
+                          border: "1px solid rgba(0,0,0,0.2)",
+                          borderRadius: "50%",
+                          width: "24px",
+                          height: "24px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          color: "#000000",
+                          transition: "all 0.18s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#000000";
+                          e.currentTarget.style.color = "#ffffff";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "#ffffff";
+                          e.currentTarget.style.color = "#000000";
+                        }}
+                      >
+                        <FiPlus size={12} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Cards Container */}
+                  <div
+                    style={{
+                      padding: "16px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "14px",
+                      flex: 1,
+                    }}
                   >
-                    VIEW ALL ↗
-                  </button>
-                </div>
-
-                {enquiries.length === 0 ? (
-                  <div className="empty-cad-state">No inquiries in register.</div>
-                ) : (
-                  <div className="inquiries-stream">
-                    {enquiries.slice(0, 3).map((e) => (
-                      <div key={e._id} className="inquiry-item">
-                        <div className="inquiry-header">
-                          <span className="inquiry-name">{e.name}</span>
-                          <span className="inquiry-date">{formatDate(e.createdAt)}</span>
+                    {col.items.length === 0 ? (
+                      <div
+                        style={{
+                          border: "1px dashed rgba(0,0,0,0.18)",
+                          borderRadius: "8px",
+                          padding: "36px 16px",
+                          textAlign: "center",
+                          color: "#888888",
+                          fontSize: "12px",
+                          background: "#fafaf9",
+                          marginTop: "8px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontFamily: "Outfit, monospace",
+                            fontSize: "18px",
+                            marginBottom: "6px",
+                            color: "#bbbbbb",
+                          }}
+                        >
+                          +
                         </div>
-                        <div className="inquiry-contacts">
-                          {e.email && <span>{e.email}</span>}
-                          {e.mobile && <span>· {e.mobile}</span>}
+                        <div>No briefs in this stage</div>
+                        <div style={{ fontSize: "10.5px", marginTop: "4px" }}>
+                          Drag a card here or click + to add
                         </div>
-                        <p className="inquiry-msg">{e.message || "Requested interior fit-out consultation."}</p>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Right Col: Spatial Portfolio & Atelier Direct Info */}
-            <div className="dispatch-col">
-              <div className="cad-box">
-                <div className="cad-box-header">
-                  <span className="cad-box-num">(03)</span>
-                  <h3 className="cad-box-title">SPATIAL PORTFOLIO PREVIEW</h3>
-                  <Link to="/dashboard/project-manager" className="cad-action-link">
-                    PORTFOLIO MANAGER ↗
-                  </Link>
-                </div>
-
-                {projects.length === 0 ? (
-                  <div className="empty-cad-state">No spatial projects registered.</div>
-                ) : (
-                  <div className="portfolio-preview-grid">
-                    {projects.slice(0, 4).map((p) => (
-                      <div key={p._id} className="portfolio-thumb-card">
-                        <div className="portfolio-thumb-img">
-                          <img
-                            src={imageUrl(p.image)}
-                            alt={p.title}
-                            onError={(e) => {
-                              e.target.src = "/static/hero-aperture.png";
+                    ) : (
+                      col.items.map((item, idx) => {
+                        const isDragging = draggingItemId === item.id;
+                        return (
+                          <div
+                            key={item.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, item)}
+                            onDragEnd={handleDragEnd}
+                            className={`kanban-card-item kanban-card-animated ${
+                              isDragging ? "is-dragging" : ""
+                            }`}
+                            style={{
+                              animationDelay: `${idx * 0.04}s`,
                             }}
-                          />
-                        </div>
-                        <div className="portfolio-thumb-info">
-                          <div className="portfolio-thumb-title">{p.title}</div>
-                          <div className="portfolio-thumb-loc">
-                            {p.location || "Dubai, UAE"}
+                          >
+                            {/* Card Top: Type Badge & Date */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                gap: "6px",
+                                marginBottom: "10px",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontFamily: "Outfit, monospace",
+                                  fontSize: "9.5px",
+                                  fontWeight: 800,
+                                  letterSpacing: "0.06em",
+                                  textTransform: "uppercase",
+                                  padding: "3px 8px",
+                                  borderRadius: "9999px",
+                                  border: "1px solid #000000",
+                                  background: "#ffffff",
+                                  color: "#000000",
+                                }}
+                              >
+                                {item.typeBadge}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: "10.5px",
+                                  color: "#777777",
+                                  fontFamily: "Outfit, monospace",
+                                }}
+                              >
+                                {formatDate(item.date)}
+                              </span>
+                            </div>
+
+                            {/* Optional Project Thumbnail */}
+                            {item.image && (
+                              <div
+                                style={{
+                                  width: "100%",
+                                  height: "110px",
+                                  borderRadius: "6px",
+                                  overflow: "hidden",
+                                  marginBottom: "10px",
+                                  border: "1px solid rgba(0,0,0,0.1)",
+                                  background: "#111111",
+                                }}
+                              >
+                                <img
+                                  src={imageUrl(item.image)}
+                                  alt={item.title}
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                  }}
+                                  onError={(e) => {
+                                    e.target.src = "/static/hero-aperture.png";
+                                  }}
+                                />
+                              </div>
+                            )}
+
+                            {/* Client & Title */}
+                            <h4
+                              style={{
+                                fontFamily: "Outfit, 'Plus Jakarta Sans', sans-serif",
+                                fontSize: "14px",
+                                fontWeight: 800,
+                                color: "#000000",
+                                margin: "0 0 4px 0",
+                                lineHeight: 1.3,
+                              }}
+                            >
+                              {item.title}
+                            </h4>
+
+                            <div
+                              style={{
+                                fontSize: "12px",
+                                color: "#555555",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              {item.subtitle}
+                            </div>
+
+                            {/* Location & Budget Tags */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                flexWrap: "wrap",
+                                fontSize: "11px",
+                                color: "#444444",
+                                marginBottom: "12px",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                }}
+                              >
+                                <FiMapPin size={11} color="#666666" />
+                                {item.location}
+                              </span>
+                              {item.budget && (
+                                <span
+                                  style={{
+                                    padding: "2px 6px",
+                                    borderRadius: "4px",
+                                    background: "#f0f0ef",
+                                    fontWeight: 600,
+                                    fontSize: "10px",
+                                  }}
+                                >
+                                  {item.budget}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Brief Excerpt */}
+                            {item.message && (
+                              <div
+                                style={{
+                                  fontSize: "11.5px",
+                                  color: "#666666",
+                                  lineHeight: 1.45,
+                                  marginBottom: "14px",
+                                  display: "-webkit-box",
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: "vertical",
+                                  overflow: "hidden",
+                                  fontStyle: "italic",
+                                  borderLeft: "2px solid #000000",
+                                  paddingLeft: "8px",
+                                }}
+                              >
+                                "{item.message}"
+                              </div>
+                            )}
+
+                            {/* Card Footer: Stage Step Movers + Inspect Button */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                gap: "6px",
+                                borderTop: "1px solid rgba(0,0,0,0.08)",
+                                paddingTop: "10px",
+                              }}
+                            >
+                              {/* Stage Mover Arrows */}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                }}
+                              >
+                                <button
+                                  title="Move to previous stage"
+                                  disabled={col.id === "intake"}
+                                  onClick={() => handleStepMove(item, -1)}
+                                  style={{
+                                    background: "#ffffff",
+                                    border: "1px solid rgba(0,0,0,0.18)",
+                                    borderRadius: "4px",
+                                    padding: "4px 8px",
+                                    cursor: col.id === "intake" ? "not-allowed" : "pointer",
+                                    opacity: col.id === "intake" ? 0.35 : 1,
+                                    color: "#000000",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    transition: "all 0.15s ease",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (col.id !== "intake") {
+                                      e.currentTarget.style.background = "#000000";
+                                      e.currentTarget.style.color = "#ffffff";
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (col.id !== "intake") {
+                                      e.currentTarget.style.background = "#ffffff";
+                                      e.currentTarget.style.color = "#000000";
+                                    }
+                                  }}
+                                >
+                                  <FiChevronLeft size={12} />
+                                </button>
+                                <button
+                                  title="Move to next stage"
+                                  disabled={col.id === "delivered"}
+                                  onClick={() => handleStepMove(item, 1)}
+                                  style={{
+                                    background: "#ffffff",
+                                    border: "1px solid rgba(0,0,0,0.18)",
+                                    borderRadius: "4px",
+                                    padding: "4px 8px",
+                                    cursor: col.id === "delivered" ? "not-allowed" : "pointer",
+                                    opacity: col.id === "delivered" ? 0.35 : 1,
+                                    color: "#000000",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    transition: "all 0.15s ease",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (col.id !== "delivered") {
+                                      e.currentTarget.style.background = "#000000";
+                                      e.currentTarget.style.color = "#ffffff";
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (col.id !== "delivered") {
+                                      e.currentTarget.style.background = "#ffffff";
+                                      e.currentTarget.style.color = "#000000";
+                                    }
+                                  }}
+                                >
+                                  <FiChevronRight size={12} />
+                                </button>
+                              </div>
+
+                              {/* Inspect Full Brief Drawer */}
+                              <button
+                                onClick={() => setInspectedItem(item)}
+                                style={{
+                                  fontFamily: "Outfit, monospace",
+                                  fontSize: "10px",
+                                  fontWeight: 800,
+                                  letterSpacing: "0.06em",
+                                  textTransform: "uppercase",
+                                  background: "#ffffff",
+                                  border: "1px solid #000000",
+                                  borderRadius: "9999px",
+                                  padding: "4px 10px",
+                                  cursor: "pointer",
+                                  color: "#000000",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  transition: "all 0.18s ease",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = "#000000";
+                                  e.currentTarget.style.color = "#ffffff";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = "#ffffff";
+                                  e.currentTarget.style.color = "#000000";
+                                }}
+                              >
+                                INSPECT <FiArrowUpRight size={11} />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Direct Atelier Details */}
-              <div className="cad-box" style={{ marginTop: "24px" }}>
-                <div className="cad-box-header">
-                  <span className="cad-box-num">(04)</span>
-                  <h3 className="cad-box-title">ATELIER DIRECT CONTACT & LOCATION</h3>
-                  <button
-                    type="button"
-                    className="cad-action-link"
-                    onClick={() => setActiveTab("settings")}
-                  >
-                    EDIT DETAILS ↗
-                  </button>
-                </div>
-
-                <div className="atelier-contact-summary">
-                  <div className="contact-summary-row">
-                    <span className="contact-summary-label">ADDRESS:</span>
-                    <span className="contact-summary-val">
-                      {details.address.street}, {details.address.city}, {details.address.country}
-                    </span>
-                  </div>
-                  <div className="contact-summary-row">
-                    <span className="contact-summary-label">OFFICIAL EMAIL:</span>
-                    <span className="contact-summary-val">{details.email || "info@yfbfitoutcontracting.com"}</span>
-                  </div>
-                  <div className="contact-summary-row">
-                    <span className="contact-summary-label">PHONE:</span>
-                    <span className="contact-summary-val">{details.mobile || "+971 54 386 2870"}</span>
-                  </div>
-                  <div className="contact-summary-row">
-                    <span className="contact-summary-label">WHATSAPP:</span>
-                    <span className="contact-summary-val">{details.whatsapp || "+971 54 386 2870"}</span>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </section>
       )}
 
-      {/* TAB 2: CLIENT COMMISSIONS (QUOTATIONS) */}
-      {activeTab === "quotes" && (
-        <section className="atelier-tab-module">
-          <div className="module-topbar">
-            <div className="module-title-group">
-              <span className="module-eyebrow">(COMMISSIONS REGISTER · 02)</span>
-              <h2 className="module-heading">CLIENT QUOTATION COMMISSIONS</h2>
-            </div>
-            <div className="module-actions-row">
-              <button
-                type="button"
-                className="btn-brutalist-outline"
-                onClick={handleDeleteOldQuotes}
+      {/* ======================================================================
+          TAB 2: CAD TELEMETRY & DISPATCH OVERVIEW
+          ====================================================================== */}
+      {activeTab === "telemetry" && (
+        <section>
+          {/* Bento Metric Cards */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: "20px",
+              marginBottom: "36px",
+            }}
+          >
+            <div
+              style={{
+                background: "#ffffff",
+                border: "1px solid rgba(0,0,0,0.14)",
+                borderRadius: "12px",
+                padding: "24px",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontFamily: "Outfit, monospace",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "#666666",
+                  marginBottom: "8px",
+                }}
               >
-                <FiTrash2 size={13} />
-                <span>PURGE OLDER THAN 1 MONTH</span>
-              </button>
+                <span>COMMISSIONS</span>
+                <span>↗</span>
+              </div>
+              <div
+                style={{
+                  fontFamily: "Outfit, sans-serif",
+                  fontSize: "44px",
+                  fontWeight: 900,
+                  color: "#000000",
+                  lineHeight: 1,
+                  margin: "8px 0",
+                }}
+              >
+                {quotes.length}
+              </div>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "#888888" }}>
+                QUOTATION BRIEFS LOGGED
+              </div>
+              {quotes[0] && (
+                <div style={{ fontSize: "12px", color: "#333333", marginTop: "10px" }}>
+                  Latest: <strong>{quotes[0].name}</strong>
+                </div>
+              )}
+            </div>
+
+            <div
+              style={{
+                background: "#ffffff",
+                border: "1px solid rgba(0,0,0,0.14)",
+                borderRadius: "12px",
+                padding: "24px",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontFamily: "Outfit, monospace",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "#666666",
+                  marginBottom: "8px",
+                }}
+              >
+                <span>INQUIRIES</span>
+                <span>↗</span>
+              </div>
+              <div
+                style={{
+                  fontFamily: "Outfit, sans-serif",
+                  fontSize: "44px",
+                  fontWeight: 900,
+                  color: "#000000",
+                  lineHeight: 1,
+                  margin: "8px 0",
+                }}
+              >
+                {enquiries.length}
+              </div>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "#888888" }}>
+                ACTIVE CLIENT INQUIRIES
+              </div>
+              {enquiries[0] && (
+                <div style={{ fontSize: "12px", color: "#333333", marginTop: "10px" }}>
+                  Latest: <strong>{enquiries[0].name}</strong>
+                </div>
+              )}
+            </div>
+
+            <div
+              style={{
+                background: "#ffffff",
+                border: "1px solid rgba(0,0,0,0.14)",
+                borderRadius: "12px",
+                padding: "24px",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontFamily: "Outfit, monospace",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "#666666",
+                  marginBottom: "8px",
+                }}
+              >
+                <span>PORTFOLIO</span>
+                <span>↗</span>
+              </div>
+              <div
+                style={{
+                  fontFamily: "Outfit, sans-serif",
+                  fontSize: "44px",
+                  fontWeight: 900,
+                  color: "#000000",
+                  lineHeight: 1,
+                  margin: "8px 0",
+                }}
+              >
+                {projects.length}
+              </div>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "#888888" }}>
+                SPATIAL WORKS ARCHIVED
+              </div>
+              <div style={{ fontSize: "12px", color: "#333333", marginTop: "10px" }}>
+                Bespoke Commercial & Residential
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "#ffffff",
+                border: "1px solid rgba(0,0,0,0.14)",
+                borderRadius: "12px",
+                padding: "24px",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontFamily: "Outfit, monospace",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "#666666",
+                  marginBottom: "8px",
+                }}
+              >
+                <span>DIRECTORY</span>
+                <span>↗</span>
+              </div>
+              <div
+                style={{
+                  fontFamily: "Outfit, sans-serif",
+                  fontSize: "26px",
+                  fontWeight: 900,
+                  color: "#000000",
+                  lineHeight: 1.2,
+                  margin: "8px 0",
+                }}
+              >
+                DUBAI, UAE
+              </div>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "#888888" }}>
+                PUBLIC PROFILE & CHANNELS
+              </div>
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "#333333",
+                  marginTop: "10px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {details.email || "info@yfbfitoutcontracting.com"}
+              </div>
             </div>
           </div>
 
-          {/* Search & Filter Row */}
-          <div className="filter-bar">
-            <div className="search-wrap">
-              <FiSearch size={15} className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search commissions by client, location, or email…"
-                value={quoteSearch}
-                onChange={(e) => setQuoteSearch(e.target.value)}
-                className="cad-search-input"
-              />
+          {/* Feeds: Quotes & Inquiries */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+              gap: "24px",
+              marginBottom: "32px",
+            }}
+          >
+            {/* Recent Briefs Feed */}
+            <div
+              style={{
+                background: "#ffffff",
+                border: "1px solid rgba(0,0,0,0.14)",
+                borderRadius: "12px",
+                padding: "24px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "18px",
+                  borderBottom: "1px solid rgba(0,0,0,0.08)",
+                  paddingBottom: "12px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span
+                    style={{
+                      fontFamily: "Outfit, monospace",
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      color: "#666666",
+                    }}
+                  >
+                    (01)
+                  </span>
+                  <h3
+                    style={{
+                      fontFamily: "Outfit, sans-serif",
+                      fontSize: "14px",
+                      fontWeight: 800,
+                      margin: 0,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    RECENT COMMISSIONS & QUOTES
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setActiveTab("quotes")}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    fontFamily: "Outfit, monospace",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                >
+                  VIEW ALL ↗
+                </button>
+              </div>
+
+              {quotes.slice(0, 3).map((q) => (
+                <div
+                  key={q._id}
+                  style={{
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    marginBottom: "12px",
+                    background: "#fdfdfd",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    <strong>{q.name}</strong>
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        textTransform: "uppercase",
+                        background: "#000000",
+                        color: "#ffffff",
+                        padding: "2px 7px",
+                        borderRadius: "9999px",
+                      }}
+                    >
+                      {q.projectType || "Commercial"}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#555555", marginBottom: "8px" }}>
+                    {q.location || "Dubai"} · {q.budget || "Custom"} · {formatDate(q.createdAt)}
+                  </div>
+                  {q.message && (
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "#444444",
+                        fontStyle: "italic",
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      "{q.message.slice(0, 160)}..."
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
 
-            <div className="filter-pills">
-              {["ALL", "COMMERCIAL", "RESIDENTIAL", "VILLA", "OFFICE"].map((f) => (
+            {/* Recent Inquiries Feed */}
+            <div
+              style={{
+                background: "#ffffff",
+                border: "1px solid rgba(0,0,0,0.14)",
+                borderRadius: "12px",
+                padding: "24px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "18px",
+                  borderBottom: "1px solid rgba(0,0,0,0.08)",
+                  paddingBottom: "12px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span
+                    style={{
+                      fontFamily: "Outfit, monospace",
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      color: "#666666",
+                    }}
+                  >
+                    (02)
+                  </span>
+                  <h3
+                    style={{
+                      fontFamily: "Outfit, sans-serif",
+                      fontSize: "14px",
+                      fontWeight: 800,
+                      margin: 0,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    RECENT CLIENT INQUIRIES
+                  </h3>
+                </div>
                 <button
-                  key={f}
-                  type="button"
-                  className={`filter-pill ${quoteFilter === f ? "is-active" : ""}`}
-                  onClick={() => setQuoteFilter(f)}
+                  onClick={() => setActiveTab("enquiries")}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    fontFamily: "Outfit, monospace",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
                 >
-                  {f}
+                  VIEW ALL ↗
                 </button>
+              </div>
+
+              {enquiries.slice(0, 3).map((e) => (
+                <div
+                  key={e._id}
+                  style={{
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    marginBottom: "12px",
+                    background: "#fdfdfd",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    <strong>{e.name}</strong>
+                    <span style={{ fontSize: "11px", color: "#777777" }}>
+                      {formatDate(e.createdAt)}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#555555", marginBottom: "8px" }}>
+                    {e.email} · {e.mobile}
+                  </div>
+                  {e.message && (
+                    <div style={{ fontSize: "12px", color: "#444444", fontStyle: "italic" }}>
+                      "{e.message}"
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>
-
-          {/* Table */}
-          {filteredQuotes.length === 0 ? (
-            <div className="empty-cad-state" style={{ minHeight: "240px" }}>
-              No commissions matching search query.
-            </div>
-          ) : (
-            <div className="cad-table-wrap">
-              <table className="cad-table">
-                <thead>
-                  <tr>
-                    <th>CLIENT NAME</th>
-                    <th>PROJECT TYPE</th>
-                    <th>SERVICES REQUIRED</th>
-                    <th>LOCATION</th>
-                    <th>BUDGET</th>
-                    <th>LOGGED DATE</th>
-                    <th style={{ textAlign: "right" }}>ACTIONS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredQuotes.map((q) => (
-                    <tr
-                      key={q._id}
-                      onClick={() => setSelectedQuote(q)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <td style={{ fontWeight: 700 }}>{q.name}</td>
-                      <td>
-                        <span className="table-badge">
-                          {q.projectType || "Commercial"}
-                        </span>
-                      </td>
-                      <td style={{ maxWidth: "240px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {Array.isArray(q.services) ? q.services.join(", ") : q.services || "-"}
-                      </td>
-                      <td>{q.location || "Dubai"}</td>
-                      <td style={{ fontWeight: 700 }}>{q.budget || "-"}</td>
-                      <td style={{ color: "#777777" }}>{formatDate(q.createdAt)}</td>
-                      <td style={{ textAlign: "right" }}>
-                        <button
-                          type="button"
-                          className="btn-inspect-pill"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedQuote(q);
-                          }}
-                        >
-                          <FiEye size={12} />
-                          <span>INSPECT</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </section>
       )}
 
-      {/* TAB 3: INCOMING INQUIRIES */}
-      {activeTab === "enquiries" && (
-        <section className="atelier-tab-module">
-          <div className="module-topbar">
-            <div className="module-title-group">
-              <span className="module-eyebrow">(COMMUNICATIONS REGISTER · 03)</span>
-              <h2 className="module-heading">CLIENT INQUIRIES & MESSAGES</h2>
-            </div>
-            <div className="module-actions-row">
-              <button
-                type="button"
-                className="btn-brutalist-outline"
-                onClick={handleDeleteOldEnquiries}
+      {/* ======================================================================
+          TAB 3: COMMISSIONS (DEDICATED TABLE REGISTER)
+          ====================================================================== */}
+      {activeTab === "quotes" && (
+        <section
+          style={{
+            background: "#ffffff",
+            border: "1px solid rgba(0,0,0,0.14)",
+            borderRadius: "12px",
+            padding: "28px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "14px",
+              marginBottom: "20px",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontFamily: "Outfit, monospace",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "#666666",
+                }}
               >
-                <FiTrash2 size={13} />
-                <span>PURGE OLD INQUIRIES</span>
-              </button>
+                (COMMISSIONS REGISTER · 03)
+              </div>
+              <h2
+                style={{
+                  fontFamily: "Outfit, sans-serif",
+                  fontSize: "22px",
+                  fontWeight: 900,
+                  margin: "4px 0 0 0",
+                  textTransform: "uppercase",
+                }}
+              >
+                CLIENT QUOTATION COMMISSIONS
+              </h2>
             </div>
+            <button
+              onClick={handleDeleteOldQuotes}
+              style={{
+                background: "#ffffff",
+                border: "1px solid #000000",
+                borderRadius: "9999px",
+                padding: "8px 18px",
+                fontSize: "11px",
+                fontWeight: 800,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+              }}
+            >
+              PURGE OLDER THAN 1 MONTH
+            </button>
           </div>
 
-          <div className="search-wrap" style={{ marginBottom: "20px" }}>
-            <FiSearch size={15} className="search-icon" />
+          {/* Search & Type filter */}
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              marginBottom: "20px",
+              flexWrap: "wrap",
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Search commissions by client, location, or email…"
+              value={quoteSearch}
+              onChange={(e) => setQuoteSearch(e.target.value)}
+              style={{
+                flex: "1 1 300px",
+                padding: "10px 16px",
+                border: "1px solid rgba(0,0,0,0.2)",
+                borderRadius: "9999px",
+                outline: "none",
+                fontSize: "13px",
+              }}
+            />
+            {["ALL", "COMMERCIAL", "RESIDENTIAL", "VILLA", "OFFICE"].map((typ) => (
+              <button
+                key={typ}
+                onClick={() => setQuoteFilter(typ)}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "9999px",
+                  border: "1px solid #000000",
+                  background: quoteFilter === typ ? "#000000" : "#ffffff",
+                  color: quoteFilter === typ ? "#ffffff" : "#000000",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                {typ}
+              </button>
+            ))}
+          </div>
+
+          {/* Table */}
+          <div style={{ overflowX: "auto" }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>CLIENT NAME</th>
+                  <th>PROJECT TYPE</th>
+                  <th>SERVICES REQUIRED</th>
+                  <th>LOCATION</th>
+                  <th>BUDGET</th>
+                  <th>LOGGED DATE</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredQuotes.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: "center", padding: "36px" }}>
+                      No quotations match your filters.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredQuotes.map((q) => (
+                    <tr key={q._id}>
+                      <td style={{ fontWeight: 700 }}>{q.name}</td>
+                      <td>
+                        <span
+                          style={{
+                            padding: "3px 8px",
+                            borderRadius: "9999px",
+                            background: "#000000",
+                            color: "#ffffff",
+                            fontSize: "10px",
+                            fontWeight: 800,
+                          }}
+                        >
+                          {q.projectType || "Bespoke"}
+                        </span>
+                      </td>
+                      <td style={{ maxWidth: "220px" }}>
+                        {Array.isArray(q.services) ? q.services.join(", ") : q.services || "-"}
+                      </td>
+                      <td>{q.location || "Dubai"}</td>
+                      <td style={{ fontWeight: 600 }}>{q.budget || "Custom"}</td>
+                      <td>{formatDate(q.createdAt)}</td>
+                      <td>
+                        <button
+                          onClick={() => {
+                            const found = allKanbanItems.find((i) => i.rawId === q._id);
+                            if (found) setInspectedItem(found);
+                          }}
+                          style={{
+                            background: "#ffffff",
+                            border: "1px solid #000000",
+                            borderRadius: "9999px",
+                            padding: "4px 12px",
+                            fontSize: "11px",
+                            fontWeight: 800,
+                            cursor: "pointer",
+                          }}
+                        >
+                          INSPECT
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {/* ======================================================================
+          TAB 4: INQUIRIES REGISTER
+          ====================================================================== */}
+      {activeTab === "enquiries" && (
+        <section
+          style={{
+            background: "#ffffff",
+            border: "1px solid rgba(0,0,0,0.14)",
+            borderRadius: "12px",
+            padding: "28px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "14px",
+              marginBottom: "20px",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontFamily: "Outfit, monospace",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "#666666",
+                }}
+              >
+                (COMMUNICATIONS REGISTER · 04)
+              </div>
+              <h2
+                style={{
+                  fontFamily: "Outfit, sans-serif",
+                  fontSize: "22px",
+                  fontWeight: 900,
+                  margin: "4px 0 0 0",
+                  textTransform: "uppercase",
+                }}
+              >
+                CLIENT INQUIRIES & MESSAGES
+              </h2>
+            </div>
+            <button
+              onClick={handleDeleteOldEnquiries}
+              style={{
+                background: "#ffffff",
+                border: "1px solid #000000",
+                borderRadius: "9999px",
+                padding: "8px 18px",
+                fontSize: "11px",
+                fontWeight: 800,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+              }}
+            >
+              PURGE OLD INQUIRIES
+            </button>
+          </div>
+
+          <div style={{ marginBottom: "20px" }}>
             <input
               type="text"
               placeholder="Search inquiries by client name, email, or message…"
               value={enquirySearch}
               onChange={(e) => setEnquirySearch(e.target.value)}
-              className="cad-search-input"
+              style={{
+                width: "100%",
+                maxWidth: "480px",
+                padding: "10px 16px",
+                border: "1px solid rgba(0,0,0,0.2)",
+                borderRadius: "9999px",
+                outline: "none",
+                fontSize: "13px",
+              }}
             />
           </div>
 
-          {filteredEnquiries.length === 0 ? (
-            <div className="empty-cad-state" style={{ minHeight: "240px" }}>
-              No inquiries matching query.
-            </div>
-          ) : (
-            <div className="cad-grid-cards">
-              {filteredEnquiries.map((e) => (
-                <div key={e._id} className="inquiry-card">
-                  <div className="inquiry-card-header">
-                    <div>
-                      <h4 className="inquiry-card-name">{e.name}</h4>
-                      <div className="inquiry-card-meta">
-                        {e.email && <a href={`mailto:${e.email}`}>{e.email}</a>}
-                        {e.mobile && <span>· <a href={`tel:${e.mobile}`}>{e.mobile}</a></span>}
-                      </div>
-                    </div>
-                    <span className="inquiry-card-date">{formatDate(e.createdAt)}</span>
-                  </div>
-
-                  <div className="inquiry-card-service">
-                    SERVICE: <strong>{e.services || "General Fit-Out"}</strong>
-                  </div>
-
-                  <p className="inquiry-card-msg">
-                    "{e.message || "Consultation requested."}"
-                  </p>
-
-                  <div className="inquiry-card-actions">
-                    <a
-                      href={`mailto:${e.email}?subject=Yashmeen Fit-Out Follow-up`}
-                      className="btn-inquiry-action"
-                    >
-                      <FiMail size={12} />
-                      <span>REPLY VIA EMAIL</span>
-                    </a>
-                    {e.mobile && (
-                      <a href={`tel:${e.mobile}`} className="btn-inquiry-action">
-                        <FiPhone size={12} />
-                        <span>CALL</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* TAB 4: SPATIAL PORTFOLIO */}
-      {activeTab === "projects" && (
-        <section className="atelier-tab-module">
-          <div className="module-topbar">
-            <div className="module-title-group">
-              <span className="module-eyebrow">(SPATIAL WORKS ARCHIVE · 04)</span>
-              <h2 className="module-heading">ACTIVE SPATIAL PORTFOLIO ({projects.length})</h2>
-            </div>
-            <div className="module-actions-row">
-              <Link to="/dashboard/project-manager" className="btn-brutalist-solid">
-                <FiPlus size={13} />
-                <span>OPEN PROJECT MANAGER</span>
-              </Link>
-            </div>
-          </div>
-
-          {projects.length === 0 ? (
-            <div className="empty-cad-state" style={{ minHeight: "240px" }}>
-              No projects recorded in database.
-            </div>
-          ) : (
-            <div className="projects-gallery-grid">
-              {projects.map((p) => (
-                <div key={p._id} className="project-display-card">
-                  <div className="project-display-img">
-                    <img
-                      src={imageUrl(p.image)}
-                      alt={p.title}
-                      onError={(e) => {
-                        e.target.src = "/static/hero-aperture.png";
-                      }}
-                    />
-                    <span className="project-display-badge">
-                      {p.category?.name || "FIT-OUT"}
-                    </span>
-                  </div>
-                  <div className="project-display-body">
-                    <h4 className="project-display-title">{p.title}</h4>
-                    <div className="project-display-loc">
-                      <FiMapPin size={12} />
-                      <span>{p.location || "Dubai, UAE"}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* TAB 5: ATELIER DIRECTORY & LOCATION SETTINGS */}
-      {activeTab === "settings" && (
-        <section className="atelier-tab-module">
-          <div className="module-topbar">
-            <div className="module-title-group">
-              <span className="module-eyebrow">(PUBLIC IDENTITY & ATELIER · 05)</span>
-              <h2 className="module-heading">ATELIER DIRECTORY & CONTACT SETTINGS</h2>
-            </div>
-          </div>
-
-          <div className="settings-card">
-            <form onSubmit={handleSettingsSubmit} className="cad-form">
-              {/* Section 01: Physical Address */}
-              <div className="form-section">
-                <div className="form-section-header">
-                  <span className="form-section-num">(01)</span>
-                  <h3 className="form-section-title">PHYSICAL LOCATION & ATELIER</h3>
-                </div>
-
-                <div className="form-group">
-                  <label>Street / Building Details</label>
-                  <input
-                    type="text"
-                    value={details.address.street}
-                    onChange={setAddressField("street")}
-                    placeholder="Municipality Building 2nd floor, Al Quoz, Dubai"
-                    className="cad-input"
-                  />
-                </div>
-
-                <div className="form-grid-2">
-                  <div className="form-group">
-                    <label>City / Emirate</label>
-                    <input
-                      type="text"
-                      value={details.address.city}
-                      onChange={setAddressField("city")}
-                      placeholder="Dubai"
-                      className="cad-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>State / Region</label>
-                    <input
-                      type="text"
-                      value={details.address.state}
-                      onChange={setAddressField("state")}
-                      placeholder="Dubai"
-                      className="cad-input"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-grid-2">
-                  <div className="form-group">
-                    <label>Postal Code / P.O. Box</label>
-                    <input
-                      type="text"
-                      value={details.address.zipCode}
-                      onChange={setAddressField("zipCode")}
-                      placeholder="67 Dubai UAE"
-                      className="cad-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Country</label>
-                    <input
-                      type="text"
-                      value={details.address.country}
-                      onChange={setAddressField("country")}
-                      placeholder="United Arab Emirates"
-                      className="cad-input"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 02: Public Contact Lines */}
-              <div className="form-section">
-                <div className="form-section-header">
-                  <span className="form-section-num">(02)</span>
-                  <h3 className="form-section-title">PUBLIC CONTACT LINES</h3>
-                </div>
-
-                <div className="form-grid-3">
-                  <div className="form-group">
-                    <label>Public Official Email</label>
-                    <input
-                      type="email"
-                      value={details.email}
-                      onChange={setContactField("email")}
-                      placeholder="info@yfbfitoutcontracting.com"
-                      className="cad-input"
-                    />
-                    {settingsErrors.email && (
-                      <span className="form-error">{settingsErrors.email}</span>
-                    )}
-                  </div>
-                  <div className="form-group">
-                    <label>Phone / Mobile</label>
-                    <input
-                      type="text"
-                      value={details.mobile}
-                      onChange={setContactField("mobile")}
-                      placeholder="+971 54 386 2870"
-                      className="cad-input"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>WhatsApp Business</label>
-                    <input
-                      type="text"
-                      value={details.whatsapp}
-                      onChange={setContactField("whatsapp")}
-                      placeholder="+971 54 386 2870"
-                      className="cad-input"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 03: Digital Channels */}
-              <div className="form-section">
-                <div className="form-section-header" style={{ justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span className="form-section-num">(03)</span>
-                    <h3 className="form-section-title">DIGITAL CHANNELS & SOCIALS</h3>
-                  </div>
-                  <button
-                    type="button"
-                    className="btn-brutalist-outline"
-                    onClick={addSocialLink}
-                  >
-                    <FiPlus size={12} />
-                    <span>ADD CHANNEL</span>
-                  </button>
-                </div>
-
-                {details.socialLinks.length === 0 ? (
-                  <p style={{ color: "#888888", fontStyle: "italic", fontSize: "13px" }}>
-                    No channels registered yet.
-                  </p>
-                ) : (
-                  <div className="social-links-list">
-                    {details.socialLinks.map((s, i) => (
-                      <div key={i} className="social-link-row">
-                        <div style={{ flex: "0 0 160px" }}>
-                          <input
-                            type="text"
-                            value={s.platform}
-                            onChange={setSocialField(i, "platform")}
-                            placeholder="instagram"
-                            className="cad-input"
-                          />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <input
-                            type="text"
-                            value={s.url}
-                            onChange={setSocialField(i, "url")}
-                            placeholder="https://instagram.com/yashmeenfuture"
-                            className="cad-input"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          className="btn-remove-row"
-                          onClick={() => removeSocialLink(i)}
-                          aria-label="Remove channel"
-                        >
-                          <FiTrash2 size={14} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Action */}
-              <div className="form-actions-bar">
-                <button
-                  type="submit"
-                  disabled={savingSettings}
-                  className="btn-brutalist-solid"
-                  style={{ padding: "12px 36px" }}
-                >
-                  {savingSettings ? "UPDATING DIRECTORY…" : "SAVE CHANGES ↗"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </section>
-      )}
-
-      {/* ====================================================================
-          5. FULL BRIEFING INSPECTION DRAWER / MODAL
-          ==================================================================== */}
-      {selectedQuote && (
-        <div className="modal-backdrop" onClick={() => setSelectedQuote(null)}>
-          <div className="modal-cad-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-cad-header">
-              <div>
-                <span className="modal-eyebrow">(COMMISSION SPECIFICATION)</span>
-                <h3 className="modal-title">{selectedQuote.name}</h3>
-              </div>
-              <button
-                type="button"
-                className="modal-close-btn"
-                onClick={() => setSelectedQuote(null)}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: "16px",
+            }}
+          >
+            {filteredEnquiries.map((e) => (
+              <div
+                key={e._id}
+                style={{
+                  border: "1px solid rgba(0,0,0,0.14)",
+                  borderRadius: "10px",
+                  padding: "20px",
+                  background: "#ffffff",
+                }}
               >
-                <FiX size={18} />
-              </button>
-            </div>
-
-            <div className="modal-cad-body">
-              <div className="modal-grid-2">
-                <div className="modal-meta-item">
-                  <span className="modal-meta-label">PROJECT TYPE</span>
-                  <span className="modal-meta-val">{selectedQuote.projectType || "Commercial"}</span>
-                </div>
-                <div className="modal-meta-item">
-                  <span className="modal-meta-label">LOCATION</span>
-                  <span className="modal-meta-val">{selectedQuote.location || "Dubai"}</span>
-                </div>
-                <div className="modal-meta-item">
-                  <span className="modal-meta-label">BUDGET ESTIMATE</span>
-                  <span className="modal-meta-val" style={{ fontWeight: 800 }}>
-                    {selectedQuote.budget || "Unspecified"}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "start",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <h4 style={{ margin: 0, fontSize: "16px", fontWeight: 800 }}>
+                    {e.name}
+                  </h4>
+                  <span style={{ fontSize: "11px", color: "#777777" }}>
+                    {formatDate(e.createdAt)}
                   </span>
                 </div>
-                <div className="modal-meta-item">
-                  <span className="modal-meta-label">TARGET TIMELINE</span>
-                  <span className="modal-meta-val">{selectedQuote.timeline || "Immediate"}</span>
+                <div style={{ fontSize: "12.5px", color: "#555555", marginBottom: "12px" }}>
+                  <a href={`mailto:${e.email}`} style={{ color: "#000000", fontWeight: 600 }}>
+                    {e.email}
+                  </a>
+                  {e.mobile && ` · ${e.mobile}`}
                 </div>
-              </div>
-
-              <div className="modal-meta-item" style={{ marginTop: "16px" }}>
-                <span className="modal-meta-label">CLIENT CONTACT DETAILS</span>
-                <div style={{ display: "flex", gap: "16px", marginTop: "4px" }}>
-                  {selectedQuote.email && (
+                {e.services && (
+                  <div style={{ fontSize: "11.5px", fontWeight: 700, marginBottom: "8px" }}>
+                    SERVICE: <span style={{ color: "#555555" }}>{e.services}</span>
+                  </div>
+                )}
+                {e.message && (
+                  <div
+                    style={{
+                      fontSize: "12.5px",
+                      lineHeight: 1.5,
+                      color: "#333333",
+                      background: "#fafaf9",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      marginBottom: "14px",
+                    }}
+                  >
+                    "{e.message}"
+                  </div>
+                )}
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <a
+                    href={`mailto:${e.email}?subject=Yashmeen%20Fit-Out%20Follow-up`}
+                    style={{
+                      background: "#000000",
+                      color: "#ffffff",
+                      borderRadius: "9999px",
+                      padding: "6px 14px",
+                      fontSize: "10.5px",
+                      fontWeight: 800,
+                      textDecoration: "none",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    REPLY VIA EMAIL
+                  </a>
+                  {e.mobile && (
                     <a
-                      href={`mailto:${selectedQuote.email}`}
-                      className="cad-link-pill"
+                      href={`tel:${e.mobile}`}
+                      style={{
+                        background: "#ffffff",
+                        color: "#000000",
+                        border: "1px solid #000000",
+                        borderRadius: "9999px",
+                        padding: "6px 14px",
+                        fontSize: "10.5px",
+                        fontWeight: 800,
+                        textDecoration: "none",
+                        textTransform: "uppercase",
+                      }}
                     >
-                      <FiMail size={12} />
-                      <span>{selectedQuote.email}</span>
+                      CALL
                     </a>
                   )}
-                  {selectedQuote.mobile && (
-                    <a
-                      href={`tel:${selectedQuote.mobile}`}
-                      className="cad-link-pill"
-                    >
-                      <FiPhone size={12} />
-                      <span>{selectedQuote.mobile}</span>
-                    </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ======================================================================
+          TAB 5: SPATIAL PORTFOLIO
+          ====================================================================== */}
+      {activeTab === "projects" && (
+        <section
+          style={{
+            background: "#ffffff",
+            border: "1px solid rgba(0,0,0,0.14)",
+            borderRadius: "12px",
+            padding: "28px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "24px",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontFamily: "Outfit, monospace",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "#666666",
+                }}
+              >
+                (SPATIAL WORKS ARCHIVE · 05)
+              </div>
+              <h2
+                style={{
+                  fontFamily: "Outfit, sans-serif",
+                  fontSize: "22px",
+                  fontWeight: 900,
+                  margin: "4px 0 0 0",
+                  textTransform: "uppercase",
+                }}
+              >
+                ACTIVE SPATIAL PORTFOLIO ({projects.length})
+              </h2>
+            </div>
+            <Link
+              to="/dashboard/project-manager"
+              style={{
+                background: "#000000",
+                color: "#ffffff",
+                border: "1px solid #000000",
+                borderRadius: "9999px",
+                padding: "8px 18px",
+                fontSize: "11px",
+                fontWeight: 800,
+                textDecoration: "none",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+              }}
+            >
+              OPEN PROJECT MANAGER
+            </Link>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: "20px",
+            }}
+          >
+            {projects.map((proj) => (
+              <div
+                key={proj._id}
+                style={{
+                  border: "1px solid rgba(0,0,0,0.12)",
+                  borderRadius: "10px",
+                  overflow: "hidden",
+                  background: "#ffffff",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+                }}
+              >
+                <div
+                  style={{
+                    height: "180px",
+                    width: "100%",
+                    background: "#111111",
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    src={imageUrl(proj.image)}
+                    alt={proj.title}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    onError={(e) => {
+                      e.target.src = "/static/hero-aperture.png";
+                    }}
+                  />
+                </div>
+                <div style={{ padding: "16px" }}>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: 800,
+                      textTransform: "uppercase",
+                      color: "#666666",
+                      letterSpacing: "0.06em",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    {proj.category || "Fit-Out"}
+                  </div>
+                  <h4
+                    style={{
+                      margin: "0 0 6px 0",
+                      fontSize: "15px",
+                      fontWeight: 800,
+                      color: "#000000",
+                    }}
+                  >
+                    {proj.title}
+                  </h4>
+                  <div style={{ fontSize: "12px", color: "#666666" }}>
+                    {proj.location || "UAE"}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ======================================================================
+          TAB 6: ATELIER DIRECTORY & CONTACT SETTINGS
+          ====================================================================== */}
+      {activeTab === "settings" && (
+        <section
+          style={{
+            background: "#ffffff",
+            border: "1px solid rgba(0,0,0,0.14)",
+            borderRadius: "12px",
+            padding: "28px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
+          }}
+        >
+          <div style={{ marginBottom: "24px" }}>
+            <div
+              style={{
+                fontFamily: "Outfit, monospace",
+                fontSize: "11px",
+                fontWeight: 800,
+                color: "#666666",
+              }}
+            >
+              (PUBLIC IDENTITY & ATELIER · 06)
+            </div>
+            <h2
+              style={{
+                fontFamily: "Outfit, sans-serif",
+                fontSize: "22px",
+                fontWeight: 900,
+                margin: "4px 0 0 0",
+                textTransform: "uppercase",
+              }}
+            >
+              ATELIER DIRECTORY & CONTACT SETTINGS
+            </h2>
+          </div>
+
+          <form onSubmit={handleSettingsSubmit}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
+                gap: "28px",
+              }}
+            >
+              {/* Location */}
+              <div
+                style={{
+                  border: "1px solid rgba(0,0,0,0.12)",
+                  borderRadius: "10px",
+                  padding: "20px",
+                  background: "#fafaf9",
+                }}
+              >
+                <div style={{ fontSize: "12px", fontWeight: 800, marginBottom: "14px" }}>
+                  (01) PHYSICAL LOCATION & ATELIER
+                </div>
+                <div style={{ marginBottom: "14px" }}>
+                  <label>STREET / BUILDING DETAILS</label>
+                  <input
+                    type="text"
+                    value={details.address?.street || ""}
+                    onChange={setAddressField("street")}
+                    style={{ width: "100%", marginTop: "6px" }}
+                  />
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "12px",
+                    marginBottom: "14px",
+                  }}
+                >
+                  <div>
+                    <label>CITY / EMIRATE</label>
+                    <input
+                      type="text"
+                      value={details.address?.city || ""}
+                      onChange={setAddressField("city")}
+                      style={{ width: "100%", marginTop: "6px" }}
+                    />
+                  </div>
+                  <div>
+                    <label>STATE / REGION</label>
+                    <input
+                      type="text"
+                      value={details.address?.state || ""}
+                      onChange={setAddressField("state")}
+                      style={{ width: "100%", marginTop: "6px" }}
+                    />
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "12px",
+                  }}
+                >
+                  <div>
+                    <label>POSTAL CODE / P.O. BOX</label>
+                    <input
+                      type="text"
+                      value={details.address?.zipCode || ""}
+                      onChange={setAddressField("zipCode")}
+                      style={{ width: "100%", marginTop: "6px" }}
+                    />
+                  </div>
+                  <div>
+                    <label>COUNTRY</label>
+                    <input
+                      type="text"
+                      value={details.address?.country || "United Arab Emirates"}
+                      onChange={setAddressField("country")}
+                      style={{ width: "100%", marginTop: "6px" }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Public Contact */}
+              <div
+                style={{
+                  border: "1px solid rgba(0,0,0,0.12)",
+                  borderRadius: "10px",
+                  padding: "20px",
+                  background: "#fafaf9",
+                }}
+              >
+                <div style={{ fontSize: "12px", fontWeight: 800, marginBottom: "14px" }}>
+                  (02) PUBLIC CONTACT LINES
+                </div>
+                <div style={{ marginBottom: "14px" }}>
+                  <label>PUBLIC OFFICIAL EMAIL</label>
+                  <input
+                    type="email"
+                    value={details.email || ""}
+                    onChange={setContactField("email")}
+                    style={{ width: "100%", marginTop: "6px" }}
+                  />
+                  {settingsErrors.email && (
+                    <div style={{ color: "#d32f2f", fontSize: "11px", marginTop: "4px" }}>
+                      {settingsErrors.email}
+                    </div>
                   )}
                 </div>
-              </div>
-
-              <div className="modal-meta-item" style={{ marginTop: "16px" }}>
-                <span className="modal-meta-label">SERVICES REQUIRED</span>
-                <div className="services-chips-row">
-                  {Array.isArray(selectedQuote.services) ? (
-                    selectedQuote.services.map((s, idx) => (
-                      <span key={idx} className="service-chip">
-                        {s}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="service-chip">
-                      {selectedQuote.services || "General Interior Fit-Out"}
-                    </span>
-                  )}
+                <div style={{ marginBottom: "14px" }}>
+                  <label>PHONE / MOBILE</label>
+                  <input
+                    type="text"
+                    value={details.mobile || ""}
+                    onChange={setContactField("mobile")}
+                    style={{ width: "100%", marginTop: "6px" }}
+                  />
                 </div>
-              </div>
-
-              <div className="modal-meta-item" style={{ marginTop: "16px" }}>
-                <span className="modal-meta-label">CLIENT BRIEF & SPECIFICATIONS</span>
-                <div className="modal-message-box">
-                  {selectedQuote.message || "No additional text provided in brief."}
-                </div>
-              </div>
-
-              <div className="modal-meta-item" style={{ marginTop: "16px" }}>
-                <span className="modal-meta-label">TIMESTAMP RECORDED</span>
-                <div style={{ fontSize: "12px", color: "#666666" }}>
-                  {formatDate(selectedQuote.createdAt)} ({new Date(selectedQuote.createdAt).toLocaleTimeString()})
+                <div>
+                  <label>WHATSAPP BUSINESS</label>
+                  <input
+                    type="text"
+                    value={details.whatsapp || ""}
+                    onChange={setContactField("whatsapp")}
+                    style={{ width: "100%", marginTop: "6px" }}
+                  />
                 </div>
               </div>
             </div>
 
-            <div className="modal-cad-footer">
-              <button
-                type="button"
-                className="btn-brutalist-solid"
-                onClick={() => setSelectedQuote(null)}
+            {/* Social channels */}
+            <div
+              style={{
+                marginTop: "24px",
+                border: "1px solid rgba(0,0,0,0.12)",
+                borderRadius: "10px",
+                padding: "20px",
+                background: "#fafaf9",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "14px",
+                }}
               >
-                CLOSE BRIEF SPECIFICATION
+                <div style={{ fontSize: "12px", fontWeight: 800 }}>
+                  (03) DIGITAL CHANNELS & SOCIALS
+                </div>
+                <button
+                  type="button"
+                  onClick={addSocialLink}
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid #000000",
+                    borderRadius: "9999px",
+                    padding: "4px 12px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  ADD CHANNEL
+                </button>
+              </div>
+
+              {details.socialLinks.map((s, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "180px 1fr 40px",
+                    gap: "10px",
+                    marginBottom: "10px",
+                  }}
+                >
+                  <input
+                    type="text"
+                    value={s.platform || ""}
+                    placeholder="Platform"
+                    onChange={setSocialField(idx, "platform")}
+                  />
+                  <input
+                    type="text"
+                    value={s.url || ""}
+                    placeholder="URL"
+                    onChange={setSocialField(idx, "url")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeSocialLink(idx)}
+                    style={{
+                      background: "#ffffff",
+                      border: "1px solid rgba(0,0,0,0.2)",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <FiTrash2 size={14} color="#666666" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginTop: "24px" }}>
+              <button
+                type="submit"
+                disabled={savingSettings}
+                style={{
+                  background: "#000000",
+                  color: "#ffffff",
+                  border: "1px solid #000000",
+                  borderRadius: "9999px",
+                  padding: "12px 28px",
+                  fontSize: "12px",
+                  fontWeight: 800,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                }}
+              >
+                {savingSettings ? "SAVING..." : "SAVE CHANGES ↗"}
               </button>
+            </div>
+          </form>
+        </section>
+      )}
+
+      {/* ======================================================================
+          SLIDE-OVER INSPECTION DRAWER (SMOOTH SOFT ANIMATED)
+          ====================================================================== */}
+      {inspectedItem && (
+        <div
+          className="kanban-drawer-backdrop"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.45)",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
+            zIndex: 9999,
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+          onClick={() => setInspectedItem(null)}
+        >
+          <div
+            className="kanban-drawer-panel"
+            style={{
+              width: "100%",
+              maxWidth: "520px",
+              background: "#ffffff",
+              height: "100%",
+              overflowY: "auto",
+              padding: "36px 32px",
+              boxShadow: "-12px 0 36px rgba(0, 0, 0, 0.2)",
+              display: "flex",
+              flexDirection: "column",
+              boxSizing: "border-box",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                borderBottom: "1px solid rgba(0,0,0,0.1)",
+                paddingBottom: "18px",
+                marginBottom: "24px",
+              }}
+            >
+              <div>
+                <span
+                  style={{
+                    fontFamily: "Outfit, monospace",
+                    fontSize: "10.5px",
+                    fontWeight: 800,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    padding: "3px 10px",
+                    borderRadius: "9999px",
+                    background: "#000000",
+                    color: "#ffffff",
+                  }}
+                >
+                  {inspectedItem.typeBadge}
+                </span>
+                <h2
+                  style={{
+                    fontFamily: "Outfit, sans-serif",
+                    fontSize: "24px",
+                    fontWeight: 900,
+                    margin: "12px 0 4px 0",
+                    color: "#000000",
+                  }}
+                >
+                  {inspectedItem.title}
+                </h2>
+                <div style={{ fontSize: "13px", color: "#666666" }}>
+                  {inspectedItem.subtitle}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setInspectedItem(null)}
+                style={{
+                  background: "#ffffff",
+                  border: "1px solid rgba(0,0,0,0.2)",
+                  borderRadius: "50%",
+                  width: "36px",
+                  height: "36px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <FiX size={16} />
+              </button>
+            </div>
+
+            {/* Quick Stage Shifter inside Drawer */}
+            <div
+              style={{
+                background: "#fafaf9",
+                border: "1px solid rgba(0,0,0,0.12)",
+                borderRadius: "10px",
+                padding: "16px",
+                marginBottom: "24px",
+              }}
+            >
+              <label style={{ display: "block", marginBottom: "8px" }}>
+                PIPELINE STAGE POSITION
+              </label>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "6px",
+                }}
+              >
+                {KANBAN_STAGES.map((stg) => {
+                  const isCurrent = inspectedItem.stage === stg.id;
+                  return (
+                    <button
+                      key={stg.id}
+                      onClick={() => {
+                        updateItemStage(inspectedItem.id, stg.id, inspectedItem.title);
+                        setInspectedItem((prev) => ({ ...prev, stage: stg.id }));
+                      }}
+                      className="kanban-stage-pill"
+                      style={{
+                        fontFamily: "Outfit, monospace",
+                        fontSize: "10.5px",
+                        fontWeight: 800,
+                        padding: "6px 12px",
+                        borderRadius: "9999px",
+                        border: "1px solid",
+                        borderColor: isCurrent ? "#000000" : "rgba(0,0,0,0.2)",
+                        background: isCurrent ? "#000000" : "#ffffff",
+                        color: isCurrent ? "#ffffff" : "#000000",
+                      }}
+                    >
+                      {stg.index} {stg.title.split(" ")[0]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Specifications Grid */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "16px",
+                marginBottom: "24px",
+              }}
+            >
+              <div
+                style={{
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  borderRadius: "8px",
+                  padding: "12px",
+                }}
+              >
+                <div style={{ fontSize: "10px", fontWeight: 800, color: "#888888" }}>
+                  LOCATION
+                </div>
+                <div style={{ fontSize: "13px", fontWeight: 700, marginTop: "2px" }}>
+                  {inspectedItem.location}
+                </div>
+              </div>
+              <div
+                style={{
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  borderRadius: "8px",
+                  padding: "12px",
+                }}
+              >
+                <div style={{ fontSize: "10px", fontWeight: 800, color: "#888888" }}>
+                  BUDGET ESTIMATE
+                </div>
+                <div style={{ fontSize: "13px", fontWeight: 700, marginTop: "2px" }}>
+                  {inspectedItem.budget || "Custom"}
+                </div>
+              </div>
+            </div>
+
+            {/* Client Contact Lines */}
+            {(inspectedItem.email || inspectedItem.mobile) && (
+              <div
+                style={{
+                  border: "1px solid rgba(0,0,0,0.1)",
+                  borderRadius: "10px",
+                  padding: "16px",
+                  marginBottom: "24px",
+                  background: "#ffffff",
+                }}
+              >
+                <div style={{ fontSize: "11px", fontWeight: 800, marginBottom: "10px" }}>
+                  DIRECT CLIENT CONTACT
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                    fontSize: "13px",
+                  }}
+                >
+                  {inspectedItem.email && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <FiMail size={14} color="#555555" />
+                      <a
+                        href={`mailto:${inspectedItem.email}`}
+                        style={{ color: "#000000", fontWeight: 700 }}
+                      >
+                        {inspectedItem.email}
+                      </a>
+                    </div>
+                  )}
+                  {inspectedItem.mobile && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <FiPhone size={14} color="#555555" />
+                      <a
+                        href={`tel:${inspectedItem.mobile}`}
+                        style={{ color: "#000000", fontWeight: 700 }}
+                      >
+                        {inspectedItem.mobile}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Scope / Services */}
+            {inspectedItem.services && inspectedItem.services.length > 0 && (
+              <div style={{ marginBottom: "24px" }}>
+                <div style={{ fontSize: "11px", fontWeight: 800, marginBottom: "8px" }}>
+                  SERVICES IN SCOPE
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  {inspectedItem.services.map((srv, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        fontSize: "10.5px",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        padding: "4px 10px",
+                        borderRadius: "9999px",
+                        background: "#f0f0ef",
+                        color: "#000000",
+                        border: "1px solid rgba(0,0,0,0.1)",
+                      }}
+                    >
+                      {srv}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Client Brief or Notes */}
+            {inspectedItem.message && (
+              <div style={{ marginBottom: "28px" }}>
+                <div style={{ fontSize: "11px", fontWeight: 800, marginBottom: "8px" }}>
+                  SPECIFICATION & BRIEF NOTES
+                </div>
+                <div
+                  style={{
+                    fontSize: "13px",
+                    lineHeight: 1.6,
+                    color: "#333333",
+                    background: "#fafaf9",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    borderRadius: "8px",
+                    padding: "16px",
+                  }}
+                >
+                  {inspectedItem.message}
+                </div>
+              </div>
+            )}
+
+            {/* Direct Outreach Trigger Buttons */}
+            <div style={{ marginTop: "auto", display: "flex", gap: "10px" }}>
+              {inspectedItem.email && (
+                <a
+                  href={`mailto:${inspectedItem.email}?subject=Yashmeen%20Fit-Out%20Brief%20Follow-up`}
+                  style={{
+                    flex: 1,
+                    background: "#000000",
+                    color: "#ffffff",
+                    textAlign: "center",
+                    padding: "12px",
+                    borderRadius: "9999px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    textDecoration: "none",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  SEND PROPOSAL ↗
+                </a>
+              )}
+              {inspectedItem.mobile && (
+                <a
+                  href={`tel:${inspectedItem.mobile}`}
+                  style={{
+                    background: "#ffffff",
+                    color: "#000000",
+                    border: "1px solid #000000",
+                    padding: "12px 20px",
+                    borderRadius: "9999px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    textDecoration: "none",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  CALL CLIENT
+                </a>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Component Styles */}
-      <style>{`
-        .atelier-console-root {
-          width: 100%;
-          box-sizing: border-box;
-        }
+      {/* ======================================================================
+          QUICK ADD CMS DISPATCH MODAL
+          ====================================================================== */}
+      {quickAddOpen && (
+        <div
+          className="kanban-drawer-backdrop"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.5)",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+          onClick={() => setQuickAddOpen(false)}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "520px",
+              background: "#ffffff",
+              border: "1px solid #000000",
+              borderRadius: "14px",
+              padding: "28px",
+              boxShadow: "0 24px 48px rgba(0, 0, 0, 0.25)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "20px",
+                borderBottom: "1px solid rgba(0,0,0,0.1)",
+                paddingBottom: "12px",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontFamily: "Outfit, monospace",
+                    fontSize: "10.5px",
+                    fontWeight: 800,
+                    color: "#666666",
+                  }}
+                >
+                  (NEW DISPATCH LOG)
+                </div>
+                <h3
+                  style={{
+                    fontFamily: "Outfit, sans-serif",
+                    fontSize: "18px",
+                    fontWeight: 900,
+                    margin: "4px 0 0 0",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  LOG CMS PIPELINE DISPATCH
+                </h3>
+              </div>
+              <button
+                onClick={() => setQuickAddOpen(false)}
+                style={{
+                  background: "#ffffff",
+                  border: "1px solid rgba(0,0,0,0.2)",
+                  borderRadius: "50%",
+                  width: "30px",
+                  height: "30px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <FiX size={14} />
+              </button>
+            </div>
 
-        /* 1. Manifesto Hero */
-        .atelier-manifesto-hero {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          gap: 32px;
-          padding-bottom: 36px;
-          border-bottom: 1px solid #000000;
-          margin-bottom: 36px;
-          flex-wrap: wrap;
-        }
-        .manifesto-left {
-          max-width: 780px;
-        }
-        .manifesto-eyebrow {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: 0.12em;
-          color: #000000;
-          margin-bottom: 12px;
-        }
-        .manifesto-hairline {
-          flex: 1;
-          height: 1px;
-          background: #000000;
-        }
-        .manifesto-display-title {
-          font-size: clamp(36px, 4.5vw, 64px);
-          font-weight: 900;
-          line-height: 1.02;
-          letter-spacing: -0.03em;
-          color: #000000;
-          margin: 0 0 16px 0;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .manifesto-description {
-          font-size: 15px;
-          line-height: 1.6;
-          color: #444444;
-          margin: 0;
-          max-width: 640px;
-        }
-        .proof-box {
-          border: 1px solid #000000;
-          background: #ffffff;
-          padding: 24px;
-          border-radius: 8px;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          min-width: 260px;
-        }
-        .proof-num {
-          font-size: 24px;
-          font-weight: 900;
-          letter-spacing: -0.02em;
-        }
-        .proof-label {
-          font-size: 10.5px;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          color: #666666;
-        }
-        .proof-status-row {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-top: 6px;
-          padding-top: 8px;
-          border-top: 1px solid #e0e0e0;
-        }
-        .proof-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #000000;
-        }
-        .proof-status-text {
-          font-size: 9.5px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          color: #000000;
-        }
+            <form onSubmit={handleCreateDispatch}>
+              <div style={{ marginBottom: "14px" }}>
+                <label>PROJECT / BRIEF TITLE *</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Palm Jumeirah Penthouse Joinery"
+                  value={newDispatchForm.title}
+                  onChange={(e) =>
+                    setNewDispatchForm((prev) => ({ ...prev, title: e.target.value }))
+                  }
+                  required
+                  style={{ width: "100%", marginTop: "6px" }}
+                />
+              </div>
 
-        /* 2. Metric Bento Grid */
-        .atelier-bento-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 16px;
-          margin-bottom: 36px;
-        }
-        .bento-card {
-          background: #ffffff;
-          border: 1px solid #000000;
-          border-radius: 8px;
-          padding: 22px;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .bento-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-        }
-        .bento-card.is-active-tile {
-          background: #000000;
-          color: #ffffff;
-        }
-        .bento-card.is-active-tile .bento-badge,
-        .bento-card.is-active-tile .bento-arrow,
-        .bento-card.is-active-tile .bento-metric,
-        .bento-card.is-active-tile .bento-label,
-        .bento-card.is-active-tile .bento-sub {
-          color: #ffffff;
-        }
-        .bento-card-top {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 8px;
-        }
-        .bento-badge {
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 0.12em;
-          color: #666666;
-        }
-        .bento-arrow {
-          font-size: 14px;
-          font-weight: 700;
-        }
-        .bento-metric {
-          font-size: 40px;
-          font-weight: 900;
-          line-height: 1;
-          letter-spacing: -0.03em;
-        }
-        .bento-label {
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          margin-top: 6px;
-        }
-        .bento-sub {
-          font-size: 12px;
-          color: #777777;
-          margin-top: 2px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "12px",
+                  marginBottom: "14px",
+                }}
+              >
+                <div>
+                  <label>CLIENT NAME</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Emaar Private Client"
+                    value={newDispatchForm.client}
+                    onChange={(e) =>
+                      setNewDispatchForm((prev) => ({ ...prev, client: e.target.value }))
+                    }
+                    style={{ width: "100%", marginTop: "6px" }}
+                  />
+                </div>
+                <div>
+                  <label>DISPATCH TYPE</label>
+                  <select
+                    value={newDispatchForm.type}
+                    onChange={(e) =>
+                      setNewDispatchForm((prev) => ({ ...prev, type: e.target.value }))
+                    }
+                    style={{ width: "100%", marginTop: "6px" }}
+                  >
+                    <option value="COMMISSION BRIEF">COMMISSION BRIEF</option>
+                    <option value="CLIENT INQUIRY">CLIENT INQUIRY</option>
+                    <option value="SPATIAL FIT-OUT">SPATIAL FIT-OUT</option>
+                    <option value="ATELIER JOINERY">ATELIER JOINERY</option>
+                  </select>
+                </div>
+              </div>
 
-        /* 3. Controller Pills */
-        .atelier-tab-controller {
-          margin-bottom: 32px;
-          border-bottom: 1px solid #000000;
-          padding-bottom: 16px;
-          overflow-x: auto;
-        }
-        .controller-track {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          white-space: nowrap;
-        }
-        .controller-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: #ffffff;
-          border: 1px solid #000000;
-          border-radius: 9999px;
-          padding: 8px 18px;
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          color: #000000;
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }
-        .controller-pill:hover {
-          background: #f0f0f0;
-        }
-        .controller-pill.is-active {
-          background: #000000;
-          color: #ffffff;
-        }
-        .controller-pill.is-active .pill-num,
-        .controller-pill.is-active .pill-count {
-          color: #ffffff;
-        }
-        .pill-num {
-          font-size: 10px;
-          color: #777777;
-        }
-        .pill-count {
-          font-weight: 700;
-          color: #666666;
-        }
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "12px",
+                  marginBottom: "14px",
+                }}
+              >
+                <div>
+                  <label>LOCATION</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Downtown Dubai"
+                    value={newDispatchForm.location}
+                    onChange={(e) =>
+                      setNewDispatchForm((prev) => ({ ...prev, location: e.target.value }))
+                    }
+                    style={{ width: "100%", marginTop: "6px" }}
+                  />
+                </div>
+                <div>
+                  <label>BUDGET ESTIMATE</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. AED 250,000"
+                    value={newDispatchForm.budget}
+                    onChange={(e) =>
+                      setNewDispatchForm((prev) => ({ ...prev, budget: e.target.value }))
+                    }
+                    style={{ width: "100%", marginTop: "6px" }}
+                  />
+                </div>
+              </div>
 
-        /* 4. Tab Modules Layout */
-        .dispatch-overview-grid {
-          display: grid;
-          grid-template-columns: 1.15fr 1fr;
-          gap: 28px;
-        }
-        .cad-box {
-          background: #ffffff;
-          border: 1px solid #000000;
-          border-radius: 8px;
-          padding: 24px;
-        }
-        .cad-box-header {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding-bottom: 14px;
-          border-bottom: 1px solid #000000;
-          margin-bottom: 18px;
-        }
-        .cad-box-num {
-          font-size: 11px;
-          font-weight: 800;
-          color: #000000;
-        }
-        .cad-box-title {
-          font-size: 12.5px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          margin: 0;
-          flex: 1;
-        }
-        .cad-action-link {
-          background: none;
-          border: none;
-          font-size: 11px;
-          font-weight: 800;
-          color: #000000;
-          cursor: pointer;
-          text-decoration: underline;
-          letter-spacing: 0.06em;
-        }
+              <div style={{ marginBottom: "14px" }}>
+                <label>INITIAL PIPELINE COLUMN</label>
+                <select
+                  value={quickAddStage}
+                  onChange={(e) => setQuickAddStage(e.target.value)}
+                  style={{ width: "100%", marginTop: "6px" }}
+                >
+                  {KANBAN_STAGES.map((stg) => (
+                    <option key={stg.id} value={stg.id}>
+                      {stg.index} · {stg.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        /* Brief Card */
-        .briefs-stream {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-        .brief-card {
-          border: 1px solid #e0e0e0;
-          border-radius: 6px;
-          padding: 16px;
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }
-        .brief-card:hover {
-          border-color: #000000;
-          background: #fafafa;
-        }
-        .brief-card-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 6px;
-        }
-        .brief-client-name {
-          font-size: 14.5px;
-          font-weight: 800;
-          color: #000000;
-        }
-        .brief-type-badge {
-          font-size: 9.5px;
-          font-weight: 800;
-          letter-spacing: 0.1em;
-          border: 1px solid #000000;
-          padding: 2px 7px;
-          border-radius: 9999px;
-          text-transform: uppercase;
-        }
-        .brief-meta-row {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 12px;
-          color: #444444;
-          margin-bottom: 8px;
-        }
-        .brief-excerpt {
-          font-size: 12.5px;
-          color: #666666;
-          line-height: 1.5;
-          margin: 0 0 10px 0;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-        .brief-inspect-cta {
-          font-size: 10.5px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          color: #000000;
-          text-decoration: underline;
-        }
+              <div style={{ marginBottom: "20px" }}>
+                <label>SPECIFICATION BRIEF & NOTES</label>
+                <textarea
+                  rows={3}
+                  placeholder="Key architectural requirements, MEP specs, or client notes..."
+                  value={newDispatchForm.notes}
+                  onChange={(e) =>
+                    setNewDispatchForm((prev) => ({ ...prev, notes: e.target.value }))
+                  }
+                  style={{ width: "100%", marginTop: "6px" }}
+                />
+              </div>
 
-        /* Inquiries stream */
-        .inquiries-stream {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-        .inquiry-item {
-          border: 1px solid #e0e0e0;
-          border-radius: 6px;
-          padding: 14px;
-        }
-        .inquiry-header {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 4px;
-        }
-        .inquiry-name {
-          font-size: 13.5px;
-          font-weight: 800;
-        }
-        .inquiry-date {
-          font-size: 11px;
-          color: #777777;
-        }
-        .inquiry-contacts {
-          font-size: 11.5px;
-          color: #666666;
-          margin-bottom: 6px;
-        }
-        .inquiry-msg {
-          font-size: 12.5px;
-          color: #333333;
-          line-height: 1.45;
-          margin: 0;
-        }
-
-        /* Portfolio Preview Grid */
-        .portfolio-preview-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-        }
-        .portfolio-thumb-card {
-          border: 1px solid #e0e0e0;
-          border-radius: 6px;
-          overflow: hidden;
-        }
-        .portfolio-thumb-img {
-          width: 100%;
-          height: 100px;
-          background: #eeeeee;
-        }
-        .portfolio-thumb-img img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .portfolio-thumb-info {
-          padding: 10px;
-        }
-        .portfolio-thumb-title {
-          font-size: 12px;
-          font-weight: 800;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .portfolio-thumb-loc {
-          font-size: 10.5px;
-          color: #777777;
-          margin-top: 2px;
-        }
-
-        /* Atelier Contact Summary */
-        .atelier-contact-summary {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-        .contact-summary-row {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          font-size: 12.5px;
-        }
-        .contact-summary-label {
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 0.1em;
-          color: #777777;
-        }
-        .contact-summary-val {
-          color: #000000;
-          font-weight: 600;
-        }
-
-        /* Top bar within module */
-        .module-topbar {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          padding-bottom: 18px;
-          border-bottom: 1px solid #000000;
-          margin-bottom: 24px;
-          flex-wrap: wrap;
-          gap: 16px;
-        }
-        .module-eyebrow {
-          font-size: 10.5px;
-          font-weight: 800;
-          letter-spacing: 0.12em;
-          color: #666666;
-        }
-        .module-heading {
-          font-size: 24px;
-          font-weight: 900;
-          letter-spacing: -0.02em;
-          margin: 4px 0 0 0;
-        }
-        .module-actions-row {
-          display: flex;
-          gap: 10px;
-        }
-
-        /* Buttons */
-        .btn-brutalist-solid {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: #000000;
-          color: #ffffff;
-          border: 1px solid #000000;
-          border-radius: 9999px;
-          padding: 8px 18px;
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-decoration: none;
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }
-        .btn-brutalist-solid:hover {
-          background: #ffffff;
-          color: #000000;
-        }
-        .btn-brutalist-outline {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: #ffffff;
-          color: #000000;
-          border: 1px solid #000000;
-          border-radius: 9999px;
-          padding: 8px 18px;
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-decoration: none;
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }
-        .btn-brutalist-outline:hover {
-          background: #000000;
-          color: #ffffff;
-        }
-
-        /* Filter bar */
-        .filter-bar {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 20px;
-          flex-wrap: wrap;
-        }
-        .search-wrap {
-          position: relative;
-          flex: 1;
-          max-width: 440px;
-        }
-        .search-icon {
-          position: absolute;
-          left: 14px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #000000;
-        }
-        .cad-search-input {
-          width: 100%;
-          box-sizing: border-box;
-          background: #ffffff;
-          border: 1px solid #000000;
-          border-radius: 9999px;
-          padding: 10px 16px 10px 38px;
-          font-size: 13px;
-          color: #000000;
-          outline: none;
-        }
-        .filter-pills {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-        .filter-pill {
-          background: #ffffff;
-          border: 1px solid #cccccc;
-          border-radius: 9999px;
-          padding: 6px 14px;
-          font-size: 10.5px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          cursor: pointer;
-          color: #000000;
-        }
-        .filter-pill.is-active {
-          background: #000000;
-          color: #ffffff;
-          border-color: #000000;
-        }
-
-        /* Table */
-        .cad-table-wrap {
-          background: #ffffff;
-          border: 1px solid #000000;
-          border-radius: 8px;
-          overflow: hidden;
-        }
-        .cad-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 13px;
-        }
-        .cad-table th {
-          background: #f8f8f8;
-          border-bottom: 1px solid #000000;
-          text-align: left;
-          padding: 12px 16px;
-          font-size: 10.5px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          color: #000000;
-        }
-        .cad-table td {
-          padding: 14px 16px;
-          border-bottom: 1px solid #eeeeee;
-          vertical-align: middle;
-        }
-        .cad-table tr:hover td {
-          background: #fafafa;
-        }
-        .table-badge {
-          display: inline-block;
-          font-size: 9.5px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          border: 1px solid #000000;
-          padding: 2px 8px;
-          border-radius: 9999px;
-          text-transform: uppercase;
-        }
-        .btn-inspect-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          background: #ffffff;
-          border: 1px solid #000000;
-          border-radius: 9999px;
-          padding: 4px 10px;
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          cursor: pointer;
-        }
-        .btn-inspect-pill:hover {
-          background: #000000;
-          color: #ffffff;
-        }
-
-        /* Inquiries Grid */
-        .cad-grid-cards {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-          gap: 16px;
-        }
-        .inquiry-card {
-          background: #ffffff;
-          border: 1px solid #000000;
-          border-radius: 8px;
-          padding: 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-        .inquiry-card-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          border-bottom: 1px solid #eeeeee;
-          padding-bottom: 10px;
-        }
-        .inquiry-card-name {
-          font-size: 16px;
-          font-weight: 800;
-          margin: 0;
-        }
-        .inquiry-card-meta {
-          font-size: 11.5px;
-          color: #666666;
-          margin-top: 3px;
-        }
-        .inquiry-card-meta a {
-          color: #000000;
-          text-decoration: underline;
-        }
-        .inquiry-card-date {
-          font-size: 10.5px;
-          color: #888888;
-        }
-        .inquiry-card-service {
-          font-size: 11.5px;
-          color: #444444;
-        }
-        .inquiry-card-msg {
-          font-size: 13px;
-          line-height: 1.5;
-          color: #222222;
-          margin: 0;
-          background: #f9f9f9;
-          padding: 12px;
-          border-radius: 6px;
-          border-left: 2px solid #000000;
-        }
-        .inquiry-card-actions {
-          display: flex;
-          gap: 8px;
-          margin-top: auto;
-        }
-        .btn-inquiry-action {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 10.5px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          padding: 6px 12px;
-          border: 1px solid #000000;
-          border-radius: 9999px;
-          color: #000000;
-          text-decoration: none;
-        }
-        .btn-inquiry-action:hover {
-          background: #000000;
-          color: #ffffff;
-        }
-
-        /* Projects Gallery Grid */
-        .projects-gallery-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 20px;
-        }
-        .project-display-card {
-          background: #ffffff;
-          border: 1px solid #000000;
-          border-radius: 8px;
-          overflow: hidden;
-        }
-        .project-display-img {
-          position: relative;
-          width: 100%;
-          height: 190px;
-          background: #eeeeee;
-        }
-        .project-display-img img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .project-display-badge {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          background: #000000;
-          color: #ffffff;
-          font-size: 9.5px;
-          font-weight: 800;
-          letter-spacing: 0.1em;
-          padding: 3px 8px;
-          border-radius: 9999px;
-        }
-        .project-display-body {
-          padding: 16px;
-        }
-        .project-display-title {
-          font-size: 14px;
-          font-weight: 800;
-          margin: 0 0 6px 0;
-          letter-spacing: -0.01em;
-        }
-        .project-display-loc {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 11.5px;
-          color: #666666;
-        }
-
-        /* Settings Card & Form */
-        .settings-card {
-          background: #ffffff;
-          border: 1px solid #000000;
-          border-radius: 8px;
-          padding: clamp(24px, 4vw, 44px);
-        }
-        .cad-form {
-          display: flex;
-          flex-direction: column;
-          gap: 36px;
-        }
-        .form-section {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-        .form-section-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          border-bottom: 1px solid #000000;
-          padding-bottom: 10px;
-          margin-bottom: 8px;
-        }
-        .form-section-num {
-          font-size: 11px;
-          font-weight: 800;
-        }
-        .form-section-title {
-          font-size: 13px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          margin: 0;
-        }
-        .form-group {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        .form-group label {
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-        .cad-input {
-          width: 100%;
-          box-sizing: border-box;
-          background: #ffffff;
-          border: 1px solid #cccccc;
-          border-radius: 6px;
-          padding: 11px 14px;
-          font-size: 13.5px;
-          color: #000000;
-          outline: none;
-        }
-        .cad-input:focus {
-          border-color: #000000;
-          box-shadow: 0 0 0 2px #000000;
-        }
-        .form-grid-2 {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
-        .form-grid-3 {
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
-          gap: 16px;
-        }
-        .form-error {
-          font-size: 11px;
-          color: #000000;
-          font-weight: 700;
-        }
-        .social-links-list {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-        .social-link-row {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .btn-remove-row {
-          background: #ffffff;
-          border: 1px solid #000000;
-          border-radius: 6px;
-          padding: 10px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .btn-remove-row:hover {
-          background: #000000;
-          color: #ffffff;
-        }
-        .form-actions-bar {
-          display: flex;
-          justify-content: flex-end;
-          padding-top: 16px;
-          border-top: 1px solid #000000;
-        }
-
-        /* Modal */
-        .modal-backdrop {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.65);
-          backdrop-filter: blur(4px);
-          z-index: 1000;
-          display: flex;
-          align-items: center;
-          justifyContent: center;
-          padding: 20px;
-        }
-        .modal-cad-panel {
-          width: 100%;
-          max-width: 620px;
-          max-height: 90vh;
-          overflow-y: auto;
-          background: #ffffff;
-          border: 1px solid #000000;
-          border-radius: 8px;
-          padding: 28px;
-          box-sizing: border-box;
-        }
-        .modal-cad-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          border-bottom: 1px solid #000000;
-          padding-bottom: 14px;
-          margin-bottom: 20px;
-        }
-        .modal-eyebrow {
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 0.12em;
-          color: #666666;
-        }
-        .modal-title {
-          font-size: 22px;
-          font-weight: 900;
-          margin: 4px 0 0 0;
-        }
-        .modal-close-btn {
-          background: none;
-          border: 1px solid #000000;
-          border-radius: 6px;
-          padding: 6px;
-          cursor: pointer;
-          display: flex;
-        }
-        .modal-grid-2 {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-        }
-        .modal-meta-item {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-        .modal-meta-label {
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 0.1em;
-          color: #777777;
-        }
-        .modal-meta-val {
-          font-size: 14px;
-          color: #000000;
-          font-weight: 600;
-        }
-        .cad-link-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          border: 1px solid #000000;
-          border-radius: 9999px;
-          padding: 5px 12px;
-          font-size: 11.5px;
-          color: #000000;
-          text-decoration: none;
-          font-weight: 700;
-        }
-        .services-chips-row {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          margin-top: 4px;
-        }
-        .service-chip {
-          border: 1px solid #000000;
-          border-radius: 9999px;
-          padding: 3px 10px;
-          font-size: 10.5px;
-          font-weight: 700;
-        }
-        .modal-message-box {
-          background: #f7f7f7;
-          border: 1px solid #e0e0e0;
-          border-radius: 6px;
-          padding: 14px;
-          font-size: 13px;
-          line-height: 1.55;
-          color: #222222;
-          margin-top: 4px;
-          white-space: pre-wrap;
-        }
-        .modal-cad-footer {
-          margin-top: 24px;
-          padding-top: 16px;
-          border-top: 1px solid #000000;
-          display: flex;
-          justify-content: flex-end;
-        }
-
-        @media (max-width: 1024px) {
-          .atelier-bento-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-          .dispatch-overview-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-        @media (max-width: 640px) {
-          .atelier-bento-grid {
-            grid-template-columns: 1fr;
-          }
-          .form-grid-2,
-          .form-grid-3 {
-            grid-template-columns: 1fr;
-          }
-          .modal-grid-2 {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  type="submit"
+                  style={{
+                    flex: 1,
+                    background: "#000000",
+                    color: "#ffffff",
+                    border: "1px solid #000000",
+                    borderRadius: "9999px",
+                    padding: "12px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                  }}
+                >
+                  DISPATCH TO KANBAN BOARD ↗
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQuickAddOpen(false)}
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid rgba(0,0,0,0.2)",
+                    borderRadius: "9999px",
+                    padding: "12px 18px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  CANCEL
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

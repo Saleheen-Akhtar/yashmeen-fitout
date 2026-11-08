@@ -304,10 +304,11 @@
 /* Scrollbar */
 .admin-shell-container ::-webkit-scrollbar {
   width: 5px;
-  height: 5px;
+  height: 6px;
 }
 .admin-shell-container ::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 9999px;
 }
 .admin-shell-container ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.2);
@@ -316,3 +317,141 @@
 .admin-shell-container ::-webkit-scrollbar-thumb:hover {
   background: #000000;
 }
+
+/* ==========================================================================
+   Architectural CMS Kanban Board & Smooth Animation Engine
+   ========================================================================== */
+
+@keyframes kanbanCardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes kanbanDrawerSlide {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes kanbanFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes kanbanPulseSoft {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.85;
+  }
+}
+
+.kanban-board-scroll {
+  display: flex;
+  gap: 22px;
+  overflow-x: auto;
+  padding-bottom: 24px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.kanban-column-box {
+  flex: 0 0 320px;
+  width: 320px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 520px;
+  position: relative;
+}
+
+.kanban-column-box.drag-over {
+  background: #fbfbfa !important;
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 2px #000000, 0 12px 30px -10px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-2px);
+}
+
+.kanban-column-header {
+  padding: 16px 18px;
+  background: #fafaf9;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kanban-card-item {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  padding: 18px;
+  cursor: grab;
+  position: relative;
+  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease,
+              opacity 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.kanban-card-item:hover {
+  transform: translateY(-4px) scale(1.008);
+  border-color: #000000;
+  box-shadow: 0 18px 36px -10px rgba(0, 0, 0, 0.12);
+}
+
+.kanban-card-item.is-dragging {
+  opacity: 0.45;
+  cursor: grabbing;
+  transform: scale(0.97) rotate(1deg);
+  border-style: dashed;
+  border-color: #000000;
+}
+
+.kanban-card-animated {
+  animation: kanbanCardSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.kanban-stage-pill {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.kanban-stage-pill:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+  transform: translateY(-1px);
+}
+
+.kanban-drawer-backdrop {
+  animation: kanbanFadeIn 0.25s ease-out both;
+}
+
+.kanban-drawer-panel {
+  animation: kanbanDrawerSlide 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+

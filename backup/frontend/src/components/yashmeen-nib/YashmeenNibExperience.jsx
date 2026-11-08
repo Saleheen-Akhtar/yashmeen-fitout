@@ -446,8 +446,8 @@ export default function YashmeenNibExperience() {
 
     if (isDesktop) {
       lenis = new Lenis({
-        lerp: 0.08,
-        wheelMultiplier: 0.85,
+        lerp: 0.1,
+        wheelMultiplier: 1.0,
         smoothWheel: true
       });
       lenisRef.current = lenis;
@@ -490,7 +490,7 @@ export default function YashmeenNibExperience() {
         animation: scrollTl,
         trigger: modScroll,
         pin: "main",
-        scrub: 1,
+        scrub: 0.8,
         start: "top top",
         end: "+=" + scroll_tl_end + "%",
         onUpdate: () => {
@@ -1065,13 +1065,8 @@ export default function YashmeenNibExperience() {
             className={`header__logo logo small ${isHeaderDark ? "c-white" : ""}`}
             ref={headerLogoRef}
           >
-            <Link to="/" className="logo__normal link" aria-label="Yashmeen Home">
-              <div className="line">
-                <span>YASHMEEN</span>
-              </div>
-              <div className="line">
-                <span>YASHMEEN</span>
-              </div>
+            <Link to="/" className="logo__normal" aria-label="Yashmeen Home">
+              <span>YASHMEEN</span>
             </Link>
             <div className="logo__group">
               <div className="logo__is">ATELIER</div>
@@ -1223,7 +1218,7 @@ export default function YashmeenNibExperience() {
             <div className="wrapper">
               {/* Rotated Top-Right Navigation Menu (-90deg hallmark) */}
               <ul className="mod-scroll__intro__menu f-izmir t-parrafo t-upper">
-                <li className="menu-item link">
+                <li className="menu-item">
                   <a
                     href="#studio"
                     onClick={(e) => {
@@ -1231,15 +1226,10 @@ export default function YashmeenNibExperience() {
                       glideToSection("#studio");
                     }}
                   >
-                    <div className="line">
-                      <span>{currentText.navStudio}</span>
-                    </div>
-                    <div className="line">
-                      <span>{currentText.navStudio}</span>
-                    </div>
+                    {currentText.navStudio}
                   </a>
                 </li>
-                <li className="menu-item link">
+                <li className="menu-item">
                   <a
                     href="#projects"
                     onClick={(e) => {
@@ -1247,23 +1237,11 @@ export default function YashmeenNibExperience() {
                       glideToSection("#projects");
                     }}
                   >
-                    <div className="line">
-                      <span>{currentText.navProjects}</span>
-                    </div>
-                    <div className="line">
-                      <span>{currentText.navProjects}</span>
-                    </div>
+                    {currentText.navProjects}
                   </a>
                 </li>
-                <li className="menu-item link">
-                  <Link to="/contact">
-                    <div className="line">
-                      <span>{currentText.navContact}</span>
-                    </div>
-                    <div className="line">
-                      <span>{currentText.navContact}</span>
-                    </div>
-                  </Link>
+                <li className="menu-item">
+                  <Link to="/contact">{currentText.navContact}</Link>
                 </li>
               </ul>
 
@@ -1321,15 +1299,10 @@ export default function YashmeenNibExperience() {
               {/* Landmark Big Brand Identity spanning the viewport */}
               <div className="mod-scroll__intro__logo logo c-black">
                 <div
-                  className="logo__normal link"
+                  className="logo__normal"
                   onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 >
-                  <div className="line">
-                    <span>YASHMEEN</span>
-                  </div>
-                  <div className="line">
-                    <span>YASHMEEN</span>
-                  </div>
+                  <span>YASHMEEN</span>
                 </div>
                 <div className="logo__group">
                   <div className="logo__is">ATELIER</div>

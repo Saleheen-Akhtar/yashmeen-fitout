@@ -43,8 +43,9 @@
   --white: #FFFFFF;
   --black: #0A0A0B;
   --beige: #ECE4DA;
-  --grey: #DCD8D3;
+  --grey: #707070;
   --blue: #C7D7E9;
+  --red: #DB5C59;
   --sand: #E2D9CC;
   --bronze: #A4824D;
   --bronze-glow: rgba(164, 130, 77, 0.25);
@@ -117,6 +118,7 @@ html, body {
 .bg-beige { background-color: var(--beige) !important; }
 .bg-grey { background-color: var(--grey) !important; }
 .bg-blue { background-color: var(--blue) !important; }
+.bg-red { background-color: var(--red) !important; }
 .c-white { color: var(--white) !important; }
 .c-black { color: var(--black) !important; }
 
@@ -207,13 +209,19 @@ header .header__logo {
   position: absolute;
   top: var(--wrapper-padd);
   left: var(--wrapper-padd);
-  pointer-events: all;
+  pointer-events: none;
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
   text-decoration: none;
   color: var(--black);
+  transform: translate3d(0, -180%, 0);
+  opacity: 0;
   transition: color 0.4s ease;
+}
+
+header .header__logo.is-visible {
+  pointer-events: all;
 }
 
 header .header__logo .logo__normal {
@@ -241,10 +249,16 @@ header .header__logo .logo__group {
   position: absolute;
   top: var(--wrapper-padd);
   right: var(--wrapper-padd);
-  pointer-events: all;
+  pointer-events: none;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  transform: translate3d(0, -180%, 0);
+  opacity: 0;
+}
+
+.header__controls.is-visible {
+  pointer-events: all;
 }
 
 .header__lang-btn {
@@ -498,13 +512,19 @@ header .header__menu.d-none {
 /* ==========================================================================
    2. PINNED HORIZONTAL RAIL (.mod-scroll)
    ========================================================================== */
+main {
+  position: relative;
+  width: 100vw;
+  overflow-x: clip;
+}
+
 main .mod-scroll {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   width: max-content;
   height: 100vh;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
 }
 
@@ -519,8 +539,7 @@ main .mod-scroll > * {
    CHAPTER 0: INTRO MANIFESTO (.mod-scroll__intro bg-white)
    ========================================================================== */
 main .mod-scroll__intro {
-  width: 82vw;
-  min-width: 82vw;
+  height: 100vh;
   background-color: var(--white);
   display: flex;
   align-items: center;
@@ -528,15 +547,26 @@ main .mod-scroll__intro {
   overflow: hidden;
 }
 
+main .mod-scroll__intro .wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80vw;
+  height: 100vh;
+  position: relative;
+  padding: 0 var(--wrapper-padd);
+  box-sizing: border-box;
+}
+
 .mod-scroll__intro__menu {
   position: absolute;
-  top: var(--wrapper-padd);
+  top: calc(var(--wrapper-padd) - 1.15rem);
   right: var(--wrapper-padd);
   list-style: none;
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
   transform: rotate(-90deg);
-  transform-origin: top right;
+  transform-origin: right bottom;
   z-index: 10;
 }
 
@@ -568,17 +598,19 @@ main .mod-scroll__intro {
 }
 
 .mod-scroll__intro__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1.5rem;
   width: 100%;
-  padding-left: 8vw;
-  padding-right: 6vw;
 }
 
 .mod-scroll__intro__wrap-titles {
+  width: 100%;
   display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  grid-template-rows: auto auto;
-  column-gap: 5vw;
-  row-gap: 2.5vh;
+  grid-template-columns: auto auto;
+  gap: 0.5rem 0px;
   align-items: baseline;
 }
 
@@ -604,10 +636,9 @@ main .mod-scroll__intro {
 .mod-scroll__intro__text {
   font-family: var(--f-izmir);
   font-size: var(--parrafo);
-  line-height: 1.6;
-  max-width: 46ch;
+  line-height: var(--parrafo-lh);
+  max-width: 17rem;
   color: rgba(10, 10, 11, 0.85);
-  align-self: center;
 }
 
 .mod-scroll__intro__logo {
@@ -1178,21 +1209,40 @@ main .mod-scroll__projects {
 }
 
 .mod-scroll__cierre {
-  width: 32vw;
-  min-width: 32vw;
+  width: 38vw;
+  min-width: 38vw;
   height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--beige);
-  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: var(--red);
+  color: var(--black);
+  position: relative;
+  overflow: hidden;
   padding: 0 4vw;
 }
 
+.mod-scroll__cierre.bg-red {
+  background-color: var(--red) !important;
+}
+
 .mod-scroll__cierre__content {
+  width: 100%;
+  height: 80vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
   gap: 1.5rem;
+}
+
+.mod-scroll__cierre__content__image {
+  width: 26vw;
+  height: 60vh;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
 }
 
 .mod-scroll__cierre__label {
@@ -1540,5 +1590,62 @@ main .mod-scroll__projects {
 
   .header__menu__content {
     display: none;
+  }
+}
+
+/* ==========================================================================
+   CUSTOM KINETIC CURSOR (#mouse)
+   ========================================================================== */
+#mouse {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  background-color: var(--black);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9990;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s ease;
+}
+
+#mouse.is-expanded {
+  width: 72px;
+  height: 72px;
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+#mouse span {
+  font-family: var(--f-izmir);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--white);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+#mouse.is-expanded span {
+  opacity: 1;
+}
+
+#mouse.is-hidden {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+}
+
+@media (max-width: 991px) {
+  #mouse {
+    display: none !important;
   }
 }

@@ -3,11 +3,15 @@ import { Link } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { FiArrowRight, FiRotateCcw, FiX } from "react-icons/fi";
+import { FiArrowRight, FiX } from "react-icons/fi";
 import "../../styles/yashmeen-nib.css";
 
 // Register GreenSock ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
+if (typeof window !== "undefined") {
+  window.ScrollTrigger = ScrollTrigger;
+  window.gsap = gsap;
+}
 
 export default function YashmeenNibExperience() {
   const [progress, setProgress] = useState(0);
@@ -25,10 +29,13 @@ export default function YashmeenNibExperience() {
   const backdropRef = useRef(null);
   const modScrollRef = useRef(null);
   const headerLogoRef = useRef(null);
+  const headerControlsRef = useRef(null);
   const menuRef = useRef(null);
   const menuBgRef = useRef(null);
   const lenisRef = useRef(null);
   const timelineRef = useRef(null);
+  const mouseRef = useRef(null);
+  const mouseSpanRef = useRef(null);
 
   // Bilingual text dictionary matching normalisboring.es high editorial tone
   const texts = {
@@ -394,6 +401,32 @@ export default function YashmeenNibExperience() {
       { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" },
       "-=0.4"
     );
+
+    // Signature intro reveal: wrapper contracts from 100vw to 80vw, revealing Section 1 image
+    if (window.innerWidth > 991) {
+      tl.fromTo(
+        ".mod-scroll__intro > .wrapper",
+        { width: "100vw" },
+        {
+          width: "80vw",
+          duration: 1.25,
+          ease: "power3.out",
+          onStart: () => {
+            const singleImage = document.querySelector(
+              ".mod-scroll__images__image-single"
+            );
+            if (singleImage) {
+              gsap.fromTo(
+                singleImage,
+                { x: "-5vw" },
+                { x: "-15vw", duration: 1.25, ease: "power2.out" }
+              );
+            }
+          }
+        },
+        "-=0.5"
+      );
+    }
   }, []);
 
   useEffect(() => {
@@ -438,32 +471,34 @@ export default function YashmeenNibExperience() {
 
     if (isDesktop) {
       const sections = modScroll.querySelectorAll(".mod-scroll > *");
-      const totalWidth = modScroll.scrollWidth;
-      const scrollDistance = totalWidth - window.innerWidth;
+      const scrollH_width = modScroll.scrollWidth;
+      const scroll_tl_end = (scrollH_width * 100) / window.innerWidth;
+      const adjust_width = window.innerWidth * 0.2;
+      const totalX = (scrollH_width - adjust_width) * -1;
 
       scrollTl = gsap.timeline({ paused: true });
 
       // Move entire horizontal rail
       scrollTl.to(sections, {
-        x: -scrollDistance,
+        x: totalX,
         ease: "none",
         duration: 100
       });
 
-      // Pin mod-scroll container
+      // Pin main container matching normalisboring.es
       scrollHTrigger = ScrollTrigger.create({
         animation: scrollTl,
         trigger: modScroll,
-        pin: true,
+        pin: "main",
         scrub: 1,
         start: "top top",
-        end: "+=" + scrollDistance,
+        end: "+=" + scroll_tl_end + "%",
         onUpdate: () => {
           // Check if dark section is currently under the header
           const darkSec = document.querySelector(".mod-scroll__images-text");
           if (darkSec) {
             const rect = darkSec.getBoundingClientRect();
-            if (rect.left <= 180 && rect.right >= 80) {
+            if (rect.left <= 250 && rect.right >= 60) {
               setIsHeaderDark(true);
             } else {
               setIsHeaderDark(false);
@@ -471,6 +506,38 @@ export default function YashmeenNibExperience() {
           }
         }
       });
+
+      // Top Header Logo & Menu Reveal - slides down into view only after scrolling past the hero intro
+      const headerLogo = headerLogoRef.current;
+      const headerControls = headerControlsRef.current;
+      if (headerLogo && headerControls) {
+        const headerTl = gsap.timeline({ paused: true });
+        headerTl.to([headerLogo, headerControls], {
+          y: "0%",
+          opacity: 1,
+          duration: 0.65,
+          stagger: 0.05,
+          ease: "power3.out",
+          onStart: () => {
+            headerLogo.classList.add("is-visible");
+            headerControls.classList.add("is-visible");
+          },
+          onReverseComplete: () => {
+            headerLogo.classList.remove("is-visible");
+            headerControls.classList.remove("is-visible");
+          }
+        });
+
+        ScrollTrigger.create({
+          containerAnimation: scrollTl,
+          trigger: document.querySelector(".mod-scroll__intro"),
+          start: "125% 0%",
+          end: "126% 0%",
+          onEnter: () => headerTl.play(),
+          onEnterBack: () => headerTl.reverse(),
+          onLeaveBack: () => headerTl.reverse()
+        });
+      }
 
       // Section 1: Principal Images scrubbing & Vertical FlipMedia Parallax
       const principalSec = document.querySelector(".mod-scroll__images.principal");
@@ -488,8 +555,8 @@ export default function YashmeenNibExperience() {
               scrollTrigger: {
                 containerAnimation: scrollTl,
                 trigger: principalSec,
-                start: "left right",
-                end: "right left",
+                start: "0% 78%",
+                end: "90% 100%",
                 scrub: 0.5
               }
             }
@@ -501,9 +568,9 @@ export default function YashmeenNibExperience() {
         if (flipDown) {
           gsap.fromTo(
             flipDown.querySelector(".media__source"),
-            { yPercent: -18 },
+            { yPercent: -15 },
             {
-              yPercent: 18,
+              yPercent: 15,
               ease: "none",
               scrollTrigger: {
                 containerAnimation: scrollTl,
@@ -518,9 +585,9 @@ export default function YashmeenNibExperience() {
         if (flipUp) {
           gsap.fromTo(
             flipUp.querySelector(".media__source"),
-            { yPercent: 18 },
+            { yPercent: 15 },
             {
-              yPercent: -18,
+              yPercent: -15,
               ease: "none",
               scrollTrigger: {
                 containerAnimation: scrollTl,
@@ -585,13 +652,13 @@ export default function YashmeenNibExperience() {
         }
 
         const flips = atelierSec.querySelectorAll(".flipMedia__media");
-        flips.forEach((media, i) => {
+        flips.forEach((media) => {
           const isDown = media.classList.contains("flipMedia__media--down");
           gsap.fromTo(
             media.querySelector(".media__source"),
-            { yPercent: isDown ? -20 : 20 },
+            { yPercent: isDown ? -18 : 18 },
             {
-              yPercent: isDown ? 20 : -20,
+              yPercent: isDown ? 18 : -18,
               ease: "none",
               scrollTrigger: {
                 containerAnimation: scrollTl,
@@ -621,8 +688,8 @@ export default function YashmeenNibExperience() {
               scrollTrigger: {
                 containerAnimation: scrollTl,
                 trigger: carouselSec,
-                start: "left right",
-                end: "right left",
+                start: "0% 95%",
+                end: "100% 0%",
                 scrub: 0.5
               }
             }
@@ -670,83 +737,125 @@ export default function YashmeenNibExperience() {
         }
       }
 
+      // Section 6: Terms Parallax Padding
+      const termsSec = document.querySelector(".mod-scroll__terms");
+      if (termsSec) {
+        const termItems = termsSec.querySelectorAll(".mod-scroll__terms__term");
+        if (termItems.length >= 3) {
+          const termsTl = gsap.timeline({ paused: true });
+          termsTl.to(termItems[0], { paddingLeft: "12vw" }, 0);
+          termsTl.to(termItems[1], { paddingRight: "3vw" }, 0);
+          termsTl.to(termItems[2], { paddingLeft: "20vw" }, 0);
+
+          ScrollTrigger.create({
+            containerAnimation: scrollTl,
+            animation: termsTl,
+            trigger: termsSec,
+            start: "0% 100%",
+            end: "100% 0%",
+            scrub: 1
+          });
+        }
+      }
+
       // Section 7: Expanding Project Cards Accordion
       const projectsSec = document.querySelector(".mod-scroll__projects");
       if (projectsSec) {
         const projectItems = projectsSec.querySelectorAll(
-          ".mod-scroll__projects__item"
+          ".mod-scroll__projects__item:not(.last-item)"
         );
+        const projectsTl = gsap.timeline({ paused: true });
 
         projectItems.forEach((elem, idx) => {
+          let time = idx * 1;
           const media = elem.querySelector(".media__source");
           const textData = elem.querySelector(
             ".mod-scroll__projects__item__text"
           );
 
-          ScrollTrigger.create({
-            containerAnimation: scrollTl,
-            trigger: elem,
-            start: "left 80%",
-            end: "left 20%",
-            scrub: true,
-            onEnter: () => setActiveProjectIdx(idx),
-            onEnterBack: () => setActiveProjectIdx(idx)
-          });
+          projectsTl.fromTo(
+            elem,
+            { width: "15vw" },
+            { width: "58vw", duration: 1, ease: "power1.inOut" },
+            time
+          );
 
           if (media) {
-            gsap.fromTo(
-              elem,
-              { width: "16vw" },
-              {
-                width: "58vw",
-                ease: "power1.inOut",
-                scrollTrigger: {
-                  containerAnimation: scrollTl,
-                  trigger: elem,
-                  start: "left 85%",
-                  end: "left 40%",
-                  scrub: true
-                }
-              }
-            );
-
-            gsap.fromTo(
+            projectsTl.fromTo(
               media,
               { height: "87vh" },
-              {
-                height: "66vh",
-                ease: "power1.inOut",
-                scrollTrigger: {
-                  containerAnimation: scrollTl,
-                  trigger: elem,
-                  start: "left 85%",
-                  end: "left 40%",
-                  scrub: true
-                }
-              }
+              { height: "66.66vh", duration: 1, ease: "power1.inOut" },
+              time
             );
           }
 
           if (textData) {
-            gsap.fromTo(
+            projectsTl.fromTo(
               textData,
               { opacity: 0, y: 30 },
+              { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
+              time + 0.3
+            );
+          }
+        });
+
+        ScrollTrigger.create({
+          containerAnimation: scrollTl,
+          animation: projectsTl,
+          trigger: projectItems[0],
+          start: "0% 80%",
+          end: "+=" + (58 * projectItems.length) + "%",
+          scrub: 0.5
+        });
+
+        // Last Item Carousel Upward Scrub
+        const lastItem = projectsSec.querySelector(
+          ".mod-scroll__projects__item.last-item"
+        );
+        if (lastItem) {
+          const carousel = lastItem.querySelector(".last-item__carousel");
+          if (carousel) {
+            gsap.fromTo(
+              carousel,
+              { y: "50vh" },
               {
-                opacity: 1,
-                y: 0,
-                duration: 0.4,
-                ease: "power2.out",
+                y: "-30vh",
+                ease: "none",
                 scrollTrigger: {
                   containerAnimation: scrollTl,
-                  trigger: elem,
-                  start: "left 65%",
-                  end: "left 35%",
-                  scrub: true
+                  trigger: lastItem,
+                  start: "left 70%",
+                  end: "right 30%",
+                  scrub: 0.5
                 }
               }
             );
           }
-        });
+        }
+
+        // Cierre horizontal slide
+        const cierre = document.querySelector(".mod-scroll__cierre");
+        const cierreContent = document.querySelector(".mod-scroll__cierre__content");
+        if (cierre && cierreContent) {
+          const percentMov =
+            ((cierre.offsetWidth - cierreContent.offsetWidth) * 100) /
+            window.innerWidth;
+          gsap.fromTo(
+            cierreContent,
+            { x: "0%" },
+            {
+              x: percentMov + "%",
+              ease: "none",
+              scrollTrigger: {
+                containerAnimation: scrollTl,
+                trigger: cierre,
+                start: "left 0%",
+                end: "left -" + percentMov + "%",
+                scrub: 0.5
+              }
+            }
+          );
+        }
       }
     }
 
@@ -856,6 +965,25 @@ export default function YashmeenNibExperience() {
     }, 450);
   };
 
+  // Mouse cursor tracking for custom #mouse
+  useEffect(() => {
+    if (window.innerWidth <= 991) return;
+    const mouseEl = mouseRef.current;
+    if (!mouseEl) return;
+
+    const handleMouseMove = (e) => {
+      gsap.to(mouseEl, {
+        x: e.clientX,
+        y: e.clientY,
+        duration: 0.15,
+        ease: "power2.out"
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   // Tenets Mouse Move Listener
   const handleTermsMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -864,6 +992,12 @@ export default function YashmeenNibExperience() {
       y: e.clientY - rect.top
     });
     setIsMouseInTerms(true);
+    if (mouseRef.current) mouseRef.current.classList.add("is-hidden");
+  };
+
+  const handleTermsMouseLeave = () => {
+    setIsMouseInTerms(false);
+    if (mouseRef.current) mouseRef.current.classList.remove("is-hidden");
   };
 
   return (
@@ -873,6 +1007,11 @@ export default function YashmeenNibExperience() {
       }`}
       ref={containerRef}
     >
+      {/* Dynamic Kinetic Cursor matching normalisboring.es */}
+      <div id="mouse" ref={mouseRef}>
+        <span ref={mouseSpanRef}></span>
+      </div>
+
       {/* ------------------------------------------------------------------
           1. FIXED HEADER
          ------------------------------------------------------------------ */}
@@ -893,25 +1032,16 @@ export default function YashmeenNibExperience() {
           </div>
 
           {/* Top-Right Floating Minimalist Controls */}
-          <div className="header__controls">
+          <div className="header__controls" ref={headerControlsRef}>
             <button
               type="button"
               onClick={() => setLang(lang === "en" ? "es" : "en")}
-              className={`header__lang-btn ${isHeaderDark ? "c-white" : ""}`}
+              className={`header__btn header__lang-btn btn btn--bg f-edit t-parrafo-l ${
+                isHeaderDark ? "c-white" : ""
+              }`}
               title="Toggle Language"
             >
-              {lang === "en" ? "ES" : "EN"}
-            </button>
-
-            <button
-              type="button"
-              onClick={runSequence}
-              className={`header__lang-btn ${isHeaderDark ? "c-white" : ""}`}
-              title="Replay Entrance Ceremony"
-              style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}
-            >
-              <FiRotateCcw size={11} />
-              <span>Replay</span>
+              <span>{lang === "en" ? "ES" : "EN"}</span>
             </button>
 
             <button
@@ -919,7 +1049,7 @@ export default function YashmeenNibExperience() {
               onClick={toggleMenu}
               className={`header__btn btn btn--bg f-edit t-parrafo-l ${
                 isMenuOpen ? "btn--menu-active" : ""
-              }`}
+              } ${isHeaderDark ? "c-white" : ""}`}
               aria-label="Toggle Navigation Menu"
             >
               <span>{isMenuOpen ? currentText.menuClose : currentText.menuOpen}</span>
@@ -1353,7 +1483,7 @@ export default function YashmeenNibExperience() {
             className="mod-scroll__terms follow__wrap bg-blue c-black"
             id="tenets"
             onMouseMove={handleTermsMouseMove}
-            onMouseLeave={() => setIsMouseInTerms(false)}
+            onMouseLeave={handleTermsMouseLeave}
           >
             {/* Term 1: ELEGANCE (f-edit ultralight serif) */}
             <div
@@ -1596,14 +1726,28 @@ export default function YashmeenNibExperience() {
             {/* Pinned spacer */}
             <div className="mod-scroll__pin" />
 
-            {/* Closing color accent block */}
-            <div className="mod-scroll__cierre bg-beige c-black">
+            {/* Closing color accent block matching normalisboring.es */}
+            <div className="mod-scroll__cierre bg-red c-black">
               <div className="mod-scroll__cierre__content">
-                <div className="mod-scroll__cierre__label f-edit t-parrafo-xl">
-                  {currentText.finaleChapter}
-                </div>
-                <div className="mod-scroll__cierre__heading f-izmir t-titulo-xxl t-upper">
-                  {currentText.finaleTitle}
+                <div className="mod-scroll__cierre__content__image flipMedia flipMedia--upDown">
+                  <div className="media flipMedia__media flipMedia__media--down noAspect">
+                    <div className="media__wrap-source image">
+                      <img
+                        className="media__source w-100"
+                        src="/static/hero-cinematic.jpg"
+                        alt="Yashmeen Cierre 1"
+                      />
+                    </div>
+                  </div>
+                  <div className="media flipMedia__media flipMedia__media--up noAspect">
+                    <div className="media__wrap-source image">
+                      <img
+                        className="media__source w-100"
+                        src="/static/Residential-Fit-Out.jpg"
+                        alt="Yashmeen Cierre 2"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

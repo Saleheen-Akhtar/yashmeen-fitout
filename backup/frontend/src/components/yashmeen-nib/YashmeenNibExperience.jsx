@@ -96,8 +96,19 @@ export default function YashmeenNibExperience() {
       btnBlueprintReality: "Built Reality",
       btnBlueprintCad: "CAD Drafting Wireframe",
 
-      // Chapter 4: Carousel
+      // Chapter 4: Values & Pillars
       carouselText: "VALUES",
+      valEyebrow: "ACT II // ARCHITECTURAL PILLARS",
+      valTitle: "DISCIPLINE BEYOND AESTHETICS",
+      pillar1Title: "HONESTY OF MATTER",
+      pillar1Desc:
+        "European certified quarries, kiln-dried solid hardwoods and architectural bronze alloys. Zero simulated veneers or hollow substrates.",
+      pillar2Title: "SUB-MILLIMETER DISCIPLINE",
+      pillar2Desc:
+        "0.5mm shadow gaps engineered with 5-axis German CNC milling and concealed German pivot hardware.",
+      pillar3Title: "SINGLE-SOURCE INTEGRITY",
+      pillar3Desc:
+        "From raw timber intake in our 35,000 sq.ft Al Quoz atelier to white-glove site delivery with complete accountability.",
 
       // Chapter 5: Terms
       term1Num: "01",
@@ -227,8 +238,19 @@ export default function YashmeenNibExperience() {
       btnBlueprintReality: "Realidad Construida",
       btnBlueprintCad: "Plano Técnico CAD",
 
-      // Chapter 4: Carousel
+      // Chapter 4: Values & Pillars
       carouselText: "VALORES",
+      valEyebrow: "ACTO II // PILARES ARQUITECTÓNICOS",
+      valTitle: "DISCIPLINA MÁS ALLÁ DE LA ESTÉTICA",
+      pillar1Title: "HONESTIDAD DE LA MATERIA",
+      pillar1Desc:
+        "Canteras europeas certificadas, maderas nobles secadas al horno y aleaciones de bronce. Cero acabados simulados ni laminados huecos.",
+      pillar2Title: "DISCIPLINA SUBMILIMÉTRICA",
+      pillar2Desc:
+        "Frisos de sombra de 0,5 mm mecanizados con CNC alemán de 5 ejes y herrajes pivotantes ocultos alemanes.",
+      pillar3Title: "INTEGRIDAD DE FUENTE ÚNICA",
+      pillar3Desc:
+        "Desde la recepción de madera en nuestro taller de 35.000 sq.ft en Al Quoz hasta la instalación final sin intermediarios.",
 
       // Chapter 5: Terms
       term1Num: "01",
@@ -312,43 +334,51 @@ export default function YashmeenNibExperience() {
         lang === "en"
           ? "Monolithic Kitchen Islands & Full-Slab Bathroom Vanities"
           : "Islas Monolíticas de Cocina y Revestimientos de Baño",
-      image: "/static/Custom-Furniture.jpg",
+      image: "/static/raw-space.jpg",
+      specCode: "SPEC-TRV-091",
+      gps: "41.9028° N, 12.4964° E",
       color: "#d9cec1"
     },
     oak: {
       name: currentText.matOak,
-      origin: lang === "en" ? "Vosges Forest, France" : "Bosque de los Vosgos, Francia",
-      finish: lang === "en" ? "Smoked Natural Tannin & Matte Polyurethane" : "Tanino Ahumado y Poliuretano Mate",
-      density: "740 kg/m³ • Janka 1,360",
+      origin: lang === "en" ? "Tronçais Forest, France" : "Bosque de Tronçais, Francia",
+      finish: lang === "en" ? "Smoked Natural Tannin & Wire-Brushed" : "Tanino Ahumado y Cepillado Natural",
+      density: "740 kg/m³ • FAS Prime",
       application:
         lang === "en"
-          ? "Floor-to-Ceiling Pivot Portals & Fluted Secret Doors"
-          : "Puertas Pivotantes de Suelo a Techo y Puertas Ocultas",
-      image: "/static/Residential-Fit-Out.jpg",
+          ? "Floor-to-Ceiling Pivot Portals & Fluted Wall Paneling"
+          : "Puertas Pivotantes de Suelo a Techo y Panelado Alistonado",
+      image: "/static/Custom-Furniture.jpg",
+      specCode: "SPEC-OAK-044",
+      gps: "46.6667° N, 2.7167° E",
       color: "#c2ab87"
     },
     bronze: {
       name: currentText.matBronze,
-      origin: lang === "en" ? "Bespoke Foundry Custom Extrusion" : "Extrusión a Medida en Fundición Artesanal",
-      finish: lang === "en" ? "Hand-Rubbed Micro-Abrasive Patina" : "Pátina Microabrasiva Frotada a Mano",
-      density: "8,730 kg/m³ • Marine Grade",
+      origin: lang === "en" ? "Bespoke Foundry Architectural Alloy" : "Aleación de Fundición Arquitectónica",
+      finish: lang === "en" ? "Hand-Rubbed Sulfur Liver Patina" : "Pátina de Sulfuro Pulida a Mano",
+      density: "8,730 kg/m³ • Solid Alloy",
       application:
         lang === "en"
           ? "Concealed Edge Pulls, Shadow Gap Trims & Pivot Hinges"
           : "Tiradores Embutidos, Perfiles de Junta Oculta y Bisagras",
-      image: "/static/studio.jpg",
+      image: "/static/why-us.jpg",
+      specCode: "SPEC-BRZ-118",
+      gps: "25.1319° N, 55.2348° E",
       color: "#a4824d"
     },
     walnut: {
       name: currentText.matWalnut,
-      origin: lang === "en" ? "Appalachian Sustainable Hardwood" : "Madera Sostenible de los Apalaches",
-      finish: lang === "en" ? "Open-Pore Deep Walnut Oil Seal" : "Sellado al Aceite Profundo a Poro Abierto",
-      density: "660 kg/m³ • Acoustic Baffle",
+      origin: lang === "en" ? "Appalachian Valley, USA" : "Valle de los Apalaches, EE.UU.",
+      finish: lang === "en" ? "CNC 6mm Radial Flute & Natural Matte Oil" : "Ranurado CNC 6mm y Aceite Mate Natural",
+      density: "660 kg/m³ • First Grade",
       application:
         lang === "en"
           ? "Acoustic Slatted Wall Cladding & Executive Desk Suites"
           : "Revestimiento Acústico Alistonado y Despachos Ejecutivos",
-      image: "/static/design-desk.jpg",
+      image: "/static/yashmeen-studio.jpg",
+      specCode: "SPEC-WLN-073",
+      gps: "37.9268° N, 79.5594° W",
       color: "#5c4033"
     }
   };
@@ -1016,17 +1046,35 @@ export default function YashmeenNibExperience() {
               NEW CHAPTER: MATERIALITY LABORATORY (.mod-scroll__materiality)
              =============================================================== */}
           <div className="mod-scroll__materiality">
-            {/* Visual Column */}
-            <div className="materiality__col-visual">
-              <span className="materiality__visual-badge">
-                {currentMat.name} // SPECIMEN 01
-              </span>
-              <img
-                src={currentMat.image}
-                alt={currentMat.name}
-                key={activeMaterial}
-                style={{ animation: "fadeIn 0.6s ease" }}
-              />
+            {/* Visual Column: Double-Bezel Specimen Frame */}
+            <div className="materiality__col-visual-shell">
+              <div className="materiality__col-visual">
+                <div className="materiality__visual-top-bar">
+                  <span className="materiality__visual-badge">
+                    {currentMat.name} // {currentMat.specCode}
+                  </span>
+                  <span className="materiality__visual-gps">
+                    {currentMat.gps}
+                  </span>
+                </div>
+
+                <img
+                  src={currentMat.image}
+                  alt={currentMat.name}
+                  key={activeMaterial}
+                  className="materiality__specimen-img"
+                />
+
+                <div className="materiality__visual-bottom-bar">
+                  <span className="materiality__visual-finish-tag">
+                    {currentMat.finish}
+                  </span>
+                  <span className="materiality__visual-inspect-btn">
+                    <FiMaximize2 size={11} />
+                    <span>TACTILE SPECIMEN</span>
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Narrative & Interactive Swatches Column */}
@@ -1110,15 +1158,24 @@ export default function YashmeenNibExperience() {
                 {/* Live Studio Telemetry Counters */}
                 <div className="mod-scroll__text__telemetry">
                   <div className="telemetry-item">
-                    <span className="telemetry-num">35,000</span>
+                    <div className="telemetry-top">
+                      <span className="telemetry-num">35,000</span>
+                      <span className="telemetry-unit">SQ.FT</span>
+                    </div>
                     <span className="telemetry-label">{currentText.telemetry1Label}</span>
                   </div>
                   <div className="telemetry-item">
-                    <span className="telemetry-num">140+</span>
+                    <div className="telemetry-top">
+                      <span className="telemetry-num">140+</span>
+                      <span className="telemetry-unit">ARTISANS</span>
+                    </div>
                     <span className="telemetry-label">{currentText.telemetry2Label}</span>
                   </div>
                   <div className="telemetry-item">
-                    <span className="telemetry-num">0.5 MM</span>
+                    <div className="telemetry-top">
+                      <span className="telemetry-num">0.5</span>
+                      <span className="telemetry-unit">MM</span>
+                    </div>
                     <span className="telemetry-label">{currentText.telemetry3Label}</span>
                   </div>
                 </div>
@@ -1149,9 +1206,31 @@ export default function YashmeenNibExperience() {
               <div className="mod-scroll__images-text__flip flipMedia flipMedia--rightLeft" style={{ position: "relative" }}>
                 {isBlueprintMode && (
                   <div className="blueprint-overlay">
-                    <span className="blueprint-tag">CAD DRAFTING // JOINERY BAY 03</span>
-                    <span className="blueprint-tag">DETAIL: 45° MITRED CORNER • 0.5MM TOLERANCE</span>
-                    <span className="blueprint-tag">CONCEALED HAFELE PIVOT AXIS</span>
+                    <div className="blueprint-grid-fx" />
+                    <div className="blueprint-header-bar">
+                      <span className="blueprint-tag">CAD DRAFTING // JOINERY BAY 03</span>
+                      <span className="blueprint-tag">TOLERANCE ±0.5MM</span>
+                    </div>
+
+                    <div className="blueprint-callout-pin" style={{ top: "26%", left: "22%" }}>
+                      <span className="pin-reticle" />
+                      <span className="pin-text">01 // 45° MITERED SHADOW GAP</span>
+                    </div>
+
+                    <div className="blueprint-callout-pin" style={{ top: "52%", left: "62%" }}>
+                      <span className="pin-reticle" />
+                      <span className="pin-text">02 // HAFELE CONCEALED PIVOT</span>
+                    </div>
+
+                    <div className="blueprint-callout-pin" style={{ top: "78%", left: "30%" }}>
+                      <span className="pin-reticle" />
+                      <span className="pin-text">03 // KILN-DRIED SOLID SUBSTRATE</span>
+                    </div>
+
+                    <div className="blueprint-footer-bar">
+                      <span>SHOP DRAWING #YASH-2026-B3</span>
+                      <span>5-AXIS CNC ROUTER CALIBRATED</span>
+                    </div>
                   </div>
                 )}
                 <div className="media flipMedia__media flipMedia__media--down noAspect">
@@ -1204,34 +1283,74 @@ export default function YashmeenNibExperience() {
           </div>
 
           {/* ===============================================================
-              CHAPTER 4: VERTICAL CAROUSEL RIBBON (.mod-scroll__carousel)
+              CHAPTER 4: ARCHITECTURAL VALUES GALLERY (.mod-scroll__carousel)
              =============================================================== */}
-          <div className="mod-scroll__carousel bg-beige c-black t-supertitulo-l">
-            <div className="mod-scroll__carousel__content">
-              <span>
-                <p className="mod-scroll__carousel__text f-regular">
-                  {currentText.carouselText}
-                </p>
-                <span className="mod-scroll__carousel__asterisk">✻</span>
-              </span>
-              <span>
-                <p className="mod-scroll__carousel__text f-regular">
-                  {currentText.carouselText}
-                </p>
-                <span className="mod-scroll__carousel__asterisk">✻</span>
-              </span>
-              <span>
-                <p className="mod-scroll__carousel__text f-regular">
-                  {currentText.carouselText}
-                </p>
-                <span className="mod-scroll__carousel__asterisk">✻</span>
-              </span>
-              <span>
-                <p className="mod-scroll__carousel__text f-regular">
-                  {currentText.carouselText}
-                </p>
-                <span className="mod-scroll__carousel__asterisk">✻</span>
-              </span>
+          <div className="mod-scroll__carousel bg-beige c-black">
+            {/* Left: Iconic Kinetic Ribbon */}
+            <div className="values__ribbon">
+              <div className="mod-scroll__carousel__content t-supertitulo-l">
+                <span>
+                  <p className="mod-scroll__carousel__text f-regular">
+                    {currentText.carouselText}
+                  </p>
+                  <span className="mod-scroll__carousel__asterisk">✻</span>
+                </span>
+                <span>
+                  <p className="mod-scroll__carousel__text f-regular">
+                    {currentText.carouselText}
+                  </p>
+                  <span className="mod-scroll__carousel__asterisk">✻</span>
+                </span>
+                <span>
+                  <p className="mod-scroll__carousel__text f-regular">
+                    {currentText.carouselText}
+                  </p>
+                  <span className="mod-scroll__carousel__asterisk">✻</span>
+                </span>
+                <span>
+                  <p className="mod-scroll__carousel__text f-regular">
+                    {currentText.carouselText}
+                  </p>
+                  <span className="mod-scroll__carousel__asterisk">✻</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Right: 3 Architectural Pillars Bento */}
+            <div className="values__pillars-container">
+              <div className="values__header">
+                <span className="values__eyebrow">{currentText.valEyebrow}</span>
+                <h3 className="values__title">{currentText.valTitle}</h3>
+              </div>
+
+              <div className="values__grid">
+                <div className="value-card">
+                  <div className="value-card__header">
+                    <span className="value-card__idx">01</span>
+                    <span className="value-card__badge">100% SOLID SUBSTANCE</span>
+                  </div>
+                  <h4 className="value-card__title">{currentText.pillar1Title}</h4>
+                  <p className="value-card__desc">{currentText.pillar1Desc}</p>
+                </div>
+
+                <div className="value-card">
+                  <div className="value-card__header">
+                    <span className="value-card__idx">02</span>
+                    <span className="value-card__badge">±0.5MM PRECISION</span>
+                  </div>
+                  <h4 className="value-card__title">{currentText.pillar2Title}</h4>
+                  <p className="value-card__desc">{currentText.pillar2Desc}</p>
+                </div>
+
+                <div className="value-card">
+                  <div className="value-card__header">
+                    <span className="value-card__idx">03</span>
+                    <span className="value-card__badge">SINGLE-SOURCE</span>
+                  </div>
+                  <h4 className="value-card__title">{currentText.pillar3Title}</h4>
+                  <p className="value-card__desc">{currentText.pillar3Desc}</p>
+                </div>
+              </div>
             </div>
           </div>
 

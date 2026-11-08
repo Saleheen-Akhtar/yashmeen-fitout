@@ -657,30 +657,33 @@ main .mod-scroll__images.principal .flipMedia:nth-of-type(2) {
 main .mod-scroll__text .wrapper {
   display: flex;
   justify-content: flex-start;
-  align-items: flex-end;
+  align-items: flex-start;
   width: calc((99.9vw - var(--wrapper-padd) * 2 - var(--grid-gap) * 11) / 12 * 10 + var(--grid-gap) * 9 + var(--wrapper-padd) * 2);
   height: var(--100vh);
+  padding-top: 6rem;
+  padding-bottom: 5.5rem;
 }
 
 main .mod-scroll__text__wrap-text {
   width: 100%;
   padding-left: calc((99.9vw - var(--wrapper-padd) * 2 - var(--grid-gap) * 11) / 12 * 1 + var(--grid-gap) * 0 + var(--wrapper-padd));
   padding-right: 0px;
-  padding-bottom: var(--wrapper-padd);
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 main .mod-scroll__text__title {
   width: 100%;
   text-transform: uppercase;
-  line-height: 0.9;
-  margin-bottom: 4.9rem;
+  line-height: 1;
+  margin-bottom: 1.75rem;
   font-family: var(--f-regular);
 }
 
 main .mod-scroll__text__title .line {
   white-space: nowrap;
-  font-size: var(--supertitulo-l);
-  line-height: var(--supertitulo-l-lh);
+  font-size: clamp(3.2rem, 4.8vw, 5.8rem);
+  line-height: 1.05;
 }
 
 main .mod-scroll__text__title .line .cont {
@@ -753,14 +756,30 @@ main .mod-scroll__images-text__text p {
 }
 
 /* ==========================================================================
-   SECTION 4: VERTICAL CAROUSEL RIBBON (.mod-scroll__carousel)
+   SECTION 4: ARCHITECTURAL VALUES GALLERY (.mod-scroll__carousel)
    ========================================================================== */
 main .mod-scroll__carousel {
   position: relative;
-  width: 1.5em;
-  background: var(--black);
-  z-index: 10;
+  width: 92vw;
+  min-width: 1250px;
   height: var(--100vh);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--wrapper-padd);
+  gap: 3.5rem;
+  background: var(--beige);
+  color: var(--black);
+  z-index: 10;
+  flex-shrink: 0;
+  overflow: clip;
+}
+
+.values__ribbon {
+  width: 1.5em;
+  height: var(--100vh);
+  position: relative;
+  overflow: clip;
+  flex-shrink: 0;
 }
 
 main .mod-scroll__carousel__content {
@@ -794,6 +813,107 @@ main .mod-scroll__carousel__text {
   font-size: var(--supertitulo);
   line-height: 1;
   text-transform: uppercase;
+  margin: 0;
+}
+
+.values__pillars-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2.5rem;
+  max-width: 960px;
+}
+
+.values__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.values__eyebrow {
+  font-family: var(--f-edit);
+  font-size: var(--parrafo-l);
+  color: rgba(0, 0, 0, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.values__title {
+  font-family: var(--f-regular);
+  font-size: clamp(2.2rem, 3.5vw, 3.4rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.values__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.value-card {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 1.5rem;
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  min-height: 240px;
+}
+
+.value-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.value-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.value-card__idx {
+  font-family: var(--f-regular);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.value-card__badge {
+  font-family: var(--f-izmir);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  color: var(--black);
+}
+
+.value-card__title {
+  font-family: var(--f-regular);
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  line-height: 1.25;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.value-card__desc {
+  font-family: var(--f-izmir);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: rgba(0, 0, 0, 0.7);
   margin: 0;
 }
 
@@ -1289,36 +1409,112 @@ main .mod-scroll__materiality {
   flex-shrink: 0;
 }
 
-.materiality__col-visual {
+.materiality__col-visual-shell {
   flex: 5.5;
   height: 82vh;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0.65rem;
+  border-radius: 1.75rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06);
   position: relative;
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
 }
 
-.materiality__col-visual img {
+.materiality__col-visual {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  border-radius: calc(1.75rem - 0.65rem);
+  overflow: hidden;
+  background: #111;
+}
+
+.materiality__visual-top-bar {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  right: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+  pointer-events: none;
 }
 
 .materiality__visual-badge {
-  position: absolute;
-  top: 1.5rem;
-  left: 1.5rem;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.78);
   color: var(--white);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
   padding: 0.4rem 0.85rem;
   border-radius: 9999px;
   font-family: var(--f-izmir);
   font-size: 0.6875rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  z-index: 2;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.materiality__visual-gps {
+  background: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px);
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-family: monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.materiality__specimen-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+  animation: fadeIn 0.6s ease;
+}
+
+.materiality__visual-bottom-bar {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 1.25rem;
+  right: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.materiality__visual-finish-tag {
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--black);
+  backdrop-filter: blur(10px);
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-family: var(--f-izmir);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.materiality__visual-inspect-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(0, 0, 0, 0.75);
+  color: var(--white);
+  backdrop-filter: blur(10px);
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-family: var(--f-izmir);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .materiality__col-content {
@@ -1367,7 +1563,7 @@ main .mod-scroll__materiality {
   align-items: center;
   gap: 0.6rem;
   padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.65);
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 9999px;
   font-family: var(--f-izmir);
@@ -1402,21 +1598,21 @@ main .mod-scroll__materiality {
 
 /* Double-Bezel Specimen Card */
 .materiality__spec-card {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.75);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 1.25rem;
   padding: 1.25rem 1.5rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem 1.5rem;
+  gap: 1.15rem 1.75rem;
   backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 8px 24px rgba(0, 0, 0, 0.03);
 }
 
 .spec-item {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
 
 .spec-label {
@@ -1437,23 +1633,44 @@ main .mod-scroll__materiality {
 /* 3. Studio Telemetry Counters in Section 2 */
 .mod-scroll__text__telemetry {
   display: flex;
-  gap: 2.5rem;
-  margin-top: 2rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
-  padding-top: 1.5rem;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .telemetry-item {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 1.25rem;
+  padding: 1.15rem 1.6rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  min-width: 175px;
+}
+
+.telemetry-top {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
 }
 
 .telemetry-num {
   font-family: var(--f-regular);
-  font-size: var(--titulo-xl);
+  font-size: clamp(2rem, 2.5vw, 2.8rem);
   line-height: 1;
   font-weight: 700;
+  color: var(--black);
+}
+
+.telemetry-unit {
+  font-family: var(--f-izmir);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(0, 0, 0, 0.4);
 }
 
 .telemetry-label {
@@ -1461,7 +1678,7 @@ main .mod-scroll__materiality {
   font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: rgba(0, 0, 0, 0.55);
+  color: rgba(0, 0, 0, 0.6);
 }
 
 /* 4. Atelier CAD Blueprint Mode Toggle */
@@ -1476,7 +1693,7 @@ main .mod-scroll__materiality {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.45rem 1rem;
+  padding: 0.5rem 1.15rem;
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 9999px;
@@ -1486,12 +1703,13 @@ main .mod-scroll__materiality {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
-  backdrop-filter: blur(8px);
-  transition: all 0.25s ease;
+  backdrop-filter: blur(10px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-blueprint-mode:hover {
   background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
 }
 
 .btn-blueprint-mode.is-active {
@@ -1499,28 +1717,87 @@ main .mod-scroll__materiality {
   color: #000000;
   border-color: #00e1d9;
   font-weight: 700;
+  box-shadow: 0 0 20px rgba(0, 225, 217, 0.4);
 }
 
 .blueprint-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 35, 45, 0.85);
-  background-image: 
-    linear-gradient(rgba(0, 225, 217, 0.15) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 225, 217, 0.15) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background: rgba(0, 25, 35, 0.88);
   pointer-events: none;
   z-index: 10;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2rem;
-  border: 1px solid rgba(0, 225, 217, 0.4);
+  padding: 1.75rem;
+  border: 1px solid rgba(0, 225, 217, 0.45);
+  backdrop-filter: blur(2px);
+  overflow: hidden;
+}
+
+.blueprint-grid-fx {
+  position: absolute;
+  inset: 0;
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 225, 217, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 225, 217, 0.12) 1px, transparent 1px);
+  pointer-events: none;
+}
+
+.blueprint-header-bar,
+.blueprint-footer-bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: monospace;
+  font-size: 0.6875rem;
+  color: #00e1d9;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.blueprint-callout-pin {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transform: translate(-50%, -50%);
+}
+
+.pin-reticle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid #00e1d9;
+  position: relative;
+  display: inline-block;
+  box-shadow: 0 0 10px rgba(0, 225, 217, 0.8);
+  animation: pulseReticle 2s infinite ease-in-out;
+}
+
+@keyframes pulseReticle {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+}
+
+.pin-text {
+  font-family: monospace;
+  font-size: 0.625rem;
+  background: rgba(0, 20, 30, 0.9);
+  color: #00e1d9;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 225, 217, 0.5);
+  white-space: nowrap;
 }
 
 .blueprint-tag {
-  font-family: "Space Grotesk", monospace;
-  font-size: 0.75rem;
+  font-family: monospace;
+  font-size: 0.6875rem;
   color: #00e1d9;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -1835,7 +2112,27 @@ main .mod-scroll__materiality {
   }
 
   main .mod-scroll__carousel {
+    display: flex;
+    flex-direction: column;
+    width: 100% !important;
+    min-width: unset !important;
+    height: auto !important;
+    padding: 4rem var(--wrapper-padd);
+    gap: 2.5rem;
+  }
+
+  .values__ribbon {
     display: none;
+  }
+
+  .values__pillars-container {
+    width: 100%;
+    padding-right: 0;
+  }
+
+  .values__grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 
   main .mod-scroll__terms {

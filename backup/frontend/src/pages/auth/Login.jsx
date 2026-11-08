@@ -5,21 +5,15 @@ import createStore from "../../store";
 import { toast } from "sonner";
 
 const palette = {
-  obsidian: "#111110",
-  obsidianSoft: "#191816",
-  ink: "#171613",
-  inkSoft: "#30302e",
-  brass: "#b18a4f",
-  brassHover: "#8e6b37",
-  brassDim: "rgba(177, 138, 79, 0.12)",
-  stoneBg: "#f5f3ef",
+  black: "#000000",
   white: "#FFFFFF",
-  border: "#e7e4dc",
-  inputBorder: "#e2ded4",
-  muted: "#6b6860",
-  mutedLight: "#9c978b",
-  red600: "#c62828",
-  green600: "#2e7d32",
+  bg: "#f7f7f6",
+  cardBg: "#FFFFFF",
+  border: "#000000",
+  borderLight: "#e0e0e0",
+  inputBorder: "#cccccc",
+  muted: "#555555",
+  mutedLight: "#888888",
 };
 
 const MailIcon = () => (
@@ -142,7 +136,7 @@ export default function Login() {
     <div className="cryptusLoginPage" style={styles.page}>
       <style>{css}</style>
 
-      {/* Left Panel: Architectural Brand Showcase */}
+      {/* Left Panel: Stark Architectural Monolith */}
       <div className="cryptusLoginLeftPanel" style={styles.leftPanel}>
         <div style={styles.leftContent}>
           <div>
@@ -151,7 +145,7 @@ export default function Login() {
               <span style={styles.cityBadge}>DUBAI</span>
             </div>
             <div style={styles.hairlineRule}></div>
-            <div style={styles.atelierLabel}>ADMIN ATELIER · 01</div>
+            <div style={styles.atelierLabel}>(ADMIN ATELIER · 01)</div>
           </div>
 
           <div>
@@ -192,7 +186,7 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Right Panel: Sign In Form */}
+      {/* Right Panel: Crisp White Minimalist Sign In Form */}
       <div className="cryptusLoginRightPanel" style={styles.rightPanel}>
         <div className="cryptusLoginCard" style={styles.card}>
           {status === "success" ? (
@@ -208,7 +202,7 @@ export default function Login() {
           ) : (
             <>
               <div style={styles.formHeader}>
-                <div style={styles.formBadge}>ADMIN CONSOLE</div>
+                <div style={styles.formBadge}>(ADMIN CONSOLE)</div>
                 <h2 style={styles.cardTitle}>Atelier Sign In</h2>
                 <p style={styles.cardSubtitle}>
                   Enter your credentials to access the Yashmeen administration portal.
@@ -312,8 +306,8 @@ export default function Login() {
                     <div
                       style={{
                         ...styles.checkbox,
-                        background: remember ? palette.brass : "transparent",
-                        borderColor: remember ? palette.brass : palette.border,
+                        background: remember ? palette.black : "transparent",
+                        borderColor: palette.black,
                       }}
                       onClick={() => setRemember((r) => !r)}
                     >
@@ -357,17 +351,17 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "1.05fr 1fr",
     fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-    background: palette.stoneBg,
+    background: palette.bg,
     boxSizing: "border-box",
   },
   leftPanel: {
     position: "relative",
-    backgroundColor: palette.obsidian,
-    color: palette.white,
+    backgroundColor: "#000000",
+    color: "#ffffff",
     padding: "clamp(36px, 5vw, 72px)",
     display: "flex",
     alignItems: "center",
-    borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+    borderRight: "1px solid #000000",
   },
   leftContent: {
     position: "relative",
@@ -384,7 +378,7 @@ const styles = {
   },
   brandTitle: {
     fontFamily: "'Plus Jakarta Sans', sans-serif",
-    fontWeight: 700,
+    fontWeight: 800,
     fontSize: "17px",
     letterSpacing: "0.08em",
     color: "#ffffff",
@@ -393,28 +387,28 @@ const styles = {
     fontSize: "10px",
     fontWeight: 700,
     letterSpacing: "0.12em",
-    color: palette.brass,
-    background: "rgba(177, 138, 79, 0.16)",
-    border: "1px solid rgba(177, 138, 79, 0.35)",
+    color: "#ffffff",
+    background: "transparent",
+    border: "1px solid #ffffff",
     padding: "2px 8px",
     borderRadius: "9999px",
   },
   hairlineRule: {
     height: "1px",
-    background: palette.brass,
-    opacity: 0.6,
+    background: "#ffffff",
+    opacity: 0.4,
     margin: "12px 0 8px 0",
     width: "100%",
   },
   atelierLabel: {
     fontSize: "10.5px",
-    fontWeight: 600,
+    fontWeight: 700,
     letterSpacing: "0.12em",
-    color: palette.mutedLight,
+    color: "#aaaaaa",
   },
   headline: {
     fontFamily: "'Plus Jakarta Sans', sans-serif",
-    fontWeight: 700,
+    fontWeight: 800,
     fontSize: "clamp(32px, 3.8vw, 46px)",
     lineHeight: 1.1,
     margin: "0 0 14px 0",
@@ -424,7 +418,7 @@ const styles = {
   subtext: {
     fontSize: "14.5px",
     lineHeight: 1.6,
-    color: "#9c978b",
+    color: "#bbbbbb",
     margin: 0,
   },
   featureList: {
@@ -440,20 +434,20 @@ const styles = {
     alignItems: "center",
     gap: "12px",
     fontSize: "14px",
-    fontWeight: 500,
-    color: "#e2ded4",
+    fontWeight: 600,
+    color: "#ffffff",
   },
   featureCheck: {
     width: "22px",
     height: "22px",
     borderRadius: "50%",
-    background: "rgba(177, 138, 79, 0.2)",
-    border: "1px solid rgba(177, 138, 79, 0.4)",
-    color: palette.brass,
+    background: "#ffffff",
+    color: "#000000",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
+    fontWeight: 800,
   },
   statFooter: {
     display: "flex",
@@ -462,7 +456,7 @@ const styles = {
   },
   statDivider: {
     height: "1px",
-    background: "rgba(255, 255, 255, 0.1)",
+    background: "rgba(255, 255, 255, 0.2)",
     width: "100%",
   },
   statRow: {
@@ -472,15 +466,15 @@ const styles = {
   },
   statMetric: {
     fontSize: "11px",
-    fontWeight: 700,
+    fontWeight: 800,
     letterSpacing: "0.08em",
-    color: palette.brass,
+    color: "#ffffff",
   },
   statSub: {
     fontSize: "11px",
-    fontWeight: 600,
+    fontWeight: 700,
     letterSpacing: "0.08em",
-    color: "#737067",
+    color: "#aaaaaa",
   },
 
   rightPanel: {
@@ -488,34 +482,34 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     padding: "clamp(24px, 4vw, 48px)",
-    background: palette.stoneBg,
+    background: palette.bg,
   },
   card: {
     width: "100%",
     maxWidth: "420px",
-    background: palette.white,
-    border: `1px solid ${palette.border}`,
-    borderRadius: "14px",
+    background: "#ffffff",
+    border: `1px solid ${palette.borderLight}`,
+    borderRadius: "10px",
     padding: "clamp(28px, 4vw, 42px)",
     boxSizing: "border-box",
-    boxShadow: "0 6px 24px -6px rgba(8, 8, 7, 0.06)",
+    boxShadow: "0 4px 18px rgba(0, 0, 0, 0.05)",
   },
   formHeader: {
     marginBottom: "24px",
   },
   formBadge: {
     fontSize: "10px",
-    fontWeight: 700,
+    fontWeight: 800,
     letterSpacing: "0.12em",
-    color: palette.brass,
+    color: "#000000",
     textTransform: "uppercase",
     marginBottom: "8px",
   },
   cardTitle: {
     fontFamily: "'Plus Jakarta Sans', sans-serif",
-    fontWeight: 700,
+    fontWeight: 800,
     fontSize: "24px",
-    color: palette.ink,
+    color: "#000000",
     letterSpacing: "-0.02em",
     margin: "0 0 6px 0",
   },
@@ -536,24 +530,24 @@ const styles = {
     gap: "6px",
   },
   label: {
-    fontSize: "11.5px",
-    fontWeight: 600,
-    letterSpacing: "0.05em",
+    fontSize: "11px",
+    fontWeight: 700,
+    letterSpacing: "0.08em",
     textTransform: "uppercase",
-    color: palette.ink,
+    color: "#000000",
   },
   inputWrap: {
     display: "flex",
     alignItems: "center",
     gap: "10px",
     background: "#ffffff",
-    border: `1px solid ${palette.inputBorder}`,
-    borderRadius: "8px",
+    border: "1px solid #cccccc",
+    borderRadius: "6px",
     padding: "0 14px",
-    transition: "all 0.2s ease",
+    transition: "border-color 0.15s ease, box-shadow 0.15s ease",
   },
   inputIcon: {
-    color: palette.brass,
+    color: "#000000",
     display: "flex",
     flexShrink: 0,
   },
@@ -564,7 +558,7 @@ const styles = {
     background: "transparent",
     padding: "12px 0",
     fontSize: "13.5px",
-    color: palette.ink,
+    color: "#000000",
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     minWidth: 0,
   },
@@ -573,13 +567,14 @@ const styles = {
     border: "none",
     padding: "4px",
     display: "flex",
-    color: palette.mutedLight,
+    color: "#666666",
     cursor: "pointer",
     flexShrink: 0,
   },
   errorMsg: {
     fontSize: "11.5px",
-    color: palette.red600,
+    color: "#000000",
+    fontWeight: 600,
   },
   rowBetween: {
     display: "flex",
@@ -597,40 +592,41 @@ const styles = {
   checkbox: {
     width: "16px",
     height: "16px",
-    borderRadius: "4px",
-    border: `1.5px solid ${palette.inputBorder}`,
+    borderRadius: "3px",
+    border: "1.5px solid #000000",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: palette.white,
+    color: "#ffffff",
     cursor: "pointer",
     transition: "all 0.15s ease",
     flexShrink: 0,
   },
   checkboxLabel: {
     fontSize: "12.5px",
-    color: palette.muted,
+    color: "#444444",
+    fontWeight: 500,
   },
   link: {
     fontSize: "12.5px",
-    color: palette.brass,
-    textDecoration: "none",
+    color: "#000000",
+    textDecoration: "underline",
     fontWeight: 600,
   },
   btnPrimary: {
     fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-    background: palette.ink,
-    color: palette.white,
-    border: `1px solid ${palette.ink}`,
+    background: "#000000",
+    color: "#ffffff",
+    border: "1px solid #000000",
     borderRadius: "9999px",
     padding: "12px 0",
-    fontSize: "12.5px",
-    fontWeight: 700,
+    fontSize: "12px",
+    fontWeight: 800,
     letterSpacing: "0.08em",
     textTransform: "uppercase",
     cursor: "pointer",
-    transition: "all 0.25s ease",
-    boxShadow: "0 4px 14px rgba(8, 8, 7, 0.12)",
+    transition: "all 0.2s ease",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
     marginTop: "6px",
   },
   backToSiteRow: {
@@ -638,10 +634,11 @@ const styles = {
     marginTop: "12px",
   },
   backToSiteLink: {
-    fontSize: "12.5px",
-    color: palette.muted,
+    fontSize: "12px",
+    color: "#666666",
     textDecoration: "none",
-    transition: "color 0.2s ease",
+    fontWeight: 600,
+    transition: "color 0.15s ease",
   },
   successBox: {
     textAlign: "center",
@@ -651,9 +648,8 @@ const styles = {
     width: "44px",
     height: "44px",
     borderRadius: "50%",
-    background: "rgba(46, 125, 50, 0.1)",
-    border: "1px solid rgba(46, 125, 50, 0.3)",
-    color: palette.green600,
+    background: "#000000",
+    color: "#ffffff",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -663,28 +659,28 @@ const styles = {
 
 const css = `
   .cryptusLoginCard {
-    animation: cryptusFade 0.4s ease both;
+    animation: cryptusFade 0.3s ease both;
   }
   @keyframes cryptusFade {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
   }
   .cryptusLoginInputWrap:focus-within {
-    border-color: ${palette.brass} !important;
-    box-shadow: 0 0 0 3px rgba(177, 138, 79, 0.15) !important;
+    border-color: #000000 !important;
+    box-shadow: 0 0 0 2px #000000 !important;
   }
   .cryptusLoginInputError {
-    border-color: ${palette.red600} !important;
+    border-color: #000000 !important;
   }
   .cryptusLoginBtnPrimary:hover:not(:disabled) {
-    background: ${palette.brass} !important;
-    border-color: ${palette.brass} !important;
-    color: #ffffff !important;
+    background: #ffffff !important;
+    border-color: #000000 !important;
+    color: #000000 !important;
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(177, 138, 79, 0.25) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
   }
   .cryptusLoginBackToSiteLink:hover {
-    color: ${palette.ink} !important;
+    color: #000000 !important;
   }
   @media (max-width: 960px) {
     .cryptusLoginPage { grid-template-columns: 1fr !important; }

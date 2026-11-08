@@ -2,23 +2,18 @@ import React, { useEffect, useState } from "react";
 import { webDetailsAPI } from "../../services/api";
 
 const palette = {
-  obsidian: "#171613",
-  obsidianHover: "#2a2824",
-  brass: "#b18a4f",
-  brassHover: "#8e6b37",
-  brassDim: "rgba(177, 138, 79, 0.12)",
-  stoneBg: "#f5f3ef",
+  black: "#000000",
   white: "#FFFFFF",
   cardBg: "#FFFFFF",
-  border: "#e7e4dc",
-  inputBorder: "#e2ded4",
+  border: "#000000",
+  borderLight: "#e0e0e0",
+  inputBorder: "#cccccc",
   inputBg: "#ffffff",
-  ink: "#171613",
-  inkSoft: "#30302e",
-  muted: "#6b6860",
-  mutedLight: "#9c978b",
-  red600: "#c62828",
-  green600: "#2e7d32",
+  ink: "#000000",
+  inkSoft: "#222222",
+  muted: "#555555",
+  mutedLight: "#888888",
+  error: "#000000",
 };
 
 const TrashIcon = () => (
@@ -41,7 +36,7 @@ const PlusIcon = () => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth="2.2"
+    strokeWidth="2.4"
   >
     <path d="M12 5v14M5 12h14" />
   </svg>
@@ -234,16 +229,9 @@ export default function Dashboard() {
           <div
             style={{
               ...styles.banner,
-              background:
-                banner.type === "success"
-                  ? "rgba(46, 125, 50, 0.08)"
-                  : "rgba(198, 40, 40, 0.08)",
-              border: `1px solid ${
-                banner.type === "success"
-                  ? "rgba(46, 125, 50, 0.3)"
-                  : "rgba(198, 40, 40, 0.3)"
-              }`,
-              color: banner.type === "success" ? palette.green600 : palette.red600,
+              background: banner.type === "success" ? "#000000" : "#ffffff",
+              border: "1px solid #000000",
+              color: banner.type === "success" ? "#ffffff" : "#000000",
             }}
           >
             {banner.text}
@@ -461,15 +449,15 @@ const styles = {
     width: "32px",
     height: "32px",
     borderRadius: "50%",
-    border: "2px solid #e7e4dc",
-    borderTopColor: "#b18a4f",
+    border: "2px solid #e0e0e0",
+    borderTopColor: "#000000",
     animation: "spin 0.8s linear infinite",
   },
   loadingText: {
     fontSize: "11px",
     fontWeight: 700,
     letterSpacing: "0.12em",
-    color: "#b18a4f",
+    color: "#000000",
   },
   page: {
     width: "100%",
@@ -481,11 +469,11 @@ const styles = {
   card: {
     width: "100%",
     background: "#ffffff",
-    border: "1px solid #e7e4dc",
-    borderRadius: "14px",
+    border: "1px solid #e0e0e0",
+    borderRadius: "10px",
     padding: "clamp(24px, 3.5vw, 44px)",
     boxSizing: "border-box",
-    boxShadow: "0 4px 20px -4px rgba(8, 8, 7, 0.05)",
+    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.04)",
   },
   cardHeader: {
     marginBottom: "28px",
@@ -498,38 +486,38 @@ const styles = {
   },
   atelierBadge: {
     fontSize: "10px",
-    fontWeight: 700,
-    letterSpacing: "0.14em",
-    color: "#b18a4f",
+    fontWeight: 800,
+    letterSpacing: "0.12em",
+    color: "#000000",
     textTransform: "uppercase",
   },
   topHairline: {
     flex: 1,
     height: "1px",
-    background: "#b18a4f",
-    opacity: 0.35,
+    background: "#000000",
   },
   cardTitle: {
     fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-    fontWeight: 700,
+    fontWeight: 800,
     fontSize: "clamp(22px, 2vw, 28px)",
-    color: "#171613",
+    color: "#000000",
     margin: "0 0 8px 0",
     letterSpacing: "-0.025em",
   },
   cardSubtitle: {
     fontSize: "14px",
-    color: "#6b6860",
+    color: "#555555",
     lineHeight: 1.55,
     margin: 0,
     maxWidth: "700px",
   },
   banner: {
-    borderRadius: "8px",
+    borderRadius: "6px",
     padding: "12px 16px",
     fontSize: "13px",
-    fontWeight: 500,
+    fontWeight: 600,
     marginBottom: "24px",
+    letterSpacing: "0.02em",
   },
   form: {
     display: "flex",
@@ -541,7 +529,7 @@ const styles = {
     flexDirection: "column",
     gap: "18px",
     paddingTop: "24px",
-    borderTop: "1px solid #f1f0ee",
+    borderTop: "1px solid #e5e5e5",
   },
   sectionHeader: {
     display: "flex",
@@ -551,15 +539,15 @@ const styles = {
   sectionNum: {
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontSize: "12px",
-    fontWeight: 700,
-    color: "#b18a4f",
+    fontWeight: 800,
+    color: "#000000",
     letterSpacing: "0.05em",
   },
   sectionTitle: {
     fontFamily: "'Plus Jakarta Sans', sans-serif",
-    fontSize: "14px",
-    fontWeight: 700,
-    color: "#171613",
+    fontSize: "13.5px",
+    fontWeight: 800,
+    color: "#000000",
     letterSpacing: "0.06em",
     textTransform: "uppercase",
     margin: 0,
@@ -580,32 +568,33 @@ const styles = {
     gap: "6px",
   },
   label: {
-    fontSize: "11.5px",
-    fontWeight: 600,
-    letterSpacing: "0.05em",
+    fontSize: "11px",
+    fontWeight: 700,
+    letterSpacing: "0.08em",
     textTransform: "uppercase",
-    color: "#171613",
+    color: "#000000",
   },
   input: {
-    border: "1px solid #e2ded4",
+    border: "1px solid #cccccc",
     background: "#ffffff",
-    borderRadius: "8px",
+    borderRadius: "6px",
     padding: "11px 14px",
     fontSize: "13.5px",
-    color: "#171613",
+    color: "#000000",
     outline: "none",
     width: "100%",
     boxSizing: "border-box",
-    transition: "all 0.2s ease",
+    transition: "border-color 0.15s ease, box-shadow 0.15s ease",
   },
   errorMsg: {
     fontSize: "11.5px",
-    color: palette.red600,
+    color: "#000000",
+    fontWeight: 600,
     marginTop: "2px",
   },
   emptyText: {
     fontSize: "13px",
-    color: "#9c978b",
+    color: "#888888",
     margin: 0,
     fontStyle: "italic",
   },
@@ -618,16 +607,16 @@ const styles = {
     display: "inline-flex",
     alignItems: "center",
     gap: "6px",
-    background: "transparent",
-    border: "1px solid #b18a4f",
+    background: "#ffffff",
+    border: "1px solid #000000",
     borderRadius: "9999px",
     padding: "6px 16px",
     fontSize: "11px",
     fontWeight: 700,
-    letterSpacing: "0.06em",
-    color: "#b18a4f",
+    letterSpacing: "0.08em",
+    color: "#000000",
     cursor: "pointer",
-    transition: "all 0.2s ease",
+    transition: "all 0.15s ease",
   },
   socialList: {
     display: "flex",
@@ -642,35 +631,35 @@ const styles = {
   removeBtn: {
     background: "transparent",
     border: "none",
-    color: "#9c978b",
+    color: "#888888",
     cursor: "pointer",
     padding: "10px",
     flexShrink: 0,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    transition: "color 0.2s ease",
+    transition: "color 0.15s ease",
   },
   actionsRow: {
     display: "flex",
     justifyContent: "flex-end",
     paddingTop: "12px",
-    borderTop: "1px solid #f1f0ee",
+    borderTop: "1px solid #e5e5e5",
   },
   btnPrimary: {
     fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-    background: "#171613",
+    background: "#000000",
     color: "#ffffff",
-    border: "1px solid #171613",
+    border: "1px solid #000000",
     borderRadius: "9999px",
     padding: "12px 32px",
-    fontSize: "12px",
+    fontSize: "11.5px",
     fontWeight: 700,
     letterSpacing: "0.08em",
     textTransform: "uppercase",
     cursor: "pointer",
-    transition: "all 0.25s ease",
-    boxShadow: "0 4px 14px rgba(8, 8, 7, 0.15)",
+    transition: "all 0.2s ease",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
   },
 };
 
@@ -680,25 +669,25 @@ const css = `
   }
 
   .wdInput:focus {
-    border-color: #b18a4f !important;
-    box-shadow: 0 0 0 3px rgba(177, 138, 79, 0.15) !important;
+    border-color: #000000 !important;
+    box-shadow: 0 0 0 2px #000000 !important;
   }
   .wdAddBtn:hover {
-    background: #b18a4f !important;
+    background: #000000 !important;
     color: #ffffff !important;
   }
   .wdRemoveBtn:hover {
-    color: #c62828 !important;
+    color: #000000 !important;
   }
   .wdBtnPrimary:hover:not(:disabled) {
-    background: #b18a4f !important;
-    border-color: #b18a4f !important;
-    color: #ffffff !important;
+    background: #ffffff !important;
+    border-color: #000000 !important;
+    color: #000000 !important;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(177, 138, 79, 0.25) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
   }
   .wdBtnPrimary:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 

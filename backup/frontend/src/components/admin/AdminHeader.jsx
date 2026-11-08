@@ -61,14 +61,14 @@ const AdminHeader = ({
 
   return (
     <header style={styles.header}>
-      {/* Left: Menu toggle + Architectural Title & Breadcrumb */}
+      {/* Left: Menu toggle + Editorial Title & Breadcrumb */}
       <div style={styles.headerLeft}>
         <button
           style={styles.menuToggle}
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-label="Toggle Navigation Menu"
         >
-          <FiMenu size={22} />
+          <FiMenu size={20} />
         </button>
 
         <div style={styles.headerTitle}>
@@ -76,7 +76,7 @@ const AdminHeader = ({
             <span style={styles.breadcrumbBrand}>YASHMEEN ATELIER</span>
             <span style={styles.breadcrumbSep}>/</span>
             <span style={styles.breadcrumbActive}>
-              {activeMenu || "DASHBOARD"}
+              {activeMenu ? activeMenu.toUpperCase() : "DASHBOARD"}
             </span>
           </div>
           <h1 style={styles.headerTitleText}>
@@ -85,16 +85,11 @@ const AdminHeader = ({
         </div>
       </div>
 
-      {/* Right: Telemetry, Live Site Pill, Notification, User */}
+      {/* Right: Telemetry, View Site Pill, Notification, User */}
       <div style={styles.headerRight}>
         {/* Dubai Live Telemetry Pill */}
         <div style={styles.telemetryPill}>
-          <span
-            style={{
-              ...styles.pulseDot,
-              background: isOpenOffice ? "#2e7d32" : "#b18a4f",
-            }}
-          />
+          <span style={styles.pulseDot} />
           <span style={styles.telemetryTime}>
             DUBAI {dubaiTime} GST
           </span>
@@ -116,7 +111,7 @@ const AdminHeader = ({
 
         {/* Notification Bell */}
         <button style={styles.notificationBtn} aria-label="Notifications">
-          <FiBell size={17} />
+          <FiBell size={16} />
           <span style={styles.notificationBadge}>3</span>
         </button>
 
@@ -207,10 +202,8 @@ export default AdminHeader;
 
 const styles = {
   header: {
-    background: "rgba(245, 243, 239, 0.95)",
-    backdropFilter: "blur(12px)",
-    WebkitBackdropFilter: "blur(12px)",
-    borderBottom: "1px solid #e7e4dc",
+    background: "#ffffff",
+    borderBottom: "1px solid #000000",
     padding: window.innerWidth > 768 ? "16px 40px" : "14px 16px",
     display: "flex",
     justifyContent: "space-between",
@@ -226,10 +219,10 @@ const styles = {
   },
   menuToggle: {
     display: window.innerWidth <= 768 ? "flex" : "none",
-    background: "transparent",
-    border: "1px solid #e2ded4",
-    borderRadius: "8px",
-    color: "#171613",
+    background: "#ffffff",
+    border: "1px solid #000000",
+    borderRadius: "6px",
+    color: "#000000",
     padding: "6px",
     cursor: "pointer",
     alignItems: "center",
@@ -242,7 +235,7 @@ const styles = {
   },
   breadcrumb: {
     fontSize: "11px",
-    fontWeight: 600,
+    fontWeight: 700,
     letterSpacing: "0.08em",
     textTransform: "uppercase",
     display: "flex",
@@ -250,18 +243,18 @@ const styles = {
     gap: "6px",
   },
   breadcrumbBrand: {
-    color: "#b18a4f",
+    color: "#000000",
   },
   breadcrumbSep: {
-    color: "#c2beb4",
+    color: "#888888",
   },
   breadcrumbActive: {
-    color: "#737067",
+    color: "#666666",
   },
   headerTitleText: {
     fontSize: "20px",
-    fontWeight: 700,
-    color: "#171613",
+    fontWeight: 800,
+    color: "#000000",
     letterSpacing: "-0.02em",
     margin: 0,
     fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -269,31 +262,31 @@ const styles = {
   headerRight: {
     display: "flex",
     alignItems: "center",
-    gap: "14px",
+    gap: "12px",
   },
   telemetryPill: {
     display: window.innerWidth > 1024 ? "flex" : "none",
     alignItems: "center",
     gap: "8px",
     background: "#ffffff",
-    border: "1px solid #e2ded4",
+    border: "1px solid #000000",
     padding: "6px 14px",
     borderRadius: "9999px",
     fontSize: "11px",
-    letterSpacing: "0.05em",
+    letterSpacing: "0.06em",
   },
   pulseDot: {
-    width: "7px",
-    height: "7px",
+    width: "6px",
+    height: "6px",
     borderRadius: "50%",
-    boxShadow: "0 0 6px rgba(46, 125, 50, 0.5)",
+    background: "#000000",
   },
   telemetryTime: {
-    fontWeight: 600,
-    color: "#171613",
+    fontWeight: 700,
+    color: "#000000",
   },
   telemetryStatus: {
-    color: "#b18a4f",
+    color: "#666666",
     fontWeight: 700,
     fontSize: "10px",
     letterSpacing: "0.1em",
@@ -302,22 +295,22 @@ const styles = {
     display: window.innerWidth > 640 ? "inline-flex" : "none",
     alignItems: "center",
     gap: "6px",
-    background: "#ffffff",
-    border: "1px solid #171613",
-    color: "#171613",
+    background: "#000000",
+    border: "1px solid #000000",
+    color: "#ffffff",
     borderRadius: "9999px",
     padding: "7px 16px",
     fontSize: "11px",
     fontWeight: 700,
     letterSpacing: "0.06em",
     textDecoration: "none",
-    transition: "all 0.2s ease",
+    transition: "all 0.15s ease",
   },
   notificationBtn: {
     position: "relative",
     background: "#ffffff",
-    border: "1px solid #e2ded4",
-    color: "#171613",
+    border: "1px solid #000000",
+    color: "#000000",
     width: "36px",
     height: "36px",
     borderRadius: "50%",
@@ -325,22 +318,23 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
-    transition: "all 0.2s ease",
+    transition: "all 0.15s ease",
   },
   notificationBadge: {
     position: "absolute",
     top: "-3px",
     right: "-3px",
-    background: "#b18a4f",
+    background: "#000000",
     color: "#ffffff",
     fontSize: "9px",
-    fontWeight: 700,
+    fontWeight: 800,
     width: "16px",
     height: "16px",
     borderRadius: "50%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    border: "1px solid #ffffff",
   },
   userMenu: {
     position: "relative",
@@ -351,22 +345,21 @@ const styles = {
     gap: "10px",
     padding: "4px 12px 4px 4px",
     background: "#ffffff",
-    border: "1px solid #e2ded4",
+    border: "1px solid #000000",
     borderRadius: "9999px",
     cursor: "pointer",
-    transition: "all 0.2s ease",
+    transition: "all 0.15s ease",
   },
   userAvatar: {
     width: "32px",
     height: "32px",
     borderRadius: "50%",
-    background: "#171613",
-    border: "1px solid #b18a4f",
+    background: "#000000",
     color: "#ffffff",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontWeight: 700,
+    fontWeight: 800,
     fontSize: "12px",
     letterSpacing: "0.05em",
   },
@@ -384,18 +377,18 @@ const styles = {
   userName: {
     fontSize: "12.5px",
     fontWeight: 700,
-    color: "#171613",
+    color: "#000000",
     lineHeight: 1.2,
   },
   userRole: {
     fontSize: "9.5px",
-    fontWeight: 600,
-    color: "#b18a4f",
+    fontWeight: 700,
+    color: "#666666",
     letterSpacing: "0.08em",
   },
   dropdownArrow: {
     fontSize: "10px",
-    color: "#9c978b",
+    color: "#000000",
     transition: "transform 0.2s ease",
   },
   dropdownArrowOpen: {
@@ -406,53 +399,54 @@ const styles = {
     top: "calc(100% + 8px)",
     right: 0,
     background: "#ffffff",
-    border: "1px solid #e7e4dc",
-    borderRadius: "12px",
-    boxShadow: "0 10px 30px rgba(8, 8, 7, 0.12)",
+    border: "1px solid #000000",
+    borderRadius: "8px",
+    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
     minWidth: "220px",
     zIndex: 1001,
     overflow: "hidden",
   },
   dropdownHeader: {
     padding: "16px 18px",
-    borderBottom: "1px solid #f1f0ee",
-    background: "#fbf9f6",
+    borderBottom: "1px solid #e5e5e5",
+    background: "#f8f8f8",
   },
   dropdownUserName: {
     fontSize: "13.5px",
     fontWeight: 700,
-    color: "#171613",
+    color: "#000000",
   },
   userEmail: {
     fontSize: "12px",
-    color: "#737067",
+    color: "#666666",
     marginTop: "2px",
   },
   dropdownMenu: {
-    padding: "8px 6px",
+    padding: "6px",
   },
   dropdownItem: {
     display: "flex",
     alignItems: "center",
     gap: "10px",
     padding: "10px 14px",
-    color: "#171613",
+    color: "#000000",
     fontSize: "13px",
-    fontWeight: 500,
-    borderRadius: "6px",
+    fontWeight: 600,
+    borderRadius: "4px",
     cursor: "pointer",
     transition: "all 0.15s ease",
   },
   dropdownIcon: {
-    color: "#b18a4f",
+    color: "#000000",
     fontSize: "15px",
   },
   dropdownDivider: {
     height: "1px",
-    background: "#f1f0ee",
+    background: "#e5e5e5",
     margin: "6px 8px",
   },
   dropdownItemLogout: {
-    color: "#c62828",
+    color: "#000000",
+    fontWeight: 700,
   },
 };

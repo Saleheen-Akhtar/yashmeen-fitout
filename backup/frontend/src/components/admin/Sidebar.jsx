@@ -91,7 +91,6 @@ const Sidebar = ({
   sidebarOpen,
   sidebarCollapsed,
   setSidebarCollapsed,
-  activeMenu,
   handleMenuClick,
 }) => {
   const [openSubmenus, setOpenSubmenus] = useState({});
@@ -156,7 +155,7 @@ const Sidebar = ({
       {/* Navigation Menu */}
       <div style={styles.navScrollArea}>
         <div style={sidebarCollapsed ? styles.hiddenOnCollapse : styles.sectionLabel}>
-          MANAGEMENT
+          (MANAGEMENT)
         </div>
 
         <ul style={styles.menu}>
@@ -209,13 +208,13 @@ const Sidebar = ({
                               to={subItem.link}
                               style={{
                                 ...styles.submenuLink,
-                                ...(activeMenu === subItem.name
+                                ...(isLinkActive(subItem.link)
                                   ? styles.submenuLinkActive
                                   : {}),
                               }}
                               onClick={(e) => {
                                 e.preventDefault();
-                                handleMenuClick(subItem.name, item.name);
+                                if (handleMenuClick) handleMenuClick(subItem.name, item.name);
                               }}
                             >
                               {subItem.name}
@@ -238,7 +237,14 @@ const Sidebar = ({
                       }}
                     >
                       <div style={styles.menuLinkContent}>
-                        <span style={styles.menuIcon}>{item.icon}</span>
+                        <span
+                          style={{
+                            ...styles.menuIcon,
+                            color: isLinkActive(item.link) ? "#ffffff" : "#000000",
+                          }}
+                        >
+                          {item.icon}
+                        </span>
                         <span
                           style={
                             sidebarCollapsed ? styles.hiddenOnCollapse : styles.menuText
@@ -258,7 +264,6 @@ const Sidebar = ({
       {/* Atelier Footer Telemetry */}
       {!sidebarCollapsed && (
         <div style={styles.sidebarFooter}>
-          <div style={styles.footerHairline}></div>
           <div style={styles.footerDetails}>
             <div style={styles.footerTag}>AL QUOZ ATELIER</div>
             <div style={styles.footerMetric}>35,000 SQ. FT. FACILITY</div>
@@ -287,11 +292,11 @@ const styles = {
     top: 0,
     height: "100vh",
     width: "280px",
-    background: "#111110",
-    borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+    background: "#ffffff",
+    borderRight: "1px solid #000000",
     transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
     zIndex: 1000,
-    boxShadow: "4px 0 24px rgba(0, 0, 0, 0.35)",
+    boxShadow: "2px 0 12px rgba(0, 0, 0, 0.05)",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
@@ -309,8 +314,8 @@ const styles = {
   },
   sidebarHeader: {
     padding: "24px 20px 20px 20px",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-    background: "rgba(255, 255, 255, 0.02)",
+    borderBottom: "1px solid #000000",
+    background: "#ffffff",
   },
   sidebarHeaderContent: {
     display: "flex",
@@ -327,9 +332,9 @@ const styles = {
     gap: "8px",
   },
   brandTitle: {
-    fontSize: "16px",
-    fontWeight: 700,
-    color: "#ffffff",
+    fontSize: "17px",
+    fontWeight: 800,
+    color: "#000000",
     letterSpacing: "0.08em",
     fontFamily: "'Plus Jakarta Sans', sans-serif",
   },
@@ -337,43 +342,41 @@ const styles = {
     fontSize: "9px",
     fontWeight: 700,
     letterSpacing: "0.12em",
-    color: "#b18a4f",
-    background: "rgba(177, 138, 79, 0.15)",
-    border: "1px solid rgba(177, 138, 79, 0.35)",
-    padding: "2px 6px",
+    color: "#000000",
+    background: "#ffffff",
+    border: "1px solid #000000",
+    padding: "2px 7px",
     borderRadius: "9999px",
   },
   hairlineRule: {
     height: "1px",
-    background: "#b18a4f",
-    opacity: 0.6,
+    background: "#000000",
     margin: "10px 0 6px 0",
     width: "100%",
   },
   sidebarSubtitle: {
     fontSize: "10px",
-    color: "#9c978b",
+    color: "#666666",
     letterSpacing: "0.1em",
-    fontWeight: 600,
+    fontWeight: 700,
     fontFamily: "'Plus Jakarta Sans', sans-serif",
   },
   collapsedBadge: {
     width: "36px",
     height: "36px",
-    borderRadius: "8px",
-    background: "rgba(177, 138, 79, 0.18)",
-    border: "1px solid rgba(177, 138, 79, 0.4)",
-    color: "#b18a4f",
+    borderRadius: "6px",
+    background: "#000000",
+    color: "#ffffff",
     fontSize: "16px",
-    fontWeight: 700,
+    fontWeight: 800,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
   },
   collapseBtn: {
-    background: "rgba(255, 255, 255, 0.05)",
-    border: "1px solid rgba(255, 255, 255, 0.12)",
-    color: "#b18a4f",
+    background: "#ffffff",
+    border: "1px solid #000000",
+    color: "#000000",
     width: "28px",
     height: "28px",
     borderRadius: "6px",
@@ -383,18 +386,18 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    transition: "all 0.2s ease",
+    transition: "all 0.15s ease",
   },
   navScrollArea: {
     flex: 1,
     overflowY: "auto",
-    padding: "16px 0",
+    padding: "18px 0",
   },
   sectionLabel: {
     fontSize: "10px",
     fontWeight: 700,
     letterSpacing: "0.12em",
-    color: "#737067",
+    color: "#888888",
     padding: "0 22px 10px 22px",
     textTransform: "uppercase",
   },
@@ -410,21 +413,20 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "11px 14px",
-    color: "#a39f93",
+    padding: "10px 14px",
+    color: "#333333",
     textDecoration: "none",
-    borderRadius: "8px",
-    transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+    borderRadius: "6px",
+    transition: "all 0.15s ease",
     fontSize: "13.5px",
-    fontWeight: 500,
+    fontWeight: 600,
     cursor: "pointer",
     userSelect: "none",
   },
   menuLinkActive: {
-    background: "rgba(177, 138, 79, 0.15)",
+    background: "#000000",
     color: "#ffffff",
-    borderLeft: "3px solid #b18a4f",
-    fontWeight: 600,
+    fontWeight: 700,
   },
   menuLinkContent: {
     display: "flex",
@@ -434,7 +436,7 @@ const styles = {
   menuIcon: {
     width: "18px",
     height: "18px",
-    color: "#b18a4f",
+    color: "#000000",
     fontSize: "17px",
     display: "flex",
     alignItems: "center",
@@ -444,23 +446,23 @@ const styles = {
     letterSpacing: "-0.01em",
   },
   submenuArrow: {
-    color: "#737067",
+    color: "#888888",
     display: "flex",
     alignItems: "center",
-    transition: "transform 0.3s ease",
+    transition: "transform 0.2s ease",
   },
   submenuArrowOpen: {
     transform: "rotate(90deg)",
-    color: "#b18a4f",
+    color: "#000000",
   },
   submenu: {
     maxHeight: 0,
     overflow: "hidden",
-    transition: "max-height 0.3s ease",
-    background: "#0a0a09",
+    transition: "max-height 0.25s ease",
+    background: "#f8f8f8",
     margin: "4px 0 4px 12px",
     borderRadius: "6px",
-    borderLeft: "1px solid rgba(177, 138, 79, 0.25)",
+    borderLeft: "2px solid #000000",
     listStyle: "none",
     paddingLeft: 0,
   },
@@ -474,26 +476,21 @@ const styles = {
     display: "flex",
     alignItems: "center",
     padding: "8px 14px 8px 18px",
-    color: "#8a867c",
+    color: "#444444",
     textDecoration: "none",
     fontSize: "12.5px",
-    transition: "all 0.2s ease",
+    transition: "all 0.15s ease",
     borderRadius: "4px",
     cursor: "pointer",
   },
   submenuLinkActive: {
-    color: "#b18a4f",
-    fontWeight: 600,
+    color: "#000000",
+    fontWeight: 700,
   },
   sidebarFooter: {
     padding: "16px 20px 22px 20px",
-    background: "#0a0a09",
-    borderTop: "1px solid rgba(255, 255, 255, 0.06)",
-  },
-  footerHairline: {
-    height: "1px",
-    background: "rgba(177, 138, 79, 0.25)",
-    marginBottom: "12px",
+    background: "#ffffff",
+    borderTop: "1px solid #000000",
   },
   footerDetails: {
     display: "flex",
@@ -503,14 +500,14 @@ const styles = {
   },
   footerTag: {
     fontSize: "10px",
-    letterSpacing: "0.1em",
+    letterSpacing: "0.12em",
     fontWeight: 700,
-    color: "#737067",
+    color: "#777777",
   },
   footerMetric: {
     fontSize: "11px",
-    fontWeight: 600,
-    color: "#e2ded4",
+    fontWeight: 700,
+    color: "#000000",
     letterSpacing: "0.04em",
   },
   liveSiteLink: {
@@ -518,14 +515,14 @@ const styles = {
     alignItems: "center",
     justifyContent: "space-between",
     padding: "8px 14px",
-    background: "rgba(255, 255, 255, 0.04)",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
+    background: "#ffffff",
+    border: "1px solid #000000",
     borderRadius: "9999px",
-    color: "#b18a4f",
+    color: "#000000",
     fontSize: "11px",
-    fontWeight: 600,
+    fontWeight: 700,
     letterSpacing: "0.06em",
     textDecoration: "none",
-    transition: "all 0.2s ease",
+    transition: "all 0.15s ease",
   },
 };

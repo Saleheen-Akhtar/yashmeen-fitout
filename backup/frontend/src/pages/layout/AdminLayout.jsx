@@ -67,8 +67,8 @@ export default function AdminLayout() {
 const styles = {
   container: {
     fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-    background: "#f5f3ef",
-    color: "#171613",
+    background: "#f7f7f6",
+    color: "#000000",
     minHeight: "100vh",
     display: "flex",
     flexDirection: "column",
@@ -80,7 +80,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: "rgba(17, 17, 16, 0.65)",
+    background: "rgba(0, 0, 0, 0.6)",
     backdropFilter: "blur(4px)",
     WebkitBackdropFilter: "blur(4px)",
     zIndex: 999,
@@ -89,7 +89,7 @@ const styles = {
     marginLeft: window.innerWidth > 768 ? "280px" : 0,
     minHeight: "100vh",
     transition: "margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-    background: "#f5f3ef",
+    background: "#f7f7f6",
   },
   mainContentCollapsed: {
     marginLeft: "80px",

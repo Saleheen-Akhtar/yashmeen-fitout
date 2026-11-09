@@ -21,6 +21,7 @@ import Architecture from "./pages/website/Architecture";
 import InteriorDesign from "./pages/website/InteriorDesign";
 import Construction from "./pages/website/Construction";
 import OfficeRenovation from "./pages/website/OfficeRenovation";
+import ServiceDetail from "./pages/website/ServiceDetail";
 import ProjectsPage from "./pages/website/Project";
 import ProjectDetailsPage from "./pages/website/ProjectDetails";
 import QuotePage from "./pages/website/Quote";
@@ -83,6 +84,7 @@ export default function App() {
             <Route path="/services/interior-design" element={<InteriorDesign />} />
             <Route path="/services/construction" element={<Construction />} />
             <Route path="/services/office-renovation" element={<OfficeRenovation />} />
+            <Route path="/services/:slug" element={<ServiceDetail />} />
           </Route>
           {/* ===== Admin Layout ====== */}
           <Route element={<AdminLayout />}>

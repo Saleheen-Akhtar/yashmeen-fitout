@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FiPhone, FiMail, FiMapPin, FiArrowRight } from "react-icons/fi";
 import { enquiryAPI } from "../../services/api";
 import { SERVICES } from "../../libs/static";
+import useWebsiteContent from "../../hooks/useWebsiteContent";
 
 const INFO_BLOCKS = [
   {
@@ -40,6 +41,14 @@ const INITIAL_FORM = {
 };
 
 export default function ContactPage() {
+  const { content } = useWebsiteContent();
+  const addr = content?.address || {};
+  const liveAddress = [addr.street, addr.city, addr.country].filter(Boolean).join(", ") || "Bay Square, Building 12 - Office G01, Marasi Dr - Business Bay, Bay Square - Dubai - UAE";
+  const liveBlocks = [
+    { icon: FiPhone, label: "Call Us", lines: [content?.mobile || "+971 54 386 2870"] },
+    { icon: FiMail, label: "Email Us", lines: [content?.email || "info@yfbfitoutcontracting.com"] },
+    { icon: FiMapPin, label: "Address", lines: [liveAddress] },
+  ];
   const [successMsg, setSuccessMsg] = useState("");
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [submitted, setSubmitted] = useState(false);
@@ -415,7 +424,7 @@ export default function ContactPage() {
       <section className="contactpg-info-section">
         <div className="contactpg-wrap">
           <div className="contactpg-info-grid">
-            {INFO_BLOCKS.map(({ icon: Icon, label, lines }) => (
+            {liveBlocks.map(({ icon: Icon, label, lines }) => (
               <div key={label} className="contactpg-info-card">
                 <div className="contactpg-info-icon-circle">
                   <Icon size={20} strokeWidth={1.75} />
@@ -536,7 +545,7 @@ export default function ContactPage() {
                       <option value="" disabled>
                         Select a Service *
                       </option>
-                      {SERVICES.map((service) => (
+                      {Array.from(new Set([...(content?.services || []).filter((s) => s.active !== false).map((s) => s.title), ...SERVICES])).map((service) => (
                         <option key={service} value={service}>
                           {service}
                         </option>

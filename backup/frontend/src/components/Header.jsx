@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import MenuOverlay from "./layout/MenuOverlay";
 import QuestionnaireModal from "./layout/QuestionnaireModal";
+import useWebsiteContent from "../hooks/useWebsiteContent";
 import "../styles/shell.css";
 
 const NAV_LINKS = [
@@ -13,6 +14,7 @@ const NAV_LINKS = [
 ];
 
 export default function Header() {
+  const { content } = useWebsiteContent();
   const [menuOpen, setMenuOpen] = useState(false);
   const [questionnaireOpen, setQuestionnaireOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -64,8 +66,8 @@ export default function Header() {
         <div className="site-header-inner">
           {/* Brand Left */}
           <Link to="/" className="site-brand" aria-label="Yashmeen Future Building Homepage">
-            <span className="site-brand-text">YASHMEEN FIT-OUT</span>
-            <span className="site-brand-city">DUBAI</span>
+            <span className="site-brand-text">{content?.brandName || "YASHMEEN FIT-OUT"}</span>
+            <span className="site-brand-city">{content?.cityLabel || "DUBAI"}</span>
           </Link>
 
           {/* Center Links with comma separation */}

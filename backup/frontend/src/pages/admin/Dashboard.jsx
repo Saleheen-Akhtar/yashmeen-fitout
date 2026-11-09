@@ -1,151 +1,118 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState, useMemo, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import {
   quoteAPI,
   enquiryAPI,
   projectAPI,
+  categoryAPI,
   webDetailsAPI,
   itemPath,
 } from "../../services/api";
-import { toast } from "sonner";
 import {
-  FiSearch,
+  DEFAULT_WEBSITE_CONTENT,
+  notifyWebsiteContentUpdated,
+} from "../../hooks/useWebsiteContent";
+import { toast } from "sonner";
+import useCreateStore from "../../store";
+import {
+  FiArrowUpRight,
+  FiChevronLeft,
+  FiChevronRight,
+  FiChevronDown,
+  FiChevronUp,
   FiPlus,
+  FiEdit2,
+  FiTrash2,
+  FiCheck,
+  FiPlay,
+  FiPause,
+  FiClock,
+  FiLayers,
+  FiBriefcase,
+  FiFileText,
+  FiMoreVertical,
+  FiX,
   FiMail,
   FiPhone,
   FiMapPin,
-  FiChevronLeft,
-  FiChevronRight,
-  FiX,
-  FiArrowUpRight,
-  FiLayers,
-  FiFileText,
-  FiMessageSquare,
+  FiSearch,
+  FiGlobe,
   FiCheckCircle,
-  FiSliders,
-  FiGrid,
-  FiList,
+  FiCalendar,
+  FiImage,
 } from "react-icons/fi";
 
 const STAGES = [
-  {
-    id: "leads",
-    name: "New Leads",
-    badgeClass: "badge-lavender",
-    color: "#58437d",
-    bg: "#f4f2f9",
-    border: "#e4def1",
-    barColor: "#c4b5fd",
-    desc: "Incoming quotation briefs & web inquiries",
-  },
-  {
-    id: "feasibility",
-    name: "Feasibility & Costing",
-    badgeClass: "badge-mist",
-    color: "#1e5c8a",
-    bg: "#edf5fc",
-    border: "#d2e6f7",
-    barColor: "#93c5fd",
-    desc: "CAD site survey, MEP planning & spatial pricing",
-  },
-  {
-    id: "proposal",
-    name: "Proposal & Consultation",
-    badgeClass: "badge-amber",
-    color: "#8c581e",
-    bg: "#fdf6ec",
-    border: "#fae5cb",
-    barColor: "#fcd34d",
-    desc: "Turnkey fit-out quotes sent & negotiations",
-  },
-  {
-    id: "construction",
-    name: "In Construction",
-    badgeClass: "badge-neutral",
-    color: "#374151",
-    bg: "#f0f2f5",
-    border: "#e2e5e9",
-    barColor: "#cbd5e1",
-    desc: "Al Quoz joinery fabrication & on-site build",
-  },
-  {
-    id: "completed",
-    name: "Completed & Handed Over",
-    badgeClass: "badge-sage",
-    color: "#2e6930",
-    bg: "#edf6ee",
-    border: "#d4ebd5",
-    barColor: "#86efac",
-    desc: "Snag-free handover & signed off spaces",
-  },
+  { id: "leads", name: "New Leads", badgeClass: "badge-lavender" },
+  { id: "feasibility", name: "Feasibility & Costing", badgeClass: "badge-mist" },
+  { id: "proposal", name: "Proposal & Quotes", badgeClass: "badge-amber" },
+  { id: "construction", name: "In Construction", badgeClass: "badge-yellow" },
+  { id: "completed", name: "Completed & Handed Over", badgeClass: "badge-sage" },
 ];
 
-const emptyDetails = {
-  address: {
-    street: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "United Arab Emirates",
-  },
-  email: "",
-  mobile: "",
-  whatsapp: "",
-  socialLinks: [],
+const SERVICE_IMAGE_PRESETS = [
+  { label: "Villa Aperture", value: "/static/hero-aperture.png" },
+  { label: "Al Quoz Atelier", value: "/static/studio.jpg" },
+  { label: "Joinery Bay", value: "/static/joinery-bay.jpg" },
+  { label: "DIFC Office Fit-Out", value: "/static/Office-fit-out.jpg" },
+  { label: "Luxury Residence", value: "/static/hero-editorial.png" },
+  { label: "Showroom Gallery", value: "/static/work-oh-office.jpg" },
+];
+
+const FALLBACK_PROJECT_IMG = "/static/hero-aperture.png";
+
+const resolveImage = (img) => {
+  if (!img) return FALLBACK_PROJECT_IMG;
+  if (/^https?:\/\//i.test(img) || /^\/static\//i.test(img) || /^\/images\//i.test(img)) {
+    return img;
+  }
+  return `${itemPath ?? "/uploads"}/${String(img).replace(/^\/+/, "")}`;
 };
 
-const EMAIL_RE = /^\S+@\S+\.\S+$/;
+const getInitials = (name = "") =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || "YA";
 
-const normalizeDetails = (data = {}) => ({
-  address: { ...emptyDetails.address, ...(data.address || {}) },
-  email: data.email || "",
-  mobile: data.mobile || "",
-  whatsapp: data.whatsapp || "",
-  socialLinks: Array.isArray(data.socialLinks) ? data.socialLinks : [],
-});
-
-const imageUrl = (path = "") =>
-  /^https?:\/\//i.test(path)
-    ? path
-    : `${itemPath ?? ""}/${String(path).replace(/^\/+/, "")}`;
-
-const formatDate = (val) => {
-  if (!val) return "-";
-  const d = new Date(val);
-  if (Number.isNaN(d.getTime())) return "-";
-  return d.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-  });
-};
-
-const getInitials = (name = "") => {
-  if (!name) return "CL";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
+const formatDateShort = (dateStr) => {
+  if (!dateStr) return "Recent";
+  try {
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+    });
+  } catch {
+    return "Recent";
+  }
 };
 
 export default function Dashboard() {
-  // Current view: 'pipeline', 'table', 'inquiries', 'directory'
-  const [activeTab, setActiveTab] = useState("pipeline");
+  const { user } = useCreateStore();
+  const location = useLocation();
 
-  // Density mode: 'comfort' or 'compact'
-  const [density, setDensity] = useState("comfort");
-
-  // Filter & Search states
-  const [searchQuery, setSearchQuery] = useState("");
-  const [stageFilter, setStageFilter] = useState("ALL");
-
-  // Live dynamic data states
+  // Remote MongoDB State
   const [quotes, setQuotes] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [details, setDetails] = useState(emptyDetails);
+  const [categories, setCategories] = useState([]);
+  const [webDetails, setWebDetails] = useState(DEFAULT_WEBSITE_CONTENT);
   const [loading, setLoading] = useState(true);
-  const [savingSettings, setSavingSettings] = useState(false);
+  const [savingCms, setSavingCms] = useState(false);
 
-  // Persistent stage map: { [itemId]: stageId }
+  // Interactive Bento Widgets State
+  const [featuredIndex, setFeaturedIndex] = useState(0);
+  const [openAccordion, setOpenAccordion] = useState("services");
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerSeconds, setTimerSeconds] = useState(155); // 02:35 display match
+  const [monthOffset, setMonthOffset] = useState(0);
+
+  // Lower Section Tab State
+  const [activeTab, setActiveTab] = useState("projects"); // 'projects' | 'services' | 'kanban' | 'leads'
+  const [searchQuery, setSearchQuery] = useState("");
   const [stageMap, setStageMap] = useState(() => {
     try {
       const saved = localStorage.getItem("yashmeen_crm_stages");
@@ -154,384 +121,2036 @@ export default function Dashboard() {
       return {};
     }
   });
+  const [draggedId, setDraggedId] = useState(null);
 
-  // Custom Leads
-  const [customLeads, setCustomLeads] = useState(() => {
-    try {
-      const saved = localStorage.getItem("yashmeen_crm_custom_leads");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
+  // Modals & Drawers State
+  const [projectModalOpen, setProjectModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
+  const [projectForm, setProjectForm] = useState({
+    title: "",
+    categoryId: "",
+    size: "",
+    location: "Dubai, UAE",
+    scope: "Turnkey Design & Fit-Out",
+    sector: "Commercial",
+    description: "",
+  });
+  const [projectFiles, setProjectFiles] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const fileInputRef = useRef(null);
+
+  const [serviceModalOpen, setServiceModalOpen] = useState(false);
+  const [editingServiceIdx, setEditingServiceIdx] = useState(null);
+  const [serviceForm, setServiceForm] = useState({
+    title: "",
+    slug: "",
+    eyebrow: "",
+    shortDesc: "",
+    description: "",
+    image: "/static/studio.jpg",
+    highlightsText: "",
+    active: true,
   });
 
-  // Drag and drop states
-  const [draggingItemId, setDraggingItemId] = useState(null);
-  const [dragOverColId, setDragOverColId] = useState(null);
+  const [siteModalOpen, setSiteModalOpen] = useState(false);
+  const [siteForm, setSiteForm] = useState(DEFAULT_WEBSITE_CONTENT);
 
-  // Slide-over inspection drawer
+  const [calendarModalOpen, setCalendarModalOpen] = useState(false);
+  const [calendarForm, setCalendarForm] = useState({
+    title: "",
+    subtitle: "",
+    dayIndex: 2,
+    timeSlot: "10:00 am",
+    variant: "dark",
+  });
+
+  const [newTaskText, setNewTaskText] = useState("");
+  const [addingTask, setAddingTask] = useState(false);
   const [inspectedItem, setInspectedItem] = useState(null);
 
-  // Quick Add Lead Modal
-  const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [newLeadForm, setNewLeadForm] = useState({
-    title: "",
-    client: "",
-    type: "COMMISSION BRIEF",
-    location: "Dubai, UAE",
-    budget: "Under AED 150,000",
-    scope: "Turnkey Interior Fit-Out",
-    notes: "",
-    stage: "leads",
-  });
+  // Load All Live MongoDB Data
+  const loadDashboardData = async () => {
+    try {
+      const [qRes, eRes, pRes, cRes, wRes] = await Promise.allSettled([
+        quoteAPI.getAll({ limit: 100 }),
+        enquiryAPI.getAll(),
+        projectAPI.getAll({ limit: 100 }),
+        categoryAPI.getAll(),
+        webDetailsAPI.details(),
+      ]);
 
-  // Settings form errors
-  const [settingsErrors, setSettingsErrors] = useState({});
-
-  // Fetch all live data on mount
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchAllData = async () => {
-      setLoading(true);
-      try {
-        const [quotesRes, enquiriesRes, projectsRes, detailsRes] =
-          await Promise.allSettled([
-            quoteAPI.getAll({ limit: 100 }),
-            enquiryAPI.getAll(),
-            projectAPI.getAll(),
-            webDetailsAPI.details(),
-          ]);
-
-        if (!cancelled) {
-          if (quotesRes.status === "fulfilled" && quotesRes.value?.data) {
-            const raw = quotesRes.value.data;
-            setQuotes(Array.isArray(raw?.data) ? raw.data : Array.isArray(raw) ? raw : []);
-          }
-          if (enquiriesRes.status === "fulfilled" && enquiriesRes.value?.data) {
-            const raw = enquiriesRes.value.data;
-            setEnquiries(Array.isArray(raw?.data) ? raw.data : Array.isArray(raw) ? raw : []);
-          }
-          if (projectsRes.status === "fulfilled" && projectsRes.value?.data) {
-            const raw = projectsRes.value.data;
-            setProjects(Array.isArray(raw?.data) ? raw.data : Array.isArray(raw) ? raw : []);
-          }
-          if (detailsRes.status === "fulfilled" && detailsRes.value?.data?.data) {
-            setDetails(normalizeDetails(detailsRes.value.data.data));
-          }
-        }
-      } catch (err) {
-        console.error("CRM data load error:", err);
-      } finally {
-        if (!cancelled) setLoading(false);
+      if (qRes.status === "fulfilled") {
+        setQuotes(qRes.value?.data?.data || qRes.value?.data || []);
       }
-    };
-
-    fetchAllData();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Update item stage
-  const updateItemStage = (itemId, targetStageId, itemTitle = "Lead") => {
-    setStageMap((prev) => {
-      const next = { ...prev, [itemId]: targetStageId };
-      try {
-        localStorage.setItem("yashmeen_crm_stages", JSON.stringify(next));
-      } catch (e) {
-        console.error("Failed to save stage map:", e);
+      if (eRes.status === "fulfilled") {
+        setEnquiries(eRes.value?.data?.data || eRes.value?.data || []);
       }
-      return next;
-    });
-
-    const targetStage = STAGES.find((s) => s.id === targetStageId);
-    toast.success(`Moved "${itemTitle}" to ${targetStage?.name || targetStageId}`);
-  };
-
-  // Step Move Forward / Backward
-  const handleStepMove = (item, direction) => {
-    const currentIndex = STAGES.findIndex((s) => s.id === item.stage);
-    if (currentIndex === -1) return;
-
-    const nextIndex = currentIndex + direction;
-    if (nextIndex >= 0 && nextIndex < STAGES.length) {
-      updateItemStage(item.id, STAGES[nextIndex].id, item.title);
+      if (pRes.status === "fulfilled") {
+        setProjects(pRes.value?.data?.data || []);
+      }
+      if (cRes.status === "fulfilled") {
+        setCategories(cRes.value?.data?.data || cRes.value?.data || []);
+      }
+      if (wRes.status === "fulfilled" && wRes.value?.data?.data) {
+        const w = wRes.value.data.data;
+        const merged = {
+          ...DEFAULT_WEBSITE_CONTENT,
+          ...w,
+          address: { ...DEFAULT_WEBSITE_CONTENT.address, ...(w.address || {}) },
+          hero: { ...DEFAULT_WEBSITE_CONTENT.hero, ...(w.hero || {}) },
+          studio: { ...DEFAULT_WEBSITE_CONTENT.studio, ...(w.studio || {}) },
+          services:
+            Array.isArray(w.services) && w.services.length > 0
+              ? w.services
+              : DEFAULT_WEBSITE_CONTENT.services,
+          crmTasks: Array.isArray(w.crmTasks) ? w.crmTasks : [],
+          calendarEvents: Array.isArray(w.calendarEvents) ? w.calendarEvents : [],
+        };
+        setWebDetails(merged);
+        setSiteForm(merged);
+      }
+    } catch {
+      toast.error("Could not refresh some CRM streams.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Compile all CRM items from quotes, enquiries, projects, and custom leads
+  useEffect(() => {
+    loadDashboardData();
+    const onOpenSettings = () => {
+      setSiteForm(webDetails);
+      setSiteModalOpen(true);
+    };
+    window.addEventListener("open-cms-settings", onOpenSettings);
+    return () => window.removeEventListener("open-cms-settings", onOpenSettings);
+  }, []);
+
+  useEffect(() => {
+    if (location.search.includes("open=site-settings")) {
+      setSiteForm(webDetails);
+      setSiteModalOpen(true);
+    }
+  }, [location.search]);
+
+  // Studio Session Stopwatch Effect
+  useEffect(() => {
+    if (!timerRunning) return;
+    const id = setInterval(() => {
+      setTimerSeconds((s) => s + 1);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [timerRunning]);
+
+  const formattedTimer = useMemo(() => {
+    const mins = Math.floor(timerSeconds / 60);
+    const secs = timerSeconds % 60;
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  }, [timerSeconds]);
+
+  // Persist Kanban stage changes locally
+  useEffect(() => {
+    try {
+      localStorage.setItem("yashmeen_crm_stages", JSON.stringify(stageMap));
+    } catch {
+      /* ignore */
+    }
+  }, [stageMap]);
+
+  // Unified CRM Pipeline Items (Quotes + Enquiries + Recent Projects)
   const allCRMItems = useMemo(() => {
     const list = [];
-
-    // 1. Quotes
     quotes.forEach((q) => {
-      const id = `quote-${q._id}`;
-      const assignedStage = stageMap[id] || "leads";
+      const id = `quote_${q._id}`;
       list.push({
         id,
         rawId: q._id,
-        itemType: "QUOTE",
-        typeBadge: "Commission",
+        type: "quote",
+        typeBadge: "Quote",
         badgeStyle: "badge-amber",
-        avatarBg: "#fdf6ec",
-        avatarColor: "#8c581e",
-        title: q.name || "Client Commission",
-        client: q.name,
-        initials: getInitials(q.name),
-        subtitle: q.projectType ? `${q.projectType} Fit-Out` : "Turnkey Fit-Out",
-        location: q.location || "Dubai",
-        budget: q.budget || "Custom Budget",
-        services: Array.isArray(q.services) ? q.services : q.services ? [q.services] : [],
-        message: q.message || "",
-        email: q.email || "",
-        mobile: q.mobile || "",
-        timeline: q.timeline || "Within 1-3 months",
+        title: q.name || "Untitled Brief",
+        subtitle: q.projectType ? `${q.projectType} Fit-Out` : "Turnkey Brief",
+        location: q.location || "Dubai, UAE",
+        budget: q.budget || "Custom Brief",
+        email: q.email,
+        mobile: q.mobile,
+        message: q.notes || q.specifications || q.details,
         date: q.createdAt,
-        stage: assignedStage,
+        stage: stageMap[id] || "leads",
+        initials: getInitials(q.name || "Q"),
       });
     });
 
-    // 2. Enquiries
     enquiries.forEach((e) => {
-      const id = `enquiry-${e._id}`;
-      const assignedStage = stageMap[id] || "leads";
+      const id = `enq_${e._id}`;
       list.push({
         id,
         rawId: e._id,
-        itemType: "ENQUIRY",
+        type: "enquiry",
         typeBadge: "Inquiry",
         badgeStyle: "badge-lavender",
-        avatarBg: "#f4f2f9",
-        avatarColor: "#58437d",
         title: e.name || "Client Inquiry",
-        client: e.name,
-        initials: getInitials(e.name),
-        subtitle: e.services || "Fit-Out Consultation",
+        subtitle: e.services || "Interior & Fit-Out",
         location: "Dubai, UAE",
-        budget: "Direct Inquiry",
-        services: e.services ? [e.services] : ["Turnkey Fit-Out"],
-        message: e.message || "",
-        email: e.email || "",
-        mobile: e.mobile || "",
-        timeline: "Immediate Consultation",
+        budget: "Direct Web Form",
+        email: e.email,
+        mobile: e.mobile,
+        message: e.message,
         date: e.createdAt,
-        stage: assignedStage,
+        stage: stageMap[id] || "leads",
+        initials: getInitials(e.name || "IN"),
       });
     });
 
-    // 3. Projects (Sample first 8 for spatial execution)
-    projects.slice(0, 8).forEach((p, idx) => {
-      const id = `project-${p._id}`;
-      const defaultStage =
-        idx % 4 === 0
-          ? "construction"
-          : idx % 4 === 1
-          ? "feasibility"
-          : idx % 4 === 2
-          ? "proposal"
-          : "completed";
-
-      const assignedStage = stageMap[id] || defaultStage;
+    projects.slice(0, 6).forEach((p, idx) => {
+      const id = `proj_${p._id}`;
+      const defaultStage = idx % 2 === 0 ? "construction" : "completed";
       list.push({
         id,
         rawId: p._id,
-        itemType: "PROJECT",
-        typeBadge: "Spatial Fit-Out",
-        badgeStyle: "badge-mist",
-        avatarBg: "#edf5fc",
-        avatarColor: "#1e5c8a",
-        title: p.title || "Spatial Project",
-        client: "Yashmeen Atelier",
-        initials: "YA",
-        subtitle: p.category || "Fit-Out & Joinery",
-        location: p.location || "Dubai, UAE",
-        budget: "Turnkey Execution",
-        image: p.image,
-        services: ["Spatial Architecture", "Bespoke Joinery & MEP"],
-        message: p.description || "",
-        email: details.email || "info@yfbfitoutcontracting.com",
-        mobile: details.mobile || "+971543862870",
-        timeline: "In-Progress / Handed Over",
+        type: "project",
+        typeBadge: "Live Work",
+        badgeStyle: "badge-sage",
+        title: p.title,
+        subtitle: p.sector || "Architectural Works",
+        location: p.location || "Dubai",
+        budget: p.size || "Atelier Delivery",
+        message: p.description,
+        image: p.images?.[0],
         date: p.createdAt,
-        stage: assignedStage,
-      });
-    });
-
-    // 4. Custom Leads
-    customLeads.forEach((c) => {
-      const id = `custom-${c.id}`;
-      const assignedStage = stageMap[id] || c.stage || "leads";
-      list.push({
-        id,
-        rawId: c.id,
-        itemType: "CUSTOM",
-        typeBadge: c.type || "Lead",
-        badgeStyle: "badge-neutral",
-        avatarBg: "#f3f4f6",
-        avatarColor: "#374151",
-        title: c.title || "Custom Lead",
-        client: c.client || "Private Client",
-        initials: getInitials(c.client),
-        subtitle: c.scope || "Architectural Task",
-        location: c.location || "Dubai, UAE",
-        budget: c.budget || "AED 150,000",
-        services: [c.scope || "Joinery Specification"],
-        message: c.notes || "",
-        email: details.email || "",
-        mobile: details.mobile || "",
-        timeline: "Active Milestone",
-        date: c.createdAt,
-        stage: assignedStage,
+        stage: stageMap[id] || defaultStage,
+        initials: getInitials(p.title),
       });
     });
 
     return list;
-  }, [quotes, enquiries, projects, customLeads, stageMap, details]);
+  }, [quotes, enquiries, projects, stageMap]);
 
-  // Filtered CRM Items
-  const filteredItems = useMemo(() => {
-    return allCRMItems.filter((item) => {
-      if (stageFilter !== "ALL" && item.stage !== stageFilter) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const match =
-          (item.title && item.title.toLowerCase().includes(q)) ||
-          (item.client && item.client.toLowerCase().includes(q)) ||
-          (item.subtitle && item.subtitle.toLowerCase().includes(q)) ||
-          (item.location && item.location.toLowerCase().includes(q)) ||
-          (item.email && item.email.toLowerCase().includes(q)) ||
-          (item.message && item.message.toLowerCase().includes(q));
-        if (!match) return false;
-      }
-      return true;
-    });
-  }, [allCRMItems, stageFilter, searchQuery]);
+  const filteredCRMItems = useMemo(() => {
+    if (!searchQuery.trim()) return allCRMItems;
+    const q = searchQuery.toLowerCase();
+    return allCRMItems.filter(
+      (i) =>
+        (i.title || "").toLowerCase().includes(q) ||
+        (i.subtitle || "").toLowerCase().includes(q) ||
+        (i.location || "").toLowerCase().includes(q)
+    );
+  }, [allCRMItems, searchQuery]);
 
-  // Calculate Pipeline Distribution Percentages
-  const stageDistribution = useMemo(() => {
-    const total = allCRMItems.length || 1;
-    return STAGES.map((stg) => {
-      const count = allCRMItems.filter((i) => i.stage === stg.id).length;
-      const pct = Math.round((count / total) * 100);
-      return { ...stg, count, pct };
-    });
-  }, [allCRMItems]);
+  // Derived Statistics & Progress Distributions
+  const services = webDetails.services || DEFAULT_WEBSITE_CONTENT.services;
+  const activeServicesCount = services.filter((s) => s.active !== false).length;
+  const tasks =
+    Array.isArray(webDetails.crmTasks) && webDetails.crmTasks.length > 0
+      ? webDetails.crmTasks
+      : [
+          {
+            id: "t-1",
+            title: "Verify Al Quoz Joinery Drawings",
+            subtitle: "Atelier · Today, 10:30 AM",
+            completed: true,
+          },
+          {
+            id: "t-2",
+            title: "Sync Selected Website Works",
+            subtitle: "Live Website · Published",
+            completed: true,
+          },
+          {
+            id: "t-3",
+            title: "Review New Client Quotations",
+            subtitle: `${quotes.length} Brief(s) awaiting review`,
+            completed: false,
+          },
+          {
+            id: "t-4",
+            title: "Update Service Offerings Copy",
+            subtitle: `${activeServicesCount} Live Disciplines`,
+            completed: false,
+          },
+          {
+            id: "t-5",
+            title: "Publish Latest Project Case Study",
+            subtitle: "Portfolio · Draft ready",
+            completed: false,
+          },
+        ];
 
-  // Drag and drop handlers
-  const handleDragStart = (e, item) => {
-    setDraggingItemId(item.id);
-    e.dataTransfer.setData("text/plain", item.id);
-    e.dataTransfer.effectAllowed = "move";
+  const completedTasksCount = tasks.filter((t) => t.completed).length;
+  const syncScore = tasks.length
+    ? Math.round((completedTasksCount / tasks.length) * 100)
+    : 40;
+
+  const calendarEvents =
+    Array.isArray(webDetails.calendarEvents) && webDetails.calendarEvents.length > 0
+      ? webDetails.calendarEvents
+      : [
+          {
+            id: "ev-1",
+            dayIndex: 1,
+            timeSlot: "9:00 am",
+            title: "Site Sync · Acacia Tower",
+            subtitle: "Discuss fit-out progress & joinery",
+            variant: "dark",
+          },
+          {
+            id: "ev-2",
+            dayIndex: 3,
+            timeSlot: "10:00 am",
+            title: "Client Consultation",
+            subtitle: "Review architectural layout brief",
+            variant: "light",
+          },
+        ];
+
+  const featuredProj = projects[featuredIndex % Math.max(projects.length, 1)] || {
+    title: "Palm Jumeirah Atelier",
+    sector: "Luxury Residential",
+    location: "Dubai, UAE",
+    size: "14,500 sq.ft",
+    images: ["/static/hero-aperture.png"],
   };
 
-  const handleDragEnd = () => {
-    setDraggingItemId(null);
-    setDragOverColId(null);
-  };
+  // Horizontal Capsule Strip Percentages (derived dynamically from real database totals)
+  const totalEntities = Math.max(
+    quotes.length + enquiries.length + projects.length + activeServicesCount,
+    1
+  );
+  const leadsPct = Math.max(Math.round((enquiries.length / totalEntities) * 100), 12);
+  const quotesPct = Math.max(Math.round((quotes.length / totalEntities) * 100), 14);
+  const siteSyncPct = Math.max(
+    100 - leadsPct - quotesPct - 10,
+    Math.round(((projects.length + activeServicesCount) / totalEntities) * 100)
+  );
+  const outputPct = Math.max(100 - leadsPct - quotesPct - siteSyncPct, 10);
 
-  const handleDragOver = (e, colId) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    if (dragOverColId !== colId) {
-      setDragOverColId(colId);
+  // Weekly Bar Chart Data (7 days aligned to real pipeline & project cadence)
+  const weeklyBars = useMemo(() => {
+    const base = [
+      { day: "S", count: 2, h: 28, highlight: false, label: "2 leads" },
+      { day: "M", count: Math.max(enquiries.length + 2, 4), h: 52, highlight: false, label: `${enquiries.length + 2} leads` },
+      { day: "T", count: Math.max(quotes.length + 3, 4), h: 46, highlight: false, label: `${quotes.length + 3} quotes` },
+      { day: "W", count: 3, h: 34, highlight: false, label: "3 briefs" },
+      { day: "T", count: Math.max(projects.length, 6), h: 66, highlight: false, label: `${projects.length} works` },
+      { day: "F", count: Math.max(activeServicesCount + quotes.length + 3, 7), h: 86, highlight: true, label: `${projects.length} live` },
+      { day: "S", count: 1, h: 22, highlight: false, label: "1 review" },
+    ];
+    return base;
+  }, [enquiries.length, quotes.length, projects.length, activeServicesCount]);
+
+  // Month Label & Days Calculation
+  const currentCalendarDate = useMemo(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + monthOffset);
+    return d;
+  }, [monthOffset]);
+
+  const monthNames = useMemo(() => {
+    const fmt = new Intl.DateTimeFormat("en-US", { month: "long" });
+    const prevD = new Date(currentCalendarDate);
+    prevD.setMonth(prevD.getMonth() - 1);
+    const nextD = new Date(currentCalendarDate);
+    nextD.setMonth(nextD.getMonth() + 1);
+    return {
+      prev: fmt.format(prevD),
+      curr: `${fmt.format(currentCalendarDate)} ${currentCalendarDate.getFullYear()}`,
+      next: fmt.format(nextD),
+    };
+  }, [currentCalendarDate]);
+
+  const weekColumns = useMemo(() => {
+    const start = new Date();
+    const day = start.getDay();
+    const diff = start.getDate() - day + (day === 0 ? -6 : 1) + monthOffset * 7;
+    const monday = new Date(start.setDate(diff));
+    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((name, idx) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + idx);
+      return { name, num: d.getDate() };
+    });
+  }, [monthOffset]);
+
+  // Helper to save partial updates to WebDetails -> Live Website
+  const saveWebDetailsPatch = async (patch, successMessage = "Published to live website") => {
+    setSavingCms(true);
+    try {
+      const payload = { ...webDetails, ...patch };
+      const res = await webDetailsAPI.update(patch);
+      const updated = res?.data?.data ? { ...payload, ...res.data.data } : payload;
+      setWebDetails(updated);
+      setSiteForm(updated);
+      notifyWebsiteContentUpdated(updated);
+      toast.success(successMessage);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to publish website update.");
+    } finally {
+      setSavingCms(false);
     }
   };
 
-  const handleDrop = (e, targetColId) => {
-    e.preventDefault();
-    const itemId = e.dataTransfer.getData("text/plain") || draggingItemId;
-    setDragOverColId(null);
-    setDraggingItemId(null);
-
-    if (!itemId) return;
-    const item = allCRMItems.find((i) => i.id === itemId);
-    if (item && item.stage !== targetColId) {
-      updateItemStage(itemId, targetColId, item.title);
-    }
+  // Toggle Dark Queue Task Completion (persisted to MongoDB)
+  const handleToggleTask = async (taskId) => {
+    const updatedTasks = tasks.map((t) =>
+      t.id === taskId ? { ...t, completed: !t.completed } : t
+    );
+    setWebDetails((prev) => ({ ...prev, crmTasks: updatedTasks }));
+    await saveWebDetailsPatch({ crmTasks: updatedTasks }, "Task status synced");
   };
 
-  // Add new lead handler
-  const handleCreateLead = (e) => {
+  const handleAddTask = async (e) => {
     e.preventDefault();
-    if (!newLeadForm.title.trim()) {
-      toast.error("Please enter a lead or project name.");
+    if (!newTaskText.trim()) return;
+    const newTask = {
+      id: `task-${Date.now()}`,
+      title: newTaskText.trim(),
+      subtitle: "Atelier · Just added",
+      category: "studio",
+      completed: false,
+    };
+    const updatedTasks = [newTask, ...tasks];
+    setWebDetails((prev) => ({ ...prev, crmTasks: updatedTasks }));
+    setNewTaskText("");
+    setAddingTask(false);
+    await saveWebDetailsPatch({ crmTasks: updatedTasks }, "Task added to studio queue");
+  };
+
+  // Project CRUD Handlers (Directly Reflected on Homepage Works.jsx & /projects)
+  const openCreateProjectModal = () => {
+    setEditingProject(null);
+    setProjectForm({
+      title: "",
+      categoryId: categories[0]?._id || "",
+      size: "12,000 sq.ft",
+      location: "Dubai, UAE",
+      scope: "Turnkey Design & Fit-Out",
+      sector: "Residential",
+      description: "",
+    });
+    setProjectFiles([]);
+    setExistingImages([]);
+    setProjectModalOpen(true);
+  };
+
+  const openEditProjectModal = (proj) => {
+    setEditingProject(proj);
+    setProjectForm({
+      title: proj.title || "",
+      categoryId:
+        typeof proj.categoryId === "object" ? proj.categoryId?._id || "" : proj.categoryId || "",
+      size: proj.size || "",
+      location: proj.location || "",
+      scope: proj.scope || "",
+      sector: proj.sector || "",
+      description: proj.description || "",
+    });
+    setProjectFiles([]);
+    setExistingImages(proj.images || []);
+    setProjectModalOpen(true);
+  };
+
+  const handleSaveProject = async (e) => {
+    e.preventDefault();
+    if (!projectForm.title.trim()) {
+      toast.error("Project title is required");
+      return;
+    }
+    if (!projectForm.categoryId) {
+      toast.error("Please select a category");
       return;
     }
 
-    const newEntry = {
-      id: Date.now().toString(),
-      title: newLeadForm.title.trim(),
-      client: newLeadForm.client.trim() || "Private Client",
-      type: newLeadForm.type,
-      location: newLeadForm.location.trim() || "Dubai, UAE",
-      budget: newLeadForm.budget.trim() || "Under AED 150,000",
-      scope: newLeadForm.scope.trim() || "Turnkey Fit-Out & Joinery",
-      notes: newLeadForm.notes.trim() || "Logged into Atelier CRM.",
-      createdAt: new Date().toISOString(),
-      stage: newLeadForm.stage,
+    setSavingCms(true);
+    try {
+      const fd = new FormData();
+      fd.append("title", projectForm.title.trim());
+      fd.append("categoryId", projectForm.categoryId);
+      fd.append("size", projectForm.size || "");
+      fd.append("location", projectForm.location || "");
+      fd.append("scope", projectForm.scope || "");
+      fd.append("sector", projectForm.sector || "");
+      fd.append("description", projectForm.description || "");
+      projectFiles.forEach((f) => fd.append("images", f));
+
+      if (editingProject?._id) {
+        fd.append("existingImages", JSON.stringify(existingImages));
+        await projectAPI.update(editingProject._id, fd);
+        toast.success("Project updated & synced to public website!");
+      } else {
+        await projectAPI.create(fd);
+        toast.success("New project published to public website!");
+      }
+
+      setProjectModalOpen(false);
+      localStorage.removeItem("photogallery:data:v5");
+      window.dispatchEvent(new CustomEvent("projects-updated"));
+      await loadDashboardData();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to save project.");
+    } finally {
+      setSavingCms(false);
+    }
+  };
+
+  const handleDeleteProject = async (id) => {
+    if (!window.confirm("Delete this project from website & database?")) return;
+    try {
+      await projectAPI.delete(id);
+      toast.success("Project removed from website");
+      localStorage.removeItem("photogallery:data:v5");
+      window.dispatchEvent(new CustomEvent("projects-updated"));
+      await loadDashboardData();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Delete failed");
+    }
+  };
+
+  // Service CRUD Handlers (Directly Reflected on Homepage, Services & Contact pages)
+  const openCreateServiceModal = () => {
+    setEditingServiceIdx(null);
+    setServiceForm({
+      title: "",
+      slug: "",
+      eyebrow: "BESPOKE ARCHITECTURE",
+      shortDesc: "",
+      description: "",
+      image: "/static/studio.jpg",
+      highlightsText: "Concept Design\nAuthority Approvals\nTurnkey Fit-Out",
+      active: true,
+    });
+    setServiceModalOpen(true);
+  };
+
+  const openEditServiceModal = (srv, idx) => {
+    setEditingServiceIdx(idx);
+    setServiceForm({
+      title: srv.title || "",
+      slug: srv.slug || "",
+      eyebrow: srv.eyebrow || "",
+      shortDesc: srv.shortDesc || "",
+      description: srv.description || "",
+      image: srv.image || "/static/studio.jpg",
+      highlightsText: (srv.highlights || []).join("\n"),
+      active: srv.active !== false,
+    });
+    setServiceModalOpen(true);
+  };
+
+  const handleSaveService = async (e) => {
+    e.preventDefault();
+    if (!serviceForm.title.trim()) {
+      toast.error("Service title is required");
+      return;
+    }
+
+    const cleanSlug =
+      serviceForm.slug.trim() ||
+      serviceForm.title
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+
+    const newServiceObj = {
+      id:
+        editingServiceIdx !== null
+          ? services[editingServiceIdx]?.id || `srv-${Date.now()}`
+          : `srv-${Date.now()}`,
+      title: serviceForm.title.trim(),
+      slug: cleanSlug,
+      eyebrow: serviceForm.eyebrow.trim() || "YASHMEEN DISCIPLINE",
+      shortDesc: serviceForm.shortDesc.trim(),
+      description: serviceForm.description.trim(),
+      image: serviceForm.image || "/static/studio.jpg",
+      route: `/services/${cleanSlug}`,
+      active: serviceForm.active,
+      highlights: serviceForm.highlightsText
+        .split(/\r?\n/)
+        .map((x) => x.trim())
+        .filter(Boolean),
     };
 
-    const updated = [newEntry, ...customLeads];
-    setCustomLeads(updated);
-    try {
-      localStorage.setItem("yashmeen_crm_custom_leads", JSON.stringify(updated));
-    } catch (err) {
-      console.error(err);
+    const nextServices = [...services];
+    if (editingServiceIdx !== null) {
+      nextServices[editingServiceIdx] = newServiceObj;
+    } else {
+      nextServices.push(newServiceObj);
     }
 
-    updateItemStage(`custom-${newEntry.id}`, newLeadForm.stage, newEntry.title);
-    setQuickAddOpen(false);
-    setNewLeadForm({
-      title: "",
-      client: "",
-      type: "COMMISSION BRIEF",
-      location: "Dubai, UAE",
-      budget: "Under AED 150,000",
-      scope: "Turnkey Interior Fit-Out",
-      notes: "",
-      stage: "leads",
-    });
-    toast.success(`Created "${newEntry.title}" in pipeline.`);
+    await saveWebDetailsPatch(
+      { services: nextServices },
+      "Service published to live website!"
+    );
+    setServiceModalOpen(false);
   };
 
-  // Delete old quotations
-  const handleDeleteOldQuotes = async () => {
-    if (!window.confirm("Permanently delete quotations older than 1 month?")) return;
-    try {
-      await quoteAPI.deleteOlderThanMonth();
-      toast.success("Old quotations purged successfully.");
-      const { data } = await quoteAPI.getAll({ limit: 100 });
-      setQuotes(Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []);
-    } catch {
-      toast.error("Failed to delete old quotations.");
-    }
+  const handleDeleteService = async (idx) => {
+    if (!window.confirm("Remove this service from the live website?")) return;
+    const nextServices = services.filter((_, i) => i !== idx);
+    await saveWebDetailsPatch({ services: nextServices }, "Service removed from website");
   };
 
-  // Settings submit handler
-  const handleSettingsSubmit = async (e) => {
+  // Calendar Event Handler
+  const handleAddCalendarEvent = async (e) => {
     e.preventDefault();
-    if (details.email && !EMAIL_RE.test(details.email)) {
-      setSettingsErrors({ email: "Valid email required." });
-      return;
-    }
-    setSavingSettings(true);
-    try {
-      await webDetailsAPI.update(details);
-      toast.success("Atelier directory updated successfully.");
-    } catch {
-      toast.error("Failed to update atelier directory.");
-    } finally {
-      setSavingSettings(false);
-    }
+    if (!calendarForm.title.trim()) return;
+    const newEvt = {
+      id: `evt-${Date.now()}`,
+      ...calendarForm,
+    };
+    const nextEvents = [...calendarEvents, newEvt];
+    await saveWebDetailsPatch({ calendarEvents: nextEvents }, "Schedule updated");
+    setCalendarModalOpen(false);
+    setCalendarForm({
+      title: "",
+      subtitle: "",
+      dayIndex: 2,
+      timeSlot: "10:00 am",
+      variant: "dark",
+    });
   };
+
+  const handleDeleteCalendarEvent = async (evtId) => {
+    const nextEvents = calendarEvents.filter((ev) => ev.id !== evtId);
+    await saveWebDetailsPatch({ calendarEvents: nextEvents }, "Schedule event removed");
+  };
+
+  // Pipeline Drag & Drop
+  const updateItemStage = (id, stageId, label) => {
+    setStageMap((prev) => ({ ...prev, [id]: stageId }));
+    const stageName = STAGES.find((s) => s.id === stageId)?.name || stageId;
+    toast.success(`Moved "${label}" to ${stageName}`);
+  };
+
+  // Progress Dial SVG Geometry
+  const dialTicks = Array.from({ length: 44 }, (_, i) => i);
+  const progressFraction = timerRunning ? Math.min(((timerSeconds % 360) / 360) * 0.75 + 0.2, 0.92) : 0.68;
 
   return (
-    <div style={{ maxWidth: "1480px", margin: "0 auto", padding: "32px 28px" }}>
-      {/* ======================================================================
-          1. HEADER & CALMING KPI METRICS
-          ====================================================================== */}
-      <section style={{ marginBottom: "28px" }}>
+    <div
+      style={{
+        maxWidth: "1440px",
+        margin: "0 auto",
+        padding: "10px 28px 64px",
+        boxSizing: "border-box",
+      }}
+    >
+      {/* =====================================================================
+          1. GREETING HEADER + CAPSULE PROGRESS STRIP + THIN ARCHITECTURAL STATS
+          ===================================================================== */}
+      <section
+        style={{
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "24px",
+          marginBottom: "26px",
+        }}
+      >
+        {/* Left: Greeting + Status Capsules */}
+        <div style={{ flex: "1 1 560px", maxWidth: "700px" }}>
+          <h1
+            style={{
+              fontSize: "clamp(28px, 3.2vw, 40px)",
+              fontWeight: 500,
+              color: "#1e1f22",
+              margin: "0 0 18px 0",
+              letterSpacing: "-0.03em",
+              lineHeight: 1.1,
+            }}
+          >
+            Welcome in, {user?.name || "Yashmeen"}
+          </h1>
+
+          {/* Segmented Horizontal Progress Strip */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: `${leadsPct}fr ${quotesPct}fr ${siteSyncPct}fr ${outputPct}fr`,
+              gap: "8px",
+              alignItems: "end",
+            }}
+          >
+            {/* Bar 1: Leads (Charcoal) */}
+            <div>
+              <div style={{ fontSize: "11px", fontWeight: 500, color: "#52525b", marginBottom: "6px", paddingLeft: "4px" }}>
+                Inquiries
+              </div>
+              <div
+                style={{
+                  height: "30px",
+                  borderRadius: "9999px",
+                  background: "#232326",
+                  color: "#ffffff",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 12px",
+                }}
+              >
+                {leadsPct}%
+              </div>
+            </div>
+
+            {/* Bar 2: Quotes (Warm Sunshine Yellow) */}
+            <div>
+              <div style={{ fontSize: "11px", fontWeight: 500, color: "#52525b", marginBottom: "6px", paddingLeft: "4px" }}>
+                Quotes
+              </div>
+              <div
+                style={{
+                  height: "30px",
+                  borderRadius: "9999px",
+                  background: "#f5cb5c",
+                  color: "#1e1f22",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 12px",
+                }}
+              >
+                {quotesPct}%
+              </div>
+            </div>
+
+            {/* Bar 3: Site Sync (Signature Diagonal Hatched Capsule) */}
+            <div>
+              <div style={{ fontSize: "11px", fontWeight: 500, color: "#52525b", marginBottom: "6px", paddingLeft: "4px" }}>
+                Site Works
+              </div>
+              <div
+                className="crex-hatched-bar"
+                style={{
+                  height: "30px",
+                  borderRadius: "9999px",
+                  color: "#3f3f46",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 14px",
+                }}
+              >
+                {siteSyncPct}%
+              </div>
+            </div>
+
+            {/* Bar 4: Services Ready (Hairline Outline Pill) */}
+            <div>
+              <div style={{ fontSize: "11px", fontWeight: 500, color: "#52525b", marginBottom: "6px", paddingLeft: "4px" }}>
+                Services
+              </div>
+              <div
+                style={{
+                  height: "30px",
+                  borderRadius: "9999px",
+                  border: "1px solid rgba(0, 0, 0, 0.22)",
+                  background: "rgba(255, 255, 255, 0.25)",
+                  color: "#1e1f22",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 12px",
+                }}
+              >
+                {outputPct}%
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Thin Giant Architectural Numerals */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "36px",
+            flexWrap: "wrap",
+          }}
+        >
+          <div
+            onClick={() => {
+              setActiveTab("projects");
+              document.getElementById("crm-cms-workspace")?.scrollIntoView({ behavior: "smooth" });
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+              <FiLayers size={15} color="#71717a" />
+              <span style={{ fontSize: "42px", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1 }}>
+                {projects.length}
+              </span>
+            </div>
+            <div style={{ fontSize: "11.5px", color: "#52525b", marginTop: "4px", paddingLeft: "23px" }}>
+              Projects
+            </div>
+          </div>
+
+          <div
+            onClick={() => {
+              setActiveTab("services");
+              document.getElementById("crm-cms-workspace")?.scrollIntoView({ behavior: "smooth" });
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+              <FiBriefcase size={15} color="#71717a" />
+              <span style={{ fontSize: "42px", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1 }}>
+                {activeServicesCount}
+              </span>
+            </div>
+            <div style={{ fontSize: "11.5px", color: "#52525b", marginTop: "4px", paddingLeft: "23px" }}>
+              Services
+            </div>
+          </div>
+
+          <div
+            onClick={() => {
+              setActiveTab("leads");
+              document.getElementById("crm-cms-workspace")?.scrollIntoView({ behavior: "smooth" });
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+              <FiFileText size={15} color="#71717a" />
+              <span style={{ fontSize: "42px", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1 }}>
+                {quotes.length + enquiries.length}
+              </span>
+            </div>
+            <div style={{ fontSize: "11.5px", color: "#52525b", marginTop: "4px", paddingLeft: "23px" }}>
+              Requests
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================================
+          2. 4-COLUMN CREXTIO BENTO GRID
+          ===================================================================== */}
+      <section className="crex-bento-grid" style={{ marginBottom: "32px" }}>
+        {/* CARD 1: FEATURED WEBSITE PROJECT SHOWCASE (Portrait Photo Card) */}
+        <div
+          className="crex-card"
+          style={{
+            position: "relative",
+            overflow: "hidden",
+            minHeight: "290px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            padding: "18px",
+            background: "#262629",
+          }}
+        >
+          <img
+            src={resolveImage(featuredProj.images?.[0])}
+            alt={featuredProj.title}
+            onError={(e) => {
+              e.currentTarget.src = FALLBACK_PROJECT_IMG;
+            }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              transition: "transform 0.4s ease",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.05) 45%, rgba(18,18,20,0.82) 100%)",
+            }}
+          />
+
+          {/* Top Controls inside Photo Card */}
+          <div
+            style={{
+              position: "relative",
+              zIndex: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <div style={{ display: "flex", gap: "6px" }}>
+              <button
+                type="button"
+                onClick={() =>
+                  setFeaturedIndex((i) =>
+                    i === 0 ? Math.max(projects.length - 1, 0) : i - 1
+                  )
+                }
+                className="crex-icon-circle"
+                style={{ width: "30px", height: "30px", background: "rgba(255,255,255,0.25)", color: "#fff", border: "none", backdropFilter: "blur(8px)" }}
+                title="Previous live project"
+              >
+                <FiChevronLeft size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setFeaturedIndex((i) => i + 1)}
+                className="crex-icon-circle"
+                style={{ width: "30px", height: "30px", background: "rgba(255,255,255,0.25)", color: "#fff", border: "none", backdropFilter: "blur(8px)" }}
+                title="Next live project"
+              >
+                <FiChevronRight size={14} />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                featuredProj._id
+                  ? openEditProjectModal(featuredProj)
+                  : openCreateProjectModal()
+              }
+              style={{
+                background: "rgba(255, 255, 255, 0.22)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                color: "#ffffff",
+                borderRadius: "9999px",
+                padding: "5px 12px",
+                fontSize: "11px",
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
+            >
+              <FiEdit2 size={11} />
+              <span>Edit Live</span>
+            </button>
+          </div>
+
+          {/* Bottom Typography + Frosted Size Pill */}
+          <div
+            style={{
+              position: "relative",
+              zIndex: 2,
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              gap: "10px",
+            }}
+          >
+            <div style={{ minWidth: 0 }}>
+              <h3
+                style={{
+                  fontSize: "19px",
+                  fontWeight: 600,
+                  color: "#ffffff",
+                  margin: "0 0 3px 0",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {featuredProj.title}
+              </h3>
+              <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.8)", margin: 0 }}>
+                {featuredProj.sector || "Architectural Works"} · {featuredProj.location || "Dubai"}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={openCreateProjectModal}
+              style={{
+                background: "rgba(255, 255, 255, 0.16)",
+                backdropFilter: "blur(12px)",
+                border: "1px solid rgba(255, 255, 255, 0.4)",
+                color: "#ffffff",
+                borderRadius: "9999px",
+                padding: "7px 14px",
+                fontSize: "12px",
+                fontWeight: 500,
+                whiteSpace: "nowrap",
+                cursor: "pointer",
+              }}
+              title="Add new project to website"
+            >
+              {featuredProj.size || "+ New"}
+            </button>
+          </div>
+        </div>
+
+        {/* CARD 2: PIPELINE VELOCITY BAR CHART ("Progress" Visual Match) */}
+        <div
+          className="crex-card"
+          style={{
+            padding: "20px 22px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            minHeight: "290px",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <div style={{ fontSize: "17px", fontWeight: 500, color: "#1e1f22" }}>
+                Progress
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginTop: "8px" }}>
+                <span style={{ fontSize: "34px", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1 }}>
+                  {allCRMItems.length}
+                </span>
+                <span style={{ fontSize: "11px", color: "#71717a", lineHeight: 1.3 }}>
+                  Active Deals
+                  <br />
+                  in pipeline
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("kanban");
+                document.getElementById("crm-cms-workspace")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="crex-icon-circle"
+              title="Open Pipeline Kanban"
+            >
+              <FiArrowUpRight size={15} />
+            </button>
+          </div>
+
+          {/* 7 Vertical Dotted Tracks with Charcoal & Gold Capsule Bars */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(7, 1fr)",
+              alignItems: "end",
+              height: "145px",
+              gap: "8px",
+              marginTop: "12px",
+              paddingTop: "16px",
+            }}
+          >
+            {weeklyBars.map((bar, idx) => (
+              <div
+                key={idx}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  height: "100%",
+                  justifyContent: "flex-end",
+                  position: "relative",
+                }}
+                title={`${bar.day}: ${bar.label}`}
+              >
+                {/* Floating Yellow Badge above Peak Bar */}
+                {bar.highlight && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "-6px",
+                      background: "#f5cb5c",
+                      color: "#1e1f22",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      padding: "3px 8px",
+                      borderRadius: "9999px",
+                      whiteSpace: "nowrap",
+                      boxShadow: "0 2px 8px rgba(245, 203, 92, 0.4)",
+                      zIndex: 2,
+                    }}
+                  >
+                    {bar.label}
+                  </div>
+                )}
+
+                {/* Dotted Spine Behind Capsule */}
+                <div
+                  style={{
+                    position: "relative",
+                    width: "10px",
+                    height: "102px",
+                    display: "flex",
+                    alignItems: "flex-end",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "8px",
+                      bottom: "8px",
+                      width: "2px",
+                      borderLeft: "2px dotted rgba(0, 0, 0, 0.14)",
+                    }}
+                  />
+                  {/* Solid Pill Bar */}
+                  <div
+                    style={{
+                      position: "relative",
+                      width: "10px",
+                      height: `${bar.h}%`,
+                      borderRadius: "9999px",
+                      background: bar.highlight ? "#f5cb5c" : "#232326",
+                      transition: "height 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                      zIndex: 1,
+                    }}
+                  />
+                </div>
+
+                <span
+                  style={{
+                    fontSize: "10.5px",
+                    fontWeight: 600,
+                    color: bar.highlight ? "#1e1f22" : "#71717a",
+                    marginTop: "8px",
+                  }}
+                >
+                  {bar.day}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CARD 3: TURNKEY STUDIO TRACKER DIAL */}
+        <div
+          className="crex-card"
+          style={{
+            padding: "20px 22px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            minHeight: "290px",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ fontSize: "17px", fontWeight: 500, color: "#1e1f22" }}>
+              Site tracker
+            </div>
+            <button
+              type="button"
+              onClick={() => window.open("/", "_blank")}
+              className="crex-icon-circle"
+              title="Open Public Website"
+            >
+              <FiArrowUpRight size={15} />
+            </button>
+          </div>
+
+          {/* Radial Tick Gauge with Golden Progress Arc */}
+          <div
+            style={{
+              position: "relative",
+              width: "152px",
+              height: "152px",
+              margin: "6px auto",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <svg viewBox="0 0 160 160" style={{ width: "100%", height: "100%", transform: "rotate(-110deg)" }}>
+              {/* Radial Ticks */}
+              {dialTicks.map((t) => {
+                const angle = (t / dialTicks.length) * 360;
+                return (
+                  <line
+                    key={t}
+                    x1="80"
+                    y1="10"
+                    x2="80"
+                    y2="19"
+                    stroke="rgba(0,0,0,0.18)"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    transform={`rotate(${angle} 80 80)`}
+                  />
+                );
+              })}
+              {/* Golden Progress Overlay Arc */}
+              <circle
+                cx="80"
+                cy="80"
+                r="64"
+                fill="none"
+                stroke="#f5cb5c"
+                strokeWidth="10"
+                strokeLinecap="round"
+                strokeDasharray={`${progressFraction * 402} 402`}
+                style={{ transition: "stroke-dasharray 0.5s ease" }}
+              />
+            </svg>
+
+            <div
+              style={{
+                position: "absolute",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "28px",
+                  fontWeight: 500,
+                  letterSpacing: "-0.03em",
+                  color: "#1e1f22",
+                  lineHeight: 1.05,
+                }}
+              >
+                {formattedTimer}
+              </div>
+              <div style={{ fontSize: "11px", color: "#71717a", marginTop: "2px" }}>
+                Atelier Time
+              </div>
+            </div>
+          </div>
+
+          {/* Timer Controls Bottom Row */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                type="button"
+                onClick={() => setTimerRunning(true)}
+                className="crex-icon-circle"
+                style={{
+                  background: timerRunning ? "#232326" : "#ffffff",
+                  color: timerRunning ? "#ffffff" : "#1e1f22",
+                }}
+                title="Start site work timer"
+              >
+                <FiPlay size={13} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setTimerRunning(false)}
+                className="crex-icon-circle"
+                title="Pause timer"
+              >
+                <FiPause size={13} />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setTimerSeconds(155)}
+              className="crex-icon-circle is-dark"
+              title="Reset studio session clock"
+            >
+              <FiClock size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* COLUMN 4 RIGHT STACK (Spans 2 Rows): TOP WEBSITE SYNC + TALL DARK TASK QUEUE */}
+        <div className="crex-col-right-stack">
+          {/* Top-Right Onboarding / Website CMS Sync Card */}
+          <div className="crex-card" style={{ padding: "20px 22px" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "14px",
+              }}
+            >
+              <span style={{ fontSize: "17px", fontWeight: 500, color: "#1e1f22" }}>
+                Web Sync
+              </span>
+              <span style={{ fontSize: "28px", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1 }}>
+                {syncScore}%
+              </span>
+            </div>
+
+            {/* 3 Stacked Capsule Bars (Yellow, Charcoal, Muted Slate) */}
+            <div style={{ display: "grid", gridTemplateColumns: "3fr 2.2fr 1.2fr", gap: "6px" }}>
+              <div>
+                <div style={{ fontSize: "10.5px", color: "#52525b", marginBottom: "5px" }}>
+                  Services ({activeServicesCount})
+                </div>
+                <div
+                  onClick={() => setActiveTab("services")}
+                  style={{
+                    height: "36px",
+                    borderRadius: "10px",
+                    background: "#f5cb5c",
+                    color: "#1e1f22",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 10px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Live
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: "10.5px", color: "#52525b", marginBottom: "5px" }}>
+                  Works ({projects.length})
+                </div>
+                <div
+                  onClick={() => setActiveTab("projects")}
+                  style={{
+                    height: "36px",
+                    borderRadius: "10px",
+                    background: "#232326",
+                    color: "#ffffff",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 10px",
+                    cursor: "pointer",
+                  }}
+                >
+                  DB
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: "10.5px", color: "#52525b", marginBottom: "5px" }}>
+                  Queue
+                </div>
+                <div
+                  style={{
+                    height: "36px",
+                    borderRadius: "10px",
+                    background: "#a1a1aa",
+                    color: "#ffffff",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {tasks.length - completedTasksCount}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tall Matte Dark Charcoal Task Queue Card */}
+          <div
+            className="crex-card-dark"
+            style={{
+              padding: "22px",
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "16px",
+                }}
+              >
+                <span style={{ fontSize: "16.5px", fontWeight: 500, color: "#ffffff" }}>
+                  Studio & Web Queue
+                </span>
+                <span style={{ fontSize: "24px", fontWeight: 400, color: "#ffffff", letterSpacing: "-0.02em" }}>
+                  {completedTasksCount}/{tasks.length}
+                </span>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                {tasks.slice(0, 6).map((task) => (
+                  <div
+                    key={task.id}
+                    onClick={() => handleToggleTask(task.id)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "12px",
+                      padding: "10px 4px",
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      cursor: "pointer",
+                      transition: "opacity 0.15s ease",
+                      opacity: task.completed ? 0.68 : 1,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "11px", minWidth: 0 }}>
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "50%",
+                          background: "rgba(255, 255, 255, 0.08)",
+                          color: "#d4d4d8",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <FiCheckCircle size={13} />
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: "12.5px",
+                            fontWeight: 500,
+                            color: "#ffffff",
+                            textDecoration: task.completed ? "line-through" : "none",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {task.title}
+                        </div>
+                        <div style={{ fontSize: "10.5px", color: "#a1a1aa", marginTop: "2px" }}>
+                          {task.subtitle}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Check Circle */}
+                    <div
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        borderRadius: "50%",
+                        background: task.completed ? "#f5cb5c" : "rgba(255, 255, 255, 0.14)",
+                        color: task.completed ? "#1e1f22" : "transparent",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      <FiCheck size={11} strokeWidth={3} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Inline Quick Task Adder */}
+            <div style={{ marginTop: "14px" }}>
+              {addingTask ? (
+                <form onSubmit={handleAddTask} style={{ display: "flex", gap: "6px" }}>
+                  <input
+                    type="text"
+                    placeholder="New task or web update..."
+                    value={newTaskText}
+                    onChange={(e) => setNewTaskText(e.target.value)}
+                    autoFocus
+                    style={{
+                      flex: 1,
+                      background: "rgba(255,255,255,0.1)",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                      color: "#ffffff",
+                      borderRadius: "9999px",
+                      padding: "6px 12px",
+                      fontSize: "11.5px",
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    className="crex-btn-yellow"
+                    style={{ padding: "5px 12px", fontSize: "11px" }}
+                  >
+                    Add
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAddingTask(false)}
+                    style={{ background: "transparent", border: "none", color: "#a1a1aa", cursor: "pointer" }}
+                  >
+                    <FiX size={14} />
+                  </button>
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setAddingTask(true)}
+                  style={{
+                    width: "100%",
+                    background: "rgba(255,255,255,0.07)",
+                    border: "1px dashed rgba(255,255,255,0.18)",
+                    borderRadius: "9999px",
+                    color: "#e4e4e7",
+                    padding: "7px 12px",
+                    fontSize: "11.5px",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                  }}
+                >
+                  <FiPlus size={12} />
+                  <span>Add Action Task</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* CARD 5 (Bottom-Left): COLLAPSIBLE LIVE WEBSITE CMS ACCORDIONS */}
+        <div
+          className="crex-card"
+          style={{
+            padding: "18px 20px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          {/* Accordion 1: Live Website Projects */}
+          <div style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: "10px", marginBottom: "10px" }}>
+            <button
+              type="button"
+              onClick={() => setOpenAccordion(openAccordion === "projects" ? "" : "projects")}
+              style={{
+                width: "100%",
+                background: "transparent",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "13.5px",
+                fontWeight: 500,
+                color: "#1e1f22",
+                cursor: "pointer",
+                padding: "4px 0",
+              }}
+            >
+              <span>Website Projects ({projects.length})</span>
+              {openAccordion === "projects" ? <FiChevronUp size={15} /> : <FiChevronDown size={15} />}
+            </button>
+
+            {openAccordion === "projects" && (
+              <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {projects.slice(0, 2).map((p) => (
+                  <div
+                    key={p._id}
+                    onClick={() => openEditProjectModal(p)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "10px",
+                      padding: "6px 8px",
+                      borderRadius: "10px",
+                      background: "rgba(255,255,255,0.65)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+                      <img
+                        src={resolveImage(p.images?.[0])}
+                        alt={p.title}
+                        onError={(e) => (e.currentTarget.src = FALLBACK_PROJECT_IMG)}
+                        style={{ width: "36px", height: "28px", borderRadius: "6px", objectFit: "cover" }}
+                      />
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {p.title}
+                        </div>
+                        <div style={{ fontSize: "10.5px", color: "#71717a" }}>{p.location || "Dubai"}</div>
+                      </div>
+                    </div>
+                    <FiEdit2 size={12} color="#71717a" />
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={openCreateProjectModal}
+                  className="crex-btn-dark"
+                  style={{ width: "100%", justifyContent: "center", padding: "7px 12px", fontSize: "11.5px" }}
+                >
+                  <FiPlus size={12} />
+                  <span>Add Website Project</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Accordion 2: Services (Default Open — mirrors "Devices -> MacBook Air" card) */}
+          <div style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: "12px", marginBottom: "10px" }}>
+            <button
+              type="button"
+              onClick={() => setOpenAccordion(openAccordion === "services" ? "" : "services")}
+              style={{
+                width: "100%",
+                background: "transparent",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "13.5px",
+                fontWeight: 500,
+                color: "#1e1f22",
+                cursor: "pointer",
+                padding: "4px 0",
+              }}
+            >
+              <span>Live Services ({services.length})</span>
+              {openAccordion === "services" ? <FiChevronUp size={15} /> : <FiChevronDown size={15} />}
+            </button>
+
+            {openAccordion === "services" && (
+              <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {services.slice(0, 2).map((srv, idx) => (
+                  <div
+                    key={srv.id || idx}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "10px",
+                      padding: "4px 2px",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                      <img
+                        src={srv.image || "/static/studio.jpg"}
+                        alt={srv.title}
+                        style={{
+                          width: "40px",
+                          height: "32px",
+                          borderRadius: "8px",
+                          objectFit: "cover",
+                          border: "1px solid rgba(0,0,0,0.08)",
+                        }}
+                      />
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: "12.5px", fontWeight: 600, color: "#1e1f22" }}>
+                          {srv.title}
+                        </div>
+                        <div style={{ fontSize: "10.5px", color: "#71717a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {srv.route}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => openEditServiceModal(srv, idx)}
+                      style={{ background: "transparent", border: "none", cursor: "pointer", color: "#52525b", padding: "4px" }}
+                      title="Edit service on live website"
+                    >
+                      <FiMoreVertical size={15} />
+                    </button>
+                  </div>
+                ))}
+
+                <div style={{ display: "flex", gap: "6px", marginTop: "2px" }}>
+                  <button
+                    type="button"
+                    onClick={openCreateServiceModal}
+                    className="crex-btn-ghost"
+                    style={{ flex: 1, justifyContent: "center", padding: "6px 10px", fontSize: "11.5px" }}
+                  >
+                    <FiPlus size={12} />
+                    <span>New Service</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("services");
+                      document.getElementById("crm-cms-workspace")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="crex-btn-ghost"
+                    style={{ padding: "6px 10px", fontSize: "11.5px" }}
+                  >
+                    All ({services.length})
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Accordion 3: Hero & Studio Copy */}
+          <div style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: "10px", marginBottom: "10px" }}>
+            <button
+              type="button"
+              onClick={() => setOpenAccordion(openAccordion === "hero" ? "" : "hero")}
+              style={{
+                width: "100%",
+                background: "transparent",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "13.5px",
+                fontWeight: 500,
+                color: "#1e1f22",
+                cursor: "pointer",
+                padding: "4px 0",
+              }}
+            >
+              <span>Hero & Manifesto Copy</span>
+              {openAccordion === "hero" ? <FiChevronUp size={15} /> : <FiChevronDown size={15} />}
+            </button>
+
+            {openAccordion === "hero" && (
+              <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <input
+                  type="text"
+                  value={siteForm.hero?.title || ""}
+                  onChange={(e) =>
+                    setSiteForm((prev) => ({
+                      ...prev,
+                      hero: { ...prev.hero, title: e.target.value },
+                    }))
+                  }
+                  placeholder="Homepage Hero Title"
+                  style={{ fontSize: "12px", padding: "6px 10px" }}
+                />
+                <input
+                  type="text"
+                  value={siteForm.hero?.kicker || ""}
+                  onChange={(e) =>
+                    setSiteForm((prev) => ({
+                      ...prev,
+                      hero: { ...prev.hero, kicker: e.target.value },
+                    }))
+                  }
+                  placeholder="Kicker subtitle"
+                  style={{ fontSize: "12px", padding: "6px 10px" }}
+                />
+                <button
+                  type="button"
+                  disabled={savingCms}
+                  onClick={() =>
+                    saveWebDetailsPatch({ hero: siteForm.hero }, "Homepage Hero published!")
+                  }
+                  className="crex-btn-dark"
+                  style={{ justifyContent: "center", padding: "6px 12px", fontSize: "11.5px" }}
+                >
+                  Save to Homepage
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Accordion 4: Contact & Web Info */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setOpenAccordion(openAccordion === "contact" ? "" : "contact")}
+              style={{
+                width: "100%",
+                background: "transparent",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontSize: "13.5px",
+                fontWeight: 500,
+                color: "#1e1f22",
+                cursor: "pointer",
+                padding: "4px 0",
+              }}
+            >
+              <span>Studio Contact & Details</span>
+              {openAccordion === "contact" ? <FiChevronUp size={15} /> : <FiChevronDown size={15} />}
+            </button>
+
+            {openAccordion === "contact" && (
+              <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <input
+                  type="text"
+                  value={siteForm.mobile || ""}
+                  onChange={(e) => setSiteForm((p) => ({ ...p, mobile: e.target.value }))}
+                  placeholder="Studio Phone"
+                  style={{ fontSize: "12px", padding: "6px 10px" }}
+                />
+                <input
+                  type="email"
+                  value={siteForm.email || ""}
+                  onChange={(e) => setSiteForm((p) => ({ ...p, email: e.target.value }))}
+                  placeholder="Studio Email"
+                  style={{ fontSize: "12px", padding: "6px 10px" }}
+                />
+                <button
+                  type="button"
+                  disabled={savingCms}
+                  onClick={() =>
+                    saveWebDetailsPatch(
+                      { mobile: siteForm.mobile, email: siteForm.email },
+                      "Contact info updated on Website & Footer!"
+                    )
+                  }
+                  className="crex-btn-dark"
+                  style={{ justifyContent: "center", padding: "6px 12px", fontSize: "11.5px" }}
+                >
+                  Update Contact Live
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* CARD 6 (Bottom-Center, Span 2 Cols): CALENDAR & SITE VISITS TIMELINE */}
+        <div
+          className="crex-card crex-calendar-span"
+          style={{
+            padding: "20px 24px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          {/* Calendar Header Strip (Prev Month | Active Month Year | Next Month + Schedule Pill) */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "12px",
+              marginBottom: "18px",
+              flexWrap: "wrap",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setMonthOffset((m) => m - 1)}
+              className="crex-btn-ghost"
+              style={{ fontSize: "11.5px", padding: "5px 12px" }}
+            >
+              {monthNames.prev}
+            </button>
+
+            <div style={{ fontSize: "15.5px", fontWeight: 500, color: "#1e1f22" }}>
+              {monthNames.curr}
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <button
+                type="button"
+                onClick={() => setMonthOffset((m) => m + 1)}
+                className="crex-btn-ghost"
+                style={{ fontSize: "11.5px", padding: "5px 12px" }}
+              >
+                {monthNames.next}
+              </button>
+              <button
+                type="button"
+                onClick={() => setCalendarModalOpen(true)}
+                className="crex-btn-dark"
+                style={{ fontSize: "11px", padding: "5px 12px" }}
+                title="Add site visit or consultation"
+              >
+                <FiPlus size={12} />
+                <span>Schedule</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 6-Day Column Grid with Time Axis */}
+          <div style={{ overflowX: "auto" }}>
+            <div style={{ minWidth: "520px" }}>
+              {/* Day Names Header */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "68px repeat(6, 1fr)",
+                  textAlign: "center",
+                  marginBottom: "10px",
+                }}
+              >
+                <div />
+                {weekColumns.map((col, idx) => {
+                  const isWed = idx === 2;
+                  return (
+                    <div key={col.name} style={{ paddingBottom: "4px" }}>
+                      <div
+                        style={{
+                          fontSize: "11.5px",
+                          color: isWed ? "#1e1f22" : "#71717a",
+                          fontWeight: isWed ? 700 : 500,
+                        }}
+                      >
+                        {col.name}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: isWed ? 700 : 500,
+                          color: isWed ? "#1e1f22" : "#3f3f46",
+                          marginTop: "2px",
+                        }}
+                      >
+                        {col.num}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Timeline Matrix Rows */}
+              <div style={{ position: "relative" }}>
+                {["9:00 am", "10:00 am", "11:00 am"].map((timeSlot) => {
+                  const rowEvents = calendarEvents.filter((ev) => ev.timeSlot === timeSlot);
+                  return (
+                    <div
+                      key={timeSlot}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "68px repeat(6, 1fr)",
+                        minHeight: "52px",
+                        alignItems: "center",
+                        position: "relative",
+                      }}
+                    >
+                      <span style={{ fontSize: "11px", color: "#71717a", fontWeight: 500 }}>
+                        {timeSlot}
+                      </span>
+
+                      {/* Grid Cells */}
+                      {weekColumns.map((_, dayIdx) => (
+                        <div
+                          key={dayIdx}
+                          style={{
+                            borderLeft: "1px dashed rgba(0, 0, 0, 0.08)",
+                            height: "100%",
+                            minHeight: "52px",
+                          }}
+                        />
+                      ))}
+
+                      {/* Render Floating Event Pills */}
+                      {rowEvents.map((ev) => {
+                        const colStart = Math.min(Math.max(ev.dayIndex || 1, 0), 4);
+                        const leftPct = 11 + colStart * 14.8;
+                        const isDark = ev.variant !== "light";
+                        return (
+                          <div
+                            key={ev.id}
+                            style={{
+                              position: "absolute",
+                              left: `${leftPct}%`,
+                              width: "44%",
+                              zIndex: 3,
+                              background: isDark ? "#232326" : "#ffffff",
+                              color: isDark ? "#ffffff" : "#1e1f22",
+                              border: isDark ? "none" : "1px solid rgba(0,0,0,0.08)",
+                              borderRadius: "14px",
+                              padding: "8px 12px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: "8px",
+                              boxShadow: isDark
+                                ? "0 8px 20px rgba(0,0,0,0.16)"
+                                : "0 4px 12px rgba(0,0,0,0.04)",
+                            }}
+                          >
+                            <div style={{ minWidth: 0 }}>
+                              <div
+                                style={{
+                                  fontSize: "11.5px",
+                                  fontWeight: 600,
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                {ev.title}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: "10px",
+                                  color: isDark ? "#a1a1aa" : "#71717a",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                {ev.subtitle}
+                              </div>
+                            </div>
+
+                            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              {/* Micro Team Avatar Monograms */}
+                              <div style={{ display: "flex", marginRight: "4px" }}>
+                                <span
+                                  style={{
+                                    width: "20px",
+                                    height: "20px",
+                                    borderRadius: "50%",
+                                    background: "#f5cb5c",
+                                    color: "#1e1f22",
+                                    fontSize: "9px",
+                                    fontWeight: 700,
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    border: "1.5px solid #232326",
+                                  }}
+                                >
+                                  YA
+                                </span>
+                                <span
+                                  style={{
+                                    width: "20px",
+                                    height: "20px",
+                                    borderRadius: "50%",
+                                    background: "#e4e4e7",
+                                    color: "#1e1f22",
+                                    fontSize: "9px",
+                                    fontWeight: 700,
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    marginLeft: "-6px",
+                                    border: "1.5px solid #232326",
+                                  }}
+                                >
+                                  PM
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCalendarEvent(ev.id)}
+                                style={{
+                                  background: "transparent",
+                                  border: "none",
+                                  color: isDark ? "#a1a1aa" : "#71717a",
+                                  cursor: "pointer",
+                                  padding: "2px",
+                                }}
+                                title="Remove event"
+                              >
+                                <FiX size={11} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================================
+          3. LIVE WEBSITE CMS & CRM WORKSPACE (PROJECTS, SERVICES, KANBAN, LEADS)
+          ===================================================================== */}
+      <section id="crm-cms-workspace" className="crex-card" style={{ padding: "24px 26px" }}>
+        {/* Header Bar & Pill Tab Switcher */}
         <div
           style={{
             display: "flex",
@@ -539,1339 +2158,1191 @@ export default function Dashboard() {
             justifyContent: "space-between",
             flexWrap: "wrap",
             gap: "16px",
-            marginBottom: "20px",
+            marginBottom: "24px",
+            paddingBottom: "18px",
+            borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
           }}
         >
-          <div>
-            <h1
-              style={{
-                fontSize: "22px",
-                fontWeight: 700,
-                color: "#18181b",
-                margin: 0,
-                letterSpacing: "-0.02em",
-              }}
-            >
-              Atelier Operations & CRM
-            </h1>
-            <p
-              style={{
-                fontSize: "13px",
-                color: "#6b7280",
-                margin: "4px 0 0 0",
-              }}
-            >
-              Monitor turnkey fit-out commissions, client requests, and Al Quoz workshop fabrication.
-            </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+            {[
+              { id: "projects", label: `Website Projects (${projects.length})` },
+              { id: "services", label: `Services & Copy (${services.length})` },
+              { id: "kanban", label: `CRM Pipeline (${allCRMItems.length})` },
+              { id: "leads", label: `Quotes & Inquiries (${quotes.length + enquiries.length})` },
+            ].map((tab) => {
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{
+                    background: active ? "#232326" : "rgba(255,255,255,0.65)",
+                    color: active ? "#ffffff" : "#3f3f46",
+                    border: active ? "1px solid #232326" : "1px solid rgba(0,0,0,0.08)",
+                    borderRadius: "9999px",
+                    padding: "8px 16px",
+                    fontSize: "12.5px",
+                    fontWeight: active ? 600 : 500,
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Quick Actions Right: Nested Button-in-Button */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+            <div style={{ position: "relative" }}>
+              <FiSearch
+                size={13}
+                color="#71717a"
+                style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }}
+              />
+              <input
+                type="text"
+                placeholder="Search workspace..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ paddingLeft: "32px", borderRadius: "9999px", width: "210px", fontSize: "12.5px" }}
+              />
+            </div>
+
+            {activeTab === "projects" && (
+              <button type="button" onClick={openCreateProjectModal} className="crex-btn-yellow">
+                <FiPlus size={14} />
+                <span>Publish Project</span>
+              </button>
+            )}
+
+            {activeTab === "services" && (
+              <button type="button" onClick={openCreateServiceModal} className="crex-btn-yellow">
+                <FiPlus size={14} />
+                <span>Add Service</span>
+              </button>
+            )}
+
             <button
-              onClick={() => setQuickAddOpen(true)}
-              className="crm-btn-primary"
+              type="button"
+              onClick={() => {
+                setSiteForm(webDetails);
+                setSiteModalOpen(true);
+              }}
+              className="crex-btn-ghost"
             >
-              <span>New Lead / Deal</span>
-              <span className="crm-btn-icon-pill">
-                <FiPlus size={13} color="#ffffff" />
-              </span>
+              <FiGlobe size={13} />
+              <span>Edit Website Copy & Info</span>
             </button>
           </div>
         </div>
 
-        {/* 4 Soft & Soothing KPI Cards with Double-Bezel Architecture */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "16px",
-            marginBottom: "20px",
-          }}
-        >
-          {/* Card 1: Total Pipeline */}
-          <div className="crm-bezel-wrapper">
-            <div className="crm-bezel-inner" style={{ padding: "18px 20px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "8px",
-                }}
-              >
-                <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
-                  Active Pipeline Deals
-                </span>
-                <div
-                  style={{
-                    width: "28px",
-                    height: "28px",
-                    borderRadius: "8px",
-                    background: "#edf5fc",
-                    color: "#1e5c8a",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <FiLayers size={13} />
-                </div>
-              </div>
-              <div
-                style={{
-                  fontSize: "26px",
-                  fontWeight: 700,
-                  color: "#18181b",
-                  lineHeight: 1.1,
-                }}
-              >
-                {allCRMItems.length}
-              </div>
-              <div style={{ fontSize: "11.5px", color: "#6b7280", marginTop: "6px" }}>
-                Commissions & active client inquiries
-              </div>
+        {/* ---------------- TAB 1: WEBSITE PROJECTS CMS ---------------- */}
+        {activeTab === "projects" && (
+          <div className="crex-animate-in">
+            <div style={{ marginBottom: "16px", fontSize: "12.5px", color: "#52525b" }}>
+              Any project created, edited, or deleted here updates the live Homepage Selected Works and{" "}
+              <a href="/projects" target="_blank" rel="noreferrer" style={{ color: "#1e1f22", fontWeight: 600 }}>
+                /projects
+              </a>{" "}
+              immediately.
             </div>
-          </div>
 
-          {/* Card 2: Quotes */}
-          <div className="crm-bezel-wrapper">
-            <div className="crm-bezel-inner" style={{ padding: "18px 20px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "8px",
-                }}
-              >
-                <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
-                  Quotation Briefs
-                </span>
-                <div
-                  style={{
-                    width: "28px",
-                    height: "28px",
-                    borderRadius: "8px",
-                    background: "#fdf6ec",
-                    color: "#8c581e",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <FiFileText size={13} />
-                </div>
-              </div>
-              <div
-                style={{
-                  fontSize: "26px",
-                  fontWeight: 700,
-                  color: "#18181b",
-                  lineHeight: 1.1,
-                }}
-              >
-                {quotes.length}
-              </div>
-              <div style={{ fontSize: "11.5px", color: "#6b7280", marginTop: "6px" }}>
-                {quotes[0] ? `Latest: ${quotes[0].name}` : "Awaiting briefs"}
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Inquiries */}
-          <div className="crm-bezel-wrapper">
-            <div className="crm-bezel-inner" style={{ padding: "18px 20px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "8px",
-                }}
-              >
-                <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
-                  Client Inquiries
-                </span>
-                <div
-                  style={{
-                    width: "28px",
-                    height: "28px",
-                    borderRadius: "8px",
-                    background: "#f4f2f9",
-                    color: "#58437d",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <FiMessageSquare size={13} />
-                </div>
-              </div>
-              <div
-                style={{
-                  fontSize: "26px",
-                  fontWeight: 700,
-                  color: "#18181b",
-                  lineHeight: 1.1,
-                }}
-              >
-                {enquiries.length}
-              </div>
-              <div style={{ fontSize: "11.5px", color: "#6b7280", marginTop: "6px" }}>
-                {enquiries[0] ? `Latest: ${enquiries[0].name}` : "All responded"}
-              </div>
-            </div>
-          </div>
-
-          {/* Card 4: Projects */}
-          <div className="crm-bezel-wrapper">
-            <div className="crm-bezel-inner" style={{ padding: "18px 20px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "8px",
-                }}
-              >
-                <span style={{ fontSize: "12px", fontWeight: 600, color: "#6b7280" }}>
-                  Spatial Archive
-                </span>
-                <div
-                  style={{
-                    width: "28px",
-                    height: "28px",
-                    borderRadius: "8px",
-                    background: "#edf6ee",
-                    color: "#2e6930",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <FiCheckCircle size={13} />
-                </div>
-              </div>
-              <div
-                style={{
-                  fontSize: "26px",
-                  fontWeight: 700,
-                  color: "#18181b",
-                  lineHeight: 1.1,
-                }}
-              >
-                {projects.length}
-              </div>
-              <div style={{ fontSize: "11.5px", color: "#6b7280", marginTop: "6px" }}>
-                Completed architectural works
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Executive Pipeline Flow Distribution Bar */}
-        <div
-          style={{
-            background: "#ffffff",
-            border: "1px solid rgba(0, 0, 0, 0.05)",
-            borderRadius: "12px",
-            padding: "14px 18px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.015)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: "10px",
-              fontSize: "11.5px",
-              fontWeight: 600,
-              color: "#6b7280",
-            }}
-          >
-            <span>Pipeline Distribution</span>
-            <span style={{ color: "#18181b" }}>{allCRMItems.length} active leads</span>
-          </div>
-
-          {/* Segmented Progress Bar */}
-          <div
-            style={{
-              height: "7px",
-              borderRadius: "9999px",
-              background: "#f3f4f6",
-              display: "flex",
-              overflow: "hidden",
-              gap: "2px",
-              marginBottom: "10px",
-            }}
-          >
-            {stageDistribution.map((stg) => (
-              <div
-                key={stg.id}
-                title={`${stg.name}: ${stg.count} (${stg.pct}%)`}
-                style={{
-                  width: `${Math.max(stg.pct, 4)}%`,
-                  background: stg.barColor,
-                  borderRadius: "2px",
-                  transition: "width 0.4s ease",
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Micro Legend */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "16px",
-              flexWrap: "wrap",
-              fontSize: "11px",
-              color: "#6b7280",
-            }}
-          >
-            {stageDistribution.map((stg) => (
-              <div
-                key={stg.id}
-                onClick={() => {
-                  setStageFilter(stageFilter === stg.id ? "ALL" : stg.id);
-                  setActiveTab("pipeline");
-                }}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  cursor: "pointer",
-                  opacity: stageFilter === "ALL" || stageFilter === stg.id ? 1 : 0.4,
-                  fontWeight: stageFilter === stg.id ? 700 : 500,
-                }}
-              >
-                <span
-                  style={{
-                    width: "7px",
-                    height: "7px",
-                    borderRadius: "50%",
-                    background: stg.barColor,
-                    display: "inline-block",
-                  }}
-                />
-                <span>
-                  {stg.name} ({stg.count})
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ======================================================================
-          2. VIEW CONTROLS & DENSITY TOGGLE
-          ====================================================================== */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "14px",
-          marginBottom: "20px",
-          paddingBottom: "16px",
-          borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
-        }}
-      >
-        {/* View Switchers */}
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-          {[
-            { id: "pipeline", label: `Kanban Pipeline (${allCRMItems.length})` },
-            { id: "table", label: `Quotations Register (${quotes.length})` },
-            { id: "inquiries", label: `Inquiries Feed (${enquiries.length})` },
-            { id: "directory", label: "Studio Directory" },
-          ].map((tab) => {
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  background: active ? "#ffffff" : "transparent",
-                  color: active ? "#18181b" : "#6b7280",
-                  border: active ? "1px solid #e5e7eb" : "1px solid transparent",
-                  borderRadius: "8px",
-                  padding: "7px 14px",
-                  fontSize: "12.5px",
-                  fontWeight: active ? 600 : 500,
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                  boxShadow: active ? "0 1px 4px rgba(0,0,0,0.04)" : "none",
-                }}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Right Tools: Density + Search */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          {/* Comfort vs Compact Density Switcher */}
-          {activeTab === "pipeline" && (
             <div
               style={{
-                display: "flex",
-                background: "#ffffff",
-                border: "1px solid #e5e7eb",
-                borderRadius: "8px",
-                padding: "2px",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                gap: "16px",
               }}
             >
-              <button
-                type="button"
-                onClick={() => setDensity("comfort")}
-                title="Comfort View (Rich cards)"
-                style={{
-                  background: density === "comfort" ? "#f3f4f6" : "transparent",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "5px 8px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  color: density === "comfort" ? "#18181b" : "#9ca3af",
-                }}
-              >
-                <FiGrid size={13} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setDensity("compact")}
-                title="Compact View (Single-line cards)"
-                style={{
-                  background: density === "compact" ? "#f3f4f6" : "transparent",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "5px 8px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  color: density === "compact" ? "#18181b" : "#9ca3af",
-                }}
-              >
-                <FiList size={13} />
-              </button>
-            </div>
-          )}
-
-          {/* Search Input */}
-          <div style={{ position: "relative", minWidth: "240px" }}>
-            <FiSearch
-              size={13}
-              style={{
-                position: "absolute",
-                left: "12px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "#9ca3af",
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Search leads, clients..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: "100%",
-                paddingLeft: "34px",
-                paddingRight: "12px",
-                paddingTop: "7px",
-                paddingBottom: "7px",
-                fontSize: "12px",
-                border: "1px solid #e5e7eb",
-                borderRadius: "8px",
-                background: "#ffffff",
-                color: "#18181b",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* ======================================================================
-          3. MAIN TAB A: DOUBLE-BEZEL SOOTHING KANBAN BOARD
-          ====================================================================== */}
-      {activeTab === "pipeline" && (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: "16px",
-            alignItems: "start",
-          }}
-        >
-          {STAGES.map((stg) => {
-            const colItems = filteredItems.filter((i) => i.stage === stg.id);
-            const isOver = dragOverColId === stg.id;
-            return (
-              <div
-                key={stg.id}
-                onDragOver={(e) => handleDragOver(e, stg.id)}
-                onDragLeave={() => setDragOverColId(null)}
-                onDrop={(e) => handleDrop(e, stg.id)}
-                style={{
-                  background: isOver ? "#f3f4f6" : "#f8f9fa",
-                  border: "1px solid",
-                  borderColor: isOver ? "#cbd5e1" : "rgba(0, 0, 0, 0.05)",
-                  borderRadius: "14px",
-                  padding: "16px",
-                  minHeight: "520px",
-                  display: "flex",
-                  flexDirection: "column",
-                  transition: "background 0.2s ease, border-color 0.2s ease",
-                }}
-              >
-                {/* Column Header */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingBottom: "12px",
-                    borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
-                    marginBottom: "12px",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span
-                      style={{
-                        width: "8px",
-                        height: "8px",
-                        borderRadius: "50%",
-                        background: stg.color,
-                        display: "inline-block",
-                      }}
-                    />
-                    <h3
-                      style={{
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        color: "#1f2937",
-                        margin: 0,
-                      }}
-                    >
-                      {stg.name}
-                    </h3>
-                  </div>
-
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: 600,
-                      color: stg.color,
-                      background: stg.bg,
-                      border: `1px solid ${stg.border}`,
-                      padding: "2px 7px",
-                      borderRadius: "9999px",
-                    }}
-                  >
-                    {colItems.length}
-                  </span>
-                </div>
-
-                {/* Cards Container */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "10px",
-                    flex: 1,
-                  }}
-                >
-                  {colItems.length === 0 ? (
-                    <div
-                      style={{
-                        border: "1px dashed rgba(0, 0, 0, 0.08)",
-                        borderRadius: "10px",
-                        padding: "36px 12px",
-                        textAlign: "center",
-                        color: "#9ca3af",
-                        fontSize: "12px",
-                        background: "rgba(255, 255, 255, 0.5)",
-                      }}
-                    >
-                      No active deals in stage
-                    </div>
-                  ) : (
-                    colItems.map((item) => (
-                      <div
-                        key={item.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, item)}
-                        onDragEnd={handleDragEnd}
-                        className="crm-bezel-wrapper"
-                        style={{ cursor: "grab" }}
-                      >
-                        <div
-                          className="crm-bezel-inner"
-                          style={{
-                            padding: density === "comfort" ? "14px" : "10px 12px",
-                          }}
-                        >
-                          {/* Card Top: Avatar + Client Name + Tag */}
-                          <div
+              {projects
+                .filter(
+                  (p) =>
+                    !searchQuery.trim() ||
+                    p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    (p.location || "").toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map((proj) => {
+                  const catName =
+                    typeof proj.categoryId === "object"
+                      ? proj.categoryId?.categoryName
+                      : categories.find((c) => c._id === proj.categoryId)?.categoryName || "Fit-Out";
+                  return (
+                    <div key={proj._id} className="crm-bezel-wrapper">
+                      <div className="crm-bezel-inner" style={{ overflow: "hidden" }}>
+                        <div style={{ height: "145px", position: "relative", background: "#e5e7eb" }}>
+                          <img
+                            src={resolveImage(proj.images?.[0])}
+                            alt={proj.title}
+                            onError={(e) => (e.currentTarget.src = FALLBACK_PROJECT_IMG)}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                          <span
                             style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              marginBottom: density === "comfort" ? "8px" : "4px",
+                              position: "absolute",
+                              top: "10px",
+                              left: "10px",
+                              background: "rgba(35,35,38,0.85)",
+                              color: "#ffffff",
+                              fontSize: "10px",
+                              fontWeight: 600,
+                              padding: "3px 9px",
+                              borderRadius: "9999px",
                             }}
                           >
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              {/* Monogram Avatar */}
-                              <div
-                                className="crm-avatar"
-                                style={{
-                                  background: item.avatarBg,
-                                  color: item.avatarColor,
-                                }}
-                              >
-                                {item.initials}
-                              </div>
+                            {catName}
+                          </span>
+                        </div>
 
-                              <div>
-                                <h4
-                                  onClick={() => setInspectedItem(item)}
-                                  style={{
-                                    fontSize: "13px",
-                                    fontWeight: 600,
-                                    color: "#18181b",
-                                    margin: 0,
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  {item.title}
-                                </h4>
-                                <div
-                                  style={{
-                                    fontSize: "11px",
-                                    color: "#6b7280",
-                                  }}
-                                >
-                                  {item.subtitle}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Badge */}
-                            <span
-                              className={item.badgeStyle}
-                              style={{
-                                fontSize: "9.5px",
-                                fontWeight: 600,
-                                padding: "2px 7px",
-                                borderRadius: "9999px",
-                              }}
-                            >
-                              {item.typeBadge}
-                            </span>
+                        <div style={{ padding: "14px 16px" }}>
+                          <h4 style={{ margin: "0 0 4px 0", fontSize: "14.5px", fontWeight: 600 }}>
+                            {proj.title}
+                          </h4>
+                          <div style={{ fontSize: "11.5px", color: "#71717a", marginBottom: "12px" }}>
+                            {proj.location || "Dubai, UAE"} · {proj.size || "Turnkey"}
                           </div>
 
-                          {/* Miniature Spatial Image (if project) */}
-                          {density === "comfort" && item.image && (
-                            <div
-                              style={{
-                                width: "100%",
-                                height: "95px",
-                                borderRadius: "8px",
-                                overflow: "hidden",
-                                margin: "8px 0",
-                                border: "1px solid rgba(0,0,0,0.06)",
-                                background: "#f3f4f6",
-                              }}
-                            >
-                              <img
-                                src={imageUrl(item.image)}
-                                alt={item.title}
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                }}
-                                onError={(e) => {
-                                  e.target.src = "/static/hero-aperture.png";
-                                }}
-                              />
-                            </div>
-                          )}
-
-                          {/* Deal Value & Location */}
                           <div
                             style={{
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "space-between",
-                              fontSize: "11px",
-                              color: "#4b5563",
-                              margin: "6px 0",
+                              paddingTop: "10px",
+                              borderTop: "1px solid #f4f4f5",
                             }}
                           >
-                            <span
+                            <a
+                              href={`/project/details/${proj._id}`}
+                              target="_blank"
+                              rel="noreferrer"
                               style={{
+                                fontSize: "11.5px",
+                                fontWeight: 600,
+                                color: "#1e1f22",
+                                textDecoration: "none",
                                 display: "inline-flex",
                                 alignItems: "center",
-                                gap: "3px",
+                                gap: "4px",
                               }}
                             >
-                              <FiMapPin size={10} color="#9ca3af" />
-                              {item.location}
-                            </span>
+                              <span>Preview</span>
+                              <FiArrowUpRight size={12} />
+                            </a>
 
-                            {item.budget && (
-                              <span
-                                style={{
-                                  background: "#f3f4f6",
-                                  color: "#18181b",
-                                  padding: "2px 6px",
-                                  borderRadius: "4px",
-                                  fontSize: "10px",
-                                  fontWeight: 600,
-                                }}
-                              >
-                                {item.budget}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Brief Excerpt in Comfort Mode */}
-                          {density === "comfort" && item.message && (
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "#6b7280",
-                                lineHeight: 1.4,
-                                marginBottom: "10px",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                                background: "#fafafa",
-                                padding: "6px 8px",
-                                borderRadius: "6px",
-                              }}
-                            >
-                              "{item.message}"
-                            </div>
-                          )}
-
-                          {/* Footer Controls: Step Movers + Inspect */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              paddingTop: "6px",
-                              borderTop: "1px solid #f3f4f6",
-                            }}
-                          >
-                            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                            <div style={{ display: "flex", gap: "6px" }}>
                               <button
                                 type="button"
-                                title="Previous stage"
-                                disabled={stg.id === "leads"}
-                                onClick={() => handleStepMove(item, -1)}
-                                style={{
-                                  background: "#ffffff",
-                                  border: "1px solid #e5e7eb",
-                                  borderRadius: "4px",
-                                  width: "22px",
-                                  height: "22px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  cursor: stg.id === "leads" ? "not-allowed" : "pointer",
-                                  opacity: stg.id === "leads" ? 0.35 : 1,
-                                  color: "#4b5563",
-                                }}
+                                onClick={() => openEditProjectModal(proj)}
+                                className="crex-btn-ghost"
+                                style={{ padding: "5px 10px", fontSize: "11px" }}
                               >
-                                <FiChevronLeft size={11} />
+                                <FiEdit2 size={11} />
+                                <span>Edit</span>
                               </button>
                               <button
                                 type="button"
-                                title="Next stage"
-                                disabled={stg.id === "completed"}
-                                onClick={() => handleStepMove(item, 1)}
+                                onClick={() => handleDeleteProject(proj._id)}
                                 style={{
-                                  background: "#ffffff",
-                                  border: "1px solid #e5e7eb",
-                                  borderRadius: "4px",
-                                  width: "22px",
-                                  height: "22px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  cursor: stg.id === "completed" ? "not-allowed" : "pointer",
-                                  opacity: stg.id === "completed" ? 0.35 : 1,
-                                  color: "#4b5563",
+                                  background: "#fef2f2",
+                                  color: "#dc2626",
+                                  border: "1px solid #fecaca",
+                                  borderRadius: "9999px",
+                                  padding: "5px 9px",
+                                  cursor: "pointer",
                                 }}
+                                title="Delete Project"
                               >
-                                <FiChevronRight size={11} />
+                                <FiTrash2 size={12} />
                               </button>
                             </div>
-
-                            <button
-                              type="button"
-                              onClick={() => setInspectedItem(item)}
-                              style={{
-                                background: "transparent",
-                                border: "none",
-                                fontSize: "11px",
-                                fontWeight: 600,
-                                color: "#4b5563",
-                                cursor: "pointer",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "3px",
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.color = "#18181b")}
-                              onMouseLeave={(e) => (e.currentTarget.style.color = "#4b5563")}
-                            >
-                              <span>Inspect</span>
-                              <FiArrowUpRight size={11} />
-                            </button>
                           </div>
                         </div>
                       </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* ======================================================================
-          4. TAB B: QUOTATIONS LIST REGISTER
-          ====================================================================== */}
-      {activeTab === "table" && (
-        <div
-          style={{
-            background: "#ffffff",
-            border: "1px solid rgba(0, 0, 0, 0.06)",
-            borderRadius: "14px",
-            padding: "24px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: "16px",
-            }}
-          >
-            <div>
-              <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>
-                Client Quotation Requests
-              </h3>
-              <p style={{ fontSize: "12.5px", color: "#6b7280", margin: "2px 0 0 0" }}>
-                Received from website quotation questionnaire.
-              </p>
+                    </div>
+                  );
+                })}
             </div>
-            <button
-              onClick={handleDeleteOldQuotes}
-              style={{
-                background: "#ffffff",
-                border: "1px solid #e5e7eb",
-                borderRadius: "6px",
-                padding: "6px 12px",
-                fontSize: "11.5px",
-                fontWeight: 600,
-                color: "#6b7280",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#dc2626")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#6b7280")}
-            >
-              Purge older than 1 month
-            </button>
           </div>
+        )}
 
-          <div style={{ overflowX: "auto" }}>
+        {/* ---------------- TAB 2: SERVICES & WEBSITE SECTIONS ---------------- */}
+        {activeTab === "services" && (
+          <div className="crex-animate-in">
+            <div style={{ marginBottom: "16px", fontSize: "12.5px", color: "#52525b" }}>
+              Services edited or added here synchronize directly with the Homepage Core Disciplines, dedicated{" "}
+              <a href="/services/architecture" target="_blank" rel="noreferrer" style={{ fontWeight: 600, color: "#1e1f22" }}>
+                /services/*
+              </a>{" "}
+              pages, and Contact Enquiry forms.
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))",
+                gap: "16px",
+              }}
+            >
+              {services.map((srv, idx) => (
+                <div key={srv.id || idx} className="crm-bezel-wrapper">
+                  <div className="crm-bezel-inner" style={{ padding: "16px" }}>
+                    <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "10px" }}>
+                      <img
+                        src={srv.image || "/static/studio.jpg"}
+                        alt={srv.title}
+                        style={{ width: "54px", height: "42px", borderRadius: "10px", objectFit: "cover" }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: "10px", fontWeight: 700, color: "#92400e", letterSpacing: "0.06em" }}>
+                          {srv.eyebrow || "SERVICE"}
+                        </div>
+                        <h4 style={{ margin: 0, fontSize: "15px", fontWeight: 600 }}>{srv.title}</h4>
+                      </div>
+                      <span
+                        className={srv.active !== false ? "badge-sage" : "badge-neutral"}
+                        style={{ fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "9999px" }}
+                      >
+                        {srv.active !== false ? "Live" : "Hidden"}
+                      </span>
+                    </div>
+
+                    <p style={{ fontSize: "12px", color: "#52525b", lineHeight: 1.5, margin: "0 0 14px 0" }}>
+                      {srv.shortDesc}
+                    </p>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        paddingTop: "10px",
+                        borderTop: "1px solid #f4f4f5",
+                      }}
+                    >
+                      <a
+                        href={srv.route || `/services/${srv.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          fontSize: "11.5px",
+                          fontWeight: 600,
+                          color: "#1e1f22",
+                          textDecoration: "none",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                      >
+                        <span>View Live Page</span>
+                        <FiArrowUpRight size={12} />
+                      </a>
+
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <button
+                          type="button"
+                          onClick={() => openEditServiceModal(srv, idx)}
+                          className="crex-btn-ghost"
+                          style={{ padding: "5px 10px", fontSize: "11px" }}
+                        >
+                          <FiEdit2 size={11} />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteService(idx)}
+                          style={{
+                            background: "#fef2f2",
+                            color: "#dc2626",
+                            border: "1px solid #fecaca",
+                            borderRadius: "9999px",
+                            padding: "5px 9px",
+                            cursor: "pointer",
+                          }}
+                          title="Delete Service"
+                        >
+                          <FiTrash2 size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ---------------- TAB 3: CRM DRAG & DROP KANBAN ---------------- */}
+        {activeTab === "kanban" && (
+          <div className="crex-animate-in">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(5, minmax(230px, 1fr))",
+                gap: "14px",
+                overflowX: "auto",
+                paddingBottom: "8px",
+              }}
+            >
+              {STAGES.map((stage) => {
+                const colItems = filteredCRMItems.filter((i) => i.stage === stage.id);
+                return (
+                  <div
+                    key={stage.id}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (draggedId) {
+                        const found = allCRMItems.find((i) => i.id === draggedId);
+                        if (found) updateItemStage(draggedId, stage.id, found.title);
+                        setDraggedId(null);
+                      }
+                    }}
+                    style={{
+                      background: "rgba(255,255,255,0.45)",
+                      border: "1px solid rgba(0,0,0,0.05)",
+                      borderRadius: "18px",
+                      padding: "12px",
+                      minHeight: "360px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "4px 6px",
+                      }}
+                    >
+                      <span style={{ fontSize: "12.5px", fontWeight: 600 }}>{stage.name}</span>
+                      <span
+                        className={stage.badgeClass}
+                        style={{
+                          fontSize: "10.5px",
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: "9999px",
+                        }}
+                      >
+                        {colItems.length}
+                      </span>
+                    </div>
+
+                    {colItems.map((item) => (
+                      <div
+                        key={item.id}
+                        draggable
+                        onDragStart={() => setDraggedId(item.id)}
+                        onClick={() => setInspectedItem(item)}
+                        className="crm-bezel-wrapper"
+                        style={{ cursor: "pointer" }}
+                      >
+                        <div className="crm-bezel-inner" style={{ padding: "12px" }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+                              <div
+                                className="crm-avatar"
+                                style={{ background: "#faf0cf", color: "#8c581e", width: "26px", height: "26px", fontSize: "10px" }}
+                              >
+                                {item.initials}
+                              </div>
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ fontSize: "12.5px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                  {item.title}
+                                </div>
+                                <div style={{ fontSize: "10.5px", color: "#71717a" }}>{item.subtitle}</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "10.5px", color: "#71717a" }}>
+                            <span>{item.location}</span>
+                            <span className={item.badgeStyle} style={{ padding: "1px 6px", borderRadius: "9999px", fontWeight: 600 }}>
+                              {item.typeBadge}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ---------------- TAB 4: QUOTES & INQUIRIES TABLE ---------------- */}
+        {activeTab === "leads" && (
+          <div className="crex-animate-in" style={{ overflowX: "auto" }}>
             <table>
               <thead>
                 <tr>
                   <th>Client</th>
-                  <th>Project Type</th>
-                  <th>Location</th>
-                  <th>Budget</th>
-                  <th>Pipeline Stage</th>
+                  <th>Scope / Service</th>
+                  <th>Source</th>
+                  <th>Location / Budget</th>
                   <th>Date</th>
-                  <th>Actions</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {quotes.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" style={{ textAlign: "center", padding: "32px", color: "#9ca3af" }}>
-                      No quotations received yet.
-                    </td>
-                  </tr>
-                ) : (
-                  quotes.map((q) => {
-                    const match = allCRMItems.find((i) => i.rawId === q._id);
-                    const stageObj = STAGES.find((s) => s.id === match?.stage);
-                    return (
-                      <tr key={q._id}>
-                        <td>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <div
-                              className="crm-avatar"
-                              style={{ background: "#fdf6ec", color: "#8c581e" }}
-                            >
-                              {getInitials(q.name)}
-                            </div>
-                            <div>
-                              <div style={{ fontWeight: 600 }}>{q.name}</div>
-                              <div style={{ fontSize: "11px", color: "#6b7280" }}>{q.email}</div>
-                            </div>
+                {filteredCRMItems
+                  .filter((i) => i.type !== "project")
+                  .map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <div className="crm-avatar" style={{ background: "#faf0cf", color: "#8c581e" }}>
+                            {item.initials}
                           </div>
-                        </td>
-                        <td>{q.projectType || "Bespoke"}</td>
-                        <td>{q.location || "Dubai"}</td>
-                        <td>{q.budget || "Custom"}</td>
-                        <td>
-                          <span
-                            className={stageObj?.badgeClass || "badge-neutral"}
-                            style={{
-                              fontSize: "10.5px",
-                              fontWeight: 600,
-                              padding: "2px 8px",
-                              borderRadius: "9999px",
-                            }}
-                          >
-                            {stageObj?.name || "New Leads"}
-                          </span>
-                        </td>
-                        <td style={{ color: "#6b7280" }}>{formatDate(q.createdAt)}</td>
-                        <td>
-                          <button
-                            onClick={() => {
-                              if (match) setInspectedItem(match);
-                            }}
-                            className="crm-btn-secondary"
-                          >
-                            <span>Inspect</span>
-                            <FiArrowUpRight size={11} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
+                          <div>
+                            <div style={{ fontWeight: 600 }}>{item.title}</div>
+                            <div style={{ fontSize: "11px", color: "#71717a" }}>{item.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{item.subtitle}</td>
+                      <td>
+                        <span className={item.badgeStyle} style={{ padding: "3px 9px", borderRadius: "9999px", fontSize: "11px", fontWeight: 600 }}>
+                          {item.typeBadge}
+                        </span>
+                      </td>
+                      <td>{item.budget || item.location}</td>
+                      <td>{formatDateShort(item.date)}</td>
+                      <td>
+                        <button
+                          type="button"
+                          onClick={() => setInspectedItem(item)}
+                          className="crex-btn-ghost"
+                          style={{ padding: "5px 12px", fontSize: "11px" }}
+                        >
+                          Inspect
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        )}
+      </section>
 
-      {/* ======================================================================
-          5. TAB C: INQUIRIES FEED
-          ====================================================================== */}
-      {activeTab === "inquiries" && (
+      {/* =====================================================================
+          MODAL A: CREATE / EDIT WEBSITE PROJECT (Syncs to Homepage & /projects)
+          ===================================================================== */}
+      {projectModalOpen && (
         <div
-          style={{
-            background: "#ffffff",
-            border: "1px solid rgba(0, 0, 0, 0.06)",
-            borderRadius: "14px",
-            padding: "24px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
-          }}
-        >
-          <div style={{ marginBottom: "20px" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>
-              Client Messages & Inquiries
-            </h3>
-            <p style={{ fontSize: "12.5px", color: "#6b7280", margin: "2px 0 0 0" }}>
-              Direct submissions from website contact forms.
-            </p>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: "16px",
-            }}
-          >
-            {enquiries.map((e) => (
-              <div key={e._id} className="crm-bezel-wrapper">
-                <div className="crm-bezel-inner" style={{ padding: "18px" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <div
-                        className="crm-avatar"
-                        style={{ background: "#f4f2f9", color: "#58437d" }}
-                      >
-                        {getInitials(e.name)}
-                      </div>
-                      <div>
-                        <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 600 }}>
-                          {e.name}
-                        </h4>
-                        <div style={{ fontSize: "11.5px", color: "#6b7280" }}>
-                          {e.services || "Turnkey Fit-Out"}
-                        </div>
-                      </div>
-                    </div>
-                    <span style={{ fontSize: "11px", color: "#9ca3af" }}>
-                      {formatDate(e.createdAt)}
-                    </span>
-                  </div>
-
-                  <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "10px" }}>
-                    <a href={`mailto:${e.email}`} style={{ color: "#2563eb", textDecoration: "none" }}>
-                      {e.email}
-                    </a>
-                    {e.mobile && ` · ${e.mobile}`}
-                  </div>
-
-                  {e.message && (
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        color: "#374151",
-                        background: "#f9fafb",
-                        padding: "10px",
-                        borderRadius: "8px",
-                        lineHeight: 1.45,
-                        marginBottom: "12px",
-                      }}
-                    >
-                      "{e.message}"
-                    </div>
-                  )}
-
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <a
-                      href={`mailto:${e.email}?subject=Yashmeen%20Fit-Out%20Follow-up`}
-                      className="crm-btn-primary"
-                      style={{ textDecoration: "none", fontSize: "11.5px", padding: "6px 12px" }}
-                    >
-                      <span>Reply via Email</span>
-                    </a>
-                    {e.mobile && (
-                      <a
-                        href={`tel:${e.mobile}`}
-                        className="crm-btn-secondary"
-                        style={{ textDecoration: "none" }}
-                      >
-                        Call
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ======================================================================
-          6. TAB D: STUDIO DIRECTORY SETTINGS
-          ====================================================================== */}
-      {activeTab === "directory" && (
-        <div
-          style={{
-            background: "#ffffff",
-            border: "1px solid rgba(0, 0, 0, 0.06)",
-            borderRadius: "14px",
-            padding: "24px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
-          }}
-        >
-          <div style={{ marginBottom: "20px" }}>
-            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>
-              Atelier Directory & Public Profile
-            </h3>
-            <p style={{ fontSize: "12.5px", color: "#6b7280", margin: "2px 0 0 0" }}>
-              Official contact numbers, address, and channels displayed across the website.
-            </p>
-          </div>
-
-          <form onSubmit={handleSettingsSubmit}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
-                gap: "24px",
-              }}
-            >
-              {/* Address */}
-              <div
-                style={{
-                  border: "1px solid #f3f4f6",
-                  borderRadius: "12px",
-                  padding: "18px",
-                  background: "#fafafa",
-                }}
-              >
-                <div style={{ fontSize: "12.5px", fontWeight: 700, marginBottom: "14px", color: "#374151" }}>
-                  Physical Location
-                </div>
-                <div style={{ marginBottom: "12px" }}>
-                  <label>Street / Building</label>
-                  <input
-                    type="text"
-                    value={details.address?.street || ""}
-                    onChange={(e) =>
-                      setDetails((prev) => ({
-                        ...prev,
-                        address: { ...prev.address, street: e.target.value },
-                      }))
-                    }
-                    style={{ width: "100%", marginTop: "4px" }}
-                  />
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>
-                  <div>
-                    <label>City / Emirate</label>
-                    <input
-                      type="text"
-                      value={details.address?.city || ""}
-                      onChange={(e) =>
-                        setDetails((prev) => ({
-                          ...prev,
-                          address: { ...prev.address, city: e.target.value },
-                        }))
-                      }
-                      style={{ width: "100%", marginTop: "4px" }}
-                    />
-                  </div>
-                  <div>
-                    <label>Postal Code / P.O. Box</label>
-                    <input
-                      type="text"
-                      value={details.address?.zipCode || ""}
-                      onChange={(e) =>
-                        setDetails((prev) => ({
-                          ...prev,
-                          address: { ...prev.address, zipCode: e.target.value },
-                        }))
-                      }
-                      style={{ width: "100%", marginTop: "4px" }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label>Country</label>
-                  <input
-                    type="text"
-                    value={details.address?.country || "United Arab Emirates"}
-                    onChange={(e) =>
-                      setDetails((prev) => ({
-                        ...prev,
-                        address: { ...prev.address, country: e.target.value },
-                      }))
-                    }
-                    style={{ width: "100%", marginTop: "4px" }}
-                  />
-                </div>
-              </div>
-
-              {/* Contact */}
-              <div
-                style={{
-                  border: "1px solid #f3f4f6",
-                  borderRadius: "12px",
-                  padding: "18px",
-                  background: "#fafafa",
-                }}
-              >
-                <div style={{ fontSize: "12.5px", fontWeight: 700, marginBottom: "14px", color: "#374151" }}>
-                  Direct Contact Lines
-                </div>
-                <div style={{ marginBottom: "12px" }}>
-                  <label>Official Email</label>
-                  <input
-                    type="email"
-                    value={details.email || ""}
-                    onChange={(e) => {
-                      setDetails((prev) => ({ ...prev, email: e.target.value }));
-                      setSettingsErrors((prev) => ({ ...prev, email: undefined }));
-                    }}
-                    style={{ width: "100%", marginTop: "4px" }}
-                  />
-                  {settingsErrors.email && (
-                    <div style={{ color: "#dc2626", fontSize: "11px", marginTop: "4px" }}>
-                      {settingsErrors.email}
-                    </div>
-                  )}
-                </div>
-                <div style={{ marginBottom: "12px" }}>
-                  <label>Phone / Mobile</label>
-                  <input
-                    type="text"
-                    value={details.mobile || ""}
-                    onChange={(e) =>
-                      setDetails((prev) => ({ ...prev, mobile: e.target.value }))
-                    }
-                    style={{ width: "100%", marginTop: "4px" }}
-                  />
-                </div>
-                <div>
-                  <label>WhatsApp Business</label>
-                  <input
-                    type="text"
-                    value={details.whatsapp || ""}
-                    onChange={(e) =>
-                      setDetails((prev) => ({ ...prev, whatsapp: e.target.value }))
-                    }
-                    style={{ width: "100%", marginTop: "4px" }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div style={{ marginTop: "20px" }}>
-              <button
-                type="submit"
-                disabled={savingSettings}
-                className="crm-btn-primary"
-              >
-                <span>{savingSettings ? "Saving..." : "Save Directory Changes"}</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* ======================================================================
-          7. SLIDE-OVER INSPECTION SHEET (DOUBLE-BEZEL FINISH)
-          ====================================================================== */}
-      {inspectedItem && (
-        <div
+          onClick={() => setProjectModalOpen(false)}
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(15, 23, 42, 0.35)",
+            background: "rgba(24, 24, 27, 0.35)",
             backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
-            zIndex: 9999,
+            zIndex: 200,
             display: "flex",
-            justifyContent: "flex-end",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
           }}
-          onClick={() => setInspectedItem(null)}
         >
           <div
-            className="crm-drawer-panel"
-            style={{
-              width: "100%",
-              maxWidth: "520px",
-              background: "#ffffff",
-              height: "100%",
-              overflowY: "auto",
-              padding: "32px 28px",
-              boxShadow: "-8px 0 28px rgba(0, 0, 0, 0.1)",
-              display: "flex",
-              flexDirection: "column",
-              boxSizing: "border-box",
-            }}
             onClick={(e) => e.stopPropagation()}
+            className="crex-card crex-animate-in"
+            style={{
+              background: "#ffffff",
+              width: "100%",
+              maxWidth: "560px",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              padding: "26px",
+            }}
           >
-            {/* Header */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "space-between",
-                paddingBottom: "18px",
-                borderBottom: "1px solid #f3f4f6",
-                marginBottom: "20px",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div
-                  className="crm-avatar"
-                  style={{
-                    width: "36px",
-                    height: "36px",
-                    fontSize: "13px",
-                    background: inspectedItem.avatarBg,
-                    color: inspectedItem.avatarColor,
-                  }}
-                >
-                  {inspectedItem.initials}
-                </div>
-                <div>
-                  <h2
-                    style={{
-                      fontSize: "18px",
-                      fontWeight: 700,
-                      color: "#18181b",
-                      margin: "0 0 2px 0",
-                    }}
-                  >
-                    {inspectedItem.title}
-                  </h2>
-                  <div style={{ fontSize: "12px", color: "#6b7280" }}>
-                    {inspectedItem.subtitle} · {inspectedItem.location}
-                  </div>
-                </div>
-              </div>
-
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>
+                {editingProject ? "Edit Live Website Project" : "Publish New Website Project"}
+              </h3>
               <button
                 type="button"
-                onClick={() => setInspectedItem(null)}
-                style={{
-                  background: "#f9fafb",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "50%",
-                  width: "30px",
-                  height: "30px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                }}
+                onClick={() => setProjectModalOpen(false)}
+                className="crex-icon-circle"
               >
-                <FiX size={14} color="#6b7280" />
+                <FiX size={15} />
               </button>
             </div>
 
-            {/* Pipeline Stage Shifter */}
-            <div
-              style={{
-                background: "#f9fafb",
-                border: "1px solid #e5e7eb",
-                borderRadius: "10px",
-                padding: "16px",
-                marginBottom: "20px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  color: "#6b7280",
-                  marginBottom: "10px",
-                }}
-              >
-                Pipeline Stage Position
+            <form onSubmit={handleSaveProject} style={{ display: "grid", gap: "12px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label>Project Title *</label>
+                  <input
+                    required
+                    type="text"
+                    value={projectForm.title}
+                    onChange={(e) => setProjectForm((p) => ({ ...p, title: e.target.value }))}
+                    placeholder="e.g. Palm Jumeirah Villa"
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+                <div>
+                  <label>Category *</label>
+                  <select
+                    required
+                    value={projectForm.categoryId}
+                    onChange={(e) => setProjectForm((p) => ({ ...p, categoryId: e.target.value }))}
+                    style={{ width: "100%", marginTop: "4px" }}
+                  >
+                    {categories.map((c) => (
+                      <option key={c._id} value={c._id}>
+                        {c.categoryName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label>Location</label>
+                  <input
+                    type="text"
+                    value={projectForm.location}
+                    onChange={(e) => setProjectForm((p) => ({ ...p, location: e.target.value }))}
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+                <div>
+                  <label>Area / Size</label>
+                  <input
+                    type="text"
+                    value={projectForm.size}
+                    onChange={(e) => setProjectForm((p) => ({ ...p, size: e.target.value }))}
+                    placeholder="e.g. 14,500 sq.ft"
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label>Sector</label>
+                  <input
+                    type="text"
+                    value={projectForm.sector}
+                    onChange={(e) => setProjectForm((p) => ({ ...p, sector: e.target.value }))}
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+                <div>
+                  <label>Scope</label>
+                  <input
+                    type="text"
+                    value={projectForm.scope}
+                    onChange={(e) => setProjectForm((p) => ({ ...p, scope: e.target.value }))}
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label>Architectural Description</label>
+                <textarea
+                  rows={3}
+                  value={projectForm.description}
+                  onChange={(e) => setProjectForm((p) => ({ ...p, description: e.target.value }))}
+                  placeholder="Materials, joinery craft, MEP delivery scope..."
+                  style={{ width: "100%", marginTop: "4px" }}
+                />
+              </div>
+
+              <div>
+                <label>Upload Photography</label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => setProjectFiles(Array.from(e.target.files || []))}
+                  style={{ marginTop: "6px", width: "100%" }}
+                />
+                {existingImages.length > 0 && (
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }}>
+                    {existingImages.map((img, i) => (
+                      <div key={i} style={{ position: "relative" }}>
+                        <img
+                          src={resolveImage(img)}
+                          alt=""
+                          style={{ width: "54px", height: "42px", objectFit: "cover", borderRadius: "8px" }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setExistingImages((prev) => prev.filter((_, idx) => idx !== i))}
+                          style={{
+                            position: "absolute",
+                            top: "-4px",
+                            right: "-4px",
+                            width: "16px",
+                            height: "16px",
+                            borderRadius: "50%",
+                            background: "#ef4444",
+                            color: "#fff",
+                            border: "none",
+                            fontSize: "10px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+                <button
+                  type="submit"
+                  disabled={savingCms}
+                  className="crex-btn-dark"
+                  style={{ flex: 1, justifyContent: "center" }}
+                >
+                  {savingCms ? "Publishing..." : editingProject ? "Save Changes to Site" : "Publish to Live Website"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProjectModalOpen(false)}
+                  className="crex-btn-ghost"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          MODAL B: CREATE / EDIT SERVICE (Syncs to Services Pages & Homepage)
+          ===================================================================== */}
+      {serviceModalOpen && (
+        <div
+          onClick={() => setServiceModalOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(24, 24, 27, 0.35)",
+            backdropFilter: "blur(6px)",
+            zIndex: 200,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="crex-card crex-animate-in"
+            style={{
+              background: "#ffffff",
+              width: "100%",
+              maxWidth: "540px",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              padding: "26px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>
+                {editingServiceIdx !== null ? "Edit Website Service" : "Create New Service"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setServiceModalOpen(false)}
+                className="crex-icon-circle"
+              >
+                <FiX size={15} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveService} style={{ display: "grid", gap: "12px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label>Service Title *</label>
+                  <input
+                    required
+                    type="text"
+                    value={serviceForm.title}
+                    onChange={(e) => setServiceForm((p) => ({ ...p, title: e.target.value }))}
+                    placeholder="e.g. Custom Joinery"
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+                <div>
+                  <label>URL Slug</label>
+                  <input
+                    type="text"
+                    value={serviceForm.slug}
+                    onChange={(e) => setServiceForm((p) => ({ ...p, slug: e.target.value }))}
+                    placeholder="architecture"
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label>Eyebrow Tagline</label>
+                <input
+                  type="text"
+                  value={serviceForm.eyebrow}
+                  onChange={(e) => setServiceForm((p) => ({ ...p, eyebrow: e.target.value }))}
+                  style={{ width: "100%", marginTop: "4px" }}
+                />
+              </div>
+
+              <div>
+                <label>Short Headline (Shown on Homepage & Service Intro)</label>
+                <input
+                  type="text"
+                  value={serviceForm.shortDesc}
+                  onChange={(e) => setServiceForm((p) => ({ ...p, shortDesc: e.target.value }))}
+                  style={{ width: "100%", marginTop: "4px" }}
+                />
+              </div>
+
+              <div>
+                <label>Full Discipline Description</label>
+                <textarea
+                  rows={3}
+                  value={serviceForm.description}
+                  onChange={(e) => setServiceForm((p) => ({ ...p, description: e.target.value }))}
+                  style={{ width: "100%", marginTop: "4px" }}
+                />
+              </div>
+
+              <div>
+                <label>Key Deliverables / Bullet Points (One per line)</label>
+                <textarea
+                  rows={3}
+                  value={serviceForm.highlightsText}
+                  onChange={(e) => setServiceForm((p) => ({ ...p, highlightsText: e.target.value }))}
+                  style={{ width: "100%", marginTop: "4px" }}
+                />
+              </div>
+
+              <div>
+                <label>Featured Visual</label>
+                <select
+                  value={serviceForm.image}
+                  onChange={(e) => setServiceForm((p) => ({ ...p, image: e.target.value }))}
+                  style={{ width: "100%", marginTop: "4px" }}
+                >
+                  {SERVICE_IMAGE_PRESETS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={serviceForm.active}
+                  onChange={(e) => setServiceForm((p) => ({ ...p, active: e.target.checked }))}
+                />
+                <span>Display live on Website Homepage & Menus</span>
+              </label>
+
+              <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+                <button
+                  type="submit"
+                  disabled={savingCms}
+                  className="crex-btn-dark"
+                  style={{ flex: 1, justifyContent: "center" }}
+                >
+                  {savingCms ? "Syncing..." : "Publish Service Update"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setServiceModalOpen(false)}
+                  className="crex-btn-ghost"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          MODAL C: FULL WEBSITE SETTINGS & MANIFESTO EDITOR
+          ===================================================================== */}
+      {siteModalOpen && (
+        <div
+          onClick={() => setSiteModalOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(24, 24, 27, 0.35)",
+            backdropFilter: "blur(6px)",
+            zIndex: 200,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="crex-card crex-animate-in"
+            style={{
+              background: "#ffffff",
+              width: "100%",
+              maxWidth: "640px",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              padding: "28px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "19px", fontWeight: 600 }}>
+                  Live Website Controls
+                </h3>
+                <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: "#71717a" }}>
+                  Updates sync immediately across Hero, Footer, Studio, and Contact pages.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSiteModalOpen(false)}
+                className="crex-icon-circle"
+              >
+                <FiX size={15} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                await saveWebDetailsPatch(
+                  {
+                    brandName: siteForm.brandName,
+                    cityLabel: siteForm.cityLabel,
+                    email: siteForm.email,
+                    mobile: siteForm.mobile,
+                    whatsapp: siteForm.whatsapp,
+                    workingHours: siteForm.workingHours,
+                    address: siteForm.address,
+                    hero: siteForm.hero,
+                    studio: siteForm.studio,
+                  },
+                  "All Website copy & contact info published!"
+                );
+                setSiteModalOpen(false);
+              }}
+              style={{ display: "grid", gap: "14px" }}
+            >
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label>Header Brand Label</label>
+                  <input
+                    type="text"
+                    value={siteForm.brandName || ""}
+                    onChange={(e) => setSiteForm((p) => ({ ...p, brandName: e.target.value }))}
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+                <div>
+                  <label>City Label</label>
+                  <input
+                    type="text"
+                    value={siteForm.cityLabel || ""}
+                    onChange={(e) => setSiteForm((p) => ({ ...p, cityLabel: e.target.value }))}
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label>Hero Headline (use Enter for line break)</label>
+                  <textarea
+                    rows={2}
+                    value={siteForm.hero?.title || ""}
+                    onChange={(e) =>
+                      setSiteForm((p) => ({
+                        ...p,
+                        hero: { ...p.hero, title: e.target.value },
+                      }))
+                    }
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+                <div>
+                  <label>Hero Eyebrow Kicker</label>
+                  <input
+                    type="text"
+                    value={siteForm.hero?.kicker || ""}
+                    onChange={(e) =>
+                      setSiteForm((p) => ({
+                        ...p,
+                        hero: { ...p.hero, kicker: e.target.value },
+                      }))
+                    }
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label>Hero Intro Copy</label>
+                <input
+                  type="text"
+                  value={siteForm.hero?.intro || ""}
+                  onChange={(e) =>
+                    setSiteForm((p) => ({
+                      ...p,
+                      hero: { ...p.hero, intro: e.target.value },
+                    }))
+                  }
+                  style={{ width: "100%", marginTop: "4px" }}
+                />
+              </div>
+
+              <div>
+                <label>Studio Manifesto Paragraph</label>
+                <textarea
+                  rows={3}
+                  value={siteForm.studio?.paragraph1 || ""}
+                  onChange={(e) =>
+                    setSiteForm((p) => ({
+                      ...p,
+                      studio: { ...p.studio, paragraph1: e.target.value },
+                    }))
+                  }
+                  style={{ width: "100%", marginTop: "4px" }}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label>Studio Email</label>
+                  <input
+                    type="email"
+                    value={siteForm.email || ""}
+                    onChange={(e) => setSiteForm((p) => ({ ...p, email: e.target.value }))}
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+                <div>
+                  <label>Phone & WhatsApp</label>
+                  <input
+                    type="text"
+                    value={siteForm.mobile || ""}
+                    onChange={(e) =>
+                      setSiteForm((p) => ({
+                        ...p,
+                        mobile: e.target.value,
+                        whatsapp: e.target.value,
+                      }))
+                    }
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "12px" }}>
+                <div>
+                  <label>Street Address</label>
+                  <input
+                    type="text"
+                    value={siteForm.address?.street || ""}
+                    onChange={(e) =>
+                      setSiteForm((p) => ({
+                        ...p,
+                        address: { ...p.address, street: e.target.value },
+                      }))
+                    }
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+                <div>
+                  <label>Working Hours</label>
+                  <input
+                    type="text"
+                    value={siteForm.workingHours || ""}
+                    onChange={(e) => setSiteForm((p) => ({ ...p, workingHours: e.target.value }))}
+                    style={{ width: "100%", marginTop: "4px" }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+                <button
+                  type="submit"
+                  disabled={savingCms}
+                  className="crex-btn-dark"
+                  style={{ flex: 1, justifyContent: "center" }}
+                >
+                  {savingCms ? "Publishing..." : "Publish All Changes to Website"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSiteModalOpen(false)}
+                  className="crex-btn-ghost"
+                >
+                  Close
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          MODAL D: SCHEDULE MILESTONE EVENT
+          ===================================================================== */}
+      {calendarModalOpen && (
+        <div
+          onClick={() => setCalendarModalOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(24, 24, 27, 0.35)",
+            backdropFilter: "blur(6px)",
+            zIndex: 200,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="crex-card crex-animate-in"
+            style={{ background: "#ffffff", width: "100%", maxWidth: "420px", padding: "24px" }}
+          >
+            <h3 style={{ margin: "0 0 14px 0", fontSize: "17px", fontWeight: 600 }}>
+              Schedule Site Visit / Sync
+            </h3>
+            <form onSubmit={handleAddCalendarEvent} style={{ display: "grid", gap: "12px" }}>
+              <div>
+                <label>Event Title</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="e.g. Site Survey · Business Bay"
+                  value={calendarForm.title}
+                  onChange={(e) => setCalendarForm((p) => ({ ...p, title: e.target.value }))}
+                  style={{ width: "100%", marginTop: "4px" }}
+                />
+              </div>
+              <div>
+                <label>Notes / Attendees</label>
+                <input
+                  type="text"
+                  placeholder="MEP inspection & client walkthrough"
+                  value={calendarForm.subtitle}
+                  onChange={(e) => setCalendarForm((p) => ({ ...p, subtitle: e.target.value }))}
+                  style={{ width: "100%", marginTop: "4px" }}
+                />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div>
+                  <label>Day</label>
+                  <select
+                    value={calendarForm.dayIndex}
+                    onChange={(e) =>
+                      setCalendarForm((p) => ({ ...p, dayIndex: Number(e.target.value) }))
+                    }
+                    style={{ width: "100%", marginTop: "4px" }}
+                  >
+                    {weekColumns.map((w, idx) => (
+                      <option key={w.name} value={idx}>
+                        {w.name} {w.num}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label>Time Slot</label>
+                  <select
+                    value={calendarForm.timeSlot}
+                    onChange={(e) => setCalendarForm((p) => ({ ...p, timeSlot: e.target.value }))}
+                    style={{ width: "100%", marginTop: "4px" }}
+                  >
+                    <option value="9:00 am">9:00 am</option>
+                    <option value="10:00 am">10:00 am</option>
+                    <option value="11:00 am">11:00 am</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: "8px", marginTop: "6px" }}>
+                <button type="submit" className="crex-btn-dark" style={{ flex: 1, justifyContent: "center" }}>
+                  Add to Schedule
+                </button>
+                <button type="button" onClick={() => setCalendarModalOpen(false)} className="crex-btn-ghost">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          DRAWER: SLIDE-OVER INSPECTION FOR QUOTES & LEADS
+          ===================================================================== */}
+      {inspectedItem && (
+        <div
+          onClick={() => setInspectedItem(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(24, 24, 27, 0.35)",
+            backdropFilter: "blur(4px)",
+            zIndex: 220,
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: "460px",
+              background: "#ffffff",
+              height: "100%",
+              padding: "28px",
+              overflowY: "auto",
+              boxShadow: "-12px 0 40px rgba(0,0,0,0.12)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div className="crm-avatar" style={{ background: "#faf0cf", color: "#8c581e", width: "40px", height: "40px" }}>
+                  {inspectedItem.initials}
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>{inspectedItem.title}</h2>
+                  <span style={{ fontSize: "12px", color: "#71717a" }}>
+                    {inspectedItem.subtitle} · {inspectedItem.location}
+                  </span>
+                </div>
+              </div>
+              <button type="button" onClick={() => setInspectedItem(null)} className="crex-icon-circle">
+                <FiX size={16} />
+              </button>
+            </div>
+
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ marginBottom: "8px" }}>Move Pipeline Stage</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                 {STAGES.map((stg) => {
-                  const isCurrent = inspectedItem.stage === stg.id;
+                  const current = inspectedItem.stage === stg.id;
                   return (
                     <button
                       key={stg.id}
@@ -1881,13 +3352,13 @@ export default function Dashboard() {
                         setInspectedItem((prev) => ({ ...prev, stage: stg.id }));
                       }}
                       style={{
-                        background: isCurrent ? "#18181b" : "#ffffff",
-                        color: isCurrent ? "#ffffff" : "#4b5563",
-                        border: isCurrent ? "1px solid #18181b" : "1px solid #d1d5db",
-                        borderRadius: "6px",
-                        padding: "5px 10px",
+                        background: current ? "#232326" : "#f4f4f5",
+                        color: current ? "#ffffff" : "#3f3f46",
+                        border: "none",
+                        borderRadius: "9999px",
+                        padding: "6px 12px",
                         fontSize: "11.5px",
-                        fontWeight: isCurrent ? 600 : 500,
+                        fontWeight: 600,
                         cursor: "pointer",
                       }}
                     >
@@ -1898,315 +3369,51 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Details Grid */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "12px",
-                marginBottom: "20px",
-              }}
-            >
-              <div
-                style={{
-                  background: "#f9fafb",
-                  border: "1px solid #f3f4f6",
-                  borderRadius: "8px",
-                  padding: "12px",
-                }}
-              >
-                <div style={{ fontSize: "11px", color: "#6b7280" }}>Location</div>
-                <div style={{ fontSize: "13px", fontWeight: 600, marginTop: "2px" }}>
-                  {inspectedItem.location}
-                </div>
-              </div>
-              <div
-                style={{
-                  background: "#f9fafb",
-                  border: "1px solid #f3f4f6",
-                  borderRadius: "8px",
-                  padding: "12px",
-                }}
-              >
-                <div style={{ fontSize: "11px", color: "#6b7280" }}>Budget Estimate</div>
-                <div style={{ fontSize: "13px", fontWeight: 600, marginTop: "2px" }}>
-                  {inspectedItem.budget || "Custom"}
-                </div>
-              </div>
-            </div>
-
-            {/* Direct Contact */}
             {(inspectedItem.email || inspectedItem.mobile) && (
               <div
                 style={{
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "10px",
+                  background: "#fafaf9",
+                  border: "1px solid rgba(0,0,0,0.06)",
+                  borderRadius: "16px",
                   padding: "16px",
-                  marginBottom: "20px",
+                  marginBottom: "18px",
+                  display: "grid",
+                  gap: "8px",
                 }}
               >
-                <div
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                    color: "#6b7280",
-                    marginBottom: "8px",
-                  }}
-                >
-                  Client Contact
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "13px" }}>
-                  {inspectedItem.email && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <FiMail size={13} color="#9ca3af" />
-                      <a
-                        href={`mailto:${inspectedItem.email}`}
-                        style={{ color: "#2563eb", textDecoration: "none" }}
-                      >
-                        {inspectedItem.email}
-                      </a>
-                    </div>
-                  )}
-                  {inspectedItem.mobile && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <FiPhone size={13} color="#9ca3af" />
-                      <a
-                        href={`tel:${inspectedItem.mobile}`}
-                        style={{ color: "#374151", textDecoration: "none" }}
-                      >
-                        {inspectedItem.mobile}
-                      </a>
-                    </div>
-                  )}
-                </div>
+                {inspectedItem.email && (
+                  <a href={`mailto:${inspectedItem.email}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "#1e1f22", fontSize: "13px", textDecoration: "none" }}>
+                    <FiMail size={14} color="#71717a" />
+                    <span>{inspectedItem.email}</span>
+                  </a>
+                )}
+                {inspectedItem.mobile && (
+                  <a href={`tel:${inspectedItem.mobile}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "#1e1f22", fontSize: "13px", textDecoration: "none" }}>
+                    <FiPhone size={14} color="#71717a" />
+                    <span>{inspectedItem.mobile}</span>
+                  </a>
+                )}
               </div>
             )}
 
-            {/* Brief Notes */}
             {inspectedItem.message && (
-              <div style={{ marginBottom: "24px" }}>
+              <div>
+                <label style={{ marginBottom: "6px" }}>Project Brief & Notes</label>
                 <div
                   style={{
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                    color: "#6b7280",
-                    marginBottom: "8px",
-                  }}
-                >
-                  Brief & Notes
-                </div>
-                <div
-                  style={{
-                    fontSize: "13px",
-                    color: "#374151",
-                    background: "#f9fafb",
+                    background: "#fafaf9",
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    borderRadius: "16px",
                     padding: "14px",
-                    borderRadius: "8px",
-                    lineHeight: 1.5,
+                    fontSize: "13px",
+                    lineHeight: 1.6,
+                    color: "#3f3f46",
                   }}
                 >
-                  "{inspectedItem.message}"
+                  {inspectedItem.message}
                 </div>
               </div>
             )}
-
-            {/* Bottom Actions */}
-            <div style={{ marginTop: "auto", display: "flex", gap: "10px" }}>
-              {inspectedItem.email && (
-                <a
-                  href={`mailto:${inspectedItem.email}?subject=Yashmeen%20Fit-Out%20Brief%20Follow-up`}
-                  className="crm-btn-primary"
-                  style={{ flex: 1, textDecoration: "none", justifyContent: "center" }}
-                >
-                  <span>Send Proposal ↗</span>
-                </a>
-              )}
-              {inspectedItem.mobile && (
-                <a
-                  href={`tel:${inspectedItem.mobile}`}
-                  className="crm-btn-secondary"
-                  style={{ textDecoration: "none" }}
-                >
-                  Call
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ======================================================================
-          8. QUICK ADD LEAD MODAL
-          ====================================================================== */}
-      {quickAddOpen && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(15, 23, 42, 0.4)",
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-          }}
-          onClick={() => setQuickAddOpen(false)}
-        >
-          <div
-            style={{
-              width: "100%",
-              maxWidth: "480px",
-              background: "#ffffff",
-              borderRadius: "14px",
-              padding: "24px",
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "16px",
-                paddingBottom: "12px",
-                borderBottom: "1px solid #f3f4f6",
-              }}
-            >
-              <div>
-                <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>
-                  Create New Lead / Deal
-                </h3>
-                <p style={{ fontSize: "12px", color: "#6b7280", margin: "2px 0 0 0" }}>
-                  Log a prospective client or custom fit-out project.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setQuickAddOpen(false)}
-                style={{
-                  background: "#f9fafb",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "50%",
-                  width: "28px",
-                  height: "28px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                }}
-              >
-                <FiX size={14} color="#6b7280" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateLead}>
-              <div style={{ marginBottom: "12px" }}>
-                <label>Lead / Project Title *</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Palm Jumeirah Penthouse Fit-Out"
-                  value={newLeadForm.title}
-                  onChange={(e) =>
-                    setNewLeadForm((prev) => ({ ...prev, title: e.target.value }))
-                  }
-                  required
-                  style={{ width: "100%", marginTop: "4px" }}
-                />
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>
-                <div>
-                  <label>Client Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Emaar Private Client"
-                    value={newLeadForm.client}
-                    onChange={(e) =>
-                      setNewLeadForm((prev) => ({ ...prev, client: e.target.value }))
-                    }
-                    style={{ width: "100%", marginTop: "4px" }}
-                  />
-                </div>
-                <div>
-                  <label>Pipeline Stage</label>
-                  <select
-                    value={newLeadForm.stage}
-                    onChange={(e) =>
-                      setNewLeadForm((prev) => ({ ...prev, stage: e.target.value }))
-                    }
-                    style={{ width: "100%", marginTop: "4px" }}
-                  >
-                    {STAGES.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>
-                <div>
-                  <label>Location</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Dubai Hills"
-                    value={newLeadForm.location}
-                    onChange={(e) =>
-                      setNewLeadForm((prev) => ({ ...prev, location: e.target.value }))
-                    }
-                    style={{ width: "100%", marginTop: "4px" }}
-                  />
-                </div>
-                <div>
-                  <label>Budget Estimate</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Under AED 250,000"
-                    value={newLeadForm.budget}
-                    onChange={(e) =>
-                      setNewLeadForm((prev) => ({ ...prev, budget: e.target.value }))
-                    }
-                    style={{ width: "100%", marginTop: "4px" }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ marginBottom: "18px" }}>
-                <label>Brief / Scope Notes</label>
-                <textarea
-                  rows={3}
-                  placeholder="Key requirements, joinery scope, MEP specifications..."
-                  value={newLeadForm.notes}
-                  onChange={(e) =>
-                    setNewLeadForm((prev) => ({ ...prev, notes: e.target.value }))
-                  }
-                  style={{ width: "100%", marginTop: "4px" }}
-                />
-              </div>
-
-              <div style={{ display: "flex", gap: "8px" }}>
-                <button
-                  type="submit"
-                  className="crm-btn-primary"
-                  style={{ flex: 1, justifyContent: "center" }}
-                >
-                  <span>Create Lead</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQuickAddOpen(false)}
-                  className="crm-btn-secondary"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

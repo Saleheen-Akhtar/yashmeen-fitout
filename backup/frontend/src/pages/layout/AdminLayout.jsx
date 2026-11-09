@@ -2,22 +2,29 @@ import React, { useState, useEffect } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import useCreateStore from "../../store";
 import { getInitials } from "../../libs/helpers";
-import { FiExternalLink, FiLogOut, FiMenu, FiX } from "react-icons/fi";
+import {
+  FiSettings,
+  FiBell,
+  FiUser,
+  FiExternalLink,
+  FiLogOut,
+  FiMenu,
+  FiX,
+} from "react-icons/fi";
 import "../../styles/admin-architectural.css";
 
 const NAV_LINKS = [
   { label: "Dashboard", href: "/dashboard" },
-  { label: "Quotations", href: "/dashboard/quotes" },
-  { label: "Inquiries", href: "/dashboard/enquiry" },
   { label: "Projects", href: "/dashboard/project-manager" },
-  { label: "Journal", href: "/dashboard/blog-manager" },
+  { label: "Quotes", href: "/dashboard/quotes" },
+  { label: "Inquiries", href: "/dashboard/enquiry" },
   { label: "Gallery", href: "/dashboard/gallery-manager" },
+  { label: "Journal", href: "/dashboard/blog-manager" },
   { label: "Categories", href: "/dashboard/categories" },
 ];
 
 export default function AdminLayout() {
   const [dubaiTime, setDubaiTime] = useState("");
-  const [isOpenOffice, setIsOpenOffice] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const location = useLocation();
@@ -34,23 +41,7 @@ export default function AdminLayout() {
           minute: "2-digit",
           hour12: true,
         });
-        const hourFormatter = new Intl.DateTimeFormat("en-US", {
-          timeZone: "Asia/Dubai",
-          hour: "numeric",
-          hour12: false,
-        });
-        const dayFormatter = new Intl.DateTimeFormat("en-US", {
-          timeZone: "Asia/Dubai",
-          weekday: "short",
-        });
-
-        const timeStr = timeFormatter.format(now);
-        const hourNum = parseInt(hourFormatter.format(now), 10);
-        const dayStr = dayFormatter.format(now);
-
-        const open = dayStr !== "Sun" && hourNum >= 8 && hourNum < 18;
-        setDubaiTime(timeStr);
-        setIsOpenOffice(open);
+        setDubaiTime(timeFormatter.format(now));
       } catch {
         setDubaiTime("Dubai, UAE");
       }
@@ -73,245 +64,147 @@ export default function AdminLayout() {
     return location.pathname.startsWith(path);
   };
 
+  const openSiteSettingsModal = () => {
+    if (location.pathname !== "/dashboard") {
+      navigate("/dashboard?open=site-settings");
+    } else {
+      window.dispatchEvent(new CustomEvent("open-cms-settings"));
+    }
+  };
+
   return (
     <div
       className="admin-shell-container"
       style={{
-        background: "#f8f9fa",
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        color: "#1e2022",
       }}
     >
-      {/* Top Calming Navigation Bar */}
+      {/* Top Floating Crextio-Style Pill Header */}
       <header
         style={{
           position: "sticky",
           top: 0,
           zIndex: 100,
-          height: "68px",
-          background: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
-          display: "flex",
-          alignItems: "center",
+          padding: "16px 28px 10px",
+          background: "linear-gradient(180deg, rgba(244,244,240,0.86) 0%, rgba(244,244,240,0) 100%)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
         }}
       >
         <div
           style={{
             width: "100%",
-            maxWidth: "1480px",
+            maxWidth: "1440px",
             margin: "0 auto",
-            padding: "0 28px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            boxSizing: "border-box",
+            gap: "12px",
           }}
         >
-          {/* Brand Left */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <Link
-              to="/dashboard"
-              style={{
-                textDecoration: "none",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: "15px",
-                  fontWeight: 800,
-                  letterSpacing: "-0.01em",
-                  color: "#18181b",
-                }}
-              >
-                YASHMEEN
-              </span>
-              <span
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  color: "#6b7280",
-                  background: "#f3f4f6",
-                  padding: "2px 8px",
-                  borderRadius: "6px",
-                  letterSpacing: "0.02em",
-                }}
-              >
-                CRM
-              </span>
-            </Link>
-          </div>
+          {/* Left Oval Brand Pill */}
+          <Link to="/dashboard" className="crex-brand-pill">
+            <span>Yashmeen</span>
+          </Link>
 
-          {/* Center Links */}
-          <nav
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-            className="admin-desktop-nav"
-          >
-            {NAV_LINKS.map((item) => {
-              const active = isLinkActive(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  style={{
-                    fontSize: "13px",
-                    fontWeight: active ? 600 : 500,
-                    color: active ? "#18181b" : "#6b7280",
-                    background: active ? "#f3f4f6" : "transparent",
-                    textDecoration: "none",
-                    padding: "6px 14px",
-                    borderRadius: "8px",
-                    transition: "all 0.15s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!active) e.currentTarget.style.color = "#18181b";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!active) e.currentTarget.style.color = "#6b7280";
-                  }}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
+          {/* Center Frosted Pill Nav Bar */}
+          <nav className="crex-nav-pillbar admin-desktop-nav" aria-label="Admin Navigation">
+            {NAV_LINKS.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={`crex-nav-link ${isLinkActive(item.href) ? "is-active" : ""}`}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
 
-          {/* Right Controls */}
-          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-            {/* Live Dubai Status Pill */}
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                background: "#f9fafb",
-                border: "1px solid #e5e7eb",
-                padding: "4px 12px",
-                borderRadius: "9999px",
-                fontSize: "11px",
-                fontWeight: 500,
-                color: "#4b5563",
-              }}
+          {/* Right Pill & Circle Controls */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button
+              type="button"
+              onClick={openSiteSettingsModal}
+              className="crex-action-pill"
+              title="Edit Website Settings, Hero, Contact & Services"
             >
-              <span
-                style={{
-                  width: "6px",
-                  height: "6px",
-                  borderRadius: "50%",
-                  background: isOpenOffice ? "#10b981" : "#9ca3af",
-                  display: "inline-block",
-                }}
-              />
-              <span>Dubai {dubaiTime}</span>
-            </div>
+              <FiSettings size={14} />
+              <span>Setting</span>
+            </button>
 
-            {/* View Public Site */}
             <Link
               to="/"
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                fontSize: "12px",
-                fontWeight: 500,
-                color: "#6b7280",
-                textDecoration: "none",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "4px",
-              }}
+              className="crex-action-pill"
+              title="Open Live Public Website"
             >
-              <span>Site</span>
-              <FiExternalLink size={12} />
+              <span>Live Site</span>
+              <FiExternalLink size={13} />
             </Link>
 
-            {/* User Avatar + Sign out */}
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <div
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard/enquiry")}
+              className="crex-icon-circle"
+              title={`Notifications · Dubai ${dubaiTime}`}
+              style={{ position: "relative" }}
+            >
+              <FiBell size={15} />
+              <span
                 style={{
-                  width: "28px",
-                  height: "28px",
+                  position: "absolute",
+                  top: "7px",
+                  right: "8px",
+                  width: "6px",
+                  height: "6px",
                   borderRadius: "50%",
-                  background: "#e5e7eb",
-                  color: "#374151",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "11px",
-                  fontWeight: 700,
+                  background: "#f5cb5c",
                 }}
-              >
-                {getInitials(user?.name || "Admin")}
-              </div>
+              />
+            </button>
 
-              <button
-                type="button"
-                onClick={handleLogout}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  color: "#6b7280",
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  padding: "4px 8px",
-                  borderRadius: "6px",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#dc2626")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#6b7280")}
-              >
-                <FiLogOut size={13} />
-                <span>Sign out</span>
-              </button>
+            <div
+              className="crex-icon-circle"
+              title={user?.name || "Admin Profile"}
+              style={{ fontWeight: 700, fontSize: "11px" }}
+            >
+              {user?.name ? getInitials(user.name) : <FiUser size={15} />}
             </div>
 
-            {/* Mobile Hamburger */}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="crex-icon-circle"
+              title="Sign out"
+            >
+              <FiLogOut size={14} />
+            </button>
+
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              style={{
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                color: "#18181b",
-                display: "none",
-              }}
-              className="admin-mobile-menu-btn"
-              aria-label="Toggle Navigation"
+              className="crex-icon-circle admin-mobile-toggle"
+              style={{ display: "none" }}
+              aria-label="Toggle Menu"
             >
-              {mobileMenuOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+              {mobileMenuOpen ? <FiX size={16} /> : <FiMenu size={16} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobile Drawer */}
         {mobileMenuOpen && (
           <div
+            className="crex-card"
             style={{
-              position: "fixed",
-              top: "68px",
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: "#ffffff",
-              zIndex: 110,
-              padding: "20px",
+              marginTop: "12px",
+              padding: "16px",
               display: "flex",
               flexDirection: "column",
-              gap: "10px",
-              borderBottom: "1px solid #e5e7eb",
+              gap: "8px",
             }}
           >
             {NAV_LINKS.map((item) => (
@@ -319,14 +212,8 @@ export default function AdminLayout() {
                 key={item.href}
                 to={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                style={{
-                  fontSize: "15px",
-                  fontWeight: isLinkActive(item.href) ? 600 : 500,
-                  color: "#18181b",
-                  textDecoration: "none",
-                  padding: "10px 0",
-                  borderBottom: "1px solid #f3f4f6",
-                }}
+                className={`crex-nav-link ${isLinkActive(item.href) ? "is-active" : ""}`}
+                style={{ display: "block" }}
               >
                 {item.label}
               </Link>
@@ -335,35 +222,34 @@ export default function AdminLayout() {
         )}
       </header>
 
-      {/* Main Container */}
+      {/* Page Body */}
       <main style={{ flex: 1 }}>
         <Outlet />
       </main>
 
-      {/* Subtle Tranquil Footer */}
+      {/* Soft Minimal Footer */}
       <footer
         style={{
-          borderTop: "1px solid rgba(0, 0, 0, 0.05)",
-          padding: "24px 0",
-          background: "#ffffff",
-          color: "#9ca3af",
+          padding: "20px 28px 28px",
           fontSize: "12px",
+          color: "#71717a",
         }}
       >
         <div
           style={{
-            maxWidth: "1480px",
+            maxWidth: "1440px",
             margin: "0 auto",
-            padding: "0 28px",
             display: "flex",
-            alignItems: "center",
             justifyContent: "space-between",
+            alignItems: "center",
             flexWrap: "wrap",
             gap: "12px",
+            borderTop: "1px solid rgba(0, 0, 0, 0.06)",
+            paddingTop: "16px",
           }}
         >
-          <div>Yashmeen Future Building & Fit-Out · Atelier CRM Console</div>
-          <div>Al Quoz Industrial Area 4, Dubai, UAE</div>
+          <span>Yashmeen Future Building & Fit-Out · Live Website & CRM Studio</span>
+          <span>Dubai GST {dubaiTime} · Connected to MongoDB</span>
         </div>
       </footer>
     </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useWebsiteContent from "../../hooks/useWebsiteContent";
 import {
   FiCheck,
   FiArrowRight,
@@ -162,6 +163,9 @@ const INT_FAQS = [
 
 export default function InteriorDesign() {
   const [openFaq, setOpenFaq] = useState(0);
+  const { content } = useWebsiteContent();
+  const liveSrv = (content?.services || []).find((s) => s.slug === "interior-design");
+  const livePoints = liveSrv?.highlights?.length ? liveSrv.highlights : INT_INTRO_POINTS;
 
   return (
     <div className="intpg-page">
@@ -695,10 +699,10 @@ export default function InteriorDesign() {
             <div>
               <div className="intpg-eyebrow">
                 <span className="intpg-eyebrow-bar" />
-                Interior Design
+                {liveSrv?.title || "Interior Design"}
               </div>
               <h2 className="intpg-section-heading">
-                Interiors that feel as good as they look.
+                {liveSrv?.shortDesc || "Interiors that feel as good as they look."}
               </h2>
               <p className="intpg-intro-copy">
                 We design homes, offices and hospitality spaces around the way
@@ -707,7 +711,7 @@ export default function InteriorDesign() {
                 together so your vision is built exactly as imagined.
               </p>
               <ul className="intpg-check-list">
-                {INT_INTRO_POINTS.map((point) => (
+                {livePoints.map((point) => (
                   <li key={point} className="intpg-check-item">
                     <span className="intpg-check-icon">
                       <FiCheck size={14} />

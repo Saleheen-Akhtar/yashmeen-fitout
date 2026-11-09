@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useWebsiteContent from "../../hooks/useWebsiteContent";
 import {
   FiCheck,
   FiArrowRight,
@@ -139,6 +140,9 @@ const ARCH_FAQS = [
 
 export default function Architecture() {
   const [openFaq, setOpenFaq] = useState(0);
+  const { content } = useWebsiteContent();
+  const liveSrv = (content?.services || []).find((s) => s.slug === "architecture");
+  const livePoints = liveSrv?.highlights?.length ? liveSrv.highlights : ARCH_INTRO_POINTS;
 
   return (
     <div className="archpg-page">
@@ -622,10 +626,10 @@ export default function Architecture() {
             <div>
               <div className="archpg-eyebrow">
                 <span className="archpg-eyebrow-bar" />
-                Architecture
+                {liveSrv?.title || "Architecture"}
               </div>
               <h2 className="archpg-section-heading">
-                Spaces designed with purpose, built with precision.
+                {liveSrv?.shortDesc || "Spaces designed with purpose, built with precision."}
               </h2>
               <p className="archpg-intro-copy">
                 From a first sketch to the final handover, our architectural
@@ -634,7 +638,7 @@ export default function Architecture() {
                 sit under one roof, what is drawn is exactly what gets built.
               </p>
               <ul className="archpg-check-list">
-                {ARCH_INTRO_POINTS.map((point) => (
+                {livePoints.map((point) => (
                   <li key={point} className="archpg-check-item">
                     <span className="archpg-check-icon">
                       <FiCheck size={14} />

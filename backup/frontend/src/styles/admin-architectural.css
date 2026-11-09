@@ -1,60 +1,371 @@
 /* ==========================================================================
-   Yashmeen Atelier CRM & Management Console: Soft, Soothing & Serene
-   - Clean Airy Canvas (#f8f9fa) & Pure White Surfaces (#ffffff)
-   - Gentle Charcoal Ink (#1e2022) & Muted Grays (#6b7280)
-   - Ultra-Soft Delicate Borders (rgba(0,0,0,0.06) & #e5e7eb)
-   - Calming Desaturated Pastel Badges (Sage, Mist Blue, Warm Amber, Lavender)
-   - Tactile Double-Bezel Concentric Enclosures
-   - Button-in-Button Kinetic Interaction Design
+   Yashmeen Atelier CRM & Website Studio: Soft Warm Sunlit Bento Aesthetic
+   - Sun-kissed Warm Alabaster & Champagne-Yellow Ambient Mesh
+   - Frosted Cream Cards (rgba(255,255,255,0.74) + hairline borders)
+   - Deep Matte Charcoal Accent (#232326) & Warm Sunshine Gold (#f5cb5c)
+   - Signature Hatched Progress Pills & Dotted Track Bar Charts
    ========================================================================== */
 
 :root {
-  --adm-bg: #f8f9fa;
-  --adm-surface: #ffffff;
-  --adm-surface-alt: #f3f4f6;
-  --adm-ink: #1e2022;
-  --adm-ink-soft: #374151;
-  --adm-muted: #6b7280;
-  --adm-muted-light: #9ca3af;
-  --adm-line: rgba(0, 0, 0, 0.06);
-  --adm-line-strong: rgba(0, 0, 0, 0.12);
-  --adm-line-subtle: #f0f2f5;
-  --adm-radius-sm: 6px;
-  --adm-radius-md: 10px;
-  --adm-radius-lg: 14px;
-  --adm-radius-xl: 18px;
-  --adm-radius-pill: 9999px;
-  --adm-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
-  --adm-shadow-hover: 0 10px 28px -4px rgba(0, 0, 0, 0.06);
+  --crex-bg-base: #f2f2ef;
+  --crex-card: rgba(255, 255, 255, 0.72);
+  --crex-card-solid: #ffffff;
+  --crex-dark: #232326;
+  --crex-dark-deep: #1b1b1e;
+  --crex-yellow: #f5cb5c;
+  --crex-yellow-soft: #fae596;
+  --crex-ink: #1e1f22;
+  --crex-muted: #71717a;
+  --crex-muted-soft: #a1a1aa;
+  --crex-line: rgba(0, 0, 0, 0.065);
+  --crex-line-light: rgba(255, 255, 255, 0.85);
+  --crex-radius-lg: 24px;
+  --crex-radius-md: 16px;
+  --crex-radius-pill: 9999px;
+  --crex-shadow: 0 8px 32px rgba(24, 24, 27, 0.04);
+  --crex-shadow-hover: 0 14px 36px rgba(24, 24, 27, 0.07);
 }
 
-/* Base Admin Container */
+/* Base Admin Canvas */
 .admin-shell-container {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
-  background-color: var(--adm-bg) !important;
-  color: var(--adm-ink) !important;
+  background:
+    radial-gradient(ellipse 68% 60% at 92% 38%, rgba(247, 213, 108, 0.42) 0%, transparent 72%),
+    radial-gradient(ellipse 48% 45% at 12% 88%, rgba(246, 224, 152, 0.22) 0%, transparent 68%),
+    linear-gradient(135deg, #f1f1ee 0%, #f6f4ec 52%, #faf0cf 100%) !important;
+  color: var(--crex-ink) !important;
   min-height: 100vh;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+  overflow-x: hidden;
 }
 
-/* Double-Bezel Architecture (Doppelrand) */
+/* Frosted Bento Cards */
+.crex-card {
+  background: var(--crex-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: var(--crex-radius-lg);
+  box-shadow: var(--crex-shadow);
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.crex-card:hover {
+  box-shadow: var(--crex-shadow-hover);
+}
+
+/* Matte Dark Charcoal Task Card */
+.crex-card-dark {
+  background: linear-gradient(180deg, #2d2d31 0%, #1d1d20 100%);
+  color: #ffffff;
+  border-radius: var(--crex-radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.16);
+}
+
+/* Top Pill Navigation Container */
+.crex-nav-pillbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: var(--crex-radius-pill);
+  padding: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.crex-nav-link {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #52525b;
+  text-decoration: none;
+  padding: 7px 14px;
+  border-radius: var(--crex-radius-pill);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.crex-nav-link:hover {
+  color: var(--crex-ink);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.crex-nav-link.is-active {
+  background: var(--crex-dark);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* Brand Oval Pill */
+.crex-brand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  border-radius: var(--crex-radius-pill);
+  padding: 7px 20px;
+  text-decoration: none;
+  color: var(--crex-ink);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  transition: all 0.2s ease;
+}
+
+.crex-brand-pill:hover {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.16);
+}
+
+/* Header Action Circles & Pills */
+.crex-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--crex-radius-pill);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  color: #3f3f46;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.crex-action-pill:hover {
+  background: #ffffff;
+  color: #18181b;
+}
+
+.crex-icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  color: #3f3f46;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.crex-icon-circle:hover {
+  background: #ffffff;
+  color: #18181b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.crex-icon-circle.is-dark {
+  background: var(--crex-dark);
+  color: #ffffff;
+  border-color: var(--crex-dark);
+}
+
+.crex-icon-circle.is-dark:hover {
+  background: #333338;
+  color: #ffffff;
+}
+
+/* Signature Hatched Progress Pill Pattern */
+.crex-hatched-bar {
+  background-color: rgba(255, 255, 255, 0.55);
+  background-image: repeating-linear-gradient(
+    -52deg,
+    rgba(0, 0, 0, 0.055) 0px,
+    rgba(0, 0, 0, 0.055) 2.5px,
+    transparent 2.5px,
+    transparent 7px
+  );
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Main 4-Column Asymmetric Bento Grid */
+.crex-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: auto auto;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.crex-col-right-stack {
+  grid-column: 4 / 5;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.crex-calendar-span {
+  grid-column: 2 / span 2;
+}
+
+@media (max-width: 1200px) {
+  .crex-bento-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .crex-col-right-stack {
+    grid-column: 1 / span 2;
+    grid-row: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .crex-calendar-span {
+    grid-column: 1 / span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .crex-bento-grid {
+    grid-template-columns: 1fr;
+  }
+  .crex-col-right-stack {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    display: flex;
+  }
+  .crex-calendar-span {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Pill Buttons */
+.crex-btn-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--crex-dark);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--crex-radius-pill);
+  padding: 9px 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.crex-btn-dark:hover {
+  background: #333338;
+  transform: translateY(-1px);
+}
+
+.crex-btn-yellow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--crex-yellow);
+  color: var(--crex-ink);
+  border: none;
+  border-radius: var(--crex-radius-pill);
+  padding: 9px 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.crex-btn-yellow:hover {
+  background: #f0c044;
+  transform: translateY(-1px);
+}
+
+.crex-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #3f3f46;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--crex-radius-pill);
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.crex-btn-ghost:hover {
+  background: #ffffff;
+  color: var(--crex-ink);
+}
+
+/* Pastel & Tactile Status Badges */
+.badge-yellow {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.badge-dark {
+  background: #232326;
+  color: #ffffff;
+}
+
+.badge-lavender {
+  background: #f4f2f9;
+  color: #58437d;
+  border: 1px solid #e4def1;
+}
+
+.badge-mist {
+  background: #edf5fc;
+  color: #1e5c8a;
+  border: 1px solid #d2e6f7;
+}
+
+.badge-amber {
+  background: #fdf6ec;
+  color: #8c581e;
+  border: 1px solid #fae5cb;
+}
+
+.badge-sage {
+  background: #edf6ee;
+  color: #2e6930;
+  border: 1px solid #cde4cf;
+}
+
+.badge-neutral {
+  background: #f4f4f5;
+  color: #52525b;
+  border: 1px solid #e4e4e7;
+}
+
+/* Double-Bezel Cards for Lower Kanban & Registers */
 .crm-bezel-wrapper {
-  background: rgba(0, 0, 0, 0.025);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(0, 0, 0, 0.045);
+  border-radius: 18px;
   padding: 3px;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .crm-bezel-wrapper:hover {
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(0, 0, 0, 0.09);
 }
 
 .crm-bezel-inner {
   background: #ffffff;
-  border-radius: 13px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 2px 8px rgba(0, 0, 0, 0.02);
+  border-radius: 15px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 2px 8px rgba(0, 0, 0, 0.025);
   transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -63,7 +374,6 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 10px 24px -4px rgba(0, 0, 0, 0.06);
 }
 
-/* Avatar Monograms */
 .crm-avatar {
   width: 30px;
   height: 30px;
@@ -74,212 +384,89 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  letter-spacing: -0.02em;
 }
 
-/* Button-in-Button Architecture */
-.crm-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: #18181b;
-  color: #ffffff;
-  border: none;
-  border-radius: 9999px;
-  padding: 6px 6px 6px 18px;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.crm-btn-primary:hover {
-  background: #27272a;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-}
-
-.crm-btn-icon-pill {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
-}
-
-.crm-btn-primary:hover .crm-btn-icon-pill {
-  transform: translateX(2px);
-}
-
-/* Secondary Button */
-.crm-btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #ffffff;
-  color: #374151;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 7px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.crm-btn-secondary:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  color: #111827;
-}
-
-/* Headings */
-.admin-shell-container h1,
-.admin-shell-container h2,
-.admin-shell-container h3,
-.admin-shell-container h4 {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-  color: var(--adm-ink) !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.02em !important;
-}
-
-/* Inputs across Admin */
-.admin-shell-container input,
+/* Form Elements inside Modals & Accordions */
+.admin-shell-container input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 .admin-shell-container select,
 .admin-shell-container textarea {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-  background: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
-  border-radius: 8px !important;
-  color: var(--adm-ink) !important;
-  font-size: 13.5px !important;
-  padding: 9px 14px !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
-  outline: none !important;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--crex-ink);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 9px 12px;
+  transition: all 0.18s ease;
+  outline: none;
+  box-sizing: border-box;
 }
 
 .admin-shell-container input:focus,
 .admin-shell-container select:focus,
 .admin-shell-container textarea:focus {
-  border-color: #3b82f6 !important;
-  outline: none !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
+  border-color: var(--crex-dark);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(245, 203, 92, 0.25);
 }
 
 .admin-shell-container label {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-  font-size: 11.5px !important;
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
-  color: var(--adm-muted) !important;
-  margin-bottom: 5px !important;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #52525b;
   display: block;
 }
 
-/* Tables across Admin */
+/* Smooth Drawer & Modal Animations */
+@keyframes crexFadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.crex-animate-in {
+  animation: crexFadeSlide 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Tables */
 .admin-shell-container table {
-  width: 100% !important;
-  border-collapse: separate !important;
-  border-spacing: 0 !important;
-  border: 1px solid #e5e7eb !important;
-  border-radius: 12px !important;
-  overflow: hidden !important;
-  background: #ffffff !important;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .admin-shell-container th {
-  background: #f9fafb !important;
-  color: var(--adm-muted) !important;
-  font-size: 11.5px !important;
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.04em !important;
-  padding: 12px 18px !important;
-  border-bottom: 1px solid #e5e7eb !important;
-  text-align: left !important;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--crex-muted);
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--crex-line);
 }
 
 .admin-shell-container td {
-  padding: 14px 18px !important;
-  font-size: 13.5px !important;
-  color: var(--adm-ink) !important;
-  border-bottom: 1px solid #f3f4f6 !important;
-  vertical-align: middle !important;
-}
-
-.admin-shell-container tr:last-child td {
-  border-bottom: none !important;
+  padding: 13px 14px;
+  font-size: 13px;
+  color: var(--crex-ink);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.045);
+  vertical-align: middle;
 }
 
 .admin-shell-container tr:hover td {
-  background: #fafafa !important;
+  background: rgba(255, 255, 255, 0.55);
 }
 
-/* Status Badges: Desaturated Soothing Pastels */
-.badge-sage {
-  background: #edf6ee !important;
-  color: #2e6930 !important;
-  border: 1px solid #d4ebd5 !important;
-}
-
-.badge-mist {
-  background: #edf5fc !important;
-  color: #1e5c8a !important;
-  border: 1px solid #d2e6f7 !important;
-}
-
-.badge-amber {
-  background: #fdf6ec !important;
-  color: #8c581e !important;
-  border: 1px solid #fae5cb !important;
-}
-
-.badge-lavender {
-  background: #f4f2f9 !important;
-  color: #58437d !important;
-  border: 1px solid #e4def1 !important;
-}
-
-.badge-neutral {
-  background: #f3f4f6 !important;
-  color: #4b5563 !important;
-  border: 1px solid #e5e7eb !important;
-}
-
-/* Slide-Over Drawer Transitions */
-@keyframes crmDrawerSlide {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
+@media (max-width: 1024px) {
+  .admin-desktop-nav {
+    display: none !important;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+  .admin-mobile-toggle {
+    display: inline-flex !important;
   }
-}
-
-.crm-drawer-panel {
-  animation: crmDrawerSlide 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* Scrollbars */
-.admin-shell-container ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.admin-shell-container ::-webkit-scrollbar-track {
-  background: transparent;
-}
-.admin-shell-container ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 9999px;
-}
-.admin-shell-container ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.22);
 }

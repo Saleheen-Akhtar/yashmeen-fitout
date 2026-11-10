@@ -2315,11 +2315,20 @@
 .aperture-parallax-ateliers { z-index: 2; clip-path: polygon(0 73%, 100% 57%, 100% 100%, 0 100%); opacity: .86; }
 .aperture-parallax-ateliers img { object-position: center 40%; }
 .aperture-hero-paper { display: none; }
-.aperture-copy { position: absolute; top: 50%; left: 50%; z-index: 3; width: min(1100px, 88vw); margin: 0; color: #fff; text-align: center; transform: translate(-50%, -50%); }
+.aperture-copy { position: absolute; top: 50%; right: 0; left: 0; z-index: 3; width: min(1100px, 88vw); margin: 0 auto; color: #fff; text-align: center; transform: translateY(-50%); }
 .aperture-copy-parallax { will-change: transform; }
 .aperture-copy-inner { will-change: opacity; }
 .aperture-copy h1,.aperture-copy p,.aperture-copy button { color: inherit; }
-html:not(.motion) .aperture-hero-stage * { opacity: 1 !important; visibility: visible !important; transform: none !important; }
+html:not(.motion) .aperture-hero-photo img,
+html:not(.motion) .aperture-copy-parallax,
+html:not(.motion) .aperture-copy-inner,
+html:not(.motion) .aperture-word,
+html:not(.motion) .aperture-kicker,
+html:not(.motion) .aperture-intro,
+html:not(.motion) .aperture-actions,
+html:not(.motion) .aperture-proof,
+html:not(.motion) .aperture-project-link { opacity: 1 !important; visibility: visible !important; transform: none !important; }
+html:not(.motion) .aperture-parallax-layer { transform: none !important; }
 .aperture-copy .aperture-cta { color: #111 !important; -webkit-text-fill-color: #111; }
 .aperture-kicker { margin: 0 auto clamp(20px, 2.6vw, 34px); color: rgba(255,255,255,.9) !important; font-size: clamp(10px, .82vw, 13px); font-weight: 600; letter-spacing: .2em; will-change: transform, opacity; }
 .aperture-copy h1 { max-width: none; margin: 0; color: #fff; -webkit-text-fill-color: #fff; font-family: var(--font-sans); font-size: clamp(60px, 11.2vw, 172px); font-weight: 700; letter-spacing: -.04em; word-spacing: .08em; line-height: .94; text-wrap: balance; text-shadow: 0 8px 60px rgba(0,0,0,.24); }
@@ -2399,6 +2408,7 @@ html:not(.motion) .aperture-hero-stage * { opacity: 1 !important; visibility: vi
 
   .aperture-copy-parallax,
   .aperture-parallax-layer {
+    transform: none !important;
     will-change: auto;
   }
 

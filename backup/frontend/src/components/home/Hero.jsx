@@ -165,10 +165,16 @@ export default function Hero() {
       <div className="aperture-hero-stage" data-parallax-layers ref={stageRef}>
         <div className="aperture-hero-photo" aria-hidden="true">
           <img
-            src="/static/hero-aperture-v2.png"
+            src="/static/hero-aperture-v2.webp"
             alt=""
             fetchPriority="high"
             decoding="async"
+            onError={(e) => {
+              if (!e.currentTarget.dataset.fallback) {
+                e.currentTarget.dataset.fallback = "1";
+                e.currentTarget.src = "/static/hero-aperture-v2.png";
+              }
+            }}
           />
         </div>
 

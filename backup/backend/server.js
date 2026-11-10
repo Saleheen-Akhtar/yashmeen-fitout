@@ -28,17 +28,24 @@ import { itemPath } from "./utils/control.js";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
+const isVercel = Boolean(process.env.VERCEL);
 
-connectDB();
+if (!isVercel) {
+    connectDB().catch(() => {});
+}
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 📁 Create uploads folder if not exists
+// 📁 Create uploads folder in writable local environments (serverless FS is read-only)
 const uploadsFolder = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsFolder)) {
-    fs.mkdirSync(uploadsFolder, { recursive: true });
+if (!isVercel && !fs.existsSync(uploadsFolder)) {
+    try {
+        fs.mkdirSync(uploadsFolder, { recursive: true });
+    } catch (err) {
+        console.warn("Skipped creating uploads directory:", err.message);
+    }
 }
 
 app.use("/uploads", express.static(uploadsFolder));
@@ -74,8 +81,24 @@ app.use("/uploads", (req, res, next) => {
             res.setHeader("Cache-Control", "public, max-age=3600");
             return res.sendFile(fallbackImage);
         }
+        res.setHeader("Cache-Control", "public, max-age=3600");
+        return res.redirect(302, `/static/${chosen}`);
     }
     return next();
+});
+
+// Ensure MongoDB connection is established before API handlers run in serverless invocations
+app.use("/api", async (req, res, next) => {
+    try {
+        await connectDB();
+        return next();
+    } catch (err) {
+        return res.status(503).json({
+            success: false,
+            message: "Database connection unavailable",
+            error: process.env.NODE_ENV === "development" ? err.message : undefined,
+        });
+    }
 });
 
 // 📍 Upload route for CKEditor images

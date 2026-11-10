@@ -1,19 +1,29 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import os from "os";
 
+const isVercel = Boolean(process.env.VERCEL);
 const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-const uploadDir = "uploads/posts";
+const uploadDir = isVercel ? path.join(os.tmpdir(), "uploads", "posts") : "uploads/posts";
 
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+const ensureUploadDir = () => {
+    try {
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+    } catch (err) {
+        console.warn("Skipped creating upload directory:", err.message);
+    }
+};
+
+if (!isVercel) {
+    ensureUploadDir();
 }
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
+        ensureUploadDir();
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {

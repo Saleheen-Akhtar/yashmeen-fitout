@@ -1,23 +1,49 @@
-import { useState, useMemo, useEffect } from "react";
-import {
-  FiX,
-  FiChevronLeft,
-  FiChevronRight,
-  FiMaximize2,
-} from "react-icons/fi";
-import { categoryAPI, galleryAPI, itemPath } from "../../services/api"; // adjust the path to your project
-
-const GALLERY_HERO_BG_IMAGE =
-  "https://images.unsplash.com/photo-1758448721205-8465cebc26af?auto=format&fit=crop&w=1800&q=80";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { SpatialGallery3D } from "@/components/ui/spatial-gallery-3d";
+import { categoryAPI, galleryAPI, itemPath } from "../../services/api";
 
 const FALLBACK_GALLERY_IMAGES = [
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1280&h=720&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=1280&h=720&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1280&h=720&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1280&h=720&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1280&h=720&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1280&h=720&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=1280&h=720&fit=crop&auto=format&q=80",
 ];
+
+// Clean editorial display labels for legacy DB category strings while keeping IDs unchanged
+const CATEGORY_LABEL_OVERRIDES = {
+  "ac mentainance": "AC Maintenance",
+  "electrical mentainance": "Electrical",
+  "decor gypsum specialist": "Gypsum & Decor",
+  "joinery and carpenter": "Joinery & Carpentry",
+  "mep infrastructure/external electrical works": "MEP Infrastructure",
+  "plumber p.p.r-pvc- drainach specialist": "Plumbing & Drainage",
+  "cleaning services": "Cleaning",
+};
+
+const PHOTO_TITLE_OVERRIDES = {
+  "fcu mentainance": "FCU Maintenance",
+  "mirror clocetion": "Mirror Collection",
+  "pergola work": "Pergola Work",
+  "study table": "Study Table",
+  "stair space": "Stair Space",
+  "makeup with wardrobe area": "Makeup with Wardrobe Area",
+};
+
+const formatCategoryLabel = (raw = "") => {
+  const clean = String(raw).trim();
+  if (!clean) return "";
+  return CATEGORY_LABEL_OVERRIDES[clean.toLowerCase()] ?? clean;
+};
+
+const formatPhotoTitle = (raw = "") => {
+  const clean = String(raw).trim();
+  if (!clean) return "Architectural Detail";
+  return PHOTO_TITLE_OVERRIDES[clean.toLowerCase()] ?? clean;
+};
 
 // Works with both `{ data: { data: [...] } }` and `{ data: [...] }` responses
 const toList = (res) => {
@@ -32,22 +58,40 @@ const getCategoryId = (item) =>
     ? item.categoryId._id
     : item?.categoryId;
 
-// Absolute URLs are used as-is; stored paths are resolved from the site root
-const photoUrl = (path = "") =>
-  /^https?:\/\//i.test(path) ? path : `/${String(path).replace(/^\/+/, "")}`;
+// Absolute / static / upload URLs are preserved; relative DB paths resolve under itemPath (/uploads)
+const photoUrl = (path = "") => {
+  if (!path) return "";
+  if (/^(https?:|data:|blob:|\/static\/|\/images\/|\/uploads\/)/i.test(path)) {
+    return path;
+  }
+  return `${itemPath ?? "/uploads"}/${String(path).replace(/^\/+/, "")}`;
+};
 
 /* ---------------- cache layer ---------------- */
-const CACHE_KEY = "photogallery:data:v1";
-const CACHE_TTL = 10 * 60 * 1000; // 10 min - set 0 to always revalidate
+const CACHE_KEY = "photogallery:data:v2";
+const CACHE_TTL = 10 * 60 * 1000;
 
-let memoryCache = null; // survives route changes (no re-read from storage)
-let inflight = null; // de-dupes simultaneous requests
+let memoryCache = null;
+let inflight = null;
 
 function readCache() {
   if (memoryCache) return memoryCache;
   try {
+    localStorage.removeItem("photogallery:data:v1");
     const raw = localStorage.getItem(CACHE_KEY);
-    if (raw) memoryCache = JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const hasBrokenPrefix =
+        Array.isArray(parsed?.photos) &&
+        parsed.photos.some(
+          (p) => typeof p?.src === "string" && p.src.startsWith("/gallery/"),
+        );
+      if (hasBrokenPrefix) {
+        localStorage.removeItem(CACHE_KEY);
+        return null;
+      }
+      memoryCache = parsed;
+    }
   } catch {
     /* ignore */
   }
@@ -63,8 +107,7 @@ function writeCache(data) {
   }
 }
 
-// Call this from your admin panel after add / edit / delete
-export function clearGalleryCache() {
+function clearGalleryCache() {
   memoryCache = null;
   inflight = null;
   try {
@@ -78,21 +121,19 @@ async function fetchGalleryData() {
   if (inflight) return inflight;
   inflight = (async () => {
     const [catRes, galRes] = await Promise.all([
-      categoryAPI.getAll(),
-      galleryAPI.getAll(),
+      categoryAPI.getAll({ status: true }),
+      galleryAPI.getAll({ status: true }),
     ]);
 
-    // Only active categories
     const categories = toList(catRes).filter((c) => c.status === true);
     const activeIds = new Set(categories.map((c) => String(c._id)));
 
-    // Only active photos that belong to an active category
     const photos = toList(galRes)
       .filter((g) => g.status === true)
       .filter((g) => activeIds.has(String(getCategoryId(g))))
       .map((g) => ({
         id: g._id,
-        title: g.title,
+        title: g.title || "Architectural Detail",
         categoryId: String(getCategoryId(g)),
         src: photoUrl(g.photo),
       }));
@@ -111,16 +152,13 @@ export default function PhotoGallery() {
 
   const [categories, setCategories] = useState(cached?.categories ?? []);
   const [photos, setPhotos] = useState(cached?.photos ?? []);
-  const [loading, setLoading] = useState(!cached); // no spinner if cache exists
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState("");
-  const [filter, setFilter] = useState("all"); // "all" or a category _id
-  const [photoLightbox, setPhotoLightbox] = useState(null); // index into `photos` (absolute)
+  const [filter, setFilter] = useState("all");
+  const [photoLightbox, setPhotoLightbox] = useState(null);
+  const touchStartXRef = useRef(null);
 
-  useEffect(() => {
-    const c = readCache();
-    const fresh = c && Date.now() - c.savedAt < CACHE_TTL;
-    if (fresh) return; // ✅ cache is fresh → no API call
-
+  const startFetch = useCallback((c) => {
     let cancelled = false;
     fetchGalleryData()
       .then((data) => {
@@ -130,7 +168,6 @@ export default function PhotoGallery() {
         setError("");
       })
       .catch((err) => {
-        // if cached data is already on screen, fail silently
         if (!cancelled && !c) {
           setError(
             err?.response?.data?.message || "Could not load the gallery.",
@@ -146,10 +183,29 @@ export default function PhotoGallery() {
     };
   }, []);
 
+  useEffect(() => {
+    const c = readCache();
+    const fresh = c && Date.now() - c.savedAt < CACHE_TTL;
+    let cancel = fresh ? undefined : startFetch(c);
+
+    const handleSync = () => {
+      clearGalleryCache();
+      cancel?.();
+      cancel = startFetch(null);
+    };
+    window.addEventListener("projects-updated", handleSync);
+    window.addEventListener("storage", handleSync);
+    return () => {
+      cancel?.();
+      window.removeEventListener("projects-updated", handleSync);
+      window.removeEventListener("storage", handleSync);
+    };
+  }, [startFetch]);
+
   const categoryLabel = useMemo(() => {
     const map = {};
     categories.forEach((c) => {
-      map[String(c._id)] = c.categoryName ?? "";
+      map[String(c._id)] = formatCategoryLabel(c.categoryName);
     });
     return map;
   }, [categories]);
@@ -159,7 +215,7 @@ export default function PhotoGallery() {
       { id: "all", label: "All" },
       ...categories.map((c) => ({
         id: String(c._id),
-        label: c.categoryName ?? "",
+        label: formatCategoryLabel(c.categoryName),
       })),
     ],
     [categories],
@@ -168,483 +224,276 @@ export default function PhotoGallery() {
   const filteredPhotoIdx = useMemo(
     () =>
       photos
-        .map((p, i) => i)
+        .map((_, i) => i)
         .filter((i) => filter === "all" || photos[i].categoryId === filter),
     [filter, photos],
   );
 
-  function stepPhoto(dir) {
-    const pos = filteredPhotoIdx.indexOf(photoLightbox);
-    const next =
-      (pos + dir + filteredPhotoIdx.length) % filteredPhotoIdx.length;
-    setPhotoLightbox(filteredPhotoIdx[next]);
-  }
+  const spatialItems = useMemo(
+    () =>
+      filteredPhotoIdx.map((idx, pos) => {
+        const p = photos[idx];
+        return {
+          id: String(p.id),
+          title: formatPhotoTitle(p.title),
+          category: categoryLabel[p.categoryId] || "Gallery",
+          src: p.src,
+          fallbackSrc:
+            FALLBACK_GALLERY_IMAGES[pos % FALLBACK_GALLERY_IMAGES.length],
+          index: idx,
+        };
+      }),
+    [filteredPhotoIdx, photos, categoryLabel],
+  );
+
+  const stepPhoto = useCallback(
+    (dir) => {
+      if (photoLightbox === null || filteredPhotoIdx.length < 2) return;
+      const pos = filteredPhotoIdx.indexOf(photoLightbox);
+      const currentPos = pos === -1 ? 0 : pos;
+      const next =
+        (currentPos + dir + filteredPhotoIdx.length) % filteredPhotoIdx.length;
+      setPhotoLightbox(filteredPhotoIdx[next]);
+    },
+    [filteredPhotoIdx, photoLightbox],
+  );
+
+  // Preload adjacent lightbox images for instant previous/next stepping
+  useEffect(() => {
+    if (photoLightbox === null || filteredPhotoIdx.length < 2) return;
+    const pos = Math.max(0, filteredPhotoIdx.indexOf(photoLightbox));
+    const prevIdx =
+      filteredPhotoIdx[
+        (pos - 1 + filteredPhotoIdx.length) % filteredPhotoIdx.length
+      ];
+    const nextIdx = filteredPhotoIdx[(pos + 1) % filteredPhotoIdx.length];
+    [prevIdx, nextIdx].forEach((i) => {
+      const src = photos[i]?.src;
+      if (src) {
+        const img = new Image();
+        img.src = src;
+      }
+    });
+  }, [photoLightbox, filteredPhotoIdx, photos]);
+
+  useEffect(() => {
+    if (photoLightbox === null) return undefined;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.__lenis?.stop?.();
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setPhotoLightbox(null);
+      else if (e.key === "ArrowLeft") stepPhoto(-1);
+      else if (e.key === "ArrowRight") stepPhoto(1);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.__lenis?.start?.();
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [photoLightbox, stepPhoto]);
+
+  const scrollToFooter = useCallback(() => {
+    const footer = document.getElementById("footer");
+    if (!footer) return;
+    if (window.__lenis && typeof window.__lenis.scrollTo === "function") {
+      window.__lenis.scrollTo(footer, { duration: 1.1 });
+    } else {
+      footer.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
+
+  const activeLightboxPhoto =
+    photoLightbox !== null ? photos[photoLightbox] : null;
+  const activeLightboxTitle = activeLightboxPhoto
+    ? formatPhotoTitle(activeLightboxPhoto.title)
+    : "";
+  const activeLightboxCategory = activeLightboxPhoto
+    ? categoryLabel[activeLightboxPhoto.categoryId] || "Gallery"
+    : "";
+  const hasMultipleLightboxPhotos = filteredPhotoIdx.length > 1;
+  const activeLightboxPos =
+    photoLightbox !== null
+      ? Math.max(0, filteredPhotoIdx.indexOf(photoLightbox))
+      : 0;
 
   return (
-    <div
-      className="photogal-page"
-      style={{
-        background: bg,
-        color: ink,
-        minHeight: "100vh",
-        fontFamily: "'Manrope', sans-serif",
-      }}
-    >
-      <style>{`
+    <main className="w-full bg-[#f5f3ef] text-[#171613]">
+      {/* INTERACTIVE 360° CURVED WEBGL ARCHITECTURAL MUSEUM GALLERY */}
+      <SpatialGallery3D
+        items={spatialItems}
+        filters={filters}
+        activeFilter={filter}
+        onFilterChange={setFilter}
+        loading={loading}
+        error={error}
+        onSelectItem={(item) => setPhotoLightbox(item.index)}
+        isLightboxOpen={photoLightbox !== null}
+        onScrollToFooter={scrollToFooter}
+      />
 
-        /* HERO (same look as Contact page) */
-        .photogal-hero-section{
-          position:relative;
-          isolation:isolate;
-          padding:80px 0;
-          background-color:#0A0A0A;
-          background-size:cover;
-          background-position:center;
-          background-repeat:no-repeat;
-        }
-        @media (min-width:768px){
-          .photogal-hero-section{ padding:120px 0; }
-        }
-        .photogal-hero-dark-overlay{
-          position:absolute;
-          inset:0;
-          z-index:0;
-          background:linear-gradient(
-            to bottom,
-            rgba(10,10,10,0.72),
-            rgba(10,10,10,0.60)
-          );
-        }
-        .photogal-hero-inner-container{
-          position:relative;
-          z-index:1;
-          max-width:1180px;
-          margin:0 auto;
-          padding:0 24px;
-        }
-        @media (min-width:768px){
-          .photogal-hero-inner-container{ padding:0 40px; }
-        }
-        .photogal-hero-heading{
-          margin:0;
-          text-align:center;
-          font-family:var(--font-sans);
-          font-weight:800;
-          color:#FFFFFF;
-          font-size:34px;
-          line-height:1.15;
-          letter-spacing:-0.01em;
-        }
-        @media (min-width:640px){ .photogal-hero-heading{ font-size:46px; } }
-        @media (min-width:1024px){ .photogal-hero-heading{ font-size:56px; } }
-
-        /* GALLERY SECTION */
-        .photogal-gallery-section{
-          position:relative;
-          background:${bg};
-        }
-        .photogal-blueprint-grid{
-          position:absolute; inset:0; pointer-events:none;
-          opacity:0.35;
-          background-image:
-            linear-gradient(rgba(185,144,90,0.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(185,144,90,0.06) 1px, transparent 1px);
-          background-size:64px 64px;
-          -webkit-mask-image:radial-gradient(1200px 700px at 50% 0%, black, transparent 75%);
-          mask-image:radial-gradient(1200px 700px at 50% 0%, black, transparent 75%);
-        }
-        .photogal-fade-in{ animation: photogal-rise-keyframes .6s cubic-bezier(.2,.8,.2,1) forwards; opacity:0; transform:translateY(18px); }
-        @keyframes photogal-rise-keyframes{ to{ opacity:1; transform:translateY(0); } }
-        .photogal-photo-tile{ transition: transform .45s cubic-bezier(.2,.8,.2,1), border-color .3s; }
-        .photogal-photo-tile:hover{ transform:translateY(-5px); border-color:#544d3b; }
-        .photogal-photo-tile img{ transition: transform .7s cubic-bezier(.2,.8,.2,1), filter .5s; }
-        .photogal-photo-tile:hover img{ transform:scale(1.1); filter:grayscale(12%) sepia(6%) saturate(120%) brightness(0.62) contrast(1.05) !important; }
-        .photogal-tile-corner{ opacity:0; transition:opacity .3s; }
-        .photogal-photo-tile:hover .photogal-tile-corner{ opacity:1; }
-        .photogal-tile-expand{ opacity:0; transition:opacity .3s; }
-        .photogal-photo-tile:hover .photogal-tile-expand{ opacity:1; }
-        .photogal-filter-chip{ transition: all .25s ease; }
-        .photogal-circle-btn{ transition: all .2s; }
-        .photogal-circle-btn:hover{ border-color:${brass} !important; background:${brass} !important; }
-        .photogal-circle-btn:hover svg{ color:#ffffff !important; }
-        .photogal-masonry-grid{ column-count:3; column-gap:20px; }
-        @media (max-width:980px){ .photogal-masonry-grid{ column-count:2; } }
-        @media (max-width:620px){ .photogal-masonry-grid{ column-count:1; } }
-        @media (max-width:720px){ .photogal-photo-count{ margin-left:0 !important; width:100%; padding-top:6px; } }
-      `}</style>
-
-      {/* HERO BAND */}
-      <section
-        className="photogal-hero-section"
-        style={{ backgroundImage: `url(${GALLERY_HERO_BG_IMAGE})` }}
-      >
-        <div className="photogal-hero-dark-overlay" />
-        <div className="photogal-hero-inner-container">
-          <h1 className="photogal-hero-heading">
-            Project Gallery - Yashmeen Future Building & Fit-Out Company
-          </h1>
-        </div>
-      </section>
-
-      {/* GALLERY SECTION */}
-      <section className="photogal-gallery-section">
-        <div className="photogal-blueprint-grid" />
-
+      {/* BORDERLESS ARCHITECTURAL LIMESTONE PHOTO VIEWER */}
+      {activeLightboxPhoto && (
         <div
-          style={{
-            position: "relative",
-            zIndex: 1,
-            maxWidth: 1280,
-            margin: "0 auto",
-            padding: "0 32px 100px",
-          }}
+          data-lenis-prevent
+          role="dialog"
+          aria-modal="true"
+          aria-label={activeLightboxTitle}
+          onClick={() => setPhotoLightbox(null)}
+          className="fixed inset-0 z-[99999] flex flex-col justify-between overflow-hidden bg-[#f5f3ef]/96 px-5 py-6 text-[#171613] backdrop-blur-xl sm:px-10 sm:py-8"
         >
-          {/* Filters */}
+          {/* Warm Gallery Ceiling Spotlight */}
           <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 10,
-              padding: "48px 0 6px",
-              alignItems: "center",
-            }}
-          >
-            {filters.map((f) => (
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-1/3 left-1/2 h-[120vmin] w-[120vmin] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(255,253,248,0.92),transparent_64%)] blur-[44px]"
+          />
+
+          {/* Top Editorial Title & Frameless Close Control */}
+          <div className="relative z-10 mx-auto flex w-full max-w-[1440px] items-start justify-between gap-6">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="min-w-0 max-w-[74vw] cursor-default sm:max-w-2xl"
+            >
+              <div className="mb-1 text-[10.5px] font-medium tracking-[0.16em] text-[#8e6b37] uppercase">
+                {activeLightboxCategory}
+              </div>
+              <h2 className="no-split truncate font-serif text-2xl font-normal tracking-[-0.02em] text-[#171613] sm:text-3xl">
+                {activeLightboxTitle}
+              </h2>
+            </div>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPhotoLightbox(null);
+              }}
+              aria-label="Close lightbox"
+              className="group inline-flex shrink-0 items-center gap-1.5 py-1 text-[10.5px] font-medium tracking-[0.14em] text-[#171613]/65 uppercase transition hover:text-[#171613] sm:text-[11px]"
+            >
+              <span>Close</span>
+              <X className="h-4 w-4 text-[#b18a4f] transition-transform duration-200 group-hover:rotate-90" />
+            </button>
+          </div>
+
+          {/* Intrinsic Print Viewing Stage — Click Open Margin Around Artwork to Close */}
+          <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 items-center justify-center py-4 sm:py-6">
+            {hasMultipleLightboxPhotos && (
               <button
-                key={f.id}
-                onClick={() => setFilter(f.id)}
-                className="photogal-filter-chip"
-                style={{
-                  appearance: "none",
-                  border: `1px solid ${filter === f.id ? brass : line}`,
-                  background: filter === f.id ? brass : "transparent",
-                  color: filter === f.id ? "#ffffff" : inkDim,
-                  fontFamily: "'Manrope', sans-serif",
-                  fontWeight: 600,
-                  fontSize: 12.5,
-                  letterSpacing: "0.04em",
-                  padding: "10px 18px",
-                  borderRadius: 100,
-                  cursor: "pointer",
-                  textTransform: "uppercase",
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  stepPhoto(-1);
                 }}
+                aria-label="Previous photo"
+                className="hidden h-12 w-12 items-center justify-center text-[#171613]/50 transition hover:text-[#171613] active:scale-90 md:absolute md:left-0 md:top-1/2 md:flex md:-translate-y-1/2"
               >
-                {f.label}
+                <ChevronLeft className="h-5 w-5" />
               </button>
-            ))}
-            {!loading && !error && (
-              <span
-                className="photogal-photo-count"
-                style={{
-                  marginLeft: "auto",
-                  fontSize: 12,
-                  color: inkDim,
-                  letterSpacing: "0.04em",
+            )}
+
+            <div
+              onTouchStart={(e) => {
+                if (!hasMultipleLightboxPhotos) return;
+                touchStartXRef.current = e.touches[0]?.clientX ?? null;
+              }}
+              onTouchEnd={(e) => {
+                if (!hasMultipleLightboxPhotos || touchStartXRef.current === null) {
+                  return;
+                }
+                const dx =
+                  (e.changedTouches[0]?.clientX ?? touchStartXRef.current) -
+                  touchStartXRef.current;
+                touchStartXRef.current = null;
+                if (Math.abs(dx) > 45) {
+                  stepPhoto(dx < 0 ? 1 : -1);
+                }
+              }}
+              className="relative inline-flex max-h-full max-w-[90vw] items-center justify-center md:max-w-[76vw]"
+            >
+              <img
+                key={photoLightbox}
+                onClick={(e) => e.stopPropagation()}
+                src={
+                  activeLightboxPhoto.src ||
+                  FALLBACK_GALLERY_IMAGES[
+                    photoLightbox % FALLBACK_GALLERY_IMAGES.length
+                  ]
+                }
+                alt={activeLightboxTitle}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src =
+                    FALLBACK_GALLERY_IMAGES[
+                      photoLightbox % FALLBACK_GALLERY_IMAGES.length
+                    ];
                 }}
+                className="block h-auto max-h-[64vh] w-auto max-w-full bg-[#eae6de] object-contain shadow-[0_28px_80px_rgba(23,22,19,0.13)] sm:max-h-[70vh]"
+              />
+            </div>
+
+            {hasMultipleLightboxPhotos && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  stepPhoto(1);
+                }}
+                aria-label="Next photo"
+                className="hidden h-12 w-12 items-center justify-center text-[#171613]/50 transition hover:text-[#171613] active:scale-90 md:absolute md:right-0 md:top-1/2 md:flex md:-translate-y-1/2"
               >
-                {filteredPhotoIdx.length} photos
-              </span>
+                <ChevronRight className="h-5 w-5" />
+              </button>
             )}
           </div>
 
-          {/* PHOTO MASONRY */}
-          {loading ? (
-            <div style={messageStyle}>Loading gallery…</div>
-          ) : error ? (
-            <div style={{ ...messageStyle, color: "#DC2626" }}>{error}</div>
-          ) : filteredPhotoIdx.length === 0 ? (
-            <div style={messageStyle}>No photos in this category yet.</div>
-          ) : (
-            <div className="photogal-masonry-grid" style={{ paddingTop: 30 }}>
-              {filteredPhotoIdx.map((idx, i) => {
-                const p = photos[idx];
-                return (
-                  <div
-                    key={p.id}
-                    className="photogal-photo-tile photogal-fade-in"
-                    style={{
-                      animationDelay: `${Math.min(i, 18) * 0.03}s`,
-                      breakInside: "avoid",
-                      marginBottom: 20,
-                      position: "relative",
-                      overflow: "hidden",
-                      cursor: "pointer",
-                      border: `1px solid ${line}`,
-                    }}
-                    onClick={() => setPhotoLightbox(idx)}
-                  >
-                    <img
-                      src={p.src || FALLBACK_GALLERY_IMAGES[i % FALLBACK_GALLERY_IMAGES.length]}
-                      alt={p.title}
-                      loading="lazy"
-                      style={imgStyle}
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = FALLBACK_GALLERY_IMAGES[i % FALLBACK_GALLERY_IMAGES.length];
-                      }}
-                    />
-                    <div
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        background:
-                          "linear-gradient(180deg, rgba(18,17,16,0) 45%, rgba(18,17,16,0.9) 100%)",
-                      }}
-                    />
-                    <span
-                      className="photogal-tile-corner"
-                      style={{
-                        ...cornerStyle,
-                        top: 12,
-                        left: 12,
-                        borderTop: `1.5px solid ${brass}`,
-                        borderLeft: `1.5px solid ${brass}`,
-                      }}
-                    />
-                    <span
-                      className="photogal-tile-corner"
-                      style={{
-                        ...cornerStyle,
-                        bottom: 12,
-                        right: 12,
-                        borderBottom: `1.5px solid ${brass}`,
-                        borderRight: `1.5px solid ${brass}`,
-                      }}
-                    />
-                    <span style={tagStyle}>{categoryLabel[p.categoryId]}</span>
-                    <span className="photogal-tile-expand" style={expandStyle}>
-                      <FiMaximize2 size={13} color={ink} />
-                    </span>
-                    <div style={metaStyle}>
-                      <h3
-                        style={{
-                          margin: 0,
-                          fontFamily: "var(--font-serif)",
-                          fontWeight: 400,
-                          fontSize: 17,
-                          lineHeight: 1.25,
-                          color: ovInk,
-                        }}
-                      >
-                        {p.title}
-                      </h3>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </section>
+          {/* Bottom Whisper Index & Navigation */}
+          <div className="relative z-10 mx-auto flex w-full max-w-[1440px] items-center justify-center sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+            <span className="hidden text-left text-[10.5px] font-medium tracking-[0.12em] text-[#171613]/45 uppercase sm:block">
+              {hasMultipleLightboxPhotos ? "← → navigate · Esc close" : "Esc to close"}
+            </span>
 
-      {/* PHOTO LIGHTBOX */}
-      {photoLightbox !== null && photos[photoLightbox] && (
-        <div
-          style={overlayStyle}
-          onClick={(e) =>
-            e.target === e.currentTarget && setPhotoLightbox(null)
-          }
-        >
-          <div style={{ width: "100%", maxWidth: 980 }}>
-            <div style={lbHeadStyle}>
-              <div>
-                <div style={lbCatStyle}>
-                  {categoryLabel[photos[photoLightbox].categoryId]}
-                </div>
-                <h2 style={lbTitleStyle}>{photos[photoLightbox].title}</h2>
-              </div>
-              <button
-                onClick={() => setPhotoLightbox(null)}
-                style={closeBtnStyle}
-                className="photogal-circle-btn"
-                aria-label="Close"
-              >
-                <FiX size={16} color={ink} />
-              </button>
-            </div>
             <div
-              style={{
-                position: "relative",
-                width: "100%",
-                background: "#000",
-                border: `1px solid ${line}`,
-                boxShadow: shadow,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                maxHeight: "72vh",
-                overflow: "hidden",
-              }}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center justify-center gap-4"
             >
-              <button
-                onClick={() => stepPhoto(-1)}
-                className="photogal-circle-btn"
-                style={{ ...navBtnStyle, left: -64 }}
-                aria-label="Previous"
-              >
-                <FiChevronLeft size={16} color={ink} />
-              </button>
-              <img
-                src={photos[photoLightbox].src || FALLBACK_GALLERY_IMAGES[photoLightbox % FALLBACK_GALLERY_IMAGES.length]}
-                alt={photos[photoLightbox].title}
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = FALLBACK_GALLERY_IMAGES[photoLightbox % FALLBACK_GALLERY_IMAGES.length];
-                }}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain",
-                  display: "block",
-                  maxHeight: "72vh",
-                }}
-              />
-              <button
-                onClick={() => stepPhoto(1)}
-                className="photogal-circle-btn"
-                style={{ ...navBtnStyle, right: -64 }}
-                aria-label="Next"
-              >
-                <FiChevronRight size={16} color={ink} />
-              </button>
+              {hasMultipleLightboxPhotos && (
+                <button
+                  type="button"
+                  onClick={() => stepPhoto(-1)}
+                  aria-label="Previous photo (bottom control)"
+                  className="flex h-8 w-8 items-center justify-center text-[#171613]/65 transition hover:text-[#171613] active:scale-90 md:hidden"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+              )}
+
+              <span className="text-[11px] font-medium tracking-[0.18em] text-[#8e6b37] tabular-nums uppercase">
+                {String(activeLightboxPos + 1).padStart(2, "0")} /{" "}
+                {String(filteredPhotoIdx.length).padStart(2, "0")}
+              </span>
+
+              {hasMultipleLightboxPhotos && (
+                <button
+                  type="button"
+                  onClick={() => stepPhoto(1)}
+                  aria-label="Next photo (bottom control)"
+                  className="flex h-8 w-8 items-center justify-center text-[#171613]/65 transition hover:text-[#171613] active:scale-90 md:hidden"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              )}
             </div>
-            <div
-              style={{
-                textAlign: "center",
-                marginTop: 14,
-                fontSize: 11,
-                letterSpacing: "0.14em",
-                color: inkDim,
-              }}
-            >
-              {String(filteredPhotoIdx.indexOf(photoLightbox) + 1).padStart(
-                2,
-                "0",
-              )}{" "}
-              / {String(filteredPhotoIdx.length).padStart(2, "0")}
-            </div>
+
+            <span className="hidden text-right text-[10.5px] font-medium tracking-[0.12em] text-[#171613]/45 uppercase sm:block">
+              Click outside to close
+            </span>
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }
-
-/* ---------------- tokens & shared styles ---------------- */
-const ink = "#1b1a17";
-const inkDim = "#6b665c";
-const bg = "#fbfaf7";
-const line = "#e6e1d6";
-const brass = "#8a6a28";
-// Overlay palette: text that sits on photos or the dark lightbox
-const ovInk = "#f3eee2";
-const ovDim = "#cfc8b6";
-const ovBrass = "#e0bd7c";
-const ovLine = "#4a463f";
-const shadow = "0 18px 40px -16px rgba(27,26,23,0.18)";
-
-const messageStyle = {
-  padding: "80px 0",
-  textAlign: "center",
-  color: inkDim,
-  fontSize: 14,
-};
-
-const imgStyle = {
-  width: "100%",
-  height: "auto", // photos come from the API now, so let them keep their own height
-  minHeight: 220,
-  objectFit: "cover",
-  display: "block",
-  filter:
-    "grayscale(45%) sepia(12%) saturate(115%) brightness(0.75) contrast(1.05)",
-};
-
-const cornerStyle = { position: "absolute", width: 16, height: 16 };
-
-const tagStyle = {
-  position: "absolute",
-  top: 14,
-  left: 14,
-  fontSize: 10,
-  letterSpacing: "0.16em",
-  textTransform: "uppercase",
-  fontWeight: 700,
-  color: ovBrass,
-  background: "rgba(18,16,14,0.55)",
-  backdropFilter: "blur(6px)",
-  padding: "6px 10px",
-  border: "1px solid rgba(185,144,90,0.35)",};
-
-const expandStyle = {
-  position: "absolute",
-  top: 14,
-  right: 14,
-  width: 32,
-  height: 32,
-  borderRadius: "50%",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  border: "1px solid rgba(239,233,219,0.5)",
-  background: "rgba(18,16,14,0.35)",};
-
-const metaStyle = { position: "absolute", left: 16, right: 16, bottom: 14 };
-
-const overlayStyle = {
-  position: "fixed",
-  inset: 0,
-  zIndex: 99999,
-  display: "flex",
-  background: "rgba(10,9,8,0.94)",
-  backdropFilter: "blur(6px)",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "6vw 8vw",
-};
-
-const lbHeadStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-end",
-  marginBottom: 16,
-  gap: 20,};
-const lbCatStyle = {
-  fontSize: 10.5,
-  letterSpacing: "0.16em",
-  textTransform: "uppercase",
-  color: ovBrass,
-  fontWeight: 700,
-  marginBottom: 6,};
-const lbTitleStyle = {
-  margin: 0,
-  fontFamily: "var(--font-serif)",
-  fontWeight: 400,
-  fontSize: 26,
-  color: ovInk,};
-const closeBtnStyle = {
-  border: `1px solid ${ovLine}`,
-  background: "transparent",
-  color: ovInk,
-  width: 38,
-  height: 38,
-  borderRadius: "50%",
-  cursor: "pointer",
-  flex: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",};
-const navBtnStyle = {
-  position: "absolute",
-  top: "50%",
-  transform: "translateY(-50%)",
-  width: 44,
-  height: 44,
-  borderRadius: "50%",
-  cursor: "pointer",
-  zIndex: 5,
-  border: "1px solid rgba(239,233,219,0.35)",
-  background: "rgba(18,16,14,0.5)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",};

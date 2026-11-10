@@ -22,10 +22,11 @@ export default function Header() {
   const lastY = useRef(0);
   const { pathname } = useLocation();
 
-  // Reset overlay on navigation
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    if (menuOpen) setMenuOpen(false);
+  }
 
   // Listen for global open-questionnaire and open-menu events
   useEffect(() => {
@@ -57,11 +58,12 @@ export default function Header() {
   }, []);
 
   const isHomePage = pathname === "/";
+  const isLightHeaderPage = pathname === "/photo-gallery" || pathname === "/gallery";
 
   return (
     <>
       <header
-        className={`site-header ${scrolled ? "is-scrolled" : ""} ${hidden ? "is-hidden" : ""} ${isHomePage ? "is-homepage" : ""} ${isHomePage && !scrolled ? "is-homepage-top" : ""}`}
+        className={`site-header ${scrolled ? "is-scrolled" : ""} ${hidden ? "is-hidden" : ""} ${isHomePage ? "is-homepage" : ""} ${isHomePage && !scrolled ? "is-homepage-top" : ""} ${isLightHeaderPage ? "is-light-page" : ""}`}
       >
         <div className="site-header-inner">
           {/* Brand Left */}

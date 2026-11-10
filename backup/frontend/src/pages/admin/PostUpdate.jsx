@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -6,16 +6,16 @@ import { CustomUploadAdapterPlugin } from "../../libs/uploader";
 import { tokenExpired } from "../../libs/helpers";
 import { itemPath, postAPI } from "../../services/api";
 import Loading from "../../components/Loading";
+import { toast } from "sonner";
+import { FiArrowLeft, FiImage } from "react-icons/fi";
 
-const DEFAULT_POSTER =
-  "data:image/svg+xml;utf8," +
-  encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150">
-      <rect width="150" height="150" fill="#F1F3F5"/>
-      <path d="M45 100 L65 75 L80 92 L100 65 L115 100 Z" fill="#C6CBD1"/>
-      <circle cx="55" cy="55" r="9" fill="#C6CBD1"/>
-    </svg>`,
-  );
+const FALLBACK_POSTER = "/static/hero-aperture.png";
+
+const resolvePostImg = (src) => {
+  if (!src) return FALLBACK_POSTER;
+  if (/^(https?:|data:|blob:|\/static\/|\/images\/)/i.test(src)) return src;
+  return `${itemPath ?? "/uploads"}/${String(src).replace(/^\/+/, "")}`;
+};
 
 export default function PostUpdate() {
   const [title, setTitle] = useState("");
@@ -25,6 +25,7 @@ export default function PostUpdate() {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
 
+  const blobUrlRef = useRef("");
   const { postId } = useParams();
   const navigate = useNavigate();
 
@@ -32,215 +33,170 @@ export default function PostUpdate() {
     try {
       setPageLoading(true);
       const { data: res } = await postAPI.getBy(postId);
-      
-      const post = res.data;
-      setTitle(post.title);
-      setPreviewImage(post.file);
-      setContent(post.content);
+      const post = res?.data;
+      if (post) {
+        setTitle(post.title || "");
+        setPreviewImage(post.file || "");
+        setContent(post.content || "");
+      }
     } catch (error) {
-      console.error(error?.response?.data?.message);
-      tokenExpired(error?.response?.data?.message);
+      const msg = error?.response?.data?.message || "Failed to load article.";
+      tokenExpired(msg);
+      toast.error(msg);
     } finally {
       setPageLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchPost();
+    return () => {
+      if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postId]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+    const objUrl = URL.createObjectURL(file);
+    blobUrlRef.current = objUrl;
+    setFeaturedImage(file);
+    setPreviewImage(objUrl);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!title.trim()) {
+      toast.error("Article title is required.");
+      return;
+    }
     try {
       setLoading(true);
       const fd = new FormData();
-      fd.append("title", title);
+      fd.append("title", title.trim());
       fd.append("content", content);
       if (featuredImage) fd.append("file", featuredImage);
 
       await postAPI.update(postId, fd);
-
-      alert("Post updated");
+      toast.success("Post updated.");
       navigate("/dashboard/blog-manager");
     } catch (error) {
-      console.error(error?.response?.data?.message);
-      alert(error?.response?.data?.message || "Failed to update post");
-      tokenExpired(error?.response?.data?.message);
+      const msg = error?.response?.data?.message || "Failed to update post.";
+      toast.error(msg);
+      tokenExpired(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setFeaturedImage(file);
-    setPreviewImage(URL.createObjectURL(file));
-  };
-
-  useEffect(() => {
-    fetchPost();
-  }, [postId]);
-
   if (pageLoading) return <Loading />;
 
-  const styles = {
-    pageHeader: {
-      marginBottom: "24px",
-    },
-    heading: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      margin: 0,
-      fontSize: "22px",
-      fontWeight: 600,
-      color: "#1f2328",
-    },
-    manage: {
-      padding: "24px",
-      backgroundColor: "#ffffff",
-      borderRadius: "10px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-    },
-    formRow: {
-      display: "flex",
-      gap: "20px",
-      marginBottom: "20px",
-      flexWrap: "wrap",
-    },
-    inptRow: {
-      display: "flex",
-      flexDirection: "column",
-      flex: "1 1 260px",
-      gap: "6px",
-    },
-    label: {
-      fontSize: "14px",
-      fontWeight: 500,
-      color: "#333",
-    },
-    input: {
-      padding: "10px 12px",
-      fontSize: "14px",
-      border: "1px solid #d0d5dd",
-      borderRadius: "6px",
-      outline: "none",
-      color: "#1f2328",
-      backgroundColor: "#fff",
-    },
-    select: {
-      padding: "10px 12px",
-      fontSize: "14px",
-      border: "1px solid #d0d5dd",
-      borderRadius: "6px",
-      outline: "none",
-      color: "#1f2328",
-      backgroundColor: "#fff",
-    },
-    previewWrap: {
-      marginBottom: "10px",
-    },
-    previewImg: {
-      width: "150px",
-      height: "150px",
-      objectFit: "cover",
-      borderRadius: "8px",
-      border: "1px solid #ddd",
-      display: "block",
-    },
-    spin: {
-      animation: "spin 1s linear infinite",
-    },
-    submitBtn: {
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "8px",
-      padding: "11px 26px",
-      fontSize: "14px",
-      fontWeight: 600,
-      color: "#ffffff",
-      backgroundColor: loading ? "#7EA6F0" : "#2563EB",
-      border: "none",
-      borderRadius: "8px",
-      cursor: loading ? "default" : "pointer",
-      boxShadow: "0 1px 2px rgba(37, 99, 235, 0.3)",
-      transition: "background-color 0.15s ease",
-    },
-    spinnerIcon: {
-      width: "14px",
-      height: "14px",
-      border: "2px solid rgba(255,255,255,0.4)",
-      borderTopColor: "#ffffff",
-      borderRadius: "50%",
-    },
-  };
-
   return (
-    <>
-      <style>
-        {`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}
-      </style>
+    <div className="adm-page">
+      <div className="adm-container crex-animate-in">
+        <div className="adm-header">
+          <div>
+            <h2 className="adm-title">Update Journal Post</h2>
+            <p className="adm-subtitle">
+              Edit headline, cover poster artwork, or article body copy.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="adm-btn-secondary"
+            onClick={() => navigate("/dashboard/blog-manager")}
+          >
+            <FiArrowLeft size={15} />
+            <span>Back to Journal</span>
+          </button>
+        </div>
 
-      <div style={styles.pageHeader}>
-        <h2 style={styles.heading}>Update Blog</h2>
-      </div>
-
-      <div style={styles.manage}>
-        <div>
-          <form onSubmit={handleSubmit}>
-            <div style={styles.formRow}>
-              <div style={styles.inptRow}>
-                <label style={styles.label}>Title</label>
-                <input
-                  style={styles.input}
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter title"
-                  required
-                />
-              </div>
+        <div className="adm-card" style={{ padding: "clamp(18px, 3vw, 28px)" }}>
+          <form onSubmit={handleSubmit} style={{ display: "grid", gap: "20px" }}>
+            <div>
+              <label style={{ marginBottom: "6px" }}>Title *</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter title"
+                required
+                style={{ width: "100%" }}
+              />
             </div>
 
-            <div style={styles.formRow}>
-              <div style={styles.inptRow}>
-                <label style={styles.label}>Poster</label>
-                <div style={styles.previewWrap}>
+            <div>
+              <label style={{ marginBottom: "6px" }}>Cover Poster</label>
+              <label className="adm-dropzone">
+                {previewImage ? (
                   <img
-                    src={`${itemPath}/${previewImage}`}
-                    alt="Preview"
-                    style={styles.previewImg}
+                    src={resolvePostImg(previewImage)}
+                    alt="Poster preview"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = FALLBACK_POSTER;
+                    }}
+                    style={{
+                      maxHeight: "190px",
+                      maxWidth: "100%",
+                      borderRadius: "10px",
+                      objectFit: "cover",
+                    }}
                   />
-                </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", color: "var(--crex-muted)" }}>
+                    <FiImage size={22} />
+                    <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--crex-ink)" }}>
+                      Click to choose replacement poster
+                    </span>
+                  </div>
+                )}
                 <input
-                  style={styles.input}
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
+                  style={{ display: "none" }}
                 />
-              </div>
+              </label>
+              {previewImage && (
+                <div style={{ fontSize: "11.5px", color: "var(--crex-muted)", marginTop: "6px" }}>
+                  Click the image area above to upload a replacement poster.
+                </div>
+              )}
             </div>
 
-            <div style={styles.formRow}>
-              <div style={{ ...styles.inptRow, flex: "1 1 100%" }}>
+            <div>
+              <label style={{ marginBottom: "6px" }}>Content</label>
+              <div className="adm-editor-wrap">
                 <CKEditor
                   editor={ClassicEditor}
                   config={{
                     extraPlugins: [CustomUploadAdapterPlugin],
                   }}
                   data={content}
-                  onChange={(event, editor) => setContent(editor.getData())}
+                  onChange={(_event, editor) => setContent(editor.getData())}
                 />
               </div>
             </div>
 
-            <button type="submit" style={styles.submitBtn} disabled={loading}>
-              {loading && (
-                <span style={{ ...styles.spin, ...styles.spinnerIcon }} />
-              )}
-              {loading ? "Updating..." : "Update"}
-            </button>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                className="adm-btn-secondary"
+                onClick={() => navigate("/dashboard/blog-manager")}
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button type="submit" className="adm-btn-primary" disabled={loading}>
+                {loading ? "Updating…" : "Save Changes"}
+              </button>
+            </div>
           </form>
         </div>
       </div>
-    </>
+    </div>
   );
 }

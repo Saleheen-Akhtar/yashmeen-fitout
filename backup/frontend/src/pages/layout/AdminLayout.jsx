@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import useCreateStore from "../../store";
 import { getInitials } from "../../libs/helpers";
@@ -10,10 +10,11 @@ import {
   FiLogOut,
   FiMenu,
   FiX,
+  FiChevronDown,
 } from "react-icons/fi";
 import "../../styles/admin-architectural.css";
 
-const NAV_LINKS = [
+const PRIMARY_NAV_LINKS = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Projects", href: "/dashboard/project-manager" },
   { label: "Quotes", href: "/dashboard/quotes" },
@@ -23,9 +24,20 @@ const NAV_LINKS = [
   { label: "Categories", href: "/dashboard/categories" },
 ];
 
+const STUDIO_NAV_LINKS = [
+  { label: "Banners", href: "/dashboard/banner-manager" },
+  { label: "Videos", href: "/dashboard/video-manager" },
+  { label: "Vacancies", href: "/dashboard/vacancy-manager" },
+  { label: "Popups", href: "/dashboard/popup-manager" },
+];
+
+const ALL_NAV_LINKS = [...PRIMARY_NAV_LINKS, ...STUDIO_NAV_LINKS];
+
 export default function AdminLayout() {
   const [dubaiTime, setDubaiTime] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [studioMenuOpen, setStudioMenuOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -52,6 +64,23 @@ export default function AdminLayout() {
     return () => clearInterval(interval);
   }, []);
 
+  // Close menus on route transition
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setStudioMenuOpen(false);
+  }, [location.pathname, location.search]);
+
+  // Close Studio dropdown on outside click
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setStudioMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -61,10 +90,22 @@ export default function AdminLayout() {
     if (path === "/dashboard") {
       return location.pathname === "/dashboard";
     }
+    if (path === "/dashboard/blog-manager") {
+      return (
+        location.pathname.startsWith("/dashboard/blog-manager") ||
+        location.pathname.startsWith("/dashboard/create-blog") ||
+        location.pathname.startsWith("/dashboard/update-blog")
+      );
+    }
     return location.pathname.startsWith(path);
   };
 
+  const isStudioRouteActive = STUDIO_NAV_LINKS.some((item) =>
+    isLinkActive(item.href),
+  );
+
   const openSiteSettingsModal = () => {
+    setMobileMenuOpen(false);
     if (location.pathname !== "/dashboard") {
       navigate("/dashboard?open=site-settings");
     } else {
@@ -81,29 +122,9 @@ export default function AdminLayout() {
         flexDirection: "column",
       }}
     >
-      {/* Top Floating Crextio-Style Pill Header */}
-      <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-          padding: "16px 28px 10px",
-          background: "linear-gradient(180deg, rgba(244,244,240,0.86) 0%, rgba(244,244,240,0) 100%)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "1440px",
-            margin: "0 auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "12px",
-          }}
-        >
+      {/* Top Floating Architectural Bento Pill Header */}
+      <header className="admin-header">
+        <div className="admin-header-inner">
           {/* Left Oval Brand Pill */}
           <Link to="/dashboard" className="crex-brand-pill">
             <span>Yashmeen</span>
@@ -111,7 +132,7 @@ export default function AdminLayout() {
 
           {/* Center Frosted Pill Nav Bar */}
           <nav className="crex-nav-pillbar admin-desktop-nav" aria-label="Admin Navigation">
-            {NAV_LINKS.map((item) => (
+            {PRIMARY_NAV_LINKS.map((item) => (
               <Link
                 key={item.href}
                 to={item.href}
@@ -120,14 +141,50 @@ export default function AdminLayout() {
                 {item.label}
               </Link>
             ))}
+
+            {/* Studio Sub-Modules Dropdown (Banners, Videos, Vacancies, Popups) */}
+            <div ref={dropdownRef} style={{ position: "relative" }}>
+              <button
+                type="button"
+                onClick={() => setStudioMenuOpen((o) => !o)}
+                className={`crex-nav-link ${isStudioRouteActive ? "is-active" : ""}`}
+                aria-expanded={studioMenuOpen}
+                aria-haspopup="menu"
+              >
+                <span>Media & HR</span>
+                <FiChevronDown
+                  size={13}
+                  style={{
+                    transform: studioMenuOpen ? "rotate(180deg)" : "none",
+                    transition: "transform 0.18s ease",
+                  }}
+                />
+              </button>
+
+              {studioMenuOpen && (
+                <div className="admin-dropdown-menu" role="menu">
+                  {STUDIO_NAV_LINKS.map((item) => (
+                    <Link
+                      key={item.href}
+                      to={item.href}
+                      onClick={() => setStudioMenuOpen(false)}
+                      className={`admin-dropdown-item ${isLinkActive(item.href) ? "is-active" : ""}`}
+                      role="menuitem"
+                    >
+                      <span>{item.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Right Pill & Circle Controls */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
             <button
               type="button"
               onClick={openSiteSettingsModal}
-              className="crex-action-pill"
+              className="crex-action-pill admin-hide-sm"
               title="Edit Website Settings, Hero, Contact & Services"
             >
               <FiSettings size={14} />
@@ -138,7 +195,7 @@ export default function AdminLayout() {
               to="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="crex-action-pill"
+              className="crex-action-pill admin-hide-sm"
               title="Open Live Public Website"
             >
               <span>Live Site</span>
@@ -149,7 +206,8 @@ export default function AdminLayout() {
               type="button"
               onClick={() => navigate("/dashboard/enquiry")}
               className="crex-icon-circle"
-              title={`Notifications · Dubai ${dubaiTime}`}
+              title={`Inquiries · Dubai ${dubaiTime}`}
+              aria-label="Inquiries Notifications"
               style={{ position: "relative" }}
             >
               <FiBell size={15} />
@@ -161,13 +219,13 @@ export default function AdminLayout() {
                   width: "6px",
                   height: "6px",
                   borderRadius: "50%",
-                  background: "#f5cb5c",
+                  background: "var(--crex-brass)",
                 }}
               />
             </button>
 
             <div
-              className="crex-icon-circle"
+              className="crex-icon-circle admin-hide-sm"
               title={user?.name || "Admin Profile"}
               style={{ fontWeight: 700, fontSize: "11px" }}
             >
@@ -177,62 +235,114 @@ export default function AdminLayout() {
             <button
               type="button"
               onClick={handleLogout}
-              className="crex-icon-circle"
+              className="crex-icon-circle admin-hide-sm"
               title="Sign out"
+              aria-label="Sign out"
             >
               <FiLogOut size={14} />
             </button>
 
             <button
               type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => setMobileMenuOpen((v) => !v)}
               className="crex-icon-circle admin-mobile-toggle"
               style={{ display: "none" }}
               aria-label="Toggle Menu"
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <FiX size={16} /> : <FiMenu size={16} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Drawer */}
+        {/* Mobile / Tablet Navigation Drawer */}
         {mobileMenuOpen && (
           <div
-            className="crex-card"
+            className="crex-card crex-animate-in"
             style={{
-              marginTop: "12px",
-              padding: "16px",
+              marginTop: "10px",
+              padding: "14px",
               display: "flex",
               flexDirection: "column",
-              gap: "8px",
+              gap: "6px",
+              maxHeight: "calc(100vh - 88px)",
+              overflowY: "auto",
             }}
           >
-            {NAV_LINKS.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`crex-nav-link ${isLinkActive(item.href) ? "is-active" : ""}`}
-                style={{ display: "block" }}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: "6px",
+              }}
+            >
+              {ALL_NAV_LINKS.map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`crex-nav-link ${isLinkActive(item.href) ? "is-active" : ""}`}
+                  style={{ justifyContent: "flex-start", padding: "9px 12px" }}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "8px",
+                paddingTop: "10px",
+                marginTop: "6px",
+                borderTop: "1px solid var(--crex-line)",
+              }}
+            >
+              <button
+                type="button"
+                onClick={openSiteSettingsModal}
+                className="crex-btn-ghost"
+                style={{ flex: "1 1 120px", justifyContent: "center" }}
               >
-                {item.label}
+                <FiSettings size={13} />
+                <span>Site Settings</span>
+              </button>
+              <Link
+                to="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="crex-btn-ghost"
+                style={{ flex: "1 1 120px", justifyContent: "center", textDecoration: "none" }}
+              >
+                <span>Live Site</span>
+                <FiExternalLink size={13} />
               </Link>
-            ))}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="crex-btn-dark"
+                style={{ flex: "1 1 100%", justifyContent: "center" }}
+              >
+                <FiLogOut size={13} />
+                <span>Sign Out ({user?.name || "Admin"})</span>
+              </button>
+            </div>
           </div>
         )}
       </header>
 
       {/* Page Body */}
-      <main style={{ flex: 1 }}>
+      <main style={{ flex: 1, minWidth: 0 }}>
         <Outlet />
       </main>
 
-      {/* Soft Minimal Footer */}
+      {/* Soft Architectural Footer */}
       <footer
         style={{
           padding: "20px 28px 28px",
           fontSize: "12px",
-          color: "#71717a",
+          color: "var(--crex-muted)",
         }}
       >
         <div
@@ -244,7 +354,7 @@ export default function AdminLayout() {
             alignItems: "center",
             flexWrap: "wrap",
             gap: "12px",
-            borderTop: "1px solid rgba(0, 0, 0, 0.06)",
+            borderTop: "1px solid var(--crex-line)",
             paddingTop: "16px",
           }}
         >

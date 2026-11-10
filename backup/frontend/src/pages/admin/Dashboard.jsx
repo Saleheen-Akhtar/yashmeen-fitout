@@ -39,14 +39,13 @@ import {
   FiGlobe,
   FiCheckCircle,
   FiCalendar,
-  FiImage,
 } from "react-icons/fi";
 
 const STAGES = [
   { id: "leads", name: "New Leads", badgeClass: "badge-lavender" },
   { id: "feasibility", name: "Feasibility & Costing", badgeClass: "badge-mist" },
   { id: "proposal", name: "Proposal & Quotes", badgeClass: "badge-amber" },
-  { id: "construction", name: "In Construction", badgeClass: "badge-yellow" },
+  { id: "construction", name: "In Construction", badgeClass: "badge-brass" },
   { id: "completed", name: "Completed & Handed Over", badgeClass: "badge-sage" },
 ];
 
@@ -100,6 +99,7 @@ export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [categories, setCategories] = useState([]);
   const [webDetails, setWebDetails] = useState(DEFAULT_WEBSITE_CONTENT);
+  const webDetailsRef = useRef(DEFAULT_WEBSITE_CONTENT);
   const [loading, setLoading] = useState(true);
   const [savingCms, setSavingCms] = useState(false);
 
@@ -217,9 +217,13 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    webDetailsRef.current = webDetails;
+  }, [webDetails]);
+
+  useEffect(() => {
     loadDashboardData();
     const onOpenSettings = () => {
-      setSiteForm(webDetails);
+      setSiteForm(webDetailsRef.current);
       setSiteModalOpen(true);
     };
     window.addEventListener("open-cms-settings", onOpenSettings);
@@ -228,10 +232,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (location.search.includes("open=site-settings")) {
-      setSiteForm(webDetails);
+      setSiteForm(webDetailsRef.current);
       setSiteModalOpen(true);
     }
-  }, [location.search]);
+  }, [location.search, webDetails]);
 
   // Studio Session Stopwatch Effect
   useEffect(() => {
@@ -262,6 +266,10 @@ export default function Dashboard() {
     const list = [];
     quotes.forEach((q) => {
       const id = `quote_${q._id}`;
+      const servicesList = Array.isArray(q.services) ? q.services : [];
+      const subtitleText = q.projectType
+        ? `${q.projectType}${servicesList.length ? ` · ${servicesList.slice(0, 2).join(", ")}` : " Fit-Out"}`
+        : servicesList.join(", ") || "Turnkey Brief";
       list.push({
         id,
         rawId: q._id,
@@ -269,12 +277,14 @@ export default function Dashboard() {
         typeBadge: "Quote",
         badgeStyle: "badge-amber",
         title: q.name || "Untitled Brief",
-        subtitle: q.projectType ? `${q.projectType} Fit-Out` : "Turnkey Brief",
+        subtitle: subtitleText,
         location: q.location || "Dubai, UAE",
         budget: q.budget || "Custom Brief",
+        timeline: q.timeline || "",
+        servicesList,
         email: q.email,
         mobile: q.mobile,
-        message: q.notes || q.specifications || q.details,
+        message: q.message || q.notes || q.specifications || q.details,
         date: q.createdAt,
         stage: stageMap[id] || "leads",
         initials: getInitials(q.name || "Q"),
@@ -528,6 +538,7 @@ export default function Dashboard() {
     });
     setProjectFiles([]);
     setExistingImages([]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
     setProjectModalOpen(true);
   };
 
@@ -545,6 +556,7 @@ export default function Dashboard() {
     });
     setProjectFiles([]);
     setExistingImages(proj.images || []);
+    if (fileInputRef.current) fileInputRef.current.value = "";
     setProjectModalOpen(true);
   };
 
@@ -726,14 +738,7 @@ export default function Dashboard() {
   const progressFraction = timerRunning ? Math.min(((timerSeconds % 360) / 360) * 0.75 + 0.2, 0.92) : 0.68;
 
   return (
-    <div
-      style={{
-        maxWidth: "1440px",
-        margin: "0 auto",
-        padding: "10px 28px 64px",
-        boxSizing: "border-box",
-      }}
-    >
+    <div className="crex-dash-wrap">
       {/* =====================================================================
           1. GREETING HEADER + CAPSULE PROGRESS STRIP + THIN ARCHITECTURAL STATS
           ===================================================================== */}
@@ -748,39 +753,52 @@ export default function Dashboard() {
         }}
       >
         {/* Left: Greeting + Status Capsules */}
-        <div style={{ flex: "1 1 560px", maxWidth: "700px" }}>
-          <h1
-            style={{
-              fontSize: "clamp(28px, 3.2vw, 40px)",
-              fontWeight: 500,
-              color: "#1e1f22",
-              margin: "0 0 18px 0",
-              letterSpacing: "-0.03em",
-              lineHeight: 1.1,
-            }}
-          >
-            Welcome in, {user?.name || "Yashmeen"}
-          </h1>
+        <div style={{ flex: "1 1 520px", maxWidth: "700px", minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap", margin: "0 0 18px 0" }}>
+            <h1
+              style={{
+                fontSize: "clamp(26px, 3.2vw, 40px)",
+                fontWeight: 500,
+                color: "var(--crex-ink)",
+                margin: 0,
+                letterSpacing: "-0.03em",
+                lineHeight: 1.1,
+              }}
+            >
+              Welcome in, {user?.name || "Yashmeen"}
+            </h1>
+            {loading && (
+              <span
+                className="badge-brass"
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  padding: "4px 10px",
+                  borderRadius: "9999px",
+                }}
+              >
+                Syncing…
+              </span>
+            )}
+          </div>
 
           {/* Segmented Horizontal Progress Strip */}
           <div
+            className="crex-progress-strip"
             style={{
-              display: "grid",
               gridTemplateColumns: `${leadsPct}fr ${quotesPct}fr ${siteSyncPct}fr ${outputPct}fr`,
-              gap: "8px",
-              alignItems: "end",
             }}
           >
-            {/* Bar 1: Leads (Charcoal) */}
+            {/* Bar 1: Leads (Obsidian Ink) */}
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 500, color: "#52525b", marginBottom: "6px", paddingLeft: "4px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 500, color: "var(--crex-muted)", marginBottom: "6px", paddingLeft: "4px" }}>
                 Inquiries
               </div>
               <div
                 style={{
                   height: "30px",
                   borderRadius: "9999px",
-                  background: "#232326",
+                  background: "var(--crex-dark)",
                   color: "#ffffff",
                   fontSize: "11px",
                   fontWeight: 600,
@@ -793,19 +811,19 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Bar 2: Quotes (Warm Sunshine Yellow) */}
+            {/* Bar 2: Quotes (Brushed Champagne Brass) */}
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 500, color: "#52525b", marginBottom: "6px", paddingLeft: "4px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 500, color: "var(--crex-muted)", marginBottom: "6px", paddingLeft: "4px" }}>
                 Quotes
               </div>
               <div
                 style={{
                   height: "30px",
                   borderRadius: "9999px",
-                  background: "#f5cb5c",
-                  color: "#1e1f22",
+                  background: "var(--crex-brass)",
+                  color: "var(--crex-ink)",
                   fontSize: "11px",
-                  fontWeight: 600,
+                  fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
                   padding: "0 12px",
@@ -817,7 +835,7 @@ export default function Dashboard() {
 
             {/* Bar 3: Site Sync (Signature Diagonal Hatched Capsule) */}
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 500, color: "#52525b", marginBottom: "6px", paddingLeft: "4px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 500, color: "var(--crex-muted)", marginBottom: "6px", paddingLeft: "4px" }}>
                 Site Works
               </div>
               <div
@@ -825,7 +843,7 @@ export default function Dashboard() {
                 style={{
                   height: "30px",
                   borderRadius: "9999px",
-                  color: "#3f3f46",
+                  color: "var(--crex-muted)",
                   fontSize: "11px",
                   fontWeight: 600,
                   display: "flex",
@@ -839,16 +857,16 @@ export default function Dashboard() {
 
             {/* Bar 4: Services Ready (Hairline Outline Pill) */}
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 500, color: "#52525b", marginBottom: "6px", paddingLeft: "4px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 500, color: "var(--crex-muted)", marginBottom: "6px", paddingLeft: "4px" }}>
                 Services
               </div>
               <div
                 style={{
                   height: "30px",
                   borderRadius: "9999px",
-                  border: "1px solid rgba(0, 0, 0, 0.22)",
-                  background: "rgba(255, 255, 255, 0.25)",
-                  color: "#1e1f22",
+                  border: "1px solid var(--crex-line-strong)",
+                  background: "rgba(255, 255, 255, 0.55)",
+                  color: "var(--crex-ink)",
                   fontSize: "11px",
                   fontWeight: 600,
                   display: "flex",
@@ -863,14 +881,7 @@ export default function Dashboard() {
         </div>
 
         {/* Right: Thin Giant Architectural Numerals */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "36px",
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="crex-stats-row">
           <div
             onClick={() => {
               setActiveTab("projects");
@@ -879,12 +890,12 @@ export default function Dashboard() {
             style={{ cursor: "pointer" }}
           >
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-              <FiLayers size={15} color="#71717a" />
+              <FiLayers size={15} color="#8a8a86" />
               <span style={{ fontSize: "42px", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1 }}>
                 {projects.length}
               </span>
             </div>
-            <div style={{ fontSize: "11.5px", color: "#52525b", marginTop: "4px", paddingLeft: "23px" }}>
+            <div style={{ fontSize: "11.5px", color: "var(--crex-muted)", marginTop: "4px", paddingLeft: "23px" }}>
               Projects
             </div>
           </div>
@@ -897,12 +908,12 @@ export default function Dashboard() {
             style={{ cursor: "pointer" }}
           >
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-              <FiBriefcase size={15} color="#71717a" />
+              <FiBriefcase size={15} color="#8a8a86" />
               <span style={{ fontSize: "42px", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1 }}>
                 {activeServicesCount}
               </span>
             </div>
-            <div style={{ fontSize: "11.5px", color: "#52525b", marginTop: "4px", paddingLeft: "23px" }}>
+            <div style={{ fontSize: "11.5px", color: "var(--crex-muted)", marginTop: "4px", paddingLeft: "23px" }}>
               Services
             </div>
           </div>
@@ -915,12 +926,12 @@ export default function Dashboard() {
             style={{ cursor: "pointer" }}
           >
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-              <FiFileText size={15} color="#71717a" />
+              <FiFileText size={15} color="#8a8a86" />
               <span style={{ fontSize: "42px", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1 }}>
                 {quotes.length + enquiries.length}
               </span>
             </div>
-            <div style={{ fontSize: "11.5px", color: "#52525b", marginTop: "4px", paddingLeft: "23px" }}>
+            <div style={{ fontSize: "11.5px", color: "var(--crex-muted)", marginTop: "4px", paddingLeft: "23px" }}>
               Requests
             </div>
           </div>
@@ -942,13 +953,14 @@ export default function Dashboard() {
             flexDirection: "column",
             justifyContent: "space-between",
             padding: "18px",
-            background: "#262629",
+            background: "#141311",
           }}
         >
           <img
             src={resolveImage(featuredProj.images?.[0])}
             alt={featuredProj.title}
             onError={(e) => {
+              e.currentTarget.onerror = null;
               e.currentTarget.src = FALLBACK_PROJECT_IMG;
             }}
             style={{
@@ -965,7 +977,7 @@ export default function Dashboard() {
               position: "absolute",
               inset: 0,
               background:
-                "linear-gradient(180deg, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.05) 45%, rgba(18,18,20,0.82) 100%)",
+                "linear-gradient(180deg, rgba(8,8,7,0.24) 0%, rgba(8,8,7,0.06) 45%, rgba(8,8,7,0.84) 100%)",
             }}
           />
 
@@ -988,7 +1000,7 @@ export default function Dashboard() {
                   )
                 }
                 className="crex-icon-circle"
-                style={{ width: "30px", height: "30px", background: "rgba(255,255,255,0.25)", color: "#fff", border: "none", backdropFilter: "blur(8px)" }}
+                style={{ width: "30px", height: "30px", background: "rgba(255,255,255,0.24)", color: "#fff", border: "none", backdropFilter: "blur(8px)" }}
                 title="Previous live project"
               >
                 <FiChevronLeft size={14} />
@@ -997,7 +1009,7 @@ export default function Dashboard() {
                 type="button"
                 onClick={() => setFeaturedIndex((i) => i + 1)}
                 className="crex-icon-circle"
-                style={{ width: "30px", height: "30px", background: "rgba(255,255,255,0.25)", color: "#fff", border: "none", backdropFilter: "blur(8px)" }}
+                style={{ width: "30px", height: "30px", background: "rgba(255,255,255,0.24)", color: "#fff", border: "none", backdropFilter: "blur(8px)" }}
                 title="Next live project"
               >
                 <FiChevronRight size={14} />
@@ -1056,7 +1068,7 @@ export default function Dashboard() {
               >
                 {featuredProj.title}
               </h3>
-              <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.8)", margin: 0 }}>
+              <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.82)", margin: 0 }}>
                 {featuredProj.sector || "Architectural Works"} · {featuredProj.location || "Dubai"}
               </p>
             </div>
@@ -1075,6 +1087,7 @@ export default function Dashboard() {
                 fontWeight: 500,
                 whiteSpace: "nowrap",
                 cursor: "pointer",
+                flexShrink: 0,
               }}
               title="Add new project to website"
             >
@@ -1096,14 +1109,14 @@ export default function Dashboard() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
-              <div style={{ fontSize: "17px", fontWeight: 500, color: "#1e1f22" }}>
+              <div style={{ fontSize: "17px", fontWeight: 500, color: "var(--crex-ink)" }}>
                 Progress
               </div>
               <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginTop: "8px" }}>
                 <span style={{ fontSize: "34px", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1 }}>
                   {allCRMItems.length}
                 </span>
-                <span style={{ fontSize: "11px", color: "#71717a", lineHeight: 1.3 }}>
+                <span style={{ fontSize: "11px", color: "var(--crex-muted)", lineHeight: 1.3 }}>
                   Active Deals
                   <br />
                   in pipeline
@@ -1124,7 +1137,7 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* 7 Vertical Dotted Tracks with Charcoal & Gold Capsule Bars */}
+          {/* 7 Vertical Dotted Tracks with Obsidian & Champagne Brass Capsule Bars */}
           <div
             style={{
               display: "grid",
@@ -1149,20 +1162,20 @@ export default function Dashboard() {
                 }}
                 title={`${bar.day}: ${bar.label}`}
               >
-                {/* Floating Yellow Badge above Peak Bar */}
+                {/* Floating Brass Badge above Peak Bar */}
                 {bar.highlight && (
                   <div
                     style={{
                       position: "absolute",
                       top: "-6px",
-                      background: "#f5cb5c",
-                      color: "#1e1f22",
+                      background: "var(--crex-brass)",
+                      color: "var(--crex-ink)",
                       fontSize: "10px",
                       fontWeight: 700,
                       padding: "3px 8px",
                       borderRadius: "9999px",
                       whiteSpace: "nowrap",
-                      boxShadow: "0 2px 8px rgba(245, 203, 92, 0.4)",
+                      boxShadow: "0 2px 8px rgba(197, 160, 89, 0.34)",
                       zIndex: 2,
                     }}
                   >
@@ -1187,7 +1200,7 @@ export default function Dashboard() {
                       top: "8px",
                       bottom: "8px",
                       width: "2px",
-                      borderLeft: "2px dotted rgba(0, 0, 0, 0.14)",
+                      borderLeft: "2px dotted rgba(8, 8, 7, 0.14)",
                     }}
                   />
                   {/* Solid Pill Bar */}
@@ -1197,7 +1210,7 @@ export default function Dashboard() {
                       width: "10px",
                       height: `${bar.h}%`,
                       borderRadius: "9999px",
-                      background: bar.highlight ? "#f5cb5c" : "#232326",
+                      background: bar.highlight ? "var(--crex-brass)" : "var(--crex-dark)",
                       transition: "height 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
                       zIndex: 1,
                     }}
@@ -1208,7 +1221,7 @@ export default function Dashboard() {
                   style={{
                     fontSize: "10.5px",
                     fontWeight: 600,
-                    color: bar.highlight ? "#1e1f22" : "#71717a",
+                    color: bar.highlight ? "var(--crex-ink)" : "var(--crex-muted-soft)",
                     marginTop: "8px",
                   }}
                 >
@@ -1231,7 +1244,7 @@ export default function Dashboard() {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ fontSize: "17px", fontWeight: 500, color: "#1e1f22" }}>
+            <div style={{ fontSize: "17px", fontWeight: 500, color: "var(--crex-ink)" }}>
               Site tracker
             </div>
             <button
@@ -1244,7 +1257,7 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* Radial Tick Gauge with Golden Progress Arc */}
+          {/* Radial Tick Gauge with Champagne Brass Progress Arc */}
           <div
             style={{
               position: "relative",
@@ -1267,20 +1280,20 @@ export default function Dashboard() {
                     y1="10"
                     x2="80"
                     y2="19"
-                    stroke="rgba(0,0,0,0.18)"
+                    stroke="rgba(8,8,7,0.18)"
                     strokeWidth="1.6"
                     strokeLinecap="round"
                     transform={`rotate(${angle} 80 80)`}
                   />
                 );
               })}
-              {/* Golden Progress Overlay Arc */}
+              {/* Champagne Brass Progress Overlay Arc */}
               <circle
                 cx="80"
                 cy="80"
                 r="64"
                 fill="none"
-                stroke="#f5cb5c"
+                stroke="#c5a059"
                 strokeWidth="10"
                 strokeLinecap="round"
                 strokeDasharray={`${progressFraction * 402} 402`}
@@ -1299,13 +1312,13 @@ export default function Dashboard() {
                   fontSize: "28px",
                   fontWeight: 500,
                   letterSpacing: "-0.03em",
-                  color: "#1e1f22",
+                  color: "var(--crex-ink)",
                   lineHeight: 1.05,
                 }}
               >
                 {formattedTimer}
               </div>
-              <div style={{ fontSize: "11px", color: "#71717a", marginTop: "2px" }}>
+              <div style={{ fontSize: "11px", color: "var(--crex-muted)", marginTop: "2px" }}>
                 Atelier Time
               </div>
             </div>
@@ -1319,8 +1332,8 @@ export default function Dashboard() {
                 onClick={() => setTimerRunning(true)}
                 className="crex-icon-circle"
                 style={{
-                  background: timerRunning ? "#232326" : "#ffffff",
-                  color: timerRunning ? "#ffffff" : "#1e1f22",
+                  background: timerRunning ? "var(--crex-dark)" : "#ffffff",
+                  color: timerRunning ? "#ffffff" : "var(--crex-ink)",
                 }}
                 title="Start site work timer"
               >
@@ -1347,7 +1360,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* COLUMN 4 RIGHT STACK (Spans 2 Rows): TOP WEBSITE SYNC + TALL DARK TASK QUEUE */}
+        {/* COLUMN 4 RIGHT STACK (Spans 2 Rows): TOP WEBSITE SYNC + TALL OBSIDIAN TASK QUEUE */}
         <div className="crex-col-right-stack">
           {/* Top-Right Onboarding / Website CMS Sync Card */}
           <div className="crex-card" style={{ padding: "20px 22px" }}>
@@ -1359,7 +1372,7 @@ export default function Dashboard() {
                 marginBottom: "14px",
               }}
             >
-              <span style={{ fontSize: "17px", fontWeight: 500, color: "#1e1f22" }}>
+              <span style={{ fontSize: "17px", fontWeight: 500, color: "var(--crex-ink)" }}>
                 Web Sync
               </span>
               <span style={{ fontSize: "28px", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1 }}>
@@ -1367,10 +1380,10 @@ export default function Dashboard() {
               </span>
             </div>
 
-            {/* 3 Stacked Capsule Bars (Yellow, Charcoal, Muted Slate) */}
+            {/* 3 Stacked Capsule Bars (Brass, Obsidian Ink, Muted Stone) */}
             <div style={{ display: "grid", gridTemplateColumns: "3fr 2.2fr 1.2fr", gap: "6px" }}>
               <div>
-                <div style={{ fontSize: "10.5px", color: "#52525b", marginBottom: "5px" }}>
+                <div style={{ fontSize: "10.5px", color: "var(--crex-muted)", marginBottom: "5px" }}>
                   Services ({activeServicesCount})
                 </div>
                 <div
@@ -1378,10 +1391,10 @@ export default function Dashboard() {
                   style={{
                     height: "36px",
                     borderRadius: "10px",
-                    background: "#f5cb5c",
-                    color: "#1e1f22",
+                    background: "var(--crex-brass)",
+                    color: "var(--crex-ink)",
                     fontSize: "11px",
-                    fontWeight: 600,
+                    fontWeight: 700,
                     display: "flex",
                     alignItems: "center",
                     padding: "0 10px",
@@ -1393,7 +1406,7 @@ export default function Dashboard() {
               </div>
 
               <div>
-                <div style={{ fontSize: "10.5px", color: "#52525b", marginBottom: "5px" }}>
+                <div style={{ fontSize: "10.5px", color: "var(--crex-muted)", marginBottom: "5px" }}>
                   Works ({projects.length})
                 </div>
                 <div
@@ -1401,7 +1414,7 @@ export default function Dashboard() {
                   style={{
                     height: "36px",
                     borderRadius: "10px",
-                    background: "#232326",
+                    background: "var(--crex-dark)",
                     color: "#ffffff",
                     fontSize: "11px",
                     fontWeight: 600,
@@ -1416,14 +1429,14 @@ export default function Dashboard() {
               </div>
 
               <div>
-                <div style={{ fontSize: "10.5px", color: "#52525b", marginBottom: "5px" }}>
+                <div style={{ fontSize: "10.5px", color: "var(--crex-muted)", marginBottom: "5px" }}>
                   Queue
                 </div>
                 <div
                   style={{
                     height: "36px",
                     borderRadius: "10px",
-                    background: "#a1a1aa",
+                    background: "#545454",
                     color: "#ffffff",
                     fontSize: "11px",
                     fontWeight: 600,
@@ -1438,7 +1451,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Tall Matte Dark Charcoal Task Queue Card */}
+          {/* Tall Matte Obsidian Ink Task Queue Card */}
           <div
             className="crex-card-dark"
             style={{
@@ -1490,7 +1503,7 @@ export default function Dashboard() {
                           height: "32px",
                           borderRadius: "50%",
                           background: "rgba(255, 255, 255, 0.08)",
-                          color: "#d4d4d8",
+                          color: "#d6d4ce",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -1513,7 +1526,7 @@ export default function Dashboard() {
                         >
                           {task.title}
                         </div>
-                        <div style={{ fontSize: "10.5px", color: "#a1a1aa", marginTop: "2px" }}>
+                        <div style={{ fontSize: "10.5px", color: "#a1a09b", marginTop: "2px" }}>
                           {task.subtitle}
                         </div>
                       </div>
@@ -1525,8 +1538,8 @@ export default function Dashboard() {
                         width: "20px",
                         height: "20px",
                         borderRadius: "50%",
-                        background: task.completed ? "#f5cb5c" : "rgba(255, 255, 255, 0.14)",
-                        color: task.completed ? "#1e1f22" : "transparent",
+                        background: task.completed ? "#c5a059" : "rgba(255, 255, 255, 0.14)",
+                        color: task.completed ? "#080807" : "transparent",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -1563,7 +1576,7 @@ export default function Dashboard() {
                   />
                   <button
                     type="submit"
-                    className="crex-btn-yellow"
+                    className="crex-btn-accent"
                     style={{ padding: "5px 12px", fontSize: "11px" }}
                   >
                     Add
@@ -1571,7 +1584,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={() => setAddingTask(false)}
-                    style={{ background: "transparent", border: "none", color: "#a1a1aa", cursor: "pointer" }}
+                    style={{ background: "transparent", border: "none", color: "#a1a09b", cursor: "pointer" }}
                   >
                     <FiX size={14} />
                   </button>
@@ -1585,7 +1598,7 @@ export default function Dashboard() {
                     background: "rgba(255,255,255,0.07)",
                     border: "1px dashed rgba(255,255,255,0.18)",
                     borderRadius: "9999px",
-                    color: "#e4e4e7",
+                    color: "#e6e4de",
                     padding: "7px 12px",
                     fontSize: "11.5px",
                     fontWeight: 500,
@@ -1615,7 +1628,7 @@ export default function Dashboard() {
           }}
         >
           {/* Accordion 1: Live Website Projects */}
-          <div style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: "10px", marginBottom: "10px" }}>
+          <div style={{ borderBottom: "1px solid var(--crex-line)", paddingBottom: "10px", marginBottom: "10px" }}>
             <button
               type="button"
               onClick={() => setOpenAccordion(openAccordion === "projects" ? "" : "projects")}
@@ -1628,7 +1641,7 @@ export default function Dashboard() {
                 justifyContent: "space-between",
                 fontSize: "13.5px",
                 fontWeight: 500,
-                color: "#1e1f22",
+                color: "var(--crex-ink)",
                 cursor: "pointer",
                 padding: "4px 0",
               }}
@@ -1650,7 +1663,8 @@ export default function Dashboard() {
                       gap: "10px",
                       padding: "6px 8px",
                       borderRadius: "10px",
-                      background: "rgba(255,255,255,0.65)",
+                      background: "rgba(255,255,255,0.72)",
+                      border: "1px solid var(--crex-line)",
                       cursor: "pointer",
                     }}
                   >
@@ -1658,17 +1672,20 @@ export default function Dashboard() {
                       <img
                         src={resolveImage(p.images?.[0])}
                         alt={p.title}
-                        onError={(e) => (e.currentTarget.src = FALLBACK_PROJECT_IMG)}
-                        style={{ width: "36px", height: "28px", borderRadius: "6px", objectFit: "cover" }}
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = FALLBACK_PROJECT_IMG;
+                        }}
+                        style={{ width: "36px", height: "28px", borderRadius: "6px", objectFit: "cover", flexShrink: 0 }}
                       />
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {p.title}
                         </div>
-                        <div style={{ fontSize: "10.5px", color: "#71717a" }}>{p.location || "Dubai"}</div>
+                        <div style={{ fontSize: "10.5px", color: "var(--crex-muted)" }}>{p.location || "Dubai"}</div>
                       </div>
                     </div>
-                    <FiEdit2 size={12} color="#71717a" />
+                    <FiEdit2 size={12} color="#8a8a86" style={{ flexShrink: 0 }} />
                   </div>
                 ))}
                 <button
@@ -1685,7 +1702,7 @@ export default function Dashboard() {
           </div>
 
           {/* Accordion 2: Services (Default Open — mirrors "Devices -> MacBook Air" card) */}
-          <div style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: "12px", marginBottom: "10px" }}>
+          <div style={{ borderBottom: "1px solid var(--crex-line)", paddingBottom: "12px", marginBottom: "10px" }}>
             <button
               type="button"
               onClick={() => setOpenAccordion(openAccordion === "services" ? "" : "services")}
@@ -1698,7 +1715,7 @@ export default function Dashboard() {
                 justifyContent: "space-between",
                 fontSize: "13.5px",
                 fontWeight: 500,
-                color: "#1e1f22",
+                color: "var(--crex-ink)",
                 cursor: "pointer",
                 padding: "4px 0",
               }}
@@ -1722,21 +1739,26 @@ export default function Dashboard() {
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
                       <img
-                        src={srv.image || "/static/studio.jpg"}
+                        src={srv.image || FALLBACK_PROJECT_IMG}
                         alt={srv.title}
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = FALLBACK_PROJECT_IMG;
+                        }}
                         style={{
                           width: "40px",
                           height: "32px",
                           borderRadius: "8px",
                           objectFit: "cover",
-                          border: "1px solid rgba(0,0,0,0.08)",
+                          border: "1px solid var(--crex-line)",
+                          flexShrink: 0,
                         }}
                       />
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: "12.5px", fontWeight: 600, color: "#1e1f22" }}>
+                        <div style={{ fontSize: "12.5px", fontWeight: 600, color: "var(--crex-ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {srv.title}
                         </div>
-                        <div style={{ fontSize: "10.5px", color: "#71717a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <div style={{ fontSize: "10.5px", color: "var(--crex-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {srv.route}
                         </div>
                       </div>
@@ -1744,7 +1766,7 @@ export default function Dashboard() {
                     <button
                       type="button"
                       onClick={() => openEditServiceModal(srv, idx)}
-                      style={{ background: "transparent", border: "none", cursor: "pointer", color: "#52525b", padding: "4px" }}
+                      style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--crex-muted)", padding: "4px", flexShrink: 0 }}
                       title="Edit service on live website"
                     >
                       <FiMoreVertical size={15} />
@@ -1779,7 +1801,7 @@ export default function Dashboard() {
           </div>
 
           {/* Accordion 3: Hero & Studio Copy */}
-          <div style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: "10px", marginBottom: "10px" }}>
+          <div style={{ borderBottom: "1px solid var(--crex-line)", paddingBottom: "10px", marginBottom: "10px" }}>
             <button
               type="button"
               onClick={() => setOpenAccordion(openAccordion === "hero" ? "" : "hero")}
@@ -1792,7 +1814,7 @@ export default function Dashboard() {
                 justifyContent: "space-between",
                 fontSize: "13.5px",
                 fontWeight: 500,
-                color: "#1e1f22",
+                color: "var(--crex-ink)",
                 cursor: "pointer",
                 padding: "4px 0",
               }}
@@ -1856,7 +1878,7 @@ export default function Dashboard() {
                 justifyContent: "space-between",
                 fontSize: "13.5px",
                 fontWeight: 500,
-                color: "#1e1f22",
+                color: "var(--crex-ink)",
                 cursor: "pointer",
                 padding: "4px 0",
               }}
@@ -1916,7 +1938,7 @@ export default function Dashboard() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              gap: "12px",
+              gap: "10px",
               marginBottom: "18px",
               flexWrap: "wrap",
             }}
@@ -1930,7 +1952,7 @@ export default function Dashboard() {
               {monthNames.prev}
             </button>
 
-            <div style={{ fontSize: "15.5px", fontWeight: 500, color: "#1e1f22" }}>
+            <div style={{ fontSize: "15.5px", fontWeight: 500, color: "var(--crex-ink)" }}>
               {monthNames.curr}
             </div>
 
@@ -1950,51 +1972,53 @@ export default function Dashboard() {
                 style={{ fontSize: "11px", padding: "5px 12px" }}
                 title="Add site visit or consultation"
               >
-                <FiPlus size={12} />
+                <FiCalendar size={12} />
                 <span>Schedule</span>
               </button>
             </div>
           </div>
 
-          {/* 6-Day Column Grid with Time Axis */}
-          <div style={{ overflowX: "auto" }}>
+          {/* 6-Day Column Grid with Time Axis (Desktop & Tablet) */}
+          <div className="crex-calendar-desktop" style={{ overflowX: "auto" }}>
             <div style={{ minWidth: "520px" }}>
               {/* Day Names Header */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "68px repeat(6, 1fr)",
-                  textAlign: "center",
-                  marginBottom: "10px",
-                }}
-              >
-                <div />
-                {weekColumns.map((col, idx) => {
-                  const isWed = idx === 2;
-                  return (
-                    <div key={col.name} style={{ paddingBottom: "4px" }}>
-                      <div
-                        style={{
-                          fontSize: "11.5px",
-                          color: isWed ? "#1e1f22" : "#71717a",
-                          fontWeight: isWed ? 700 : 500,
-                        }}
-                      >
-                        {col.name}
+              <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
+                <div style={{ width: "68px", flexShrink: 0 }} />
+                <div
+                  style={{
+                    flex: 1,
+                    display: "grid",
+                    gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+                    textAlign: "center",
+                  }}
+                >
+                  {weekColumns.map((col, idx) => {
+                    const isWed = idx === 2;
+                    return (
+                      <div key={col.name} style={{ paddingBottom: "4px" }}>
+                        <div
+                          style={{
+                            fontSize: "11.5px",
+                            color: isWed ? "var(--crex-ink)" : "var(--crex-muted-soft)",
+                            fontWeight: isWed ? 700 : 500,
+                          }}
+                        >
+                          {col.name}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "13px",
+                            fontWeight: isWed ? 700 : 500,
+                            color: isWed ? "var(--crex-ink)" : "var(--crex-muted)",
+                            marginTop: "2px",
+                          }}
+                        >
+                          {col.num}
+                        </div>
                       </div>
-                      <div
-                        style={{
-                          fontSize: "13px",
-                          fontWeight: isWed ? 700 : 500,
-                          color: isWed ? "#1e1f22" : "#3f3f46",
-                          marginTop: "2px",
-                        }}
-                      >
-                        {col.num}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Timeline Matrix Rows */}
@@ -2005,143 +2029,214 @@ export default function Dashboard() {
                     <div
                       key={timeSlot}
                       style={{
-                        display: "grid",
-                        gridTemplateColumns: "68px repeat(6, 1fr)",
-                        minHeight: "52px",
+                        display: "flex",
                         alignItems: "center",
-                        position: "relative",
+                        minHeight: "54px",
                       }}
                     >
-                      <span style={{ fontSize: "11px", color: "#71717a", fontWeight: 500 }}>
+                      <span style={{ width: "68px", flexShrink: 0, fontSize: "11px", color: "var(--crex-muted-soft)", fontWeight: 500 }}>
                         {timeSlot}
                       </span>
 
-                      {/* Grid Cells */}
-                      {weekColumns.map((_, dayIdx) => (
-                        <div
-                          key={dayIdx}
-                          style={{
-                            borderLeft: "1px dashed rgba(0, 0, 0, 0.08)",
-                            height: "100%",
-                            minHeight: "52px",
-                          }}
-                        />
-                      ))}
-
-                      {/* Render Floating Event Pills */}
-                      {rowEvents.map((ev) => {
-                        const colStart = Math.min(Math.max(ev.dayIndex || 1, 0), 4);
-                        const leftPct = 11 + colStart * 14.8;
-                        const isDark = ev.variant !== "light";
-                        return (
+                      <div
+                        style={{
+                          flex: 1,
+                          display: "grid",
+                          gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+                          minHeight: "54px",
+                          alignItems: "center",
+                          position: "relative",
+                        }}
+                      >
+                        {/* Grid Cells */}
+                        {weekColumns.map((_, dayIdx) => (
                           <div
-                            key={ev.id}
+                            key={dayIdx}
                             style={{
-                              position: "absolute",
-                              left: `${leftPct}%`,
-                              width: "44%",
-                              zIndex: 3,
-                              background: isDark ? "#232326" : "#ffffff",
-                              color: isDark ? "#ffffff" : "#1e1f22",
-                              border: isDark ? "none" : "1px solid rgba(0,0,0,0.08)",
-                              borderRadius: "14px",
-                              padding: "8px 12px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              gap: "8px",
-                              boxShadow: isDark
-                                ? "0 8px 20px rgba(0,0,0,0.16)"
-                                : "0 4px 12px rgba(0,0,0,0.04)",
+                              borderLeft: "1px dashed var(--crex-line)",
+                              height: "100%",
+                              minHeight: "54px",
                             }}
-                          >
-                            <div style={{ minWidth: 0 }}>
-                              <div
-                                style={{
-                                  fontSize: "11.5px",
-                                  fontWeight: 600,
-                                  whiteSpace: "nowrap",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                }}
-                              >
-                                {ev.title}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: "10px",
-                                  color: isDark ? "#a1a1aa" : "#71717a",
-                                  whiteSpace: "nowrap",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                }}
-                              >
-                                {ev.subtitle}
-                              </div>
-                            </div>
+                          />
+                        ))}
 
-                            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                              {/* Micro Team Avatar Monograms */}
-                              <div style={{ display: "flex", marginRight: "4px" }}>
-                                <span
+                        {/* Render Floating Event Pills aligned accurately to 1/6 day columns */}
+                        {rowEvents.map((ev) => {
+                          const colIdx = Math.min(Math.max(Number(ev.dayIndex) || 0, 0), 5);
+                          const rawLeft = (colIdx / 6) * 100;
+                          const widthPct = colIdx >= 4 ? 33.33 : 36;
+                          const leftPct = Math.min(rawLeft, 100 - widthPct);
+                          const isDark = ev.variant !== "light";
+                          return (
+                            <div
+                              key={ev.id}
+                              style={{
+                                position: "absolute",
+                                left: `${leftPct}%`,
+                                width: `${widthPct}%`,
+                                zIndex: 3,
+                                background: isDark ? "var(--crex-dark)" : "#ffffff",
+                                color: isDark ? "#ffffff" : "var(--crex-ink)",
+                                border: isDark ? "none" : "1px solid var(--crex-line-strong)",
+                                borderRadius: "14px",
+                                padding: "8px 12px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                gap: "8px",
+                                boxSizing: "border-box",
+                                boxShadow: isDark
+                                  ? "0 8px 20px rgba(8,8,7,0.18)"
+                                  : "0 4px 12px rgba(8,8,7,0.05)",
+                              }}
+                            >
+                              <div style={{ minWidth: 0 }}>
+                                <div
                                   style={{
-                                    width: "20px",
-                                    height: "20px",
-                                    borderRadius: "50%",
-                                    background: "#f5cb5c",
-                                    color: "#1e1f22",
-                                    fontSize: "9px",
-                                    fontWeight: 700,
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    border: "1.5px solid #232326",
+                                    fontSize: "11.5px",
+                                    fontWeight: 600,
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
                                   }}
                                 >
-                                  YA
-                                </span>
-                                <span
+                                  {ev.title}
+                                </div>
+                                <div
                                   style={{
-                                    width: "20px",
-                                    height: "20px",
-                                    borderRadius: "50%",
-                                    background: "#e4e4e7",
-                                    color: "#1e1f22",
-                                    fontSize: "9px",
-                                    fontWeight: 700,
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    marginLeft: "-6px",
-                                    border: "1.5px solid #232326",
+                                    fontSize: "10px",
+                                    color: isDark ? "#b8b6af" : "var(--crex-muted)",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
                                   }}
                                 >
-                                  PM
-                                </span>
+                                  {ev.subtitle}
+                                </div>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteCalendarEvent(ev.id)}
-                                style={{
-                                  background: "transparent",
-                                  border: "none",
-                                  color: isDark ? "#a1a1aa" : "#71717a",
-                                  cursor: "pointer",
-                                  padding: "2px",
-                                }}
-                                title="Remove event"
-                              >
-                                <FiX size={11} />
-                              </button>
+
+                              <div style={{ display: "flex", alignItems: "center", gap: "4px", flexShrink: 0 }}>
+                                {/* Micro Team Avatar Monograms */}
+                                <div style={{ display: "flex", marginRight: "4px" }}>
+                                  <span
+                                    style={{
+                                      width: "20px",
+                                      height: "20px",
+                                      borderRadius: "50%",
+                                      background: "var(--crex-brass)",
+                                      color: "var(--crex-ink)",
+                                      fontSize: "9px",
+                                      fontWeight: 700,
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      border: isDark ? "1.5px solid #080807" : "1.5px solid #ffffff",
+                                    }}
+                                  >
+                                    YA
+                                  </span>
+                                  <span
+                                    style={{
+                                      width: "20px",
+                                      height: "20px",
+                                      borderRadius: "50%",
+                                      background: "#eae7df",
+                                      color: "var(--crex-ink)",
+                                      fontSize: "9px",
+                                      fontWeight: 700,
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      marginLeft: "-6px",
+                                      border: isDark ? "1.5px solid #080807" : "1.5px solid #ffffff",
+                                    }}
+                                  >
+                                    PM
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteCalendarEvent(ev.id)}
+                                  style={{
+                                    background: "transparent",
+                                    border: "none",
+                                    color: isDark ? "#b8b6af" : "var(--crex-muted)",
+                                    cursor: "pointer",
+                                    padding: "2px",
+                                  }}
+                                  title="Remove event"
+                                >
+                                  <FiX size={11} />
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
                   );
                 })}
               </div>
             </div>
+          </div>
+
+          {/* Mobile Stacked Agenda View (< 640px) */}
+          <div className="crex-agenda-mobile">
+            {calendarEvents.map((ev) => {
+              const colIdx = Math.min(Math.max(Number(ev.dayIndex) || 0, 0), 5);
+              const dayInfo = weekColumns[colIdx] || weekColumns[0];
+              const isDark = ev.variant !== "light";
+              return (
+                <div
+                  key={ev.id}
+                  style={{
+                    background: isDark ? "var(--crex-dark)" : "#ffffff",
+                    color: isDark ? "#ffffff" : "var(--crex-ink)",
+                    border: isDark ? "none" : "1px solid var(--crex-line-strong)",
+                    borderRadius: "14px",
+                    padding: "12px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "12px",
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: "10.5px",
+                        fontWeight: 600,
+                        color: isDark ? "var(--crex-brass)" : "var(--crex-brass-deep)",
+                        marginBottom: "2px",
+                      }}
+                    >
+                      {dayInfo.name} {dayInfo.num} · {ev.timeSlot}
+                    </div>
+                    <div style={{ fontSize: "13px", fontWeight: 600 }}>{ev.title}</div>
+                    {ev.subtitle && (
+                      <div style={{ fontSize: "11px", color: isDark ? "#b8b6af" : "var(--crex-muted)", marginTop: "2px" }}>
+                        {ev.subtitle}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteCalendarEvent(ev.id)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: isDark ? "#b8b6af" : "var(--crex-muted)",
+                      cursor: "pointer",
+                      padding: "4px",
+                      flexShrink: 0,
+                    }}
+                    title="Remove event"
+                  >
+                    <FiX size={14} />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -2149,7 +2244,11 @@ export default function Dashboard() {
       {/* =====================================================================
           3. LIVE WEBSITE CMS & CRM WORKSPACE (PROJECTS, SERVICES, KANBAN, LEADS)
           ===================================================================== */}
-      <section id="crm-cms-workspace" className="crex-card" style={{ padding: "24px 26px" }}>
+      <section
+        id="crm-cms-workspace"
+        className="crex-card"
+        style={{ padding: "clamp(16px, 2.5vw, 26px)" }}
+      >
         {/* Header Bar & Pill Tab Switcher */}
         <div
           style={{
@@ -2160,7 +2259,7 @@ export default function Dashboard() {
             gap: "16px",
             marginBottom: "24px",
             paddingBottom: "18px",
-            borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
+            borderBottom: "1px solid var(--crex-line)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
@@ -2177,9 +2276,9 @@ export default function Dashboard() {
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   style={{
-                    background: active ? "#232326" : "rgba(255,255,255,0.65)",
-                    color: active ? "#ffffff" : "#3f3f46",
-                    border: active ? "1px solid #232326" : "1px solid rgba(0,0,0,0.08)",
+                    background: active ? "var(--crex-dark)" : "rgba(255,255,255,0.7)",
+                    color: active ? "#ffffff" : "var(--crex-muted)",
+                    border: active ? "1px solid var(--crex-dark)" : "1px solid var(--crex-line)",
                     borderRadius: "9999px",
                     padding: "8px 16px",
                     fontSize: "12.5px",
@@ -2194,11 +2293,11 @@ export default function Dashboard() {
             })}
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-            <div style={{ position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", maxWidth: "100%" }}>
+            <div style={{ position: "relative", width: "min(220px, 100%)", flex: "1 1 180px" }}>
               <FiSearch
                 size={13}
-                color="#71717a"
+                color="#8a8a86"
                 style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }}
               />
               <input
@@ -2206,19 +2305,19 @@ export default function Dashboard() {
                 placeholder="Search workspace..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ paddingLeft: "32px", borderRadius: "9999px", width: "210px", fontSize: "12.5px" }}
+                style={{ paddingLeft: "32px", borderRadius: "9999px", width: "100%", fontSize: "12.5px" }}
               />
             </div>
 
             {activeTab === "projects" && (
-              <button type="button" onClick={openCreateProjectModal} className="crex-btn-yellow">
+              <button type="button" onClick={openCreateProjectModal} className="crex-btn-accent">
                 <FiPlus size={14} />
                 <span>Publish Project</span>
               </button>
             )}
 
             {activeTab === "services" && (
-              <button type="button" onClick={openCreateServiceModal} className="crex-btn-yellow">
+              <button type="button" onClick={openCreateServiceModal} className="crex-btn-accent">
                 <FiPlus size={14} />
                 <span>Add Service</span>
               </button>
@@ -2241,21 +2340,15 @@ export default function Dashboard() {
         {/* ---------------- TAB 1: WEBSITE PROJECTS CMS ---------------- */}
         {activeTab === "projects" && (
           <div className="crex-animate-in">
-            <div style={{ marginBottom: "16px", fontSize: "12.5px", color: "#52525b" }}>
+            <div style={{ marginBottom: "16px", fontSize: "12.5px", color: "var(--crex-muted)" }}>
               Any project created, edited, or deleted here updates the live Homepage Selected Works and{" "}
-              <a href="/projects" target="_blank" rel="noreferrer" style={{ color: "#1e1f22", fontWeight: 600 }}>
+              <a href="/projects" target="_blank" rel="noreferrer" style={{ color: "var(--crex-ink)", fontWeight: 600 }}>
                 /projects
               </a>{" "}
               immediately.
             </div>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                gap: "16px",
-              }}
-            >
+            <div className="crex-card-grid-projects">
               {projects
                 .filter(
                   (p) =>
@@ -2271,11 +2364,14 @@ export default function Dashboard() {
                   return (
                     <div key={proj._id} className="crm-bezel-wrapper">
                       <div className="crm-bezel-inner" style={{ overflow: "hidden" }}>
-                        <div style={{ height: "145px", position: "relative", background: "#e5e7eb" }}>
+                        <div style={{ height: "145px", position: "relative", background: "#eae7df" }}>
                           <img
                             src={resolveImage(proj.images?.[0])}
                             alt={proj.title}
-                            onError={(e) => (e.currentTarget.src = FALLBACK_PROJECT_IMG)}
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = FALLBACK_PROJECT_IMG;
+                            }}
                             style={{ width: "100%", height: "100%", objectFit: "cover" }}
                           />
                           <span
@@ -2283,7 +2379,7 @@ export default function Dashboard() {
                               position: "absolute",
                               top: "10px",
                               left: "10px",
-                              background: "rgba(35,35,38,0.85)",
+                              background: "rgba(8,8,7,0.84)",
                               color: "#ffffff",
                               fontSize: "10px",
                               fontWeight: 600,
@@ -2299,7 +2395,7 @@ export default function Dashboard() {
                           <h4 style={{ margin: "0 0 4px 0", fontSize: "14.5px", fontWeight: 600 }}>
                             {proj.title}
                           </h4>
-                          <div style={{ fontSize: "11.5px", color: "#71717a", marginBottom: "12px" }}>
+                          <div style={{ fontSize: "11.5px", color: "var(--crex-muted)", marginBottom: "12px" }}>
                             {proj.location || "Dubai, UAE"} · {proj.size || "Turnkey"}
                           </div>
 
@@ -2309,7 +2405,7 @@ export default function Dashboard() {
                               alignItems: "center",
                               justifyContent: "space-between",
                               paddingTop: "10px",
-                              borderTop: "1px solid #f4f4f5",
+                              borderTop: "1px solid var(--crex-line)",
                             }}
                           >
                             <a
@@ -2319,7 +2415,7 @@ export default function Dashboard() {
                               style={{
                                 fontSize: "11.5px",
                                 fontWeight: 600,
-                                color: "#1e1f22",
+                                color: "var(--crex-ink)",
                                 textDecoration: "none",
                                 display: "inline-flex",
                                 alignItems: "center",
@@ -2345,8 +2441,8 @@ export default function Dashboard() {
                                 onClick={() => handleDeleteProject(proj._id)}
                                 style={{
                                   background: "#fef2f2",
-                                  color: "#dc2626",
-                                  border: "1px solid #fecaca",
+                                  color: "#b91c1c",
+                                  border: "1px solid rgba(185, 28, 28, 0.28)",
                                   borderRadius: "9999px",
                                   padding: "5px 9px",
                                   cursor: "pointer",
@@ -2369,45 +2465,45 @@ export default function Dashboard() {
         {/* ---------------- TAB 2: SERVICES & WEBSITE SECTIONS ---------------- */}
         {activeTab === "services" && (
           <div className="crex-animate-in">
-            <div style={{ marginBottom: "16px", fontSize: "12.5px", color: "#52525b" }}>
+            <div style={{ marginBottom: "16px", fontSize: "12.5px", color: "var(--crex-muted)" }}>
               Services edited or added here synchronize directly with the Homepage Core Disciplines, dedicated{" "}
-              <a href="/services/architecture" target="_blank" rel="noreferrer" style={{ fontWeight: 600, color: "#1e1f22" }}>
+              <a href="/services/architecture" target="_blank" rel="noreferrer" style={{ fontWeight: 600, color: "var(--crex-ink)" }}>
                 /services/*
               </a>{" "}
               pages, and Contact Enquiry forms.
             </div>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))",
-                gap: "16px",
-              }}
-            >
+            <div className="crex-card-grid-services">
               {services.map((srv, idx) => (
                 <div key={srv.id || idx} className="crm-bezel-wrapper">
                   <div className="crm-bezel-inner" style={{ padding: "16px" }}>
                     <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "10px" }}>
                       <img
-                        src={srv.image || "/static/studio.jpg"}
+                        src={srv.image || FALLBACK_PROJECT_IMG}
                         alt={srv.title}
-                        style={{ width: "54px", height: "42px", borderRadius: "10px", objectFit: "cover" }}
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = FALLBACK_PROJECT_IMG;
+                        }}
+                        style={{ width: "54px", height: "42px", borderRadius: "10px", objectFit: "cover", flexShrink: 0 }}
                       />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: "10px", fontWeight: 700, color: "#92400e", letterSpacing: "0.06em" }}>
+                        <div style={{ fontSize: "10px", fontWeight: 700, color: "var(--crex-brass-deep)", letterSpacing: "0.06em" }}>
                           {srv.eyebrow || "SERVICE"}
                         </div>
-                        <h4 style={{ margin: 0, fontSize: "15px", fontWeight: 600 }}>{srv.title}</h4>
+                        <h4 style={{ margin: 0, fontSize: "15px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {srv.title}
+                        </h4>
                       </div>
                       <span
                         className={srv.active !== false ? "badge-sage" : "badge-neutral"}
-                        style={{ fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "9999px" }}
+                        style={{ fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "9999px", flexShrink: 0 }}
                       >
                         {srv.active !== false ? "Live" : "Hidden"}
                       </span>
                     </div>
 
-                    <p style={{ fontSize: "12px", color: "#52525b", lineHeight: 1.5, margin: "0 0 14px 0" }}>
+                    <p style={{ fontSize: "12px", color: "var(--crex-muted)", lineHeight: 1.5, margin: "0 0 14px 0" }}>
                       {srv.shortDesc}
                     </p>
 
@@ -2417,7 +2513,7 @@ export default function Dashboard() {
                         alignItems: "center",
                         justifyContent: "space-between",
                         paddingTop: "10px",
-                        borderTop: "1px solid #f4f4f5",
+                        borderTop: "1px solid var(--crex-line)",
                       }}
                     >
                       <a
@@ -2427,7 +2523,7 @@ export default function Dashboard() {
                         style={{
                           fontSize: "11.5px",
                           fontWeight: 600,
-                          color: "#1e1f22",
+                          color: "var(--crex-ink)",
                           textDecoration: "none",
                           display: "inline-flex",
                           alignItems: "center",
@@ -2453,8 +2549,8 @@ export default function Dashboard() {
                           onClick={() => handleDeleteService(idx)}
                           style={{
                             background: "#fef2f2",
-                            color: "#dc2626",
-                            border: "1px solid #fecaca",
+                            color: "#b91c1c",
+                            border: "1px solid rgba(185, 28, 28, 0.28)",
                             borderRadius: "9999px",
                             padding: "5px 9px",
                             cursor: "pointer",
@@ -2499,8 +2595,8 @@ export default function Dashboard() {
                       }
                     }}
                     style={{
-                      background: "rgba(255,255,255,0.45)",
-                      border: "1px solid rgba(0,0,0,0.05)",
+                      background: "rgba(241, 240, 238, 0.55)",
+                      border: "1px solid var(--crex-line)",
                       borderRadius: "18px",
                       padding: "12px",
                       minHeight: "360px",
@@ -2545,7 +2641,7 @@ export default function Dashboard() {
                             <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
                               <div
                                 className="crm-avatar"
-                                style={{ background: "#faf0cf", color: "#8c581e", width: "26px", height: "26px", fontSize: "10px" }}
+                                style={{ width: "26px", height: "26px", fontSize: "10px" }}
                               >
                                 {item.initials}
                               </div>
@@ -2553,13 +2649,15 @@ export default function Dashboard() {
                                 <div style={{ fontSize: "12.5px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                   {item.title}
                                 </div>
-                                <div style={{ fontSize: "10.5px", color: "#71717a" }}>{item.subtitle}</div>
+                                <div style={{ fontSize: "10.5px", color: "var(--crex-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                  {item.subtitle}
+                                </div>
                               </div>
                             </div>
                           </div>
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "10.5px", color: "#71717a" }}>
-                            <span>{item.location}</span>
-                            <span className={item.badgeStyle} style={{ padding: "1px 6px", borderRadius: "9999px", fontWeight: 600 }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "10.5px", color: "var(--crex-muted)", gap: "6px" }}>
+                            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.location}</span>
+                            <span className={item.badgeStyle} style={{ padding: "1px 6px", borderRadius: "9999px", fontWeight: 600, flexShrink: 0 }}>
                               {item.typeBadge}
                             </span>
                           </div>
@@ -2575,7 +2673,7 @@ export default function Dashboard() {
 
         {/* ---------------- TAB 4: QUOTES & INQUIRIES TABLE ---------------- */}
         {activeTab === "leads" && (
-          <div className="crex-animate-in" style={{ overflowX: "auto" }}>
+          <div className="crex-animate-in adm-table-wrap">
             <table>
               <thead>
                 <tr>
@@ -2594,12 +2692,10 @@ export default function Dashboard() {
                     <tr key={item.id}>
                       <td>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                          <div className="crm-avatar" style={{ background: "#faf0cf", color: "#8c581e" }}>
-                            {item.initials}
-                          </div>
+                          <div className="crm-avatar">{item.initials}</div>
                           <div>
                             <div style={{ fontWeight: 600 }}>{item.title}</div>
-                            <div style={{ fontSize: "11px", color: "#71717a" }}>{item.email}</div>
+                            <div style={{ fontSize: "11px", color: "var(--crex-muted)" }}>{item.email}</div>
                           </div>
                         </div>
                       </td>
@@ -2635,21 +2731,11 @@ export default function Dashboard() {
       {projectModalOpen && (
         <div
           onClick={() => setProjectModalOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(24, 24, 27, 0.35)",
-            backdropFilter: "blur(6px)",
-            zIndex: 200,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-          }}
+          className="adm-overlay"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="crex-card crex-animate-in"
+            className="crex-card crex-animate-in crex-modal-box"
             style={{
               background: "#ffffff",
               width: "100%",
@@ -2673,7 +2759,7 @@ export default function Dashboard() {
             </div>
 
             <form onSubmit={handleSaveProject} style={{ display: "grid", gap: "12px" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="crm-form-grid-2">
                 <div>
                   <label>Project Title *</label>
                   <input
@@ -2702,7 +2788,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="crm-form-grid-2">
                 <div>
                   <label>Location</label>
                   <input
@@ -2724,7 +2810,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="crm-form-grid-2">
                 <div>
                   <label>Sector</label>
                   <input
@@ -2773,6 +2859,10 @@ export default function Dashboard() {
                         <img
                           src={resolveImage(img)}
                           alt=""
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = FALLBACK_PROJECT_IMG;
+                          }}
                           style={{ width: "54px", height: "42px", objectFit: "cover", borderRadius: "8px" }}
                         />
                         <button
@@ -2785,7 +2875,7 @@ export default function Dashboard() {
                             width: "16px",
                             height: "16px",
                             borderRadius: "50%",
-                            background: "#ef4444",
+                            background: "#b91c1c",
                             color: "#fff",
                             border: "none",
                             fontSize: "10px",
@@ -2800,7 +2890,7 @@ export default function Dashboard() {
                 )}
               </div>
 
-              <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+              <div style={{ display: "flex", gap: "10px", marginTop: "8px", flexWrap: "wrap" }}>
                 <button
                   type="submit"
                   disabled={savingCms}
@@ -2828,21 +2918,11 @@ export default function Dashboard() {
       {serviceModalOpen && (
         <div
           onClick={() => setServiceModalOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(24, 24, 27, 0.35)",
-            backdropFilter: "blur(6px)",
-            zIndex: 200,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-          }}
+          className="adm-overlay"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="crex-card crex-animate-in"
+            className="crex-card crex-animate-in crex-modal-box"
             style={{
               background: "#ffffff",
               width: "100%",
@@ -2866,7 +2946,7 @@ export default function Dashboard() {
             </div>
 
             <form onSubmit={handleSaveService} style={{ display: "grid", gap: "12px" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="crm-form-grid-2">
                 <div>
                   <label>Service Title *</label>
                   <input
@@ -2954,7 +3034,7 @@ export default function Dashboard() {
                 <span>Display live on Website Homepage & Menus</span>
               </label>
 
-              <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+              <div style={{ display: "flex", gap: "10px", marginTop: "8px", flexWrap: "wrap" }}>
                 <button
                   type="submit"
                   disabled={savingCms}
@@ -2982,21 +3062,11 @@ export default function Dashboard() {
       {siteModalOpen && (
         <div
           onClick={() => setSiteModalOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(24, 24, 27, 0.35)",
-            backdropFilter: "blur(6px)",
-            zIndex: 200,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-          }}
+          className="adm-overlay"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="crex-card crex-animate-in"
+            className="crex-card crex-animate-in crex-modal-box"
             style={{
               background: "#ffffff",
               width: "100%",
@@ -3011,7 +3081,7 @@ export default function Dashboard() {
                 <h3 style={{ margin: 0, fontSize: "19px", fontWeight: 600 }}>
                   Live Website Controls
                 </h3>
-                <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: "#71717a" }}>
+                <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: "var(--crex-muted)" }}>
                   Updates sync immediately across Hero, Footer, Studio, and Contact pages.
                 </p>
               </div>
@@ -3045,7 +3115,7 @@ export default function Dashboard() {
               }}
               style={{ display: "grid", gap: "14px" }}
             >
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="crm-form-grid-2">
                 <div>
                   <label>Header Brand Label</label>
                   <input
@@ -3066,7 +3136,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="crm-form-grid-2">
                 <div>
                   <label>Hero Headline (use Enter for line break)</label>
                   <textarea
@@ -3127,7 +3197,7 @@ export default function Dashboard() {
                 />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div className="crm-form-grid-2">
                 <div>
                   <label>Studio Email</label>
                   <input
@@ -3154,7 +3224,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "12px" }}>
+              <div className="crm-form-grid-2-1">
                 <div>
                   <label>Street Address</label>
                   <input
@@ -3180,7 +3250,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+              <div style={{ display: "flex", gap: "10px", marginTop: "8px", flexWrap: "wrap" }}>
                 <button
                   type="submit"
                   disabled={savingCms}
@@ -3208,21 +3278,11 @@ export default function Dashboard() {
       {calendarModalOpen && (
         <div
           onClick={() => setCalendarModalOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(24, 24, 27, 0.35)",
-            backdropFilter: "blur(6px)",
-            zIndex: 200,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-          }}
+          className="adm-overlay"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="crex-card crex-animate-in"
+            className="crex-card crex-animate-in crex-modal-box"
             style={{ background: "#ffffff", width: "100%", maxWidth: "420px", padding: "24px" }}
           >
             <h3 style={{ margin: "0 0 14px 0", fontSize: "17px", fontWeight: 600 }}>
@@ -3250,7 +3310,7 @@ export default function Dashboard() {
                   style={{ width: "100%", marginTop: "4px" }}
                 />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              <div className="crm-form-grid-2">
                 <div>
                   <label>Day</label>
                   <select
@@ -3302,9 +3362,9 @@ export default function Dashboard() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(24, 24, 27, 0.35)",
-            backdropFilter: "blur(4px)",
-            zIndex: 220,
+            background: "rgba(8, 8, 7, 0.42)",
+            backdropFilter: "blur(5px)",
+            zIndex: 1050,
             display: "flex",
             justifyContent: "flex-end",
           }}
@@ -3316,19 +3376,20 @@ export default function Dashboard() {
               maxWidth: "460px",
               background: "#ffffff",
               height: "100%",
-              padding: "28px",
+              padding: "clamp(18px, 3vw, 28px)",
               overflowY: "auto",
-              boxShadow: "-12px 0 40px rgba(0,0,0,0.12)",
+              boxShadow: "-12px 0 40px rgba(8,8,7,0.16)",
+              boxSizing: "border-box",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div className="crm-avatar" style={{ background: "#faf0cf", color: "#8c581e", width: "40px", height: "40px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", gap: "10px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
+                <div className="crm-avatar" style={{ width: "40px", height: "40px" }}>
                   {inspectedItem.initials}
                 </div>
-                <div>
+                <div style={{ minWidth: 0 }}>
                   <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>{inspectedItem.title}</h2>
-                  <span style={{ fontSize: "12px", color: "#71717a" }}>
+                  <span style={{ fontSize: "12px", color: "var(--crex-muted)" }}>
                     {inspectedItem.subtitle} · {inspectedItem.location}
                   </span>
                 </div>
@@ -3352,9 +3413,9 @@ export default function Dashboard() {
                         setInspectedItem((prev) => ({ ...prev, stage: stg.id }));
                       }}
                       style={{
-                        background: current ? "#232326" : "#f4f4f5",
-                        color: current ? "#ffffff" : "#3f3f46",
-                        border: "none",
+                        background: current ? "var(--crex-dark)" : "var(--crex-limestone)",
+                        color: current ? "#ffffff" : "var(--crex-ink)",
+                        border: "1px solid var(--crex-line)",
                         borderRadius: "9999px",
                         padding: "6px 12px",
                         fontSize: "11.5px",
@@ -3369,11 +3430,53 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {(inspectedItem.budget || inspectedItem.timeline || inspectedItem.location || (inspectedItem.servicesList && inspectedItem.servicesList.length > 0)) && (
+              <div
+                style={{
+                  background: "var(--crex-limestone)",
+                  border: "1px solid var(--crex-line)",
+                  borderRadius: "16px",
+                  padding: "14px 16px",
+                  marginBottom: "16px",
+                  display: "grid",
+                  gap: "10px",
+                }}
+              >
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", fontSize: "12px", color: "var(--crex-ink)" }}>
+                  {inspectedItem.location && (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                      <FiMapPin size={13} color="#8a8a86" />
+                      <strong>{inspectedItem.location}</strong>
+                    </span>
+                  )}
+                  {inspectedItem.budget && (
+                    <span>Budget: <strong>{inspectedItem.budget}</strong></span>
+                  )}
+                  {inspectedItem.timeline && (
+                    <span>Timeline: <strong>{inspectedItem.timeline}</strong></span>
+                  )}
+                </div>
+                {inspectedItem.servicesList && inspectedItem.servicesList.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    {inspectedItem.servicesList.map((srv, idx) => (
+                      <span
+                        key={idx}
+                        className="badge-brass"
+                        style={{ padding: "2px 9px", borderRadius: "9999px", fontSize: "11px", fontWeight: 600 }}
+                      >
+                        {srv}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {(inspectedItem.email || inspectedItem.mobile) && (
               <div
                 style={{
-                  background: "#fafaf9",
-                  border: "1px solid rgba(0,0,0,0.06)",
+                  background: "#ffffff",
+                  border: "1px solid var(--crex-line)",
                   borderRadius: "16px",
                   padding: "16px",
                   marginBottom: "18px",
@@ -3382,14 +3485,14 @@ export default function Dashboard() {
                 }}
               >
                 {inspectedItem.email && (
-                  <a href={`mailto:${inspectedItem.email}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "#1e1f22", fontSize: "13px", textDecoration: "none" }}>
-                    <FiMail size={14} color="#71717a" />
+                  <a href={`mailto:${inspectedItem.email}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--crex-ink)", fontSize: "13px", textDecoration: "none" }}>
+                    <FiMail size={14} color="#8a8a86" />
                     <span>{inspectedItem.email}</span>
                   </a>
                 )}
                 {inspectedItem.mobile && (
-                  <a href={`tel:${inspectedItem.mobile}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "#1e1f22", fontSize: "13px", textDecoration: "none" }}>
-                    <FiPhone size={14} color="#71717a" />
+                  <a href={`tel:${inspectedItem.mobile}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--crex-ink)", fontSize: "13px", textDecoration: "none" }}>
+                    <FiPhone size={14} color="#8a8a86" />
                     <span>{inspectedItem.mobile}</span>
                   </a>
                 )}
@@ -3401,13 +3504,13 @@ export default function Dashboard() {
                 <label style={{ marginBottom: "6px" }}>Project Brief & Notes</label>
                 <div
                   style={{
-                    background: "#fafaf9",
-                    border: "1px solid rgba(0,0,0,0.06)",
+                    background: "var(--crex-limestone)",
+                    border: "1px solid var(--crex-line)",
                     borderRadius: "16px",
                     padding: "14px",
                     fontSize: "13px",
                     lineHeight: 1.6,
-                    color: "#3f3f46",
+                    color: "var(--crex-muted)",
                   }}
                 >
                   {inspectedItem.message}

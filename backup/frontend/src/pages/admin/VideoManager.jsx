@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { videoAPI, categoryAPI } from "../../services/api";
+import { FiEdit2, FiPlay, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
-// If `path` is stored as a relative file path (e.g. "uploads/intro.mp4"),
-// set this to your server origin, e.g. "http://localhost:5000".
-// Leave "" when `path` is a full URL (YouTube, Vimeo, CDN, etc.).
 const VIDEO_BASE = "";
 
 const resolveVideoUrl = (path) => {
   if (!path) return "";
   if (/^https?:\/\//i.test(path)) return path;
-  return `${VIDEO_BASE}/${path.replace(/^\/+/, "")}`;
+  return `${VIDEO_BASE}/${String(path).replace(/^\/+/, "")}`;
 };
 
-// Returns a YouTube video id for common URL shapes, otherwise null.
 const getYouTubeId = (url) => {
   if (!url) return null;
   const m = url.match(
@@ -21,55 +18,6 @@ const getYouTubeId = (url) => {
   return m ? m[1] : null;
 };
 
-const palette = {
-  blue500: "#3B82F6",
-  blue400: "#60A5FA",
-  slate50: "#F8FAFC",
-  slate100: "#F1F5F9",
-  slate200: "#E2E8F0",
-  slate400: "#94A3B8",
-  slate500: "#64748B",
-  slate900: "#0F172A",
-  white: "#FFFFFF",
-  red600: "#DC2626",
-  red50: "rgba(220,38,38,0.08)",
-  green600: "#16A34A",
-  green50: "rgba(22,163,74,0.08)",
-};
-
-const PlusIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 5v14M5 12h14" />
-  </svg>
-);
-const EditIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-    <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-  </svg>
-);
-const TrashIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-    <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z" />
-  </svg>
-);
-const CloseIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M18 6 6 18M6 6l12 12" />
-  </svg>
-);
-const SearchIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-    <circle cx="11" cy="11" r="7" />
-    <path d="m21 21-4.3-4.3" />
-  </svg>
-);
-const PlayIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.8-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z" />
-  </svg>
-);
-
-// Reusable sliding toggle switch
 const ToggleSwitch = ({ checked, onChange, disabled, label }) => (
   <button
     type="button"
@@ -79,18 +27,18 @@ const ToggleSwitch = ({ checked, onChange, disabled, label }) => (
     disabled={disabled}
     onClick={() => onChange(!checked)}
     style={{
-      width: "40px",
-      height: "22px",
-      borderRadius: "999px",
+      width: "42px",
+      height: "24px",
+      borderRadius: "9999px",
       border: "none",
-      padding: "2px",
+      padding: "3px",
       display: "inline-flex",
       alignItems: "center",
       justifyContent: checked ? "flex-end" : "flex-start",
-      background: checked ? palette.blue500 : palette.slate200,
+      background: checked ? "#080807" : "#d8d5ce",
       cursor: disabled ? "not-allowed" : "pointer",
       opacity: disabled ? 0.6 : 1,
-      transition: "background 0.18s ease",
+      transition: "background 0.2s ease",
       flexShrink: 0,
     }}
   >
@@ -99,36 +47,45 @@ const ToggleSwitch = ({ checked, onChange, disabled, label }) => (
         width: "18px",
         height: "18px",
         borderRadius: "50%",
-        background: palette.white,
-        boxShadow: "0 1px 2px rgba(15,23,42,0.25)",
+        background: checked ? "#c5a059" : "#ffffff",
+        boxShadow: "0 1px 2px rgba(8,8,7,0.28)",
       }}
     />
   </button>
 );
 
-// Small thumbnail: YouTube still if we can derive one, otherwise a play tile.
 const VideoThumb = ({ path, title }) => {
+  const [imgFailed, setImgFailed] = useState(false);
   const url = resolveVideoUrl(path);
   const ytId = getYouTubeId(url);
   return (
     <a
-      href={url}
-      target="_blank"
+      href={url || "#"}
+      target={url ? "_blank" : undefined}
       rel="noreferrer"
       aria-label={`Open video: ${title}`}
-      style={styles.thumbLink}
-      className="vidThumb"
+      style={{
+        width: "88px",
+        height: "50px",
+        borderRadius: "10px",
+        overflow: "hidden",
+        border: "1px solid var(--crex-line)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "var(--crex-dark)",
+        color: "#c5a059",
+      }}
     >
-      {ytId ? (
+      {ytId && !imgFailed ? (
         <img
           src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`}
           alt={title}
-          style={styles.thumbImg}
+          onError={() => setImgFailed(true)}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
         />
       ) : (
-        <span style={styles.thumbFallback}>
-          <PlayIcon />
-        </span>
+        <FiPlay size={18} />
       )}
     </a>
   );
@@ -140,11 +97,10 @@ export default function VideoManager() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [banner, setBanner] = useState(null); // { type, text }
+  const [banner, setBanner] = useState(null);
 
-  // modal state (create/edit)
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null); // null => create mode
+  const [editingId, setEditingId] = useState(null);
   const [formTitle, setFormTitle] = useState("");
   const [formCategoryId, setFormCategoryId] = useState("");
   const [formPath, setFormPath] = useState("");
@@ -152,11 +108,8 @@ export default function VideoManager() {
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // delete confirm state
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
-
-  // per-row status toggle in-flight
   const [togglingId, setTogglingId] = useState(null);
 
   const fetchVideos = async ({ silent = false } = {}) => {
@@ -191,7 +144,6 @@ export default function VideoManager() {
     fetchCategories();
   }, []);
 
-  // categoryId may come back populated (object) or as a plain id string
   const getCategoryId = (video) =>
     typeof video.categoryId === "object" && video.categoryId !== null
       ? video.categoryId._id
@@ -235,18 +187,9 @@ export default function VideoManager() {
     const title = formTitle.trim();
     const path = formPath.trim();
 
-    if (!formCategoryId) {
-      setFormError("Please select a category.");
-      return;
-    }
-    if (!title) {
-      setFormError("Video title is required.");
-      return;
-    }
-    if (!path) {
-      setFormError("Video link is required.");
-      return;
-    }
+    if (!formCategoryId) return setFormError("Please select a category.");
+    if (!title) return setFormError("Video title is required.");
+    if (!path) return setFormError("Video link is required.");
 
     setSaving(true);
     setFormError("");
@@ -266,7 +209,6 @@ export default function VideoManager() {
         await videoAPI.create(payload);
         setBanner({ type: "success", text: "Video created." });
       }
-      // Refetch so populated category data is always correct in the table.
       await fetchVideos({ silent: true });
       setModalOpen(false);
     } catch (err) {
@@ -308,14 +250,12 @@ export default function VideoManager() {
   const toggleStatus = async (video) => {
     setTogglingId(video._id);
     const nextStatus = !video.status;
-    // optimistic update
     setVideos((prev) =>
       prev.map((v) => (v._id === video._id ? { ...v, status: nextStatus } : v)),
     );
     try {
       await videoAPI.status(video._id);
     } catch (err) {
-      // revert on failure
       setVideos((prev) =>
         prev.map((v) =>
           v._id === video._id ? { ...v, status: video.status } : v,
@@ -340,69 +280,63 @@ export default function VideoManager() {
   });
 
   return (
-    <div className="vidPage" style={styles.page}>
-      <style>{css}</style>
-
-      <div className="vidContainer" style={styles.container}>
-        <div style={styles.headerRow}>
+    <div className="adm-page">
+      <div className="adm-container crex-animate-in">
+        <div className="adm-header">
           <div>
-            <h2 style={styles.title}>Videos</h2>
-            <p style={styles.subtitle}>
-              Add, edit, and manage videos by category.
+            <h2 className="adm-title">Videos</h2>
+            <p className="adm-subtitle">
+              Add, edit, and organise architectural walkthrough videos by category.
             </p>
           </div>
           <button
             type="button"
-            className="vidBtnPrimary"
-            style={styles.btnPrimary}
+            className="adm-btn-primary"
             onClick={openCreateModal}
           >
-            <PlusIcon /> New video
+            <FiPlus size={15} />
+            <span>New video</span>
           </button>
         </div>
 
         {banner && (
-          <div
-            style={{
-              ...styles.banner,
-              background:
-                banner.type === "success" ? palette.green50 : palette.red50,
-              border: `1px solid ${banner.type === "success" ? "rgba(22,163,74,0.3)" : "rgba(220,38,38,0.3)"}`,
-              color:
-                banner.type === "success" ? palette.green600 : palette.red600,
-            }}
-          >
+          <div className={`adm-banner ${banner.type === "success" ? "is-success" : "is-error"}`}>
             <span>{banner.text}</span>
             <button
               type="button"
               onClick={() => setBanner(null)}
-              style={styles.bannerClose}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "inherit",
+                cursor: "pointer",
+                display: "flex",
+                padding: "4px",
+              }}
               aria-label="Dismiss"
             >
-              <CloseIcon />
+              <FiX size={16} />
             </button>
           </div>
         )}
 
-        <div style={styles.filtersRow}>
-          <div style={styles.searchWrap}>
-            <span style={styles.searchIcon}>
-              <SearchIcon />
+        <div className="adm-filters">
+          <div className="adm-search-wrap">
+            <span className="adm-search-icon">
+              <FiSearch size={15} />
             </span>
             <input
               type="text"
               placeholder="Search videos…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={styles.searchInput}
-              className="vidInput"
+              className="adm-search-input"
             />
           </div>
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            style={styles.filterSelect}
-            className="vidInput"
+            className="adm-filter-select"
             aria-label="Filter by category"
           >
             <option value="all">All categories</option>
@@ -414,41 +348,39 @@ export default function VideoManager() {
           </select>
         </div>
 
-        <div style={styles.tableCard}>
+        <div className="adm-card">
           {loading ? (
-            <div style={styles.emptyState}>Loading videos…</div>
+            <div className="adm-empty">Loading videos…</div>
           ) : filtered.length === 0 ? (
-            <div style={styles.emptyState}>
+            <div className="adm-empty">
               {videos.length === 0
                 ? "No videos yet. Add your first one."
                 : "No videos match your filters."}
             </div>
           ) : (
-            <div style={{ overflowX: "auto" }}>
-              <table style={styles.table}>
+            <div className="adm-table-wrap">
+              <table>
                 <thead>
                   <tr>
-                    <th style={styles.th}>Video</th>
-                    <th style={styles.th}>Title</th>
-                    <th style={styles.th}>Category</th>
-                    <th style={styles.th}>Status</th>
-                    <th style={{ ...styles.th, textAlign: "right" }}>Actions</th>
+                    <th>Video</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th style={{ textAlign: "right" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((video) => (
-                    <tr key={video._id} className="vidRow">
-                      <td style={styles.td}>
+                    <tr key={video._id}>
+                      <td>
                         <VideoThumb path={video.path} title={video.title} />
                       </td>
-                      <td style={{ ...styles.td, minWidth: "180px" }}>
-                        {video.title}
+                      <td style={{ fontWeight: 600, minWidth: "180px" }}>{video.title}</td>
+                      <td>
+                        <span className="adm-chip">{getCategoryName(video)}</span>
                       </td>
-                      <td style={styles.td}>
-                        <span style={styles.chip}>{getCategoryName(video)}</span>
-                      </td>
-                      <td style={styles.td}>
-                        <div style={styles.statusCell}>
+                      <td>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                           <ToggleSwitch
                             checked={!!video.status}
                             onChange={() => toggleStatus(video)}
@@ -457,36 +389,34 @@ export default function VideoManager() {
                           />
                           <span
                             style={{
-                              fontSize: "12px",
+                              fontSize: "12.5px",
                               fontWeight: 600,
-                              color: video.status
-                                ? palette.green600
-                                : palette.slate500,
+                              color: video.status ? "#285234" : "var(--crex-muted)",
                             }}
                           >
                             {video.status ? "Active" : "Inactive"}
                           </span>
                         </div>
                       </td>
-                      <td style={{ ...styles.td, textAlign: "right" }}>
-                        <div style={styles.actionsRow}>
+                      <td style={{ textAlign: "right" }}>
+                        <div style={{ display: "inline-flex", gap: "8px", justifyContent: "flex-end" }}>
                           <button
                             type="button"
-                            className="vidIconBtn"
-                            style={styles.iconBtn}
+                            className="adm-icon-btn"
                             onClick={() => openEditModal(video)}
                             aria-label="Edit video"
+                            title="Edit video"
                           >
-                            <EditIcon />
+                            <FiEdit2 size={15} />
                           </button>
                           <button
                             type="button"
-                            className="vidIconBtnDanger"
-                            style={styles.iconBtn}
+                            className="adm-icon-btn is-danger"
                             onClick={() => confirmDelete(video)}
                             aria-label="Delete video"
+                            title="Delete video"
                           >
-                            <TrashIcon />
+                            <FiTrash2 size={15} />
                           </button>
                         </div>
                       </td>
@@ -501,37 +431,43 @@ export default function VideoManager() {
 
       {/* Create / Edit Modal */}
       {modalOpen && (
-        <div className="vidModalOverlay" style={styles.overlay} onClick={closeModal}>
+        <div className="adm-overlay" onClick={closeModal}>
           <div
-            className="vidModal"
-            style={styles.modal}
+            className="adm-modal"
+            style={{ maxWidth: "460px" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "18px",
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: "19px", fontWeight: 600 }}>
                 {editingId ? "Edit video" : "New video"}
               </h3>
               <button
                 type="button"
-                style={styles.modalCloseBtn}
+                className="adm-icon-btn"
                 onClick={closeModal}
                 aria-label="Close"
               >
-                <CloseIcon />
+                <FiX size={16} />
               </button>
             </div>
 
-            <form onSubmit={handleFormSubmit} style={styles.modalForm}>
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Category</label>
+            <form onSubmit={handleFormSubmit} style={{ display: "grid", gap: "16px" }}>
+              <div>
+                <label style={{ marginBottom: "6px" }}>Category *</label>
                 <select
-                  className="vidInput"
-                  style={styles.input}
                   value={formCategoryId}
                   onChange={(e) => {
                     setFormCategoryId(e.target.value);
                     setFormError("");
                   }}
+                  style={{ width: "100%" }}
                 >
                   <option value="">Select a category</option>
                   {categories.map((c) => (
@@ -543,51 +479,55 @@ export default function VideoManager() {
                 </select>
               </div>
 
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Video title</label>
+              <div>
+                <label style={{ marginBottom: "6px" }}>Video title *</label>
                 <input
                   type="text"
-                  className="vidInput"
-                  style={styles.input}
                   value={formTitle}
                   onChange={(e) => {
                     setFormTitle(e.target.value);
                     setFormError("");
                   }}
-                  placeholder="e.g. Campus tour 2026"
+                  placeholder="e.g. DIFC Penthouse Walkthrough"
                   autoFocus
+                  style={{ width: "100%" }}
                 />
               </div>
 
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Video link</label>
+              <div>
+                <label style={{ marginBottom: "6px" }}>Video link *</label>
                 <input
                   type="text"
-                  className="vidInput"
-                  style={styles.input}
                   value={formPath}
                   onChange={(e) => {
                     setFormPath(e.target.value);
                     setFormError("");
                   }}
                   placeholder="https://www.youtube.com/watch?v=…"
+                  style={{ width: "100%" }}
                 />
-                {formError && <span style={styles.errorMsg}>{formError}</span>}
+                {formError && (
+                  <div style={{ fontSize: "12px", color: "#b91c1c", marginTop: "6px", fontWeight: 500 }}>
+                    {formError}
+                  </div>
+                )}
               </div>
 
-              <div style={styles.toggleRow}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <ToggleSwitch
                   checked={formStatus}
                   onChange={setFormStatus}
                   label="Active status"
                 />
-                <span style={styles.toggleLabel}>Active</span>
+                <span style={{ fontSize: "13.5px", fontWeight: 500 }}>
+                  {formStatus ? "Active (visible)" : "Inactive"}
+                </span>
               </div>
 
-              <div style={styles.modalActions}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "6px" }}>
                 <button
                   type="button"
-                  style={styles.btnSecondary}
+                  className="adm-btn-secondary"
                   onClick={closeModal}
                   disabled={saving}
                 >
@@ -595,15 +535,10 @@ export default function VideoManager() {
                 </button>
                 <button
                   type="submit"
-                  className="vidBtnPrimary"
-                  style={styles.btnPrimary}
+                  className="adm-btn-primary"
                   disabled={saving}
                 >
-                  {saving
-                    ? "Saving…"
-                    : editingId
-                      ? "Save changes"
-                      : "Create video"}
+                  {saving ? "Saving…" : editingId ? "Save changes" : "Create video"}
                 </button>
               </div>
             </form>
@@ -613,31 +548,40 @@ export default function VideoManager() {
 
       {/* Delete confirm modal */}
       {deleteTarget && (
-        <div className="vidModalOverlay" style={styles.overlay} onClick={cancelDelete}>
+        <div className="adm-overlay" onClick={cancelDelete}>
           <div
-            className="vidModal"
-            style={{ ...styles.modal, maxWidth: "380px" }}
+            className="adm-modal"
+            style={{ maxWidth: "400px" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>Delete video</h3>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "14px",
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>
+                Delete video
+              </h3>
               <button
                 type="button"
-                style={styles.modalCloseBtn}
+                className="adm-icon-btn"
                 onClick={cancelDelete}
                 aria-label="Close"
               >
-                <CloseIcon />
+                <FiX size={16} />
               </button>
             </div>
-            <p style={styles.confirmText}>
+            <p style={{ margin: 0, fontSize: "14px", color: "var(--crex-muted)", lineHeight: 1.55 }}>
               Are you sure you want to delete <strong>{deleteTarget.title}</strong>?
-              This can't be undone.
+              This action cannot be undone.
             </p>
-            <div style={styles.modalActions}>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "22px" }}>
               <button
                 type="button"
-                style={styles.btnSecondary}
+                className="adm-btn-secondary"
                 onClick={cancelDelete}
                 disabled={deleting}
               >
@@ -645,7 +589,7 @@ export default function VideoManager() {
               </button>
               <button
                 type="button"
-                style={styles.btnDanger}
+                className="adm-btn-danger-solid"
                 onClick={handleDelete}
                 disabled={deleting}
               >
@@ -658,282 +602,3 @@ export default function VideoManager() {
     </div>
   );
 }
-
-/* ---------- styles ---------- */
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    fontFamily:
-      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    background: "#fff",
-    boxSizing: "border-box",
-  },
-  container: { width: "100%", padding: 15 },
-  headerRow: {
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: "16px",
-    marginBottom: "20px",
-    flexWrap: "wrap",
-  },
-  title: {
-    fontFamily: "'Sora', 'Inter', sans-serif",
-    fontWeight: 600,
-    fontSize: "24px",
-    color: palette.slate900,
-    margin: "0 0 4px 0",
-  },
-  subtitle: { fontSize: "14px", color: palette.slate500, margin: 0 },
-  banner: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: "8px",
-    padding: "10px 14px",
-    fontSize: "13px",
-    marginBottom: "16px",
-  },
-  bannerClose: {
-    background: "transparent",
-    border: "none",
-    color: "inherit",
-    cursor: "pointer",
-    display: "flex",
-    opacity: 0.7,
-  },
-  filtersRow: {
-    display: "flex",
-    gap: "12px",
-    flexWrap: "wrap",
-    marginBottom: "16px",
-  },
-  searchWrap: {
-    position: "relative",
-    flex: "1 1 240px",
-    maxWidth: "320px",
-  },
-  searchIcon: {
-    position: "absolute",
-    left: "12px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    color: palette.slate400,
-    display: "flex",
-  },
-  searchInput: {
-    width: "100%",
-    boxSizing: "border-box",
-    border: `1px solid ${palette.slate200}`,
-    background: palette.white,
-    borderRadius: "10px",
-    padding: "10px 14px 10px 38px",
-    fontSize: "14px",
-    color: palette.slate900,
-    outline: "none",
-  },
-  filterSelect: {
-    border: `1px solid ${palette.slate200}`,
-    background: palette.white,
-    borderRadius: "10px",
-    padding: "10px 14px",
-    fontSize: "14px",
-    color: palette.slate900,
-    outline: "none",
-    minWidth: "180px",
-    cursor: "pointer",
-  },
-  tableCard: {
-    background: palette.white,
-    border: `1px solid ${palette.slate200}`,
-    borderRadius: "14px",
-    overflow: "hidden",
-  },
-  table: { width: "100%", borderCollapse: "collapse" },
-  th: {
-    textAlign: "left",
-    fontSize: "12px",
-    fontWeight: 600,
-    color: palette.slate500,
-    textTransform: "uppercase",
-    letterSpacing: "0.03em",
-    padding: "12px 20px",
-    background: palette.slate50,
-    borderBottom: `1px solid ${palette.slate200}`,
-    whiteSpace: "nowrap",
-  },
-  td: {
-    padding: "14px 20px",
-    fontSize: "14px",
-    color: palette.slate900,
-    borderBottom: `1px solid ${palette.slate200}`,
-    verticalAlign: "middle",
-  },
-  thumbLink: {
-    width: "88px",
-    height: "50px",
-    borderRadius: "8px",
-    overflow: "hidden",
-    border: `1px solid ${palette.slate200}`,
-    display: "block",
-    background: palette.slate100,
-  },
-  thumbImg: { width: "100%", height: "100%", objectFit: "cover", display: "block" },
-  thumbFallback: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: palette.slate400,
-  },
-  chip: {
-    display: "inline-block",
-    fontSize: "12px",
-    fontWeight: 500,
-    color: palette.slate900,
-    background: palette.slate100,
-    border: `1px solid ${palette.slate200}`,
-    borderRadius: "999px",
-    padding: "3px 10px",
-    whiteSpace: "nowrap",
-  },
-  emptyState: {
-    padding: "40px 20px",
-    textAlign: "center",
-    fontSize: "14px",
-    color: palette.slate500,
-  },
-  statusCell: { display: "flex", alignItems: "center", gap: "10px" },
-  actionsRow: { display: "flex", gap: "6px", justifyContent: "flex-end" },
-  iconBtn: {
-    background: "transparent",
-    border: `1px solid ${palette.slate200}`,
-    borderRadius: "8px",
-    padding: "7px",
-    display: "flex",
-    color: palette.slate500,
-    cursor: "pointer",
-  },
-  overlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(15,23,42,0.45)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "20px",
-    zIndex: 999950,
-  },
-  modal: {
-    width: "100%",
-    maxWidth: "440px",
-    maxHeight: "92vh",
-    overflowY: "auto",
-    background: palette.white,
-    borderRadius: "16px",
-    padding: "24px",
-    boxSizing: "border-box",
-  },
-  modalHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "18px",
-  },
-  modalTitle: {
-    fontFamily: "'Sora', 'Inter', sans-serif",
-    fontWeight: 600,
-    fontSize: "18px",
-    color: palette.slate900,
-    margin: 0,
-  },
-  modalCloseBtn: {
-    background: "transparent",
-    border: "none",
-    color: palette.slate400,
-    cursor: "pointer",
-    display: "flex",
-  },
-  modalForm: { display: "flex", flexDirection: "column", gap: "18px" },
-  inputGroup: { display: "flex", flexDirection: "column", gap: "6px" },
-  label: { fontSize: "13px", fontWeight: 500, color: palette.slate900 },
-  input: {
-    border: `1px solid ${palette.slate200}`,
-    background: palette.slate100,
-    borderRadius: "10px",
-    padding: "11px 14px",
-    fontSize: "14px",
-    color: palette.slate900,
-    outline: "none",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  errorMsg: { fontSize: "12px", color: palette.red600 },
-  toggleRow: { display: "flex", alignItems: "center", gap: "10px" },
-  toggleLabel: { fontSize: "14px", color: palette.slate900 },
-  modalActions: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "10px",
-    marginTop: "4px",
-  },
-  btnPrimary: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    fontFamily: "'Sora', 'Inter', sans-serif",
-    background: palette.blue500,
-    color: palette.white,
-    border: "none",
-    borderRadius: "10px",
-    padding: "10px 18px",
-    fontSize: "14px",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  btnSecondary: {
-    background: palette.white,
-    color: palette.slate900,
-    border: `1px solid ${palette.slate200}`,
-    borderRadius: "10px",
-    padding: "10px 18px",
-    fontSize: "14px",
-    fontWeight: 500,
-    cursor: "pointer",
-  },
-  btnDanger: {
-    background: palette.red600,
-    color: palette.white,
-    border: "none",
-    borderRadius: "10px",
-    padding: "10px 18px",
-    fontSize: "14px",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  confirmText: { fontSize: "14px", color: palette.slate500, lineHeight: 1.5 },
-};
-
-const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-
-  .vidInput:focus {
-    border-color: ${palette.blue500} !important;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-  }
-  .vidBtnPrimary:hover:not(:disabled) { background: ${palette.blue400} !important; }
-  .vidBtnPrimary:disabled { opacity: 0.7; cursor: not-allowed; }
-  .vidIconBtn:hover { background: ${palette.slate100} !important; color: ${palette.slate900} !important; }
-  .vidIconBtnDanger:hover { background: ${palette.red50} !important; color: ${palette.red600} !important; border-color: rgba(220,38,38,0.3) !important; }
-  .vidRow:hover { background: ${palette.slate50}; }
-  .vidThumb:hover { opacity: 0.85; }
-
-  @media (max-width: 560px) {
-    .vidContainer table { font-size: 13px; }
-  }
-`;

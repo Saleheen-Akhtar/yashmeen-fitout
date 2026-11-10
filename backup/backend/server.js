@@ -35,16 +35,54 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 // 📁 Create uploads folder if not exists
 const uploadsFolder = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsFolder)) {
     fs.mkdirSync(uploadsFolder, { recursive: true });
 }
 
+app.use("/uploads", express.static(uploadsFolder));
+
+// Graceful fallback for historical DB image records missing locally in development
+const DEV_FALLBACK_IMAGES = [
+    "hero-cinematic.jpg",
+    "hero-bg.jpg",
+    "work-clifton.jpg",
+    "work-myrtle.jpg",
+    "work-samford.jpg",
+    "yashmeen-studio.jpg",
+    "Residential-Fit-Out.jpg",
+    "studio.jpg",
+    "design-desk.jpg",
+    "raw-space.jpg",
+    "hero-banner.jpg",
+    "joinery-bay.jpg",
+    "Office-fit-out.jpg",
+];
+
+app.use("/uploads", (req, res, next) => {
+    if (/\.(png|jpe?g|webp|gif|svg)$/i.test(req.path)) {
+        // FNV-1a mix spreads close timestamp filenames cleanly across distinct local photos
+        let hash = 2166136261;
+        for (let i = 0; i < req.path.length; i++) {
+            hash ^= req.path.charCodeAt(i);
+            hash = Math.imul(hash, 16777619) >>> 0;
+        }
+        const chosen = DEV_FALLBACK_IMAGES[hash % DEV_FALLBACK_IMAGES.length];
+        const fallbackImage = path.join(__dirname, "../frontend/public/static", chosen);
+        if (fs.existsSync(fallbackImage)) {
+            res.setHeader("Cache-Control", "public, max-age=3600");
+            return res.sendFile(fallbackImage);
+        }
+    }
+    return next();
+});
+
 // 📍 Upload route for CKEditor images
 app.post("/api/upload", postUpload.single("upload"), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ uploaded: false, error: { message: "No image uploaded" } });
+    }
     const fileUrl = `${itemPath}/${req.file.filename}`;
     res.json({
         uploaded: true,

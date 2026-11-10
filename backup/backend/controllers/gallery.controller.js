@@ -74,7 +74,7 @@ export const createGallery = async (req, res) => {
 export const getAllGalleries = async (req, res) => {
     try {
         const { categoryId, status } = req.query;
-console.log("hit");
+
         const filter = {};
         if (categoryId) {
             if (!mongoose.Types.ObjectId.isValid(categoryId)) {
@@ -84,7 +84,7 @@ console.log("hit");
         }
         if (status !== undefined) filter.status = status === "true";
 
-        const galleries = await GalleryModel.find(filter).populate('categoryId');
+        const galleries = await GalleryModel.find(filter).populate('categoryId').lean();
         return res.status(200).json({ success: true, data: galleries });
     } catch (error) {
         return res.status(500).json({ success: false, message: "Failed to fetch gallery items", error: error.message });

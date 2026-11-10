@@ -1,66 +1,32 @@
 import React, { useEffect, useRef, useState } from "react";
 import { projectAPI, categoryAPI, itemPath } from "../../services/api";
+import { FiEdit2, FiImage, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
-const palette = {
-  blue500: "#3B82F6",
-  blue400: "#60A5FA",
-  slate50: "#F8FAFC",
-  slate100: "#F1F5F9",
-  slate200: "#E2E8F0",
-  slate400: "#94A3B8",
-  slate500: "#64748B",
-  slate900: "#0F172A",
-  white: "#FFFFFF",
-  red600: "#DC2626",
-  red50: "rgba(220,38,38,0.08)",
-  green600: "#16A34A",
-  green50: "rgba(22,163,74,0.08)",
-};
-
-const PlusIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 5v14M5 12h14" />
-  </svg>
-);
-const EditIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-    <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-  </svg>
-);
-const TrashIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-    <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z" />
-  </svg>
-);
-const CloseIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M18 6 6 18M6 6l12 12" />
-  </svg>
-);
-const SearchIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-    <circle cx="11" cy="11" r="7" />
-    <path d="m21 21-4.3-4.3" />
-  </svg>
-);
-
-// categoryId can come back as a plain id or a populated { _id, name } object
-const getCategoryId = (p) =>
-  typeof p.categoryId === "object" && p.categoryId !== null
-    ? p.categoryId._id
-    : p.categoryId;
-
-// Stored paths look like "/projects/abc.jpg"; absolute URLs are used as-is
-const imageUrl = (path = "") =>
-  /^https?:\/\//i.test(path)
-    ? path
-    : `${itemPath ?? ""}/${String(path).replace(/^\/+/, "")}`;
-
-// Ask for more than the default page size so the list is not cut off
+const FALLBACK_IMG = "/static/hero-aperture.png";
 const FETCH_PARAMS = { limit: 1000, page: 1 };
-
 const MAX_IMAGES = 10;
 const MAX_IMAGE_MB = 5;
+
+const invalidateSiteCaches = () => {
+  try {
+    localStorage.removeItem("photogallery:data:v1");
+    localStorage.removeItem("photogallery:data:v5");
+  } catch {
+    /* ignore */
+  }
+  window.dispatchEvent(new CustomEvent("projects-updated"));
+};
+
+const getCategoryId = (p) =>
+  typeof p?.categoryId === "object" && p.categoryId !== null
+    ? p.categoryId._id
+    : p?.categoryId;
+
+const imageUrl = (path = "") => {
+  if (!path) return "";
+  if (/^(https?:|data:|blob:|\/static\/|\/images\/)/i.test(path)) return path;
+  return `${itemPath ?? ""}/${String(path).replace(/^\/+/, "")}`;
+};
 
 const isValidUrl = (value) => {
   try {
@@ -77,11 +43,10 @@ export default function ProjectManager() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [banner, setBanner] = useState(null); // { type, text }
+  const [banner, setBanner] = useState(null);
 
-  // modal state (create/edit)
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null); // null => create mode
+  const [editingId, setEditingId] = useState(null);
   const [formCategory, setFormCategory] = useState("");
   const [formTitle, setFormTitle] = useState("");
   const [formSize, setFormSize] = useState("");
@@ -90,13 +55,12 @@ export default function ProjectManager() {
   const [formSector, setFormSector] = useState("");
   const [formVideoUrl, setFormVideoUrl] = useState("");
   const [formDescription, setFormDescription] = useState("");
-  const [formImages, setFormImages] = useState([]); // already-saved image paths
-  const [newFiles, setNewFiles] = useState([]); // [{ id, file, preview }] to upload
+  const [formImages, setFormImages] = useState([]);
+  const [newFiles, setNewFiles] = useState([]);
   const fileRef = useRef(null);
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // delete confirm state
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -182,10 +146,9 @@ export default function ProjectManager() {
 
   const clearError = () => setFormError("");
 
-  // handles both single and multiple selection
   const handleFiles = (e) => {
     const picked = Array.from(e.target.files || []);
-    e.target.value = ""; // allow picking the same file again later
+    e.target.value = "";
     if (!picked.length) return;
 
     let error = "";
@@ -199,7 +162,7 @@ export default function ProjectManager() {
       } else if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
         error = `${file.name} is larger than ${MAX_IMAGE_MB} MB.`;
       } else if (newFiles.some((f) => f.id === id) || accepted.some((f) => f.id === id)) {
-        continue; // already selected
+        continue;
       } else if (room <= 0) {
         error = `You can add up to ${MAX_IMAGES} images.`;
       } else {
@@ -241,30 +204,28 @@ export default function ProjectManager() {
     setSaving(true);
     setFormError("");
 
-    // multipart body: text fields + new files under the "images" key
     const payload = new FormData();
     payload.append("categoryId", formCategory);
     payload.append("title", title);
-    // sent even when empty, so clearing a field on edit actually clears it
     payload.append("size", size);
     payload.append("location", location);
     payload.append("scope", scope);
     payload.append("sector", sector);
     payload.append("videoUrl", videoUrl);
     payload.append("description", description);
-    // images already saved that the user kept (used on edit)
     payload.append("existingImages", JSON.stringify(formImages));
     newFiles.forEach((f) => payload.append("images", f.file));
 
     try {
       if (editingId) {
         await projectAPI.update(editingId, payload);
-        setBanner({ type: "success", text: "Project updated." });
+        setBanner({ type: "success", text: "Project updated and synced with live site." });
       } else {
         await projectAPI.create(payload);
-        setBanner({ type: "success", text: "Project created." });
+        setBanner({ type: "success", text: "Project created and published to live site." });
       }
       await fetchProjects({ silent: true });
+      invalidateSiteCaches();
       resetNewFiles();
       setModalOpen(false);
     } catch (err) {
@@ -288,6 +249,7 @@ export default function ProjectManager() {
     try {
       await projectAPI.delete(deleteTarget._id);
       setProjects((prev) => prev.filter((p) => p._id !== deleteTarget._id));
+      invalidateSiteCaches();
       setBanner({ type: "success", text: `"${deleteTarget.title}" deleted.` });
       setDeleteTarget(null);
     } catch (err) {
@@ -309,67 +271,63 @@ export default function ProjectManager() {
   });
 
   return (
-    <div className="projPage" style={styles.page}>
-      <style>{css}</style>
-
-      <div className="projContainer" style={styles.container}>
-        <div style={styles.headerRow}>
+    <div className="adm-page">
+      <div className="adm-container crex-animate-in">
+        <div className="adm-header">
           <div>
-            <h2 style={styles.title}>Projects</h2>
-            <p style={styles.subtitle}>
-              Add your work with images and videos, and organise it by category.
+            <h2 className="adm-title">Projects</h2>
+            <p className="adm-subtitle">
+              Add architectural fit-out works with images and videos, organised by category.
             </p>
           </div>
           <button
             type="button"
-            className="projBtnPrimary"
-            style={styles.btnPrimary}
+            className="adm-btn-primary"
             onClick={openCreateModal}
           >
-            <PlusIcon /> New project
+            <FiPlus size={15} />
+            <span>New project</span>
           </button>
         </div>
 
         {banner && (
-          <div
-            style={{
-              ...styles.banner,
-              background: banner.type === "success" ? palette.green50 : palette.red50,
-              border: `1px solid ${banner.type === "success" ? "rgba(22,163,74,0.3)" : "rgba(220,38,38,0.3)"}`,
-              color: banner.type === "success" ? palette.green600 : palette.red600,
-            }}
-          >
+          <div className={`adm-banner ${banner.type === "success" ? "is-success" : "is-error"}`}>
             <span>{banner.text}</span>
             <button
               type="button"
               onClick={() => setBanner(null)}
-              style={styles.bannerClose}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "inherit",
+                cursor: "pointer",
+                display: "flex",
+                padding: "4px",
+              }}
               aria-label="Dismiss"
             >
-              <CloseIcon />
+              <FiX size={16} />
             </button>
           </div>
         )}
 
-        <div style={styles.filtersRow}>
-          <div style={styles.searchWrap}>
-            <span style={styles.searchIcon}>
-              <SearchIcon />
+        <div className="adm-filters">
+          <div className="adm-search-wrap">
+            <span className="adm-search-icon">
+              <FiSearch size={15} />
             </span>
             <input
               type="text"
               placeholder="Search by title…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={styles.searchInput}
-              className="projInput"
+              className="adm-search-input"
             />
           </div>
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            style={styles.filterSelect}
-            className="projInput"
+            className="adm-filter-select"
             aria-label="Filter by category"
           >
             <option value="all">All categories</option>
@@ -381,27 +339,27 @@ export default function ProjectManager() {
           </select>
         </div>
 
-        <div style={styles.tableCard}>
+        <div className="adm-card">
           {loading ? (
-            <div style={styles.emptyState}>Loading projects…</div>
+            <div className="adm-empty">Loading projects…</div>
           ) : filtered.length === 0 ? (
-            <div style={styles.emptyState}>
+            <div className="adm-empty">
               {projects.length === 0
                 ? "No projects yet. Add your first one."
                 : "No projects match your filters."}
             </div>
           ) : (
-            <div style={{ overflowX: "auto" }}>
-              <table style={styles.table}>
+            <div className="adm-table-wrap">
+              <table>
                 <thead>
                   <tr>
-                    <th style={styles.th}>Project</th>
-                    <th style={styles.th}>Category</th>
-                    <th style={styles.th}>Location</th>
-                    <th style={styles.th}>Images</th>
-                    <th style={styles.th}>Video</th>
-                    <th style={styles.th}>Added</th>
-                    <th style={{ ...styles.th, textAlign: "right" }}>Actions</th>
+                    <th>Project</th>
+                    <th>Category</th>
+                    <th>Location</th>
+                    <th>Images</th>
+                    <th>Video</th>
+                    <th>Added</th>
+                    <th style={{ textAlign: "right" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -412,34 +370,83 @@ export default function ProjectManager() {
                         ? p.categoryId.categoryName
                         : getCategoryLabel(p.categoryId);
                     return (
-                      <tr key={p._id} className="projRow">
-                        <td style={{ ...styles.td, minWidth: "240px" }}>
-                          <div style={styles.projectCell}>
+                      <tr key={p._id}>
+                        <td style={{ minWidth: "240px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                             {cover ? (
-                              <img src={cover} alt="" style={styles.thumb} />
+                              <img
+                                src={cover}
+                                alt={p.title || "project"}
+                                onError={(e) => {
+                                  e.currentTarget.onerror = null;
+                                  e.currentTarget.src = FALLBACK_IMG;
+                                }}
+                                style={{
+                                  width: "56px",
+                                  height: "44px",
+                                  borderRadius: "10px",
+                                  objectFit: "cover",
+                                  border: "1px solid var(--crex-line)",
+                                  flexShrink: 0,
+                                  background: "var(--crex-limestone)",
+                                }}
+                              />
                             ) : (
-                              <div style={{ ...styles.thumb, ...styles.thumbEmpty }}>
-                                No image
+                              <div
+                                style={{
+                                  width: "56px",
+                                  height: "44px",
+                                  borderRadius: "10px",
+                                  background: "var(--crex-limestone)",
+                                  border: "1px dashed var(--crex-line-strong)",
+                                  color: "var(--crex-muted-soft)",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                <FiImage size={16} />
                               </div>
                             )}
                             <div style={{ minWidth: 0 }}>
-                              <div style={{ fontWeight: 500 }}>{p.title}</div>
+                              <div style={{ fontWeight: 600 }}>{p.title}</div>
                               {p.description && (
-                                <div style={styles.descPreview}>{p.description}</div>
+                                <div
+                                  style={{
+                                    fontSize: "12px",
+                                    color: "var(--crex-muted)",
+                                    marginTop: "2px",
+                                    maxWidth: "300px",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {p.description}
+                                </div>
                               )}
                             </div>
                           </div>
                         </td>
-                        <td style={styles.td}>{catLabel || "-"}</td>
-                        <td style={styles.td}>{p.location || "-"}</td>
-                        <td style={styles.td}>{p.images?.length || 0}</td>
-                        <td style={styles.td}>
+                        <td>
+                          {catLabel && catLabel !== "-" ? (
+                            <span className="adm-chip">{catLabel}</span>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                        <td>{p.location || "-"}</td>
+                        <td>
+                          <span className="adm-chip-neutral">{p.images?.length || 0}</span>
+                        </td>
+                        <td>
                           {p.videoUrl ? (
                             <a
                               href={p.videoUrl}
                               target="_blank"
                               rel="noreferrer"
-                              style={styles.link}
+                              className="adm-link"
                             >
                               Watch
                             </a>
@@ -447,7 +454,7 @@ export default function ProjectManager() {
                             "-"
                           )}
                         </td>
-                        <td style={{ ...styles.td, whiteSpace: "nowrap" }}>
+                        <td style={{ whiteSpace: "nowrap", color: "var(--crex-muted)" }}>
                           {p.createdAt
                             ? new Date(p.createdAt).toLocaleDateString("en-IN", {
                                 day: "2-digit",
@@ -456,25 +463,25 @@ export default function ProjectManager() {
                               })
                             : "-"}
                         </td>
-                        <td style={{ ...styles.td, textAlign: "right" }}>
-                          <div style={styles.actionsRow}>
+                        <td style={{ textAlign: "right" }}>
+                          <div style={{ display: "inline-flex", gap: "8px", justifyContent: "flex-end" }}>
                             <button
                               type="button"
-                              className="projIconBtn"
-                              style={styles.iconBtn}
+                              className="adm-icon-btn"
                               onClick={() => openEditModal(p)}
                               aria-label="Edit project"
+                              title="Edit project"
                             >
-                              <EditIcon />
+                              <FiEdit2 size={15} />
                             </button>
                             <button
                               type="button"
-                              className="projIconBtnDanger"
-                              style={styles.iconBtn}
+                              className="adm-icon-btn is-danger"
                               onClick={() => confirmDelete(p)}
                               aria-label="Delete project"
+                              title="Delete project"
                             >
-                              <TrashIcon />
+                              <FiTrash2 size={15} />
                             </button>
                           </div>
                         </td>
@@ -490,33 +497,38 @@ export default function ProjectManager() {
 
       {/* Create / Edit Modal */}
       {modalOpen && (
-        <div className="projModalOverlay" style={styles.overlay} onClick={closeModal}>
+        <div className="adm-overlay" onClick={closeModal}>
           <div
-            className="projModal"
-            style={{ ...styles.modal, maxWidth: "560px" }}
+            className="adm-modal"
+            style={{ maxWidth: "580px" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "18px",
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: "19px", fontWeight: 600 }}>
                 {editingId ? "Edit project" : "New project"}
               </h3>
               <button
                 type="button"
-                style={styles.modalCloseBtn}
+                className="adm-icon-btn"
                 onClick={closeModal}
                 aria-label="Close"
               >
-                <CloseIcon />
+                <FiX size={16} />
               </button>
             </div>
 
-            <form onSubmit={handleFormSubmit} style={styles.modalForm}>
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Title</label>
+            <form onSubmit={handleFormSubmit} style={{ display: "grid", gap: "16px" }}>
+              <div>
+                <label style={{ marginBottom: "6px" }}>Title *</label>
                 <input
                   type="text"
-                  className="projInput"
-                  style={styles.input}
                   value={formTitle}
                   onChange={(e) => {
                     setFormTitle(e.target.value);
@@ -524,19 +536,19 @@ export default function ProjectManager() {
                   }}
                   placeholder="e.g. EDC Headquarters"
                   autoFocus
+                  style={{ width: "100%" }}
                 />
               </div>
 
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Category</label>
+              <div>
+                <label style={{ marginBottom: "6px" }}>Category *</label>
                 <select
-                  className="projInput"
-                  style={styles.input}
                   value={formCategory}
                   onChange={(e) => {
                     setFormCategory(e.target.value);
                     clearError();
                   }}
+                  style={{ width: "100%" }}
                 >
                   <option value="">Select a category</option>
                   {categories.map((c) => (
@@ -547,97 +559,91 @@ export default function ProjectManager() {
                 </select>
               </div>
 
-              <div className="projFieldRow">
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Size (optional)</label>
+              <div className="adm-grid-2">
+                <div>
+                  <label style={{ marginBottom: "6px" }}>Size (optional)</label>
                   <input
                     type="text"
-                    className="projInput"
-                    style={styles.input}
                     value={formSize}
                     onChange={(e) => {
                       setFormSize(e.target.value);
                       clearError();
                     }}
-                    placeholder="e.g. 15210 Sq. ft"
+                    placeholder="e.g. 15,210 Sq. ft"
+                    style={{ width: "100%" }}
                   />
                 </div>
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Location (optional)</label>
+                <div>
+                  <label style={{ marginBottom: "6px" }}>Location (optional)</label>
                   <input
                     type="text"
-                    className="projInput"
-                    style={styles.input}
                     value={formLocation}
                     onChange={(e) => {
                       setFormLocation(e.target.value);
                       clearError();
                     }}
                     placeholder="e.g. Abu Dhabi"
+                    style={{ width: "100%" }}
                   />
                 </div>
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Scope (optional)</label>
+                <div>
+                  <label style={{ marginBottom: "6px" }}>Scope (optional)</label>
                   <input
                     type="text"
-                    className="projInput"
-                    style={styles.input}
                     value={formScope}
                     onChange={(e) => {
                       setFormScope(e.target.value);
                       clearError();
                     }}
-                    placeholder="e.g. Design and Built Project"
+                    placeholder="e.g. Design and Build"
+                    style={{ width: "100%" }}
                   />
                 </div>
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Sector (optional)</label>
+                <div>
+                  <label style={{ marginBottom: "6px" }}>Sector (optional)</label>
                   <input
                     type="text"
-                    className="projInput"
-                    style={styles.input}
                     value={formSector}
                     onChange={(e) => {
                       setFormSector(e.target.value);
                       clearError();
                     }}
                     placeholder="e.g. Commercial"
+                    style={{ width: "100%" }}
                   />
                 </div>
               </div>
 
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Video URL (optional)</label>
+              <div>
+                <label style={{ marginBottom: "6px" }}>Video URL (optional)</label>
                 <input
                   type="url"
-                  className="projInput"
-                  style={styles.input}
                   value={formVideoUrl}
                   onChange={(e) => {
                     setFormVideoUrl(e.target.value);
                     clearError();
                   }}
                   placeholder="https://youtube.com/watch?v=…"
+                  style={{ width: "100%" }}
                 />
               </div>
 
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Description</label>
+              <div>
+                <label style={{ marginBottom: "6px" }}>Description</label>
                 <textarea
-                  className="projInput"
-                  style={styles.textarea}
                   rows={4}
                   value={formDescription}
                   onChange={(e) => {
                     setFormDescription(e.target.value);
                     clearError();
                   }}
-                  placeholder="What the project covers and any key details."
+                  placeholder="Scope summary, finishes, and key architectural details."
+                  style={{ width: "100%", resize: "vertical" }}
                 />
               </div>
 
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Images</label>
+              <div>
+                <label style={{ marginBottom: "6px" }}>Images</label>
                 <input
                   ref={fileRef}
                   type="file"
@@ -648,58 +654,94 @@ export default function ProjectManager() {
                 />
                 <button
                   type="button"
-                  className="projDrop"
-                  style={styles.dropzone}
+                  className="adm-dropzone"
+                  style={{ width: "100%", minHeight: "100px" }}
                   onClick={() => fileRef.current?.click()}
                 >
-                  <span style={{ fontWeight: 500, color: palette.slate900 }}>
+                  <span style={{ fontWeight: 600, fontSize: "13px", color: "var(--crex-ink)" }}>
                     Choose images
                   </span>
-                  <span style={styles.dropHint}>
+                  <span style={{ fontSize: "12px", color: "var(--crex-muted)" }}>
                     Select one or several. Up to {MAX_IMAGES} images, {MAX_IMAGE_MB} MB each.
                   </span>
                 </button>
 
                 {(formImages.length > 0 || newFiles.length > 0) && (
-                  <div style={styles.imageGrid}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fill, minmax(76px, 1fr))",
+                      gap: "10px",
+                      marginTop: "12px",
+                    }}
+                  >
                     {formImages.map((url) => (
-                      <div key={url} style={styles.imageItem}>
-                        <img src={imageUrl(url)} alt="" style={styles.imageThumb} />
+                      <div key={url} style={thumbWrapStyle}>
+                        <img
+                          src={imageUrl(url)}
+                          alt="Saved project"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = FALLBACK_IMG;
+                          }}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
                         <button
                           type="button"
-                          className="projImgRemove"
-                          style={styles.imageRemove}
                           onClick={() => removeExisting(url)}
+                          style={removeImgBtnStyle}
                           aria-label="Remove image"
                         >
-                          <CloseIcon />
+                          <FiX size={12} />
                         </button>
                       </div>
                     ))}
                     {newFiles.map((f) => (
-                      <div key={f.id} style={styles.imageItem}>
-                        <img src={f.preview} alt="" style={styles.imageThumb} />
-                        <span style={styles.newBadge}>New</span>
+                      <div key={f.id} style={thumbWrapStyle}>
+                        <img
+                          src={f.preview}
+                          alt="Upload preview"
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                        <span
+                          style={{
+                            position: "absolute",
+                            left: "4px",
+                            bottom: "4px",
+                            fontSize: "10px",
+                            fontWeight: 700,
+                            padding: "1px 6px",
+                            borderRadius: "9999px",
+                            background: "#080807",
+                            color: "#c5a059",
+                          }}
+                        >
+                          New
+                        </span>
                         <button
                           type="button"
-                          className="projImgRemove"
-                          style={styles.imageRemove}
                           onClick={() => removeNew(f.id)}
+                          style={removeImgBtnStyle}
                           aria-label="Remove image"
                         >
-                          <CloseIcon />
+                          <FiX size={12} />
                         </button>
                       </div>
                     ))}
                   </div>
                 )}
-                {formError && <span style={styles.errorMsg}>{formError}</span>}
+
+                {formError && (
+                  <div style={{ fontSize: "12px", color: "#b91c1c", marginTop: "8px", fontWeight: 500 }}>
+                    {formError}
+                  </div>
+                )}
               </div>
 
-              <div style={styles.modalActions}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "6px" }}>
                 <button
                   type="button"
-                  style={styles.btnSecondary}
+                  className="adm-btn-secondary"
                   onClick={closeModal}
                   disabled={saving}
                 >
@@ -707,8 +749,7 @@ export default function ProjectManager() {
                 </button>
                 <button
                   type="submit"
-                  className="projBtnPrimary"
-                  style={styles.btnPrimary}
+                  className="adm-btn-primary"
                   disabled={saving}
                 >
                   {saving
@@ -725,31 +766,40 @@ export default function ProjectManager() {
 
       {/* Delete confirm modal */}
       {deleteTarget && (
-        <div className="projModalOverlay" style={styles.overlay} onClick={cancelDelete}>
+        <div className="adm-overlay" onClick={cancelDelete}>
           <div
-            className="projModal"
-            style={{ ...styles.modal, maxWidth: "380px" }}
+            className="adm-modal"
+            style={{ maxWidth: "400px" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>Delete project</h3>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "14px",
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>
+                Delete project
+              </h3>
               <button
                 type="button"
-                style={styles.modalCloseBtn}
+                className="adm-icon-btn"
                 onClick={cancelDelete}
                 aria-label="Close"
               >
-                <CloseIcon />
+                <FiX size={16} />
               </button>
             </div>
-            <p style={styles.confirmText}>
+            <p style={{ margin: 0, fontSize: "14px", color: "var(--crex-muted)", lineHeight: 1.55 }}>
               Are you sure you want to delete <strong>{deleteTarget.title}</strong>?
-              This can't be undone.
+              This action cannot be undone.
             </p>
-            <div style={styles.modalActions}>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "22px" }}>
               <button
                 type="button"
-                style={styles.btnSecondary}
+                className="adm-btn-secondary"
                 onClick={cancelDelete}
                 disabled={deleting}
               >
@@ -757,7 +807,7 @@ export default function ProjectManager() {
               </button>
               <button
                 type="button"
-                style={styles.btnDanger}
+                className="adm-btn-danger-solid"
                 onClick={handleDelete}
                 disabled={deleting}
               >
@@ -771,342 +821,27 @@ export default function ProjectManager() {
   );
 }
 
-/* ---------- styles ---------- */
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    background: "#fff",
-    boxSizing: "border-box",
-  },
-  container: { width: "100%", padding: 15 },
-  headerRow: {
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: "16px",
-    marginBottom: "20px",
-    flexWrap: "wrap",
-  },
-  title: {
-    fontFamily: "'Sora', 'Inter', sans-serif",
-    fontWeight: 600,
-    fontSize: "24px",
-    color: palette.slate900,
-    margin: "0 0 4px 0",
-  },
-  subtitle: { fontSize: "14px", color: palette.slate500, margin: 0 },
-  banner: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: "8px",
-    padding: "10px 14px",
-    fontSize: "13px",
-    marginBottom: "16px",
-  },
-  bannerClose: {
-    background: "transparent",
-    border: "none",
-    color: "inherit",
-    cursor: "pointer",
-    display: "flex",
-    opacity: 0.7,
-  },
-  filtersRow: { display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" },
-  searchWrap: { position: "relative", flex: "1 1 260px", maxWidth: "340px" },
-  searchIcon: {
-    position: "absolute",
-    left: "12px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    color: palette.slate400,
-    display: "flex",
-  },
-  searchInput: {
-    width: "100%",
-    boxSizing: "border-box",
-    border: `1px solid ${palette.slate200}`,
-    background: palette.white,
-    borderRadius: "10px",
-    padding: "10px 14px 10px 38px",
-    fontSize: "14px",
-    color: palette.slate900,
-    outline: "none",
-  },
-  filterSelect: {
-    border: `1px solid ${palette.slate200}`,
-    background: palette.white,
-    borderRadius: "10px",
-    padding: "10px 14px",
-    fontSize: "14px",
-    color: palette.slate900,
-    outline: "none",
-    minWidth: "180px",
-    cursor: "pointer",
-  },
-  tableCard: {
-    background: palette.white,
-    border: `1px solid ${palette.slate200}`,
-    borderRadius: "14px",
-    overflow: "hidden",
-  },
-  table: { width: "100%", borderCollapse: "collapse" },
-  th: {
-    textAlign: "left",
-    fontSize: "12px",
-    fontWeight: 600,
-    color: palette.slate500,
-    textTransform: "uppercase",
-    letterSpacing: "0.03em",
-    padding: "12px 20px",
-    background: palette.slate50,
-    borderBottom: `1px solid ${palette.slate200}`,
-    whiteSpace: "nowrap",
-  },
-  td: {
-    padding: "14px 20px",
-    fontSize: "14px",
-    color: palette.slate900,
-    borderBottom: `1px solid ${palette.slate200}`,
-    verticalAlign: "middle",
-  },
-  projectCell: { display: "flex", alignItems: "center", gap: "12px" },
-  thumb: {
-    width: "56px",
-    height: "42px",
-    borderRadius: "8px",
-    objectFit: "cover",
-    flexShrink: 0,
-    background: palette.slate100,
-    border: `1px solid ${palette.slate200}`,
-  },
-  thumbEmpty: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "10px",
-    color: palette.slate400,
-    textAlign: "center",
-  },
-  descPreview: {
-    fontSize: "12px",
-    color: palette.slate500,
-    marginTop: "2px",
-    maxWidth: "320px",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
-  link: { color: palette.blue500, textDecoration: "none", fontWeight: 500 },
-  emptyState: {
-    padding: "40px 20px",
-    textAlign: "center",
-    fontSize: "14px",
-    color: palette.slate500,
-  },
-  actionsRow: { display: "flex", gap: "6px", justifyContent: "flex-end" },
-  iconBtn: {
-    background: "transparent",
-    border: `1px solid ${palette.slate200}`,
-    borderRadius: "8px",
-    padding: "7px",
-    display: "flex",
-    color: palette.slate500,
-    cursor: "pointer",
-  },
-  overlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(15,23,42,0.45)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "20px",
-    zIndex: 999950,
-  },
-  modal: {
-    width: "100%",
-    maxWidth: "440px",
-    maxHeight: "92vh",
-    overflowY: "auto",
-    background: palette.white,
-    borderRadius: "16px",
-    padding: "24px",
-    boxSizing: "border-box",
-  },
-  modalHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "18px",
-  },
-  modalTitle: {
-    fontFamily: "'Sora', 'Inter', sans-serif",
-    fontWeight: 600,
-    fontSize: "18px",
-    color: palette.slate900,
-    margin: 0,
-  },
-  modalCloseBtn: {
-    background: "transparent",
-    border: "none",
-    color: palette.slate400,
-    cursor: "pointer",
-    display: "flex",
-  },
-  modalForm: { display: "flex", flexDirection: "column", gap: "18px" },
-  inputGroup: { display: "flex", flexDirection: "column", gap: "6px" },
-  label: { fontSize: "13px", fontWeight: 500, color: palette.slate900 },
-  input: {
-    border: `1px solid ${palette.slate200}`,
-    background: palette.slate100,
-    borderRadius: "10px",
-    padding: "11px 14px",
-    fontSize: "14px",
-    color: palette.slate900,
-    outline: "none",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  textarea: {
-    border: `1px solid ${palette.slate200}`,
-    background: palette.slate100,
-    borderRadius: "10px",
-    padding: "11px 14px",
-    fontSize: "14px",
-    fontFamily: "inherit",
-    lineHeight: 1.5,
-    color: palette.slate900,
-    outline: "none",
-    width: "100%",
-    boxSizing: "border-box",
-    resize: "vertical",
-  },
-  dropzone: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "4px",
-    padding: "18px 14px",
-    border: `1.5px dashed ${palette.slate200}`,
-    borderRadius: "10px",
-    background: palette.slate50,
-    fontFamily: "inherit",
-    fontSize: "14px",
-    cursor: "pointer",
-  },
-  dropHint: { fontSize: "12px", color: palette.slate500 },
-  newBadge: {
-    position: "absolute",
-    left: "4px",
-    bottom: "4px",
-    fontSize: "10px",
-    fontWeight: 600,
-    padding: "2px 6px",
-    borderRadius: "999px",
-    background: palette.blue500,
-    color: palette.white,
-  },
-  imageGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))",
-    gap: "10px",
-    marginTop: "6px",
-  },
-  imageItem: {
-    position: "relative",
-    aspectRatio: "4 / 3",
-    borderRadius: "10px",
-    overflow: "hidden",
-    border: `1px solid ${palette.slate200}`,
-    background: palette.slate100,
-  },
-  imageThumb: { width: "100%", height: "100%", objectFit: "cover", display: "block" },
-  imageRemove: {
-    position: "absolute",
-    top: "4px",
-    right: "4px",
-    width: "22px",
-    height: "22px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    border: "none",
-    borderRadius: "999px",
-    background: "rgba(15,23,42,0.7)",
-    color: palette.white,
-    cursor: "pointer",
-    padding: 0,
-  },
-  errorMsg: { fontSize: "12px", color: palette.red600 },
-  modalActions: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "10px",
-    marginTop: "4px",
-  },
-  btnPrimary: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    fontFamily: "'Sora', 'Inter', sans-serif",
-    background: palette.blue500,
-    color: palette.white,
-    border: "none",
-    borderRadius: "10px",
-    padding: "10px 18px",
-    fontSize: "14px",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  btnSecondary: {
-    background: palette.white,
-    color: palette.slate900,
-    border: `1px solid ${palette.slate200}`,
-    borderRadius: "10px",
-    padding: "10px 18px",
-    fontSize: "14px",
-    fontWeight: 500,
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-  },
-  btnDanger: {
-    background: palette.red600,
-    color: palette.white,
-    border: "none",
-    borderRadius: "10px",
-    padding: "10px 18px",
-    fontSize: "14px",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  confirmText: { fontSize: "14px", color: palette.slate500, lineHeight: 1.5 },
+const thumbWrapStyle = {
+  position: "relative",
+  height: "76px",
+  borderRadius: "10px",
+  overflow: "hidden",
+  border: "1px solid var(--crex-line-strong)",
+  background: "var(--crex-limestone)",
 };
 
-const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-
-  .projInput:focus {
-    border-color: ${palette.blue500} !important;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-  }
-  .projBtnPrimary:hover:not(:disabled) { background: ${palette.blue400} !important; }
-  .projBtnPrimary:disabled { opacity: 0.7; cursor: not-allowed; }
-  .projIconBtn:hover { background: ${palette.slate100} !important; color: ${palette.slate900} !important; }
-  .projIconBtnDanger:hover { background: ${palette.red50} !important; color: ${palette.red600} !important; border-color: rgba(220,38,38,0.3) !important; }
-  .projRow:hover { background: ${palette.slate50}; }
-  .projDrop:hover { border-color: ${palette.blue500}; background: rgba(59,130,246,0.05); }
-  .projImgRemove svg { width: 12px; height: 12px; }
-
-  /* size / location / scope / sector: two columns, one on small screens */
-  .projFieldRow { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 14px; }
-  @media (max-width: 560px) {
-    .projFieldRow { grid-template-columns: 1fr; }
-    .projContainer table { font-size: 13px; }
-  }
-`;
+const removeImgBtnStyle = {
+  position: "absolute",
+  top: "4px",
+  right: "4px",
+  width: "22px",
+  height: "22px",
+  borderRadius: "50%",
+  border: "none",
+  background: "rgba(8,8,7,0.75)",
+  color: "#ffffff",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  cursor: "pointer",
+};

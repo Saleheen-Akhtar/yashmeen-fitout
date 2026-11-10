@@ -194,11 +194,10 @@
   gap: 8px;
   font-weight: 600;
   text-transform: uppercase;
-  transition: background 0.25s var(--ease), transform 0.25s var(--ease);
+  transition: background 0.25s var(--ease);
 }
 .header-btn-enquire:hover {
   background: #252522;
-  transform: translateY(-1px);
 }
 
 .header-btn-menu {
@@ -706,5 +705,39 @@
   .footer-bottom-bar {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .site-nav-link,
+  .header-btn-enquire,
+  .header-btn-menu,
+  .menu-curtain,
+  .menu-curtain-close,
+  .menu-curtain-link,
+  .menu-curtain-bottom a,
+  .modal-overlay,
+  .modal-card,
+  .modal-close-btn,
+  .option-box,
+  .footer-nav-link {
+    transition: none;
+  }
+
+  .menu-curtain-link {
+    will-change: auto;
+    transform: none;
+  }
+
+  .menu-curtain.is-open .menu-curtain-link,
+  .menu-curtain-link:hover,
+  .modal-card {
+    transform: none;
+  }
+
+  .interactive-brand-monument .brand-play-hint,
+  .interactive-brand-monument button {
+    transition: none !important;
   }
 }

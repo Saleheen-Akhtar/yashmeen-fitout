@@ -1,10 +1,19 @@
 // src/demos/default.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { YashmeenParallax } from '@/components/ui/yashmeen-parallax';
 import { ParallaxComponent } from '@/components/ui/parallax-scrolling';
 
+gsap.registerPlugin(ScrollTrigger);
+
 export default function ParallaxDemo() {
   const [activeTab, setActiveTab] = useState<'yashmeen' | 'osmo'>('yashmeen');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    ScrollTrigger.refresh();
+  }, [activeTab]);
 
   return (
     <div style={{ position: 'relative', width: '100%', minHeight: '100vh', background: '#0d0d0c' }}>

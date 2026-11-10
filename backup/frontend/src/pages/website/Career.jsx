@@ -592,6 +592,14 @@ export default function Career() {
           transition:background-color .15s ease;
         }
         .careerpg-mail-btn:hover{ background:var(--careerpg-brass); }
+        @media (prefers-reduced-motion: reduce){
+          .careerpg-job-card,
+          .careerpg-details-btn,
+          .careerpg-apply-btn,
+          .careerpg-modal-close,
+          .careerpg-mail-btn{ transition:none; }
+          .careerpg-job-card:hover{ transform:none; }
+        }
       `}</style>
 
       {/* HERO BAND */}

@@ -428,3 +428,24 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .yp__layers,
+  .yp__layer-bg,
+  .yp__layer-fg {
+    will-change: auto;
+  }
+
+  .parallax-switcher__btn,
+  .yp__pillar-card,
+  .yp__btn-primary,
+  .yp__btn-secondary {
+    transition: none;
+  }
+
+  .yp__pillar-card:hover,
+  .yp__btn-primary:hover,
+  .yp__btn-secondary:hover {
+    transform: none;
+  }
+}

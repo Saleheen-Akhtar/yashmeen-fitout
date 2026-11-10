@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from '@studio-freight/lenis';
@@ -22,41 +22,69 @@ export function ParallaxComponent({
   showContent = true,
 }: ParallaxComponentProps) {
   const parallaxRef = useRef<HTMLDivElement>(null);
+  const [reducedMotion, setReducedMotion] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    setReducedMotion(mq.matches);
+    if (mq.addEventListener) mq.addEventListener('change', onChange);
+    else mq.addListener(onChange);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener('change', onChange);
+      else mq.removeListener(onChange);
+    };
+  }, []);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
     const triggerElement = parallaxRef.current?.querySelector('[data-parallax-layers]');
-    let tl: gsap.core.Timeline | null = null;
+    const layerNodes = triggerElement?.querySelectorAll('[data-parallax-layer]');
 
-    if (triggerElement) {
-      tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: triggerElement,
-          start: "0% 0%",
-          end: "100% 0%",
-          scrub: 0
-        }
-      });
-
-      const layers = [
-        { layer: "1", yPercent: 70 },
-        { layer: "2", yPercent: 55 },
-        { layer: "3", yPercent: 40 },
-        { layer: "4", yPercent: 10 }
-      ];
-
-      layers.forEach((layerObj, idx) => {
-        tl!.to(
-          triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`),
-          {
-            yPercent: layerObj.yPercent,
-            ease: "none"
-          },
-          idx === 0 ? undefined : "<"
-        );
-      });
+    if (reducedMotion) {
+      if (layerNodes?.length) {
+        gsap.set(layerNodes, { clearProps: 'yPercent,transform' });
+      }
+      return undefined;
     }
+
+    let tl: gsap.core.Timeline | null = null;
+    const ctx = gsap.context(() => {
+      if (triggerElement) {
+        tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: triggerElement,
+            start: '0% 0%',
+            end: '100% 0%',
+            scrub: 0,
+            invalidateOnRefresh: true,
+          },
+        });
+
+        const layers = [
+          { layer: '1', yPercent: 70 },
+          { layer: '2', yPercent: 55 },
+          { layer: '3', yPercent: 40 },
+          { layer: '4', yPercent: 10 },
+        ];
+
+        layers.forEach((layerObj, idx) => {
+          tl!.to(
+            triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`),
+            {
+              yPercent: layerObj.yPercent,
+              ease: 'none',
+            },
+            idx === 0 ? undefined : '<'
+          );
+        });
+      }
+    }, parallaxRef);
 
     // Reuse existing Lenis instance if registered globally, otherwise instantiate local Lenis
     let localLenis: Lenis | null = null;
@@ -65,26 +93,25 @@ export function ParallaxComponent({
     if (typeof window !== 'undefined' && !(window as any).__lenis) {
       localLenis = new Lenis();
       localLenis.on('scroll', ScrollTrigger.update);
-      tickerCallback = (time: number) => { localLenis?.raf(time * 1000); };
+      tickerCallback = (time: number) => {
+        localLenis?.raf(time * 1000);
+      };
       gsap.ticker.add(tickerCallback);
       gsap.ticker.lagSmoothing(0);
     }
 
     return () => {
-      // Clean up GSAP and ScrollTrigger instances specific to this component
-      if (tl) {
-        tl.scrollTrigger?.kill();
-        tl.kill();
-      }
-      if (triggerElement) {
-        gsap.killTweensOf(triggerElement.querySelectorAll('[data-parallax-layer]'));
+      ctx.revert();
+      if (tl) tl.kill();
+      if (layerNodes?.length) {
+        gsap.set(layerNodes, { clearProps: 'yPercent,transform' });
       }
       if (localLenis && tickerCallback) {
         gsap.ticker.remove(tickerCallback);
         localLenis.destroy();
       }
     };
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <div className="parallax" ref={parallaxRef}>

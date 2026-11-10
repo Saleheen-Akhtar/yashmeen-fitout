@@ -191,14 +191,16 @@ export default function Works() {
               className={`works-card ${proj.className}`}
             >
               <div className="works-card-image-wrap">
-                <img
-                  src={proj.img}
-                  alt={proj.imgAlt}
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.src = FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
-                  }}
-                />
+                <div className="works-card-image-inner">
+                  <img
+                    src={proj.img}
+                    alt={proj.imgAlt}
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src = FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
+                    }}
+                  />
+                </div>
               </div>
 
               <div className="works-card-meta">
@@ -214,7 +216,7 @@ export default function Works() {
           ))}
         </div>
       ) : (
-        <div style={{ margin: "2rem -2rem 0" }}>
+        <div className="works-carousel-bleed">
           <EditorialCarousel3D
             items={carouselProjects}
             ariaLabel="Selected work 3D carousel"

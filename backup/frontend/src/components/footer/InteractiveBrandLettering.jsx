@@ -685,6 +685,8 @@ export default function InteractiveBrandLettering({
   const recentPositionsRef = useRef([]);
   const pressRef = useRef(null);
   const wakeRef = useRef(null);
+  const isInViewRef = useRef(true);
+  const reducedMotionRef = useRef(false);
   const [hintVisible, setHintVisible] = useState(true);
 
   const playPop = (radius) => {
@@ -722,9 +724,21 @@ export default function InteractiveBrandLettering({
     if (!canvas || !container) return;
 
     const ctx = canvas.getContext("2d");
+    const motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    reducedMotionRef.current = motionMq.matches;
     let width = 0,
       height = 0,
       ratio = 1;
+
+    const isSettled = (world) => {
+      if (!world || world.drag || world.target || world.returning > 0) return false;
+      let maxV = 0;
+      for (const n of world.nodes) {
+        const speed = Math.hypot(n.vx, n.vy);
+        if (speed > maxV) maxV = speed;
+      }
+      return maxV < 0.025;
+    };
 
     const createLayout = (w, h) => {
       const chars = [...word];
@@ -767,7 +781,9 @@ export default function InteractiveBrandLettering({
       });
 
       const glyphs = chars.map((c, i) => new Glyph(c, poses[i], i));
-      return new World(w, h, glyphs);
+      const world = new World(w, h, glyphs);
+      world.reducedMotion = reducedMotionRef.current;
+      return world;
     };
 
     const draw = () => {
@@ -807,14 +823,21 @@ export default function InteractiveBrandLettering({
     const loop = (time) => {
       rafRef.current = 0;
       const world = worldRef.current;
-      if (document.hidden || !world) {
+      if (document.hidden || !world || !isInViewRef.current) {
         return;
       }
 
+      world.reducedMotion = reducedMotionRef.current;
       world.step(time);
       draw();
 
-      // Perpetual zero-gravity space float: continuously floats in real time
+      if (world.reducedMotion && isSettled(world)) {
+        world.sleep();
+        draw();
+        return;
+      }
+
+      // Perpetual zero-gravity space float when active motion is permitted
       rafRef.current = requestAnimationFrame(loop);
     };
 
@@ -823,9 +846,13 @@ export default function InteractiveBrandLettering({
         cancelAnimationFrame(rafRef.current);
         rafRef.current = 0;
       }
-      if (!document.hidden) {
-        rafRef.current = requestAnimationFrame(loop);
+      const world = worldRef.current;
+      if (document.hidden || !isInViewRef.current || !world) return;
+      if (world.reducedMotion && isSettled(world)) {
+        draw();
+        return;
       }
+      rafRef.current = requestAnimationFrame(loop);
     };
     wakeRef.current = wake;
     window.__wake = wake;
@@ -999,12 +1026,54 @@ export default function InteractiveBrandLettering({
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    const handleMotionChange = (e) => {
+      reducedMotionRef.current = e.matches;
+      const world = worldRef.current;
+      if (!world) return;
+      world.reducedMotion = e.matches;
+      if (e.matches) {
+        world.drag = null;
+        world.sleep();
+        draw();
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = 0;
+        }
+      } else {
+        wake();
+      }
+    };
+    if (motionMq.addEventListener) motionMq.addEventListener("change", handleMotionChange);
+    else motionMq.addListener(handleMotionChange);
+
+    let io = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      io = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const inView = !!entry?.isIntersecting;
+          isInViewRef.current = inView;
+          if (inView) {
+            wake();
+          } else if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = 0;
+          }
+        },
+        { threshold: 0.01 }
+      );
+      io.observe(container);
+    }
+
     const observer = new ResizeObserver(handleResize);
     observer.observe(container);
     handleResize();
 
     return () => {
       observer.disconnect();
+      if (io) io.disconnect();
+      if (motionMq.removeEventListener) motionMq.removeEventListener("change", handleMotionChange);
+      else motionMq.removeListener(handleMotionChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
@@ -1054,6 +1123,7 @@ export default function InteractiveBrandLettering({
       const [dx, dy] = map[dir] || [0, 0];
       world.nudge(index, dx, dy);
     }
+    if (wakeRef.current) wakeRef.current();
   };
 
   return (

@@ -24,8 +24,14 @@ export default function YashmeenNibExperience() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isMouseInTerms, setIsMouseInTerms] = useState(false);
   const [activeProjectIdx, setActiveProjectIdx] = useState(0);
+  const [reducedMotion, setReducedMotion] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false
+  );
 
   const containerRef = useRef(null);
+  const mainRef = useRef(null);
   const backdropRef = useRef(null);
   const modScrollRef = useRef(null);
   const headerLogoRef = useRef(null);
@@ -33,7 +39,9 @@ export default function YashmeenNibExperience() {
   const menuRef = useRef(null);
   const menuBgRef = useRef(null);
   const lenisRef = useRef(null);
+  const scrollHTriggerRef = useRef(null);
   const timelineRef = useRef(null);
+  const menuTimerRef = useRef(null);
   const mouseRef = useRef(null);
   const mouseSpanRef = useRef(null);
 
@@ -341,12 +349,47 @@ export default function YashmeenNibExperience() {
       </span>
     ));
 
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = (e) => setReducedMotion(e.matches);
+    setReducedMotion(mq.matches);
+    if (mq.addEventListener) mq.addEventListener("change", onChange);
+    else mq.addListener(onChange);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", onChange);
+      else mq.removeListener(onChange);
+    };
+  }, []);
+
   // --------------------------------------------------------------------------
   // 1. PRELOADER & INTRO ENTRANCE ANIMATION
   // --------------------------------------------------------------------------
   const runSequence = useCallback(() => {
+    if (timelineRef.current) {
+      timelineRef.current.kill();
+      timelineRef.current = null;
+    }
+
+    if (reducedMotion) {
+      setProgress(100);
+      setIsPreloading(false);
+      if (backdropRef.current) {
+        backdropRef.current.style.opacity = "0";
+        backdropRef.current.style.display = "none";
+      }
+      gsap.set(".mod-scroll__intro .splitline .char", { y: "0%" });
+      gsap.set(".mod-scroll__intro__text p", { opacity: 1, y: 0 });
+      gsap.set(".mod-scroll__intro__menu .menu-item", { y: 0, opacity: 1 });
+      gsap.set(".mod-scroll__images__image-single img", { scale: 1 });
+      return;
+    }
+
     setIsPreloading(true);
     setProgress(0);
+    if (backdropRef.current) {
+      backdropRef.current.style.display = "flex";
+      backdropRef.current.style.opacity = "1";
+    }
 
     const tl = gsap.timeline({
       onComplete: () => {
@@ -411,12 +454,15 @@ export default function YashmeenNibExperience() {
         "-=0.5"
       );
     }
-  }, []);
+  }, [reducedMotion]);
 
   useEffect(() => {
     runSequence();
     return () => {
-      if (timelineRef.current) timelineRef.current.kill();
+      if (timelineRef.current) {
+        timelineRef.current.kill();
+        timelineRef.current = null;
+      }
     };
   }, [runSequence]);
 
@@ -424,557 +470,562 @@ export default function YashmeenNibExperience() {
   // 2. SMOOTH SCROLL (LENIS) + HORIZONTAL PINNED TRACK & VERTICAL PARALLAX
   // --------------------------------------------------------------------------
   useEffect(() => {
-    const isDesktop = window.innerWidth > 991;
-    let lenis = null;
-    let tickerCallback = null;
+    const modScroll = modScrollRef.current;
+    if (!modScroll || !containerRef.current) return undefined;
 
-    if (isDesktop) {
-      lenis = new Lenis({
-        lerp: 0.1,
-        wheelMultiplier: 1.0,
-        smoothWheel: true
-      });
-      lenisRef.current = lenis;
-      if (typeof window !== "undefined") window.__lenis = lenis;
-
-      lenis.on("scroll", () => {
-        ScrollTrigger.update();
-      });
-
-      tickerCallback = (time) => {
-        lenis.raf(time * 1000);
-      };
-      gsap.ticker.add(tickerCallback);
-      gsap.ticker.lagSmoothing(0);
+    if (reducedMotion) {
+      setIsHeaderDark(false);
+      scrollHTriggerRef.current = null;
+      lenisRef.current = null;
+      gsap.set(".mod-scroll > *", { clearProps: "x,transform" });
+      gsap.set(".mod-scroll__images-text__text p span", { opacity: 1 });
+      gsap.set(".mod-scroll__projects__item__text", { opacity: 1, y: 0 });
+      return undefined;
     }
 
-    const modScroll = modScrollRef.current;
-    if (!modScroll) return;
+    const ctx = gsap.context(() => {
+      const mm = gsap.matchMedia();
 
-    let scrollTl = null;
-    let scrollHTrigger = null;
+      mm.add("(min-width: 992px)", () => {
+        const lenis = new Lenis({
+          lerp: 0.1,
+          wheelMultiplier: 1.0,
+          smoothWheel: true
+        });
+        lenisRef.current = lenis;
+        if (typeof window !== "undefined") window.__lenis = lenis;
 
-    if (isDesktop) {
-      const sections = modScroll.querySelectorAll(".mod-scroll > *");
-      const scrollH_width = modScroll.scrollWidth;
-      const scroll_tl_end = (scrollH_width * 100) / window.innerWidth;
-      const totalX = -(scrollH_width - window.innerWidth);
+        lenis.on("scroll", ScrollTrigger.update);
 
-      scrollTl = gsap.timeline({ paused: true });
+        const tickerCallback = (time) => {
+          lenis.raf(time * 1000);
+        };
+        gsap.ticker.add(tickerCallback);
+        gsap.ticker.lagSmoothing(0);
 
-      // Move entire horizontal rail
-      scrollTl.to(sections, {
-        x: totalX,
-        ease: "none",
-        duration: 100
-      });
+        const sections = modScroll.querySelectorAll(".mod-scroll > *");
+        const getScrollDistance = () => Math.max(0, modScroll.scrollWidth - window.innerWidth);
 
-      // Pin main container matching normalisboring.es
-      scrollHTrigger = ScrollTrigger.create({
-        animation: scrollTl,
-        trigger: modScroll,
-        pin: "main",
-        scrub: 0.8,
-        start: "top top",
-        end: "+=" + scroll_tl_end + "%",
-        onUpdate: () => {
-          // Check if dark section is currently under the header
-          const darkSec = document.querySelector(".mod-scroll__images-text");
-          if (darkSec) {
-            const rect = darkSec.getBoundingClientRect();
-            if (rect.left <= window.innerWidth * 0.85 && rect.right >= window.innerWidth * 0.15) {
-              setIsHeaderDark(true);
-            } else {
-              setIsHeaderDark(false);
-            }
-          }
-        }
-      });
+        const scrollTl = gsap.timeline({ paused: true });
 
-      // Top Header Logo & Menu Reveal - slides into view only after scrolling past the hero intro
-      const headerLogo = headerLogoRef.current;
-      const headerControls = headerControlsRef.current;
-      if (headerLogo && headerControls) {
-        const normal = headerLogo.querySelector(".logo__normal");
-        const group = headerLogo.querySelector(".logo__group");
-
-        const headerTl = gsap.timeline({
-          paused: true,
-          onStart: () => {
-            headerLogo.classList.add("is-visible");
-            headerControls.classList.add("is-visible");
-          },
-          onReverseComplete: () => {
-            headerLogo.classList.remove("is-visible");
-            headerControls.classList.remove("is-visible");
-            gsap.set(headerLogo, { opacity: 0 });
-            if (normal) gsap.set(normal, { y: "-180%", opacity: 0 });
-            if (group) gsap.set(group, { y: "130%", opacity: 0 });
-            gsap.set(headerControls, { y: "-180%", opacity: 0 });
-          }
+        // Move entire horizontal rail
+        scrollTl.to(sections, {
+          x: () => -getScrollDistance(),
+          ease: "none",
+          duration: 100
         });
 
-        headerTl.to(headerLogo, { opacity: 1, duration: 0.2, ease: "none" }, 0);
-        if (normal) {
+        // Pin main container matching normalisboring.es
+        const scrollHTrigger = ScrollTrigger.create({
+          animation: scrollTl,
+          trigger: modScroll,
+          pin: mainRef.current || "main",
+          scrub: 0.8,
+          start: "top top",
+          end: () => `+=${(modScroll.scrollWidth * 100) / window.innerWidth}%`,
+          invalidateOnRefresh: true,
+          onUpdate: () => {
+            const darkSec = containerRef.current?.querySelector(".mod-scroll__images-text");
+            if (darkSec) {
+              const rect = darkSec.getBoundingClientRect();
+              if (rect.left <= window.innerWidth * 0.85 && rect.right >= window.innerWidth * 0.15) {
+                setIsHeaderDark(true);
+              } else {
+                setIsHeaderDark(false);
+              }
+            }
+          }
+        });
+        scrollHTriggerRef.current = scrollHTrigger;
+
+        // Top Header Logo & Menu Reveal - slides into view only after scrolling past the hero intro
+        const headerLogo = headerLogoRef.current;
+        const headerControls = headerControlsRef.current;
+        if (headerLogo && headerControls) {
+          const normal = headerLogo.querySelector(".logo__normal");
+          const group = headerLogo.querySelector(".logo__group");
+
+          const headerTl = gsap.timeline({
+            paused: true,
+            onStart: () => {
+              headerLogo.classList.add("is-visible");
+              headerControls.classList.add("is-visible");
+            },
+            onReverseComplete: () => {
+              headerLogo.classList.remove("is-visible");
+              headerControls.classList.remove("is-visible");
+              gsap.set(headerLogo, { opacity: 0 });
+              if (normal) gsap.set(normal, { y: "-180%", opacity: 0 });
+              if (group) gsap.set(group, { y: "130%", opacity: 0 });
+              gsap.set(headerControls, { y: "-180%", opacity: 0 });
+            }
+          });
+
+          headerTl.to(headerLogo, { opacity: 1, duration: 0.2, ease: "none" }, 0);
+          if (normal) {
+            headerTl.fromTo(
+              normal,
+              { y: "-180%", opacity: 0 },
+              { y: "0%", opacity: 1, duration: 0.75, ease: "power3.out" },
+              0
+            );
+          }
+          if (group) {
+            headerTl.fromTo(
+              group,
+              { y: "130%", opacity: 0 },
+              { y: "0%", opacity: 1, duration: 0.75, ease: "power3.out" },
+              0
+            );
+          }
           headerTl.fromTo(
-            normal,
+            headerControls,
             { y: "-180%", opacity: 0 },
-            { y: "0%", opacity: 1, duration: 0.75, ease: "power3.out" },
+            { y: "0%", opacity: 1, duration: 0.65, ease: "power3.out" },
             0
           );
-        }
-        if (group) {
-          headerTl.fromTo(
-            group,
-            { y: "130%", opacity: 0 },
-            { y: "0%", opacity: 1, duration: 0.75, ease: "power3.out" },
-            0
-          );
-        }
-        headerTl.fromTo(
-          headerControls,
-          { y: "-180%", opacity: 0 },
-          { y: "0%", opacity: 1, duration: 0.65, ease: "power3.out" },
-          0
-        );
-
-        ScrollTrigger.create({
-          containerAnimation: scrollTl,
-          trigger: document.querySelector(".mod-scroll__intro"),
-          start: "125% 0%",
-          end: "126% 0%",
-          onEnter: () => headerTl.play(),
-          onEnterBack: () => headerTl.reverse(),
-          onLeaveBack: () => {
-            headerLogo.classList.remove("is-visible");
-            headerControls.classList.remove("is-visible");
-            headerTl.progress(0).pause();
-            gsap.set(headerLogo, { opacity: 0 });
-            if (normal) gsap.set(normal, { y: "-180%", opacity: 0 });
-            if (group) gsap.set(group, { y: "130%", opacity: 0 });
-            gsap.set(headerControls, { y: "-180%", opacity: 0 });
-          }
-        });
-      }
-
-      // Section 1: Principal Images scrubbing & Vertical FlipMedia Parallax
-      const principalSec = document.querySelector(".mod-scroll__images.principal");
-      if (principalSec) {
-        const singleImgElem = principalSec.querySelector(
-          ".mod-scroll__images__image-single img"
-        );
-        if (singleImgElem) {
-          gsap.fromTo(
-            singleImgElem,
-            { scale: 1.08, xPercent: -5 },
-            {
-              scale: 1.0,
-              xPercent: 5,
-              ease: "none",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: principalSec,
-                start: "left right",
-                end: "right left",
-                scrub: 0.5
-              }
-            }
-          );
-        }
-
-        const flipDown = principalSec.querySelector(".flipMedia__media--down");
-        const flipUp = principalSec.querySelector(".flipMedia__media--up");
-        if (flipDown) {
-          gsap.fromTo(
-            flipDown.querySelector(".media__source"),
-            { yPercent: -15 },
-            {
-              yPercent: 15,
-              ease: "none",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: principalSec,
-                start: "left right",
-                end: "right left",
-                scrub: 0.5
-              }
-            }
-          );
-        }
-        if (flipUp) {
-          gsap.fromTo(
-            flipUp.querySelector(".media__source"),
-            { yPercent: 15 },
-            {
-              yPercent: -15,
-              ease: "none",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: principalSec,
-                start: "left right",
-                end: "right left",
-                scrub: 0.5
-              }
-            }
-          );
-        }
-      }
-
-      // Section 2: Studio Manifesto Line 4 horizontal scrub
-      const studioSec = document.querySelector(".mod-scroll__text");
-      if (studioSec) {
-        const line4Span = studioSec.querySelector(
-          ".mod-scroll__text__title .line:nth-child(4) span.cont"
-        );
-        if (line4Span) {
-          gsap.fromTo(
-            line4Span,
-            { x: -260 },
-            {
-              x: 0,
-              ease: "power1.inOut",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: studioSec,
-                start: "left 75%",
-                end: "right 25%",
-                scrub: 0.5
-              }
-            }
-          );
-        }
-      }
-
-      // Section 3: Dark Atelier Paragraph Text Stagger & Vertical FlipMedia Pairs
-      const atelierSec = document.querySelector(".mod-scroll__images-text");
-      if (atelierSec) {
-        const textLines = atelierSec.querySelectorAll(
-          ".mod-scroll__images-text__text p span"
-        );
-        if (textLines.length) {
-          gsap.fromTo(
-            textLines,
-            { opacity: 0.2 },
-            {
-              opacity: 1,
-              stagger: 0.1,
-              ease: "none",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: atelierSec,
-                start: "left 70%",
-                end: "center center",
-                scrub: 0.5
-              }
-            }
-          );
-        }
-
-        const flips = atelierSec.querySelectorAll(".flipMedia__media");
-        flips.forEach((media) => {
-          const isDown = media.classList.contains("flipMedia__media--down");
-          gsap.fromTo(
-            media.querySelector(".media__source"),
-            { yPercent: isDown ? -18 : 18 },
-            {
-              yPercent: isDown ? 18 : -18,
-              ease: "none",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: atelierSec,
-                start: "left right",
-                end: "right left",
-                scrub: 0.5
-              }
-            }
-          );
-        });
-      }
-
-      // Section 4: Vertical Kinetic Values Ribbon (Rotated -90deg translating y: 175vh -> -100%)
-      const carouselSec = document.querySelector(".mod-scroll__carousel");
-      if (carouselSec) {
-        const ribbonContent = carouselSec.querySelector(
-          ".mod-scroll__carousel__content"
-        );
-        if (ribbonContent) {
-          gsap.fromTo(
-            ribbonContent,
-            { y: "175vh" },
-            {
-              y: "-100%",
-              ease: "none",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: carouselSec,
-                start: "0% 95%",
-                end: "100% 0%",
-                scrub: 0.5
-              }
-            }
-          );
-        }
-      }
-
-      // Section 5: Secundario FlipMedia
-      const secImages = document.querySelector(
-        ".mod-scroll__images.secundario"
-      );
-      if (secImages) {
-        const flips = secImages.querySelectorAll(".flipMedia__media");
-        if (flips.length >= 2) {
-          gsap.fromTo(
-            flips[0].querySelector(".media__source"),
-            { yPercent: -18 },
-            {
-              yPercent: 18,
-              ease: "none",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: secImages,
-                start: "left right",
-                end: "right left",
-                scrub: 0.5
-              }
-            }
-          );
-          gsap.fromTo(
-            flips[1].querySelector(".media__source"),
-            { yPercent: 18 },
-            {
-              yPercent: -18,
-              ease: "none",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: secImages,
-                start: "left right",
-                end: "right left",
-                scrub: 0.5
-              }
-            }
-          );
-        }
-      }
-
-      // Section 6: Terms Parallax Padding
-      const termsSec = document.querySelector(".mod-scroll__terms");
-      if (termsSec) {
-        const termItems = termsSec.querySelectorAll(".mod-scroll__terms__term");
-        if (termItems.length >= 3) {
-          const termsTl = gsap.timeline({ paused: true });
-          termsTl.to(termItems[0], { paddingLeft: "12vw" }, 0);
-          termsTl.to(termItems[1], { paddingRight: "3vw" }, 0);
-          termsTl.to(termItems[2], { paddingLeft: "20vw" }, 0);
 
           ScrollTrigger.create({
             containerAnimation: scrollTl,
-            animation: termsTl,
-            trigger: termsSec,
-            start: "0% 100%",
-            end: "100% 0%",
-            scrub: 1
+            trigger: containerRef.current?.querySelector(".mod-scroll__intro"),
+            start: "125% 0%",
+            end: "max",
+            onEnter: () => headerTl.play(),
+            onLeaveBack: () => headerTl.reverse()
           });
         }
-      }
 
-      // Section 7: Expanding Project Cards Accordion
-      const projectsSec = document.querySelector(".mod-scroll__projects");
-      if (projectsSec) {
-        const projectItems = projectsSec.querySelectorAll(
-          ".mod-scroll__projects__item:not(.last-item)"
-        );
-        const projectsTl = gsap.timeline({ paused: true });
-
-        projectItems.forEach((elem, idx) => {
-          let time = idx * 1.2;
-          const media = elem.querySelector(".media__source");
-          const textData = elem.querySelector(
-            ".mod-scroll__projects__item__text"
+        // Section 1: Principal Images scrubbing & Vertical FlipMedia Parallax
+        const principalSec = containerRef.current?.querySelector(".mod-scroll__images.principal");
+        if (principalSec) {
+          const singleImgElem = principalSec.querySelector(
+            ".mod-scroll__images__image-single img"
           );
-
-          projectsTl.fromTo(
-            elem,
-            { width: "15vw" },
-            { width: "58vw", duration: 1, ease: "power1.inOut" },
-            time
-          );
-
-          if (media) {
-            projectsTl.fromTo(
-              media,
-              { height: "87vh" },
-              { height: "66.66vh", duration: 1, ease: "power1.inOut" },
-              time
-            );
-          }
-
-          if (textData) {
-            projectsTl.fromTo(
-              textData,
-              { opacity: 0, y: 30 },
-              { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
-              time + 0.3
-            );
-          }
-
-          // Shrink back when transitioning to next card
-          if (idx < projectItems.length - 1) {
-            projectsTl.to(
-              elem,
-              { width: "15vw", duration: 0.8, ease: "power1.inOut" },
-              time + 1.2
-            );
-            if (media) {
-              projectsTl.to(
-                media,
-                { height: "87vh", duration: 0.8, ease: "power1.inOut" },
-                time + 1.2
-              );
-            }
-            if (textData) {
-              projectsTl.to(
-                textData,
-                { opacity: 0, y: 30, duration: 0.3, ease: "power2.in" },
-                time + 1.2
-              );
-            }
-          }
-        });
-
-        ScrollTrigger.create({
-          containerAnimation: scrollTl,
-          animation: projectsTl,
-          trigger: projectItems[0],
-          start: "0% 80%",
-          end: "+=" + (58 * projectItems.length) + "%",
-          scrub: 0.5
-        });
-
-        // Last Item Upward Vertical Carousel & Storytelling Manifesto
-        const lastItem = projectsSec.querySelector(
-          ".mod-scroll__projects__item.last-item"
-        );
-        const carousel = lastItem?.querySelector(".last-item__carousel");
-        const carouselItems = lastItem?.querySelectorAll(
-          ".last-item__carousel__item:not(.last-item__carousel__item--link)"
-        );
-        const manifestoLines = lastItem?.querySelectorAll(
-          ".last-item__content__title .line"
-        );
-
-        if (lastItem && carousel) {
-          // Upward vertical carousel scrolling as lastItem passes through viewport
-          gsap.fromTo(
-            carousel,
-            { y: "25vh" },
-            {
-              y: "-25vh",
-              ease: "none",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: lastItem,
-                start: "left right",
-                end: "right left",
-                scrub: 0.5
+          if (singleImgElem) {
+            gsap.fromTo(
+              singleImgElem,
+              { scale: 1.08, xPercent: -5 },
+              {
+                scale: 1.0,
+                xPercent: 5,
+                ease: "none",
+                scrollTrigger: {
+                  containerAnimation: scrollTl,
+                  trigger: principalSec,
+                  start: "left right",
+                  end: "right left",
+                  scrub: 0.5
+                }
               }
-            }
-          );
+            );
+          }
 
-          if (manifestoLines && manifestoLines.length) {
-            gsap.from(manifestoLines, {
-              y: 40,
-              opacity: 0,
-              duration: 0.8,
-              stagger: 0.15,
-              ease: "power2.out",
-              scrollTrigger: {
-                containerAnimation: scrollTl,
-                trigger: lastItem,
-                start: "left 70%",
-                toggleActions: "play none none reverse"
+          const flipDown = principalSec.querySelector(".flipMedia__media--down");
+          const flipUp = principalSec.querySelector(".flipMedia__media--up");
+          if (flipDown) {
+            gsap.fromTo(
+              flipDown.querySelector(".media__source"),
+              { yPercent: -15 },
+              {
+                yPercent: 15,
+                ease: "none",
+                scrollTrigger: {
+                  containerAnimation: scrollTl,
+                  trigger: principalSec,
+                  start: "left right",
+                  end: "right left",
+                  scrub: 0.5
+                }
               }
+            );
+          }
+          if (flipUp) {
+            gsap.fromTo(
+              flipUp.querySelector(".media__source"),
+              { yPercent: 15 },
+              {
+                yPercent: -15,
+                ease: "none",
+                scrollTrigger: {
+                  containerAnimation: scrollTl,
+                  trigger: principalSec,
+                  start: "left right",
+                  end: "right left",
+                  scrub: 0.5
+                }
+              }
+            );
+          }
+        }
+
+        // Section 2: Studio Manifesto Line 4 horizontal scrub
+        const studioSec = containerRef.current?.querySelector(".mod-scroll__text");
+        if (studioSec) {
+          const line4Span = studioSec.querySelector(
+            ".mod-scroll__text__title .line:nth-child(4) span.cont"
+          );
+          if (line4Span) {
+            gsap.fromTo(
+              line4Span,
+              { x: -260 },
+              {
+                x: 0,
+                ease: "power1.inOut",
+                scrollTrigger: {
+                  containerAnimation: scrollTl,
+                  trigger: studioSec,
+                  start: "left 75%",
+                  end: "right 25%",
+                  scrub: 0.5
+                }
+              }
+            );
+          }
+        }
+
+        // Section 3: Dark Atelier Paragraph Text Stagger & Vertical FlipMedia Pairs
+        const atelierSec = containerRef.current?.querySelector(".mod-scroll__images-text");
+        if (atelierSec) {
+          const textLines = atelierSec.querySelectorAll(
+            ".mod-scroll__images-text__text p span"
+          );
+          if (textLines.length) {
+            gsap.fromTo(
+              textLines,
+              { opacity: 0.2 },
+              {
+                opacity: 1,
+                stagger: 0.1,
+                ease: "none",
+                scrollTrigger: {
+                  containerAnimation: scrollTl,
+                  trigger: atelierSec,
+                  start: "left 70%",
+                  end: "center center",
+                  scrub: 0.5
+                }
+              }
+            );
+          }
+
+          const flips = atelierSec.querySelectorAll(".flipMedia__media");
+          flips.forEach((media) => {
+            const isDown = media.classList.contains("flipMedia__media--down");
+            gsap.fromTo(
+              media.querySelector(".media__source"),
+              { yPercent: isDown ? -18 : 18 },
+              {
+                yPercent: isDown ? 18 : -18,
+                ease: "none",
+                scrollTrigger: {
+                  containerAnimation: scrollTl,
+                  trigger: atelierSec,
+                  start: "left right",
+                  end: "right left",
+                  scrub: 0.5
+                }
+              }
+            );
+          });
+        }
+
+        // Section 4: Vertical Kinetic Values Ribbon (Rotated -90deg translating y: 175vh -> -100%)
+        const carouselSec = containerRef.current?.querySelector(".mod-scroll__carousel");
+        if (carouselSec) {
+          const ribbonContent = carouselSec.querySelector(
+            ".mod-scroll__carousel__content"
+          );
+          if (ribbonContent) {
+            gsap.fromTo(
+              ribbonContent,
+              { y: "175vh" },
+              {
+                y: "-100%",
+                ease: "none",
+                scrollTrigger: {
+                  containerAnimation: scrollTl,
+                  trigger: carouselSec,
+                  start: "0% 95%",
+                  end: "100% 0%",
+                  scrub: 0.5
+                }
+              }
+            );
+          }
+        }
+
+        // Section 5: Secundario FlipMedia
+        const secImages = containerRef.current?.querySelector(
+          ".mod-scroll__images.secundario"
+        );
+        if (secImages) {
+          const flips = secImages.querySelectorAll(".flipMedia__media");
+          if (flips.length >= 2) {
+            gsap.fromTo(
+              flips[0].querySelector(".media__source"),
+              { yPercent: -18 },
+              {
+                yPercent: 18,
+                ease: "none",
+                scrollTrigger: {
+                  containerAnimation: scrollTl,
+                  trigger: secImages,
+                  start: "left right",
+                  end: "right left",
+                  scrub: 0.5
+                }
+              }
+            );
+            gsap.fromTo(
+              flips[1].querySelector(".media__source"),
+              { yPercent: 18 },
+              {
+                yPercent: -18,
+                ease: "none",
+                scrollTrigger: {
+                  containerAnimation: scrollTl,
+                  trigger: secImages,
+                  start: "left right",
+                  end: "right left",
+                  scrub: 0.5
+                }
+              }
+            );
+          }
+        }
+
+        // Section 6: Terms Parallax Padding
+        const termsSec = containerRef.current?.querySelector(".mod-scroll__terms");
+        if (termsSec) {
+          const termItems = termsSec.querySelectorAll(".mod-scroll__terms__term");
+          if (termItems.length >= 3) {
+            const termsTl = gsap.timeline({ paused: true });
+            termsTl.to(termItems[0], { paddingLeft: "12vw" }, 0);
+            termsTl.to(termItems[1], { paddingRight: "3vw" }, 0);
+            termsTl.to(termItems[2], { paddingLeft: "20vw" }, 0);
+
+            ScrollTrigger.create({
+              containerAnimation: scrollTl,
+              animation: termsTl,
+              trigger: termsSec,
+              start: "0% 100%",
+              end: "100% 0%",
+              scrub: 1
             });
           }
         }
 
-        // Cierre terracotta closure module & vertical parallax reveal
-        const cierre = document.querySelector(".mod-scroll__cierre");
-        const cierreContent = document.querySelector(".mod-scroll__cierre__content");
-        const cierreMedia = cierreContent?.querySelector(".mod-scroll__cierre__content__image");
-        if (cierre && cierreMedia) {
-          const downImg = cierreMedia.querySelector(".flipMedia__media--down");
-          const upImg = cierreMedia.querySelector(".flipMedia__media--up");
+        // Section 7: Expanding Project Cards Accordion
+        const projectsSec = containerRef.current?.querySelector(".mod-scroll__projects");
+        if (projectsSec) {
+          const projectItems = projectsSec.querySelectorAll(
+            ".mod-scroll__projects__item:not(.last-item)"
+          );
+          const projectsTl = gsap.timeline({ paused: true });
 
-          if (downImg) {
+          projectItems.forEach((elem, idx) => {
+            const time = idx * 1.2;
+            const media = elem.querySelector(".media__source");
+            const textData = elem.querySelector(
+              ".mod-scroll__projects__item__text"
+            );
+
+            projectsTl.fromTo(
+              elem,
+              { width: "15vw" },
+              { width: "58vw", duration: 1, ease: "power1.inOut" },
+              time
+            );
+
+            if (media) {
+              projectsTl.fromTo(
+                media,
+                { height: "87vh" },
+                { height: "66.66vh", duration: 1, ease: "power1.inOut" },
+                time
+              );
+            }
+
+            if (textData) {
+              projectsTl.fromTo(
+                textData,
+                { opacity: 0, y: 30 },
+                { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
+                time + 0.3
+              );
+            }
+
+            // Shrink back when transitioning to next card
+            if (idx < projectItems.length - 1) {
+              projectsTl.to(
+                elem,
+                { width: "15vw", duration: 0.8, ease: "power1.inOut" },
+                time + 1.2
+              );
+              if (media) {
+                projectsTl.to(
+                  media,
+                  { height: "87vh", duration: 0.8, ease: "power1.inOut" },
+                  time + 1.2
+                );
+              }
+              if (textData) {
+                projectsTl.to(
+                  textData,
+                  { opacity: 0, y: 30, duration: 0.3, ease: "power2.in" },
+                  time + 1.2
+                );
+              }
+            }
+          });
+
+          if (projectItems.length) {
+            ScrollTrigger.create({
+              containerAnimation: scrollTl,
+              animation: projectsTl,
+              trigger: projectItems[0],
+              start: "0% 80%",
+              end: "+=" + (58 * projectItems.length) + "%",
+              scrub: 0.5
+            });
+          }
+
+          // Last Item Upward Vertical Carousel & Storytelling Manifesto
+          const lastItem = projectsSec.querySelector(
+            ".mod-scroll__projects__item.last-item"
+          );
+          const carousel = lastItem?.querySelector(".last-item__carousel");
+          const manifestoLines = lastItem?.querySelectorAll(
+            ".last-item__content__title .line"
+          );
+
+          if (lastItem && carousel) {
             gsap.fromTo(
-              downImg,
-              { y: "-12vh" },
+              carousel,
+              { y: "25vh" },
               {
-                y: "12vh",
+                y: "-25vh",
                 ease: "none",
                 scrollTrigger: {
                   containerAnimation: scrollTl,
-                  trigger: cierre,
+                  trigger: lastItem,
                   start: "left right",
                   end: "right left",
                   scrub: 0.5
                 }
               }
             );
-          }
-          if (upImg) {
-            gsap.fromTo(
-              upImg,
-              { y: "12vh" },
-              {
-                y: "-12vh",
-                ease: "none",
+
+            if (manifestoLines && manifestoLines.length) {
+              gsap.from(manifestoLines, {
+                y: 40,
+                opacity: 0,
+                duration: 0.8,
+                stagger: 0.15,
+                ease: "power2.out",
                 scrollTrigger: {
                   containerAnimation: scrollTl,
-                  trigger: cierre,
-                  start: "left right",
-                  end: "right left",
-                  scrub: 0.5
+                  trigger: lastItem,
+                  start: "left 70%",
+                  toggleActions: "play none none reverse"
                 }
-              }
-            );
-          }
-        }
-      }
-    }
-
-    // Unpinned vertical animations after mod-scroll
-    const doubleMedia = document.querySelectorAll(".mod-media--double .mod-media__col img");
-    if (doubleMedia.length) {
-      doubleMedia.forEach((img, i) => {
-        gsap.fromTo(
-          img,
-          { y: i % 2 === 0 ? -40 : 40, scale: 1.05 },
-          {
-            y: i % 2 === 0 ? 40 : -40,
-            scale: 1,
-            ease: "none",
-            scrollTrigger: {
-              trigger: ".mod-media--double",
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 1
+              });
             }
           }
-        );
+
+          // Cierre terracotta closure module & vertical parallax reveal
+          const cierre = containerRef.current?.querySelector(".mod-scroll__cierre");
+          const cierreContent = containerRef.current?.querySelector(".mod-scroll__cierre__content");
+          const cierreMedia = cierreContent?.querySelector(".mod-scroll__cierre__content__image");
+          if (cierre && cierreMedia) {
+            const downImg = cierreMedia.querySelector(".flipMedia__media--down");
+            const upImg = cierreMedia.querySelector(".flipMedia__media--up");
+
+            if (downImg) {
+              gsap.fromTo(
+                downImg,
+                { y: "-12vh" },
+                {
+                  y: "12vh",
+                  ease: "none",
+                  scrollTrigger: {
+                    containerAnimation: scrollTl,
+                    trigger: cierre,
+                    start: "left right",
+                    end: "right left",
+                    scrub: 0.5
+                  }
+                }
+              );
+            }
+            if (upImg) {
+              gsap.fromTo(
+                upImg,
+                { y: "12vh" },
+                {
+                  y: "-12vh",
+                  ease: "none",
+                  scrollTrigger: {
+                    containerAnimation: scrollTl,
+                    trigger: cierre,
+                    start: "left right",
+                    end: "right left",
+                    scrub: 0.5
+                  }
+                }
+              );
+            }
+          }
+        }
+
+        return () => {
+          scrollHTriggerRef.current = null;
+          setIsHeaderDark(false);
+          headerLogoRef.current?.classList.remove("is-visible");
+          headerControlsRef.current?.classList.remove("is-visible");
+          gsap.ticker.remove(tickerCallback);
+          lenis.destroy();
+          if (lenisRef.current === lenis) lenisRef.current = null;
+          if (typeof window !== "undefined" && window.__lenis === lenis) {
+            window.__lenis = null;
+          }
+        };
       });
-    }
+
+      // Unpinned vertical animations after mod-scroll
+      const doubleMedia = containerRef.current?.querySelectorAll(".mod-media--double .mod-media__col img");
+      if (doubleMedia?.length) {
+        doubleMedia.forEach((img, i) => {
+          gsap.fromTo(
+            img,
+            { y: i % 2 === 0 ? -40 : 40, scale: 1.05 },
+            {
+              y: i % 2 === 0 ? 40 : -40,
+              scale: 1,
+              ease: "none",
+              scrollTrigger: {
+                trigger: ".mod-media--double",
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1,
+                invalidateOnRefresh: true
+              }
+            }
+          );
+        });
+      }
+    }, containerRef);
 
     return () => {
-      if (scrollHTrigger) scrollHTrigger.kill();
-      if (scrollTl) scrollTl.kill();
-      if (lenis && tickerCallback) {
-        gsap.ticker.remove(tickerCallback);
-        lenis.destroy();
-      }
-      ScrollTrigger.getAll().forEach((t) => t.kill());
+      scrollHTriggerRef.current = null;
+      setIsHeaderDark(false);
+      ctx.revert();
     };
-  }, []);
+  }, [reducedMotion]);
+
+  useEffect(() => {
+    ScrollTrigger.refresh();
+  }, [lang]);
 
   // --------------------------------------------------------------------------
   // 3. FULL-SCREEN INTERACTIVE EDITORIAL MENU DRAWER
@@ -987,6 +1038,14 @@ export default function YashmeenNibExperience() {
     if (!isMenuOpen) {
       setIsMenuOpen(true);
       menuEl.classList.remove("d-none");
+
+      if (reducedMotion) {
+        gsap.set(menuBg, { width: "100vw" });
+        gsap.set(".header__menu__nav-site li", { y: 0, opacity: 1 });
+        gsap.set(".header__menu__media", { opacity: 1, scale: 1 });
+        gsap.set(".header__menu__nav-single__proyectos__item", { y: 0, opacity: 1 });
+        return;
+      }
 
       const tl = gsap.timeline();
       tl.to(menuBg, { width: "100vw", duration: 0.65, ease: "power2.out" }, 0);
@@ -1009,6 +1068,13 @@ export default function YashmeenNibExperience() {
         0.4
       );
     } else {
+      if (reducedMotion) {
+        gsap.set(menuBg, { width: "0vw" });
+        menuEl.classList.add("d-none");
+        setIsMenuOpen(false);
+        return;
+      }
+
       const tl = gsap.timeline({
         onComplete: () => {
           menuEl.classList.add("d-none");
@@ -1021,42 +1087,77 @@ export default function YashmeenNibExperience() {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (menuTimerRef.current) {
+        clearTimeout(menuTimerRef.current);
+        menuTimerRef.current = null;
+      }
+    };
+  }, []);
+
   // Smooth scroll to chapter from menu
   const glideToSection = (anchor) => {
-    toggleMenu();
+    if (isMenuOpen) {
+      toggleMenu();
+    }
 
-    setTimeout(() => {
+    if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
+    const delayMs = isMenuOpen && !reducedMotion ? 450 : 0;
+
+    menuTimerRef.current = setTimeout(() => {
       const modScroll = modScrollRef.current;
       if (!modScroll) return;
 
-      const targetEl = document.querySelector(anchor);
+      const targetEl = containerRef.current?.querySelector(anchor) || document.querySelector(anchor);
       if (!targetEl) return;
 
-      if (window.innerWidth > 991) {
-        const scrollDistance = modScroll.scrollWidth - window.innerWidth;
-        const targetX = targetEl.offsetLeft;
-        const ratio = targetX / modScroll.scrollWidth;
-        const scrollY = ratio * scrollDistance;
+      if (!reducedMotion && window.innerWidth > 991) {
+        const st = scrollHTriggerRef.current;
+        if (modScroll.contains(targetEl) && st) {
+          const maxScrollX = Math.max(1, modScroll.scrollWidth - window.innerWidth);
+          const ratio = Math.min(1, Math.max(0, targetEl.offsetLeft / maxScrollX));
+          const scrollY = st.start + (st.end - st.start) * ratio;
 
-        if (lenisRef.current) {
-          lenisRef.current.scrollTo(scrollY, { duration: 1.2 });
+          if (lenisRef.current) {
+            lenisRef.current.scrollTo(scrollY, { duration: 1.2 });
+          } else {
+            window.scrollTo({ top: scrollY, behavior: "smooth" });
+          }
         } else {
-          window.scrollTo({ top: scrollY, behavior: "smooth" });
+          const rectTop =
+            st && mainRef.current?.contains(targetEl)
+              ? st.end +
+                (targetEl.getBoundingClientRect().top -
+                  mainRef.current.getBoundingClientRect().top)
+              : targetEl.getBoundingClientRect().top + window.scrollY;
+          if (lenisRef.current) {
+            lenisRef.current.scrollTo(rectTop, { duration: 1.2 });
+          } else {
+            window.scrollTo({ top: rectTop, behavior: "smooth" });
+          }
         }
       } else {
-        targetEl.scrollIntoView({ behavior: "smooth" });
+        const top = Math.max(
+          0,
+          targetEl.getBoundingClientRect().top +
+            window.scrollY -
+            (window.innerWidth <= 991 || reducedMotion ? 76 : 0)
+        );
+        window.scrollTo({ top, behavior: reducedMotion ? "auto" : "smooth" });
       }
-    }, 450);
+    }, delayMs);
   };
 
   // Mouse cursor tracking for custom #mouse with dynamic badge expansion
   useEffect(() => {
-    if (typeof window === "undefined" || window.innerWidth <= 991) return;
+    if (typeof window === "undefined" || reducedMotion) return undefined;
     const mouseEl = mouseRef.current;
     const mouseSpan = mouseSpanRef.current;
-    if (!mouseEl || !mouseSpan) return;
+    if (!mouseEl || !mouseSpan) return undefined;
 
     const handleMouseMove = (e) => {
+      if (window.innerWidth <= 991) return;
       gsap.to(mouseEl, {
         x: e.clientX,
         y: e.clientY,
@@ -1066,6 +1167,7 @@ export default function YashmeenNibExperience() {
     };
 
     const handleMouseOver = (e) => {
+      if (window.innerWidth <= 991) return;
       const target = e.target.closest(".expand_mouse");
       if (target) {
         const text =
@@ -1089,11 +1191,12 @@ export default function YashmeenNibExperience() {
     document.addEventListener("mouseout", handleMouseOut);
 
     return () => {
+      gsap.killTweensOf(mouseEl);
       window.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseover", handleMouseOver);
       document.removeEventListener("mouseout", handleMouseOut);
     };
-  }, [lang]);
+  }, [lang, reducedMotion]);
 
   // Tenets Mouse Move Listener
   const handleTermsMouseMove = (e) => {
@@ -1124,7 +1227,7 @@ export default function YashmeenNibExperience() {
     <div
       className={`nib-page-wrapper ${isPreloading ? "is-preloading" : ""} ${
         isHeaderDark ? "theme-dark-active" : ""
-      }`}
+      } ${reducedMotion ? "is-reduced-motion" : ""}`}
       ref={containerRef}
     >
       {/* Dynamic Kinetic Cursor matching normalisboring.es */}
@@ -1286,7 +1389,7 @@ export default function YashmeenNibExperience() {
       {/* ------------------------------------------------------------------
           3. MAIN HORIZONTAL PINNED TRACK (.mod-scroll)
          ------------------------------------------------------------------ */}
-      <main>
+      <main ref={mainRef}>
         <section className="mod-scroll" ref={modScrollRef}>
           {/* ===============================================================
               CHAPTER 0: INTRO MANIFESTO (.mod-scroll__intro bg-white)
@@ -1377,7 +1480,13 @@ export default function YashmeenNibExperience() {
               <div className="mod-scroll__intro__logo logo c-black">
                 <div
                   className="logo__normal"
-                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  onClick={() => {
+                    if (!reducedMotion && lenisRef.current) {
+                      lenisRef.current.scrollTo(0, { duration: 1.0 });
+                    } else {
+                      window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
+                    }
+                  }}
                 >
                   <span>YASHMEEN</span>
                 </div>

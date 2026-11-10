@@ -1,14 +1,26 @@
 /* ==========================================================================
-   Yashmeen × Normal is Boring (NIB) Complete Experience
+   Yashmeen x Normal is Boring (NIB) Complete Experience
    Exact Design System, Typography, Kinetics, and Rhythm from https://normalisboring.es/
+   All rules scoped to .nib-page-wrapper to prevent style leaks across routes.
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;700;800&display=swap');
 
-:root {
+@layer base {
+  .nib-page-wrapper,
+  .nib-page-wrapper *,
+  .nib-page-wrapper *::before,
+  .nib-page-wrapper *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.nib-page-wrapper {
   --100vh: 100vh;
   --fsize: 1.0416666667vw;
-  
+
   /* High-End Editorial Typography Stacks (No CORS Errors) */
   --f-regular: "DM Serif Display", "Bodoni Moda", "Playfair Display", Georgia, serif;
   --f-medium: "DM Serif Display", "Bodoni Moda", "Playfair Display", Georgia, serif;
@@ -55,74 +67,59 @@
   /* Layout & Spacers */
   --wrapper-padd: clamp(1.5rem, 2.5vw, 3.5rem);
   --grid-gap: clamp(1rem, 1.8vw, 2.5rem);
-}
 
-/* ==========================================================================
-   RESET & BASE STYLING
-   ========================================================================== */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html, body {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
   background-color: var(--white);
   color: var(--black);
   font-family: var(--f-izmir);
   font-size: 16px;
   line-height: 1.4;
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-.nib-page-wrapper {
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-  background-color: var(--white);
-}
-
 /* Typography Utility Classes */
-.f-regular { font-family: var(--f-regular); }
-.f-medium { font-family: var(--f-medium); }
-.f-light { font-family: var(--f-light); }
-.f-edit { font-family: var(--f-edit); }
-.f-edit-reg { font-family: var(--f-edit-regular); }
-.f-edit-italic { font-family: var(--f-edit-italic); }
-.f-izmir { font-family: var(--f-izmir); }
+.nib-page-wrapper .f-regular { font-family: var(--f-regular); }
+.nib-page-wrapper .f-medium { font-family: var(--f-medium); }
+.nib-page-wrapper .f-light { font-family: var(--f-light); }
+.nib-page-wrapper .f-edit { font-family: var(--f-edit); }
+.nib-page-wrapper .f-edit-reg { font-family: var(--f-edit-regular); }
+.nib-page-wrapper .f-edit-italic { font-family: var(--f-edit-italic); }
+.nib-page-wrapper .f-izmir { font-family: var(--f-izmir); }
 
-.t-supertitulo-xl { font-size: var(--supertitulo-xl); line-height: 0.95; }
-.t-supertitulo-l { font-size: var(--supertitulo-l); line-height: 0.95; }
-.t-supertitulo { font-size: var(--supertitulo); line-height: 1.0; }
-.t-titulo-xxl { font-size: var(--titulo-xxl); line-height: var(--titulo-xxl-lh); }
-.t-titulo-xl { font-size: var(--titulo-xl); line-height: var(--titulo-xl-lh); }
-.t-titulo-l { font-size: var(--titulo-l); line-height: var(--titulo-l-lh); }
-.t-titulo { font-size: var(--titulo); line-height: var(--titulo-lh); }
-.t-parrafo-xl { font-size: var(--parrafo-xl); line-height: var(--parrafo-xl-lh); }
-.t-parrafo-l { font-size: var(--parrafo-l); line-height: var(--parrafo-l-lh); }
-.t-parrafo { font-size: var(--parrafo); line-height: var(--parrafo-lh); }
-.t-subtitulo { font-size: var(--subtitulo); letter-spacing: 0.08em; }
+.nib-page-wrapper .t-supertitulo-xl { font-size: var(--supertitulo-xl); line-height: 0.95; }
+.nib-page-wrapper .t-supertitulo-l { font-size: var(--supertitulo-l); line-height: 0.95; }
+.nib-page-wrapper .t-supertitulo { font-size: var(--supertitulo); line-height: 1.0; }
+.nib-page-wrapper .t-titulo-xxl { font-size: var(--titulo-xxl); line-height: var(--titulo-xxl-lh); }
+.nib-page-wrapper .t-titulo-xl { font-size: var(--titulo-xl); line-height: var(--titulo-xl-lh); }
+.nib-page-wrapper .t-titulo-l { font-size: var(--titulo-l); line-height: var(--titulo-l-lh); }
+.nib-page-wrapper .t-titulo { font-size: var(--titulo); line-height: var(--titulo-lh); }
+.nib-page-wrapper .t-parrafo-xl { font-size: var(--parrafo-xl); line-height: var(--parrafo-xl-lh); }
+.nib-page-wrapper .t-parrafo-l { font-size: var(--parrafo-l); line-height: var(--parrafo-l-lh); }
+.nib-page-wrapper .t-parrafo { font-size: var(--parrafo); line-height: var(--parrafo-lh); }
+.nib-page-wrapper .t-subtitulo { font-size: var(--subtitulo); letter-spacing: 0.08em; }
 
-.t-upper { text-transform: uppercase; }
-.t-italic { font-style: italic; }
-.t-center { text-align: center; }
-.t-left { text-align: left; }
-.t-right { text-align: right; }
-.t-normal { font-weight: normal; }
+.nib-page-wrapper .t-upper { text-transform: uppercase; }
+.nib-page-wrapper .t-italic { font-style: italic; }
+.nib-page-wrapper .t-center { text-align: center; }
+.nib-page-wrapper .t-left { text-align: left; }
+.nib-page-wrapper .t-right { text-align: right; }
+.nib-page-wrapper .t-normal { font-weight: normal; }
 
 /* Dynamic Background Color Helpers */
-.bg-white { background-color: var(--white) !important; }
-.bg-black { background-color: var(--black) !important; }
-.bg-beige { background-color: var(--beige) !important; }
-.bg-grey { background-color: var(--grey) !important; }
-.bg-blue { background-color: var(--blue) !important; }
-.bg-red { background-color: var(--red) !important; }
-.c-white { color: var(--white) !important; }
-.c-black { color: var(--black) !important; }
+.nib-page-wrapper .bg-white { background-color: var(--white) !important; }
+.nib-page-wrapper .bg-black { background-color: var(--black) !important; }
+.nib-page-wrapper .bg-beige { background-color: var(--beige) !important; }
+.nib-page-wrapper .bg-grey { background-color: var(--grey) !important; }
+.nib-page-wrapper .bg-blue { background-color: var(--blue) !important; }
+.nib-page-wrapper .bg-red { background-color: var(--red) !important; }
+.nib-page-wrapper .c-white { color: var(--white) !important; }
+.nib-page-wrapper .c-black { color: var(--black) !important; }
 
-.wrapper {
+.nib-page-wrapper .wrapper {
   position: relative;
   width: 100%;
   padding-left: var(--wrapper-padd);
@@ -130,7 +127,7 @@ html, body {
   box-sizing: border-box;
 }
 
-.clip-y {
+.nib-page-wrapper .clip-y {
   overflow-y: clip;
   display: inline-block;
 }
@@ -138,11 +135,11 @@ html, body {
 /* ==========================================================================
    MINIMALIST PRELOADER BACKDROP
    ========================================================================== */
-.nib-preloader-backdrop {
+.nib-page-wrapper .nib-preloader-backdrop {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   background-color: var(--beige);
   z-index: 9999;
@@ -153,21 +150,21 @@ html, body {
   transition: opacity 0.5s ease;
 }
 
-.nib-preloader-center {
+.nib-page-wrapper .nib-preloader-center {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
 }
 
-.nib-preloader-percent {
+.nib-page-wrapper .nib-preloader-percent {
   font-family: var(--f-edit-regular);
   font-size: clamp(3rem, 7vw, 6.5rem);
   color: var(--black);
   line-height: 1;
 }
 
-.nib-preloader-progress {
+.nib-page-wrapper .nib-preloader-progress {
   width: 180px;
   height: 1.5px;
   background: rgba(0, 0, 0, 0.12);
@@ -175,7 +172,7 @@ html, body {
   overflow: hidden;
 }
 
-.nib-preloader-progress-bar {
+.nib-page-wrapper .nib-preloader-progress-bar {
   height: 100%;
   background: var(--black);
   width: 0%;
@@ -185,7 +182,7 @@ html, body {
 /* ==========================================================================
    THE LOGO ARCHITECTURE (Normal is Boring Canonical Diagonal System)
    ========================================================================== */
-.logo {
+.nib-page-wrapper .logo {
   position: relative;
   display: flex;
   justify-content: flex-end;
@@ -197,13 +194,13 @@ html, body {
   pointer-events: none;
 }
 
-.logo.small {
+.nib-page-wrapper .logo.small {
   font-size: 2.65rem;
 }
 
-.logo .logo__normal,
-.logo .logo__normal.link,
-.logo__normal {
+.nib-page-wrapper .logo .logo__normal,
+.nib-page-wrapper .logo .logo__normal.link,
+.nib-page-wrapper .logo__normal {
   position: absolute !important;
   top: 0;
   left: -0.08em;
@@ -220,7 +217,7 @@ html, body {
   display: block;
 }
 
-.logo__group {
+.nib-page-wrapper .logo__group {
   position: relative;
   right: 0.0131em;
   display: flex;
@@ -232,7 +229,7 @@ html, body {
   pointer-events: all;
 }
 
-.logo__is {
+.nib-page-wrapper .logo__is {
   font-size: 1.28em;
   font-family: var(--f-edit-italic);
   font-style: italic;
@@ -241,7 +238,7 @@ html, body {
   text-align: right;
 }
 
-.logo__boring {
+.nib-page-wrapper .logo__boring {
   position: relative;
   right: -0.001em;
   bottom: -0.021em;
@@ -257,7 +254,7 @@ html, body {
   line-height: 0.8;
 }
 
-.logo__boring .reg {
+.nib-page-wrapper .logo__boring .reg {
   position: relative;
   display: inline-block;
   transform: scale(-1, -1);
@@ -269,17 +266,17 @@ html, body {
 /* ==========================================================================
    1. FIXED HEADER
    ========================================================================== */
-header {
+.nib-page-wrapper header {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   pointer-events: none;
   z-index: 1000;
 }
 
-header .header {
+.nib-page-wrapper header .header {
   position: relative;
   width: 100%;
   height: 100%;
@@ -292,7 +289,7 @@ header .header {
 }
 
 /* Header Logo Diagonal Frame Overlay */
-header .header__logo {
+.nib-page-wrapper header .header__logo {
   position: absolute;
   top: var(--wrapper-padd);
   left: var(--wrapper-padd);
@@ -309,11 +306,11 @@ header .header__logo {
   z-index: 1001;
 }
 
-header .header__logo.is-visible {
+.nib-page-wrapper header .header__logo.is-visible {
   pointer-events: none;
 }
 
-header .header__logo .logo__normal {
+.nib-page-wrapper header .header__logo .logo__normal {
   position: absolute;
   top: 0;
   left: -0.08em;
@@ -323,7 +320,7 @@ header .header__logo .logo__normal {
   will-change: transform, opacity;
 }
 
-header .header__logo .logo__group {
+.nib-page-wrapper header .header__logo .logo__group {
   position: relative;
   right: 0.0131em;
   display: flex;
@@ -338,7 +335,7 @@ header .header__logo .logo__group {
 }
 
 /* Top-Right Floating Minimalist Controls */
-.header__controls {
+.nib-page-wrapper .header__controls {
   position: absolute;
   top: var(--wrapper-padd);
   right: var(--wrapper-padd);
@@ -352,13 +349,13 @@ header .header__logo .logo__group {
   will-change: transform, opacity;
 }
 
-.header__controls.is-visible {
+.nib-page-wrapper .header__controls.is-visible {
   pointer-events: all;
 }
 
 /* Directional Fill Pill Buttons */
-.header__btn,
-.btn {
+.nib-page-wrapper .header__btn,
+.nib-page-wrapper .btn {
   position: relative;
   display: inline-flex;
   justify-content: center;
@@ -378,8 +375,8 @@ header .header__logo .logo__group {
   pointer-events: all;
 }
 
-.header__btn::before,
-.btn::before {
+.nib-page-wrapper .header__btn::before,
+.nib-page-wrapper .btn::before {
   content: "";
   position: absolute;
   top: var(--posY, 50%);
@@ -394,27 +391,27 @@ header .header__logo .logo__group {
   z-index: 0;
 }
 
-.header__btn:hover::before,
-.header__btn.btn--menu-active::before,
-.btn:hover::before {
+.nib-page-wrapper .header__btn:hover::before,
+.nib-page-wrapper .header__btn.btn--menu-active::before,
+.nib-page-wrapper .btn:hover::before {
   width: 350%;
   height: 350%;
 }
 
-.header__btn > span,
-.btn > span {
+.nib-page-wrapper .header__btn > span,
+.nib-page-wrapper .btn > span {
   position: relative;
   z-index: 1;
   transition: color 0.3s ease;
 }
 
-.header__btn:hover > span,
-.header__btn.btn--menu-active > span,
-.btn:hover > span {
+.nib-page-wrapper .header__btn:hover > span,
+.nib-page-wrapper .header__btn.btn--menu-active > span,
+.nib-page-wrapper .btn:hover > span {
   color: var(--white);
 }
 
-.header__lang-btn {
+.nib-page-wrapper .header__lang-btn {
   padding: 0.35rem 0.85rem;
   font-family: var(--f-izmir);
   font-size: 0.75rem;
@@ -423,33 +420,33 @@ header .header__logo .logo__group {
 }
 
 /* Dynamic Dark Theme Inversion on Header */
-.theme-dark-active header .header__logo,
-header .header__logo.c-white {
+.nib-page-wrapper.theme-dark-active header .header__logo,
+.nib-page-wrapper header .header__logo.c-white {
   color: var(--white) !important;
 }
 
-.theme-dark-active .header__controls .header__btn,
-.theme-dark-active .header__controls .header__lang-btn,
-.header__controls .c-white {
+.nib-page-wrapper.theme-dark-active .header__controls .header__btn,
+.nib-page-wrapper.theme-dark-active .header__controls .header__lang-btn,
+.nib-page-wrapper .header__controls .c-white {
   color: var(--white) !important;
   border-color: rgba(255, 255, 255, 0.4);
 }
 
-.theme-dark-active .header__btn::before,
-.header__controls .c-white::before {
+.nib-page-wrapper.theme-dark-active .header__btn::before,
+.nib-page-wrapper .header__controls .c-white::before {
   background-color: var(--white);
 }
 
-.theme-dark-active .header__btn:hover > span,
-.theme-dark-active .header__btn.btn--menu-active > span,
-.header__controls .c-white:hover > span {
+.nib-page-wrapper.theme-dark-active .header__btn:hover > span,
+.nib-page-wrapper.theme-dark-active .header__btn.btn--menu-active > span,
+.nib-page-wrapper .header__controls .c-white:hover > span {
   color: var(--black) !important;
 }
 
 /* ==========================================================================
    DUAL-LINE ROLLOVERS (.link)
    ========================================================================== */
-.link {
+.nib-page-wrapper .link {
   position: relative;
   display: inline-block;
   overflow: hidden;
@@ -457,20 +454,20 @@ header .header__logo.c-white {
   vertical-align: bottom;
 }
 
-.link .line {
+.nib-page-wrapper .link .line {
   display: block;
   position: relative;
   text-align: start;
 }
 
-.link .line:nth-of-type(1) {
+.nib-page-wrapper .link .line:nth-of-type(1) {
   position: relative;
   display: block;
   transform: translate3d(0, 0%, 0);
   transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.link .line:nth-of-type(2) {
+.nib-page-wrapper .link .line:nth-of-type(2) {
   position: absolute;
   top: 0;
   left: 0;
@@ -480,22 +477,22 @@ header .header__logo.c-white {
   transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-.link:hover .line:nth-of-type(1) {
+.nib-page-wrapper .link:hover .line:nth-of-type(1) {
   transform: translate3d(0, -105%, 0);
 }
 
-.link:hover .line:nth-of-type(2) {
+.nib-page-wrapper .link:hover .line:nth-of-type(2) {
   transform: translate3d(0, 0%, 0);
 }
 
 /* ==========================================================================
    FULL-SCREEN EDITORIAL MENU DRAWER (.header__menu)
    ========================================================================== */
-header .header__menu {
+.nib-page-wrapper header .header__menu {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   z-index: 1005;
   pointer-events: all;
@@ -505,11 +502,11 @@ header .header__menu {
   overflow: hidden;
 }
 
-header .header__menu.d-none {
+.nib-page-wrapper header .header__menu.d-none {
   display: none !important;
 }
 
-.header__menu__bg {
+.nib-page-wrapper .header__menu__bg {
   position: fixed;
   top: 0;
   right: 0;
@@ -520,7 +517,7 @@ header .header__menu.d-none {
   box-shadow: -20px 0 60px rgba(0, 0, 0, 0.15);
 }
 
-.header__menu__inner {
+.nib-page-wrapper .header__menu__inner {
   position: relative;
   z-index: 2;
   width: 100%;
@@ -533,7 +530,7 @@ header .header__menu.d-none {
 }
 
 /* Left Column: Numbered Navigation Links */
-.header__menu__nav-site {
+.nib-page-wrapper .header__menu__nav-site {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -542,11 +539,11 @@ header .header__menu.d-none {
   gap: 0.85rem;
 }
 
-.header__menu__nav-site li {
+.nib-page-wrapper .header__menu__nav-site li {
   overflow: hidden;
 }
 
-.header__menu__nav-site li a {
+.nib-page-wrapper .header__menu__nav-site li a {
   font-family: var(--f-izmir);
   font-size: clamp(2rem, 3.6vw, 4rem);
   font-weight: 500;
@@ -558,20 +555,20 @@ header .header__menu.d-none {
   transition: transform 0.3s ease, color 0.3s ease;
 }
 
-.header__menu__nav-site li a:hover {
+.nib-page-wrapper .header__menu__nav-site li a:hover {
   color: var(--bronze);
   transform: translateX(14px);
 }
 
 /* Right Column: Featured Project Preview & Direct Links */
-.header__menu__content {
+.nib-page-wrapper .header__menu__content {
   display: flex;
   gap: 3.5rem;
   align-items: flex-start;
   max-width: 55vw;
 }
 
-.header__menu__media {
+.nib-page-wrapper .header__menu__media {
   position: relative;
   width: 22vw;
   height: 30vh;
@@ -580,7 +577,7 @@ header .header__menu.d-none {
   background: #000;
 }
 
-.header__menu__media__title {
+.nib-page-wrapper .header__menu__media__title {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -593,94 +590,94 @@ header .header__menu.d-none {
   font-size: 1.25rem;
 }
 
-.header__menu__media .media {
+.nib-page-wrapper .header__menu__media .media {
   width: 100%;
   height: 100%;
 }
 
-.header__menu__media .media__wrap-source {
+.nib-page-wrapper .header__menu__media .media__wrap-source {
   width: 100%;
   height: 100%;
 }
 
-.header__menu__media .media__source {
+.nib-page-wrapper .header__menu__media .media__source {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.header__menu__nav-single {
+.nib-page-wrapper .header__menu__nav-single {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
-.header__menu__nav-single__title {
+.nib-page-wrapper .header__menu__nav-single__title {
   margin-bottom: 1.5rem;
   font-size: var(--titulo);
   letter-spacing: 0.1em;
   color: rgba(0, 0, 0, 0.45);
 }
 
-.header__menu__nav-single__proyectos {
+.nib-page-wrapper .header__menu__nav-single__proyectos {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
 }
 
-.header__menu__nav-single__proyectos__item {
+.nib-page-wrapper .header__menu__nav-single__proyectos__item {
   cursor: pointer;
   padding: 0.45rem 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   display: flex;
   gap: 0.8rem;
   align-items: baseline;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
 }
 
-.header__menu__nav-single__proyectos__item:hover,
-.header__menu__nav-single__proyectos__item.is-active {
+.nib-page-wrapper .header__menu__nav-single__proyectos__item:hover,
+.nib-page-wrapper .header__menu__nav-single__proyectos__item.is-active {
   border-color: var(--black);
   transform: translateX(8px);
 }
 
-.header__menu__nav-single__proyectos__item .num {
+.nib-page-wrapper .header__menu__nav-single__proyectos__item .num {
   font-size: 0.95rem;
   color: var(--bronze);
   font-weight: 600;
 }
 
-.header__menu__nav-single__proyectos__item .title {
+.nib-page-wrapper .header__menu__nav-single__proyectos__item .title {
   font-size: 1.15rem;
   font-weight: 500;
 }
 
-.header__menu__nav-single__proyectos__item .place {
+.nib-page-wrapper .header__menu__nav-single__proyectos__item .place {
   font-size: 0.85rem;
   opacity: 0.65;
 }
 
-.header__menu__nav-single__link {
+.nib-page-wrapper .header__menu__nav-single__link {
   margin-top: 2rem;
   color: var(--black);
   text-decoration: none;
   font-weight: 500;
 }
 
-.header__menu__nav-single__link:hover {
+.nib-page-wrapper .header__menu__nav-single__link:hover {
   color: var(--bronze);
 }
 
 /* ==========================================================================
    2. PINNED HORIZONTAL RAIL (.mod-scroll)
    ========================================================================== */
-main {
+.nib-page-wrapper main {
   position: relative;
-  width: 100vw;
+  width: 100%;
   overflow-x: clip;
 }
 
-main .mod-scroll {
+.nib-page-wrapper main .mod-scroll {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -690,7 +687,7 @@ main .mod-scroll {
   position: relative;
 }
 
-main .mod-scroll > * {
+.nib-page-wrapper main .mod-scroll > * {
   height: 100vh;
   flex-shrink: 0;
   box-sizing: border-box;
@@ -700,7 +697,7 @@ main .mod-scroll > * {
 /* ==========================================================================
    CHAPTER 0: INTRO MANIFESTO (.mod-scroll__intro bg-white)
    ========================================================================== */
-main .mod-scroll__intro {
+.nib-page-wrapper main .mod-scroll__intro {
   width: 80vw;
   min-width: 80vw;
   height: 100vh;
@@ -712,7 +709,7 @@ main .mod-scroll__intro {
   box-sizing: border-box;
 }
 
-main .mod-scroll__intro .wrapper {
+.nib-page-wrapper main .mod-scroll__intro .wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -723,7 +720,7 @@ main .mod-scroll__intro .wrapper {
   box-sizing: border-box;
 }
 
-.mod-scroll__intro__menu {
+.nib-page-wrapper .mod-scroll__intro__menu {
   position: absolute;
   top: 25px;
   right: 25px;
@@ -736,7 +733,7 @@ main .mod-scroll__intro .wrapper {
   z-index: 10;
 }
 
-.mod-scroll__intro__menu .menu-item a {
+.nib-page-wrapper .mod-scroll__intro__menu .menu-item a {
   text-decoration: none;
   color: var(--black);
   font-size: var(--parrafo);
@@ -747,11 +744,11 @@ main .mod-scroll__intro .wrapper {
   transition: color 0.3s ease;
 }
 
-.mod-scroll__intro__menu .menu-item a:hover {
+.nib-page-wrapper .mod-scroll__intro__menu .menu-item a:hover {
   color: var(--bronze);
 }
 
-.mod-scroll__intro__section {
+.nib-page-wrapper .mod-scroll__intro__section {
   position: absolute;
   top: 50%;
   left: var(--wrapper-padd);
@@ -762,7 +759,7 @@ main .mod-scroll__intro .wrapper {
   pointer-events: none;
 }
 
-.mod-scroll__intro__copyright {
+.nib-page-wrapper .mod-scroll__intro__copyright {
   position: absolute;
   bottom: var(--wrapper-padd);
   left: var(--wrapper-padd);
@@ -774,7 +771,7 @@ main .mod-scroll__intro .wrapper {
   pointer-events: none;
 }
 
-.mod-scroll__intro__content {
+.nib-page-wrapper .mod-scroll__intro__content {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -783,7 +780,7 @@ main .mod-scroll__intro .wrapper {
   width: auto;
 }
 
-.mod-scroll__intro__wrap-titles {
+.nib-page-wrapper .mod-scroll__intro__wrap-titles {
   width: 100%;
   display: grid;
   grid-template-columns: auto auto;
@@ -791,27 +788,27 @@ main .mod-scroll__intro .wrapper {
   align-items: baseline;
 }
 
-.mod-scroll__intro__title {
+.nib-page-wrapper .mod-scroll__intro__title {
   font-family: var(--f-izmir);
   letter-spacing: -0.01em;
   text-transform: uppercase;
 }
 
-.mod-scroll__intro__title .splitline {
+.nib-page-wrapper .mod-scroll__intro__title .splitline {
   display: block;
   overflow: hidden;
 }
 
-.mod-scroll__intro__title em {
+.nib-page-wrapper .mod-scroll__intro__title em {
   font-style: italic;
   font-family: var(--f-medium);
 }
 
-.accent-dot {
+.nib-page-wrapper .accent-dot {
   color: var(--bronze);
 }
 
-.mod-scroll__intro__text {
+.nib-page-wrapper .mod-scroll__intro__text {
   font-family: var(--f-izmir);
   font-size: var(--parrafo);
   line-height: var(--parrafo-lh);
@@ -820,14 +817,14 @@ main .mod-scroll__intro .wrapper {
   color: rgba(10, 10, 11, 0.85);
 }
 
-.mod-scroll__intro__text p {
+.nib-page-wrapper .mod-scroll__intro__text p {
   font-size: var(--parrafo);
   line-height: var(--parrafo-lh);
   width: 100%;
 }
 
 /* Chapter 0 Hero Intro Logo */
-main .mod-scroll__intro__logo {
+.nib-page-wrapper main .mod-scroll__intro__logo {
   position: absolute;
   width: calc(100% - var(--wrapper-padd) * 2);
   height: calc(100% - var(--wrapper-padd) * 2);
@@ -842,7 +839,7 @@ main .mod-scroll__intro__logo {
   opacity: 1;
 }
 
-main .mod-scroll__intro__logo .logo__normal {
+.nib-page-wrapper main .mod-scroll__intro__logo .logo__normal {
   top: 0;
   left: -0.08em;
 }
@@ -850,7 +847,7 @@ main .mod-scroll__intro__logo .logo__normal {
 /* ==========================================================================
    CHAPTER 1: PRINCIPAL IMAGES & VERTICAL PARALLAX (.mod-scroll__images.principal bg-white)
    ========================================================================== */
-main .mod-scroll__images.principal {
+.nib-page-wrapper main .mod-scroll__images.principal {
   width: 85vw;
   min-width: 85vw;
   background-color: var(--white);
@@ -861,7 +858,7 @@ main .mod-scroll__images.principal {
   overflow: clip;
 }
 
-.mod-scroll__images__image-single {
+.nib-page-wrapper .mod-scroll__images__image-single {
   width: 44vw;
   height: 100vh;
   position: relative;
@@ -869,21 +866,21 @@ main .mod-scroll__images.principal {
   border-radius: 0;
 }
 
-.mod-scroll__images__image-single .media__wrap-source,
-.mod-scroll__images__image-single .media__source {
+.nib-page-wrapper .mod-scroll__images__image-single .media__wrap-source,
+.nib-page-wrapper .mod-scroll__images__image-single .media__source {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 /* Dual FlipMedia Parallax Column */
-.mod-scroll__images__flip.flipMedia {
+.nib-page-wrapper .mod-scroll__images__flip.flipMedia {
   display: flex;
   gap: 2vw;
   height: 84vh;
 }
 
-.flipMedia__media {
+.nib-page-wrapper .flipMedia__media {
   position: relative;
   width: 18vw;
   height: 100%;
@@ -891,12 +888,12 @@ main .mod-scroll__images.principal {
   border-radius: 4px;
 }
 
-.flipMedia__media .media__wrap-source {
+.nib-page-wrapper .flipMedia__media .media__wrap-source {
   width: 100%;
   height: 100%;
 }
 
-.flipMedia__media .media__source {
+.nib-page-wrapper .flipMedia__media .media__source {
   width: 100%;
   height: 125%;
   object-fit: cover;
@@ -906,7 +903,7 @@ main .mod-scroll__images.principal {
 /* ==========================================================================
    CHAPTER 2: EDITORIAL STUDIO MANIFESTO (.mod-scroll__text bg-white)
    ========================================================================== */
-main .mod-scroll__text {
+.nib-page-wrapper main .mod-scroll__text {
   width: 90vw;
   min-width: 90vw;
   background-color: var(--white);
@@ -916,19 +913,19 @@ main .mod-scroll__text {
   box-sizing: border-box;
 }
 
-.mod-scroll__text .wrapper {
+.nib-page-wrapper .mod-scroll__text .wrapper {
   padding: 0;
   width: 100%;
 }
 
-.mod-scroll__text__section {
+.nib-page-wrapper .mod-scroll__text__section {
   position: absolute;
   top: var(--wrapper-padd);
   left: var(--wrapper-padd);
   opacity: 0.45;
 }
 
-.mod-scroll__text__wrap-text {
+.nib-page-wrapper .mod-scroll__text__wrap-text {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -936,28 +933,28 @@ main .mod-scroll__text {
   margin-top: 7.5rem;
 }
 
-.mod-scroll__text__title {
+.nib-page-wrapper .mod-scroll__text__title {
   display: flex;
   flex-direction: column;
   line-height: 0.95;
   letter-spacing: -0.02em;
 }
 
-.mod-scroll__text__title .line {
+.nib-page-wrapper .mod-scroll__text__title .line {
   overflow: hidden;
   white-space: nowrap;
 }
 
-.mod-scroll__text__title .line:nth-child(4) {
+.nib-page-wrapper .mod-scroll__text__title .line:nth-child(4) {
   padding-left: 14vw;
 }
 
-.mod-scroll__text__title .line span.cont {
+.nib-page-wrapper .mod-scroll__text__title .line span.cont {
   display: inline-block;
   will-change: transform;
 }
 
-.mod-scroll__text__text {
+.nib-page-wrapper .mod-scroll__text__text {
   font-family: var(--f-izmir);
   font-size: var(--parrafo);
   line-height: 1.65;
@@ -965,7 +962,7 @@ main .mod-scroll__text {
   margin-top: 1vh;
 }
 
-.mod-scroll__text__telemetry {
+.nib-page-wrapper .mod-scroll__text__telemetry {
   display: flex;
   gap: 4.5rem;
   margin-top: 2vh;
@@ -973,32 +970,32 @@ main .mod-scroll__text {
   padding-top: 2rem;
 }
 
-.telemetry-item {
+.nib-page-wrapper .telemetry-item {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
 }
 
-.telemetry-top {
+.nib-page-wrapper .telemetry-top {
   display: flex;
   align-items: baseline;
   gap: 0.35rem;
 }
 
-.telemetry-num {
+.nib-page-wrapper .telemetry-num {
   font-family: var(--f-medium);
   font-size: 2.2rem;
   line-height: 1;
 }
 
-.telemetry-unit {
+.nib-page-wrapper .telemetry-unit {
   font-family: var(--f-izmir);
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--bronze);
 }
 
-.telemetry-label {
+.nib-page-wrapper .telemetry-label {
   font-family: var(--f-izmir);
   font-size: 0.72rem;
   letter-spacing: 0.08em;
@@ -1010,7 +1007,7 @@ main .mod-scroll__text {
    CHAPTER 3: DARK ATELIER (.mod-scroll__images-text bg-black c-white)
    Two Dual FlipMedia sets THEN large glowing serif text!
    ========================================================================== */
-main .mod-scroll__images-text {
+.nib-page-wrapper main .mod-scroll__images-text {
   width: 160vw;
   min-width: 160vw;
   background-color: var(--black);
@@ -1020,20 +1017,20 @@ main .mod-scroll__images-text {
   padding: 0 5vw;
 }
 
-main .mod-scroll__images-text .wrapper {
+.nib-page-wrapper main .mod-scroll__images-text .wrapper {
   display: flex;
   align-items: center;
   gap: 4vw;
   height: 84vh;
 }
 
-.mod-scroll__images-text__flip {
+.nib-page-wrapper .mod-scroll__images-text__flip {
   display: flex;
   gap: 2vw;
   height: 100%;
 }
 
-.mod-scroll__images-text__text {
+.nib-page-wrapper .mod-scroll__images-text__text {
   font-family: var(--f-regular);
   font-size: var(--titulo-xl);
   line-height: 1.45;
@@ -1042,7 +1039,7 @@ main .mod-scroll__images-text .wrapper {
   max-width: 44vw;
 }
 
-.mod-scroll__images-text__text p span {
+.nib-page-wrapper .mod-scroll__images-text__text p span {
   display: inline-block;
   will-change: opacity;
 }
@@ -1050,7 +1047,7 @@ main .mod-scroll__images-text .wrapper {
 /* ==========================================================================
    CHAPTER 4: VERTICAL KINETIC VALUES RIBBON (.mod-scroll__carousel bg-beige)
    ========================================================================== */
-main .mod-scroll__carousel {
+.nib-page-wrapper main .mod-scroll__carousel {
   width: 214px;
   min-width: 214px;
   background-color: var(--beige);
@@ -1062,7 +1059,7 @@ main .mod-scroll__carousel {
   position: relative;
 }
 
-.mod-scroll__carousel__content {
+.nib-page-wrapper .mod-scroll__carousel__content {
   display: flex;
   align-items: center;
   gap: 3.5rem;
@@ -1071,20 +1068,20 @@ main .mod-scroll__carousel {
   will-change: transform;
 }
 
-.mod-scroll__carousel__content span {
+.nib-page-wrapper .mod-scroll__carousel__content span {
   display: flex;
   align-items: center;
   gap: 2rem;
 }
 
-.mod-scroll__carousel__text {
+.nib-page-wrapper .mod-scroll__carousel__text {
   font-family: var(--f-regular);
   font-size: clamp(3.8rem, 6.5vw, 6.5rem);
   letter-spacing: 0.12em;
   line-height: 1;
 }
 
-.mod-scroll__carousel__star {
+.nib-page-wrapper .mod-scroll__carousel__star {
   font-size: 2.2rem;
   color: var(--bronze);
 }
@@ -1092,7 +1089,7 @@ main .mod-scroll__carousel {
 /* ==========================================================================
    CHAPTER 5: SECONDARY IMAGES (.mod-scroll__images.secundario bg-beige)
    ========================================================================== */
-main .mod-scroll__images.secundario {
+.nib-page-wrapper main .mod-scroll__images.secundario {
   width: 85vw;
   min-width: 85vw;
   background-color: var(--beige);
@@ -1105,7 +1102,7 @@ main .mod-scroll__images.secundario {
 /* ==========================================================================
    CHAPTER 6: ARCHITECTURAL TENETS (.mod-scroll__terms bg-blue)
    ========================================================================== */
-main .mod-scroll__terms {
+.nib-page-wrapper main .mod-scroll__terms {
   width: 115vw;
   min-width: 115vw;
   background-color: var(--blue);
@@ -1117,7 +1114,7 @@ main .mod-scroll__terms {
   position: relative;
 }
 
-.mod-scroll__terms__term {
+.nib-page-wrapper .mod-scroll__terms__term {
   width: 30vw;
   display: flex;
   flex-direction: column;
@@ -1125,36 +1122,36 @@ main .mod-scroll__terms {
   height: 65vh;
   padding: 2rem 1.5rem;
   cursor: pointer;
-  transition: all 0.4s ease;
+  transition: padding 0.4s ease;
 }
 
-.mod-scroll__terms__term__text {
+.nib-page-wrapper .mod-scroll__terms__term__text {
   font-family: var(--f-izmir);
   font-size: var(--parrafo);
   line-height: 1.6;
   max-width: 36ch;
 }
 
-.mod-scroll__terms__term__wrap-title {
+.nib-page-wrapper .mod-scroll__terms__term__wrap-title {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
 }
 
-.mod-scroll__terms__term__num {
+.nib-page-wrapper .mod-scroll__terms__term__num {
   font-family: var(--f-edit);
   font-size: var(--parrafo-l);
   color: var(--bronze);
   font-weight: 600;
 }
 
-.mod-scroll__terms__term__title {
+.nib-page-wrapper .mod-scroll__terms__term__title {
   line-height: 0.95;
   letter-spacing: -0.01em;
 }
 
 /* Floating Mouse Cursor Follower Specimen Image */
-.mod-scroll__terms .follow__mouse {
+.nib-page-wrapper .mod-scroll__terms .follow__mouse {
   position: absolute;
   top: 0;
   left: 0;
@@ -1170,12 +1167,12 @@ main .mod-scroll__terms {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
-.mod-scroll__terms .follow__mouse.is-active {
+.nib-page-wrapper .mod-scroll__terms .follow__mouse.is-active {
   transform: translate(-50%, -50%) scale(1);
   opacity: 1;
 }
 
-.mod-scroll__terms .follow__mouse img {
+.nib-page-wrapper .mod-scroll__terms .follow__mouse img {
   position: absolute;
   top: 0;
   left: 0;
@@ -1187,7 +1184,7 @@ main .mod-scroll__terms {
   transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.mod-scroll__terms .follow__mouse img.on {
+.nib-page-wrapper .mod-scroll__terms .follow__mouse img.on {
   opacity: 1;
   transform: scale(1);
 }
@@ -1195,7 +1192,7 @@ main .mod-scroll__terms {
 /* ==========================================================================
    CHAPTER 7: EXPANDING PROJECT MONOLITHS (.mod-scroll__projects)
    ========================================================================== */
-main .mod-scroll__projects {
+.nib-page-wrapper main .mod-scroll__projects {
   display: flex;
   flex-wrap: nowrap;
   z-index: 10;
@@ -1204,7 +1201,7 @@ main .mod-scroll__projects {
   align-items: stretch;
 }
 
-main .mod-scroll__projects__wrap-text {
+.nib-page-wrapper main .mod-scroll__projects__wrap-text {
   position: relative;
   width: 25vw;
   height: 100vh;
@@ -1217,12 +1214,12 @@ main .mod-scroll__projects__wrap-text {
   flex-shrink: 0;
 }
 
-main .mod-scroll__projects__section {
+.nib-page-wrapper main .mod-scroll__projects__section {
   margin-bottom: 1.5rem;
   opacity: 0.5;
 }
 
-main .mod-scroll__projects__text {
+.nib-page-wrapper main .mod-scroll__projects__text {
   font-family: var(--f-izmir);
   font-size: var(--titulo-xl);
   line-height: 1.35;
@@ -1230,12 +1227,12 @@ main .mod-scroll__projects__text {
   width: 17.5rem;
 }
 
-main .mod-scroll__projects__text .line {
+.nib-page-wrapper main .mod-scroll__projects__text .line {
   overflow: clip;
 }
 
 /* Expanding Accordion Item */
-main .mod-scroll__projects__item {
+.nib-page-wrapper main .mod-scroll__projects__item {
   position: relative;
   overflow: hidden;
   box-shadow: unset;
@@ -1246,7 +1243,7 @@ main .mod-scroll__projects__item {
   box-sizing: border-box;
 }
 
-main .mod-scroll__projects__item__content {
+.nib-page-wrapper main .mod-scroll__projects__item__content {
   position: relative;
   height: 100vh;
   display: flex;
@@ -1254,20 +1251,20 @@ main .mod-scroll__projects__item__content {
   justify-content: space-between;
 }
 
-main .mod-scroll__projects__item__image {
+.nib-page-wrapper main .mod-scroll__projects__item__image {
   position: relative;
   z-index: 2;
   width: 100%;
 }
 
-main .mod-scroll__projects__item__image .media,
-main .mod-scroll__projects__item__image .media__wrap-source {
+.nib-page-wrapper main .mod-scroll__projects__item__image .media,
+.nib-page-wrapper main .mod-scroll__projects__item__image .media__wrap-source {
   width: 100%;
   height: 100%;
   aspect-ratio: unset !important;
 }
 
-main .mod-scroll__projects__item__image .media__source {
+.nib-page-wrapper main .mod-scroll__projects__item__image .media__source {
   position: relative;
   display: block;
   width: 100%;
@@ -1276,7 +1273,7 @@ main .mod-scroll__projects__item__image .media__source {
   object-position: center center;
 }
 
-main .mod-scroll__projects__item__text {
+.nib-page-wrapper main .mod-scroll__projects__item__text {
   flex: 1 1 0%;
   position: relative;
   width: 100%;
@@ -1286,53 +1283,53 @@ main .mod-scroll__projects__item__text {
   z-index: 1;
 }
 
-main .mod-scroll__projects__item__text__title {
+.nib-page-wrapper main .mod-scroll__projects__item__text__title {
   white-space: nowrap;
   padding: var(--margin);
   letter-spacing: -0.01em;
 }
 
-main .mod-scroll__projects__item__text__title > div {
+.nib-page-wrapper main .mod-scroll__projects__item__text__title > div {
   overflow: hidden;
 }
 
-main .mod-scroll__projects__item__text__data {
+.nib-page-wrapper main .mod-scroll__projects__item__text__data {
   position: absolute;
   width: 100%;
   height: 100%;
 }
 
-main .mod-scroll__projects__item__text__data > * {
+.nib-page-wrapper main .mod-scroll__projects__item__text__data > * {
   position: absolute;
   overflow: hidden;
 }
 
-main .mod-scroll__projects__item__text__data > :nth-child(1) {
+.nib-page-wrapper main .mod-scroll__projects__item__text__data > :nth-child(1) {
   top: var(--margin);
   left: var(--margin);
 }
 
-main .mod-scroll__projects__item__text__data > :nth-child(2) {
+.nib-page-wrapper main .mod-scroll__projects__item__text__data > :nth-child(2) {
   top: var(--margin);
   right: var(--margin);
 }
 
-main .mod-scroll__projects__item__text__data > :nth-child(3) {
+.nib-page-wrapper main .mod-scroll__projects__item__text__data > :nth-child(3) {
   bottom: var(--margin);
   left: var(--margin);
 }
 
-main .mod-scroll__projects__item__text__data > :nth-child(4) {
+.nib-page-wrapper main .mod-scroll__projects__item__text__data > :nth-child(4) {
   bottom: var(--margin);
   right: var(--margin);
 }
 
-main .mod-scroll__projects__item__text__data .data-number {
+.nib-page-wrapper main .mod-scroll__projects__item__text__data .data-number {
   color: var(--bronze);
   font-weight: 600;
 }
 
-.btn--bg-inv {
+.nib-page-wrapper .btn--bg-inv {
   display: inline-block;
   padding: 0.35rem 0.9rem;
   border: 1px solid currentColor;
@@ -1340,16 +1337,16 @@ main .mod-scroll__projects__item__text__data .data-number {
   text-decoration: none;
   color: inherit;
   font-size: 0.8rem;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
-.btn--bg-inv:hover {
+.nib-page-wrapper .btn--bg-inv:hover {
   background: var(--black);
   color: var(--white) !important;
 }
 
 /* Iconic .last-item Layout (Seamless 100vw Storytelling Monolith) */
-main .mod-scroll__projects .last-item {
+.nib-page-wrapper main .mod-scroll__projects .last-item {
   position: relative;
   overflow: hidden;
   height: 100vh;
@@ -1360,11 +1357,11 @@ main .mod-scroll__projects .last-item {
   background-color: var(--grey);
 }
 
-main .mod-scroll__projects .last-item .mod-scroll__projects__item__content {
+.nib-page-wrapper main .mod-scroll__projects .last-item .mod-scroll__projects__item__content {
   display: none;
 }
 
-main .mod-scroll__projects .last-item__carousel {
+.nib-page-wrapper main .mod-scroll__projects .last-item__carousel {
   position: relative;
   top: 0px;
   left: 0px;
@@ -1379,7 +1376,7 @@ main .mod-scroll__projects .last-item__carousel {
   box-sizing: border-box;
 }
 
-main .mod-scroll__projects .last-item__carousel__item {
+.nib-page-wrapper main .mod-scroll__projects .last-item__carousel__item {
   position: relative;
   width: 100%;
   height: 33.3333vh;
@@ -1389,16 +1386,17 @@ main .mod-scroll__projects .last-item__carousel__item {
   flex-shrink: 0;
 }
 
-main .mod-scroll__projects .last-item__carousel__item__image {
+.nib-page-wrapper main .mod-scroll__projects .last-item__carousel__item__image {
   position: absolute;
   top: 50%;
   left: 0px;
   transform: translateY(-50%);
   display: block;
   width: 100%;
+  height: 100%;
 }
 
-main .mod-scroll__projects .last-item__carousel__item__image .media__source {
+.nib-page-wrapper main .mod-scroll__projects .last-item__carousel__item__image .media__source {
   object-fit: cover;
   object-position: center center;
   display: block;
@@ -1406,7 +1404,7 @@ main .mod-scroll__projects .last-item__carousel__item__image .media__source {
   height: 100%;
 }
 
-main .mod-scroll__projects .last-item__carousel__item--link {
+.nib-page-wrapper main .mod-scroll__projects .last-item__carousel__item--link {
   height: 25vh;
   display: flex;
   justify-content: center;
@@ -1416,16 +1414,16 @@ main .mod-scroll__projects .last-item__carousel__item--link {
   text-decoration: none;
   font-family: var(--f-edit);
   font-weight: 600;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease;
   flex-shrink: 0;
 }
 
-main .mod-scroll__projects .last-item__carousel__item--link:hover {
+.nib-page-wrapper main .mod-scroll__projects .last-item__carousel__item--link:hover {
   background-color: var(--black);
   color: var(--white);
 }
 
-main .mod-scroll__projects .last-item__content {
+.nib-page-wrapper main .mod-scroll__projects .last-item__content {
   position: relative;
   top: 0px;
   left: 0px;
@@ -1439,7 +1437,7 @@ main .mod-scroll__projects .last-item__content {
   box-sizing: border-box;
 }
 
-main .mod-scroll__projects .last-item__content__wrap {
+.nib-page-wrapper main .mod-scroll__projects .last-item__content__wrap {
   width: 100%;
   height: 100%;
   display: flex;
@@ -1452,24 +1450,24 @@ main .mod-scroll__projects .last-item__content__wrap {
   position: relative;
 }
 
-main .mod-scroll__projects .last-item__content__section {
+.nib-page-wrapper main .mod-scroll__projects .last-item__content__section {
   position: absolute;
   top: var(--wrapper-padd);
   color: var(--bronze);
   text-transform: uppercase;
 }
 
-main .mod-scroll__projects .last-item__content__title {
+.nib-page-wrapper main .mod-scroll__projects .last-item__content__title {
   width: 100%;
 }
 
-main .mod-scroll__projects .last-item__content__title .line {
+.nib-page-wrapper main .mod-scroll__projects .last-item__content__title .line {
   line-height: 1.05;
   letter-spacing: -0.02em;
   overflow: clip;
 }
 
-main .mod-scroll__projects .last-item__content__text p {
+.nib-page-wrapper main .mod-scroll__projects .last-item__content__text p {
   font-size: var(--titulo);
   line-height: var(--titulo-lh);
   font-family: var(--f-edit);
@@ -1477,7 +1475,7 @@ main .mod-scroll__projects .last-item__content__text p {
   color: rgba(10, 10, 11, 0.85);
 }
 
-main .mod-scroll__pin {
+.nib-page-wrapper main .mod-scroll__pin {
   display: none;
   width: 0;
   min-width: 0;
@@ -1485,7 +1483,7 @@ main .mod-scroll__pin {
   pointer-events: none;
 }
 
-main .mod-scroll__cierre {
+.nib-page-wrapper main .mod-scroll__cierre {
   position: relative;
   z-index: 15;
   width: 100vw;
@@ -1500,19 +1498,19 @@ main .mod-scroll__cierre {
   overflow: hidden;
 }
 
-main .mod-scroll__cierre.bg-red {
+.nib-page-wrapper main .mod-scroll__cierre.bg-red {
   background-color: var(--red) !important;
 }
 
-main .mod-scroll__cierre__content {
+.nib-page-wrapper main .mod-scroll__cierre__content {
   position: relative;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   display: grid;
   place-items: center;
 }
 
-main .mod-scroll__cierre__content__image {
+.nib-page-wrapper main .mod-scroll__cierre__content__image {
   position: relative;
   display: flex;
   gap: 2vw;
@@ -1521,11 +1519,11 @@ main .mod-scroll__cierre__content__image {
   aspect-ratio: 1226 / 689;
 }
 
-.mod-scroll__cierre__label {
+.nib-page-wrapper .mod-scroll__cierre__label {
   color: var(--bronze);
 }
 
-.mod-scroll__cierre__heading {
+.nib-page-wrapper .mod-scroll__cierre__heading {
   font-family: var(--f-medium);
   font-size: var(--titulo-xxl);
   letter-spacing: -0.01em;
@@ -1534,56 +1532,56 @@ main .mod-scroll__cierre__content__image {
 /* ==========================================================================
    CHAPTER 8: UNPINNED VERTICAL FINALE & COMMISSION
    ========================================================================== */
-.mod-title--chapter {
+.nib-page-wrapper .mod-title--chapter {
   padding: 9rem var(--wrapper-padd) 3rem;
   text-align: center;
   background-color: var(--beige);
 }
 
-.mod-title__chapter-label {
+.nib-page-wrapper .mod-title__chapter-label {
   font-family: var(--f-edit);
   color: var(--bronze);
   margin-bottom: 1rem;
 }
 
-.mod-title__heading {
+.nib-page-wrapper .mod-title__heading {
   font-family: var(--f-regular);
   letter-spacing: -0.02em;
 }
 
-.mod-media--double {
+.nib-page-wrapper .mod-media--double {
   display: flex;
   gap: 3.5vw;
   padding: 3rem var(--wrapper-padd) 7rem;
   background-color: var(--beige);
 }
 
-.mod-media--double .mod-media__col {
+.nib-page-wrapper .mod-media--double .mod-media__col {
   flex: 1;
   height: 85vh;
   overflow: hidden;
   border-radius: 4px;
 }
 
-.mod-media--double .mod-media__img {
+.nib-page-wrapper .mod-media--double .mod-media__img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   will-change: transform;
 }
 
-.mod-title--lines {
+.nib-page-wrapper .mod-title--lines {
   padding: 2rem var(--wrapper-padd) 4.5rem;
   background-color: var(--beige);
 }
 
-.mod-title__lines-text {
+.nib-page-wrapper .mod-title__lines-text {
   font-family: var(--f-izmir);
   letter-spacing: 0.05em;
   opacity: 0.85;
 }
 
-.mod-content--cols {
+.nib-page-wrapper .mod-content--cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6vw;
@@ -1591,21 +1589,21 @@ main .mod-scroll__cierre__content__image {
   background-color: var(--beige);
 }
 
-.mod-content__col p {
+.nib-page-wrapper .mod-content__col p {
   font-family: var(--f-edit);
   font-size: var(--parrafo-xl);
   line-height: 1.85;
   color: rgba(10, 10, 11, 0.88);
 }
 
-.mod-content--center {
+.nib-page-wrapper .mod-content--center {
   display: flex;
   justify-content: center;
   padding: 2rem var(--wrapper-padd) 11rem;
   background-color: var(--beige);
 }
 
-.btn--monolith-cta {
+.nib-page-wrapper .btn--monolith-cta {
   display: inline-flex;
   align-items: center;
   gap: 1.5rem;
@@ -1616,67 +1614,69 @@ main .mod-scroll__cierre__content__image {
   text-decoration: none;
   letter-spacing: 0.1em;
   font-weight: 600;
-  transition: all 0.4s ease;
+  transition: color 0.4s ease, background-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
-.btn--monolith-cta:hover {
+.nib-page-wrapper .btn--monolith-cta:hover {
   background: var(--bronze);
   color: var(--white);
   transform: translateY(-4px);
   box-shadow: 0 25px 50px rgba(164, 130, 77, 0.35);
 }
 
-.cta-arrow {
+.nib-page-wrapper .cta-arrow {
   transition: transform 0.3s ease;
 }
 
-.btn--monolith-cta:hover .cta-arrow {
+.nib-page-wrapper .btn--monolith-cta:hover .cta-arrow {
   transform: translateX(6px);
 }
 
 /* ==========================================================================
    EDITORIAL ARCHITECTURAL FOOTER (.mod-footer)
    ========================================================================== */
-.mod-footer {
+.nib-page-wrapper .mod-footer {
   padding: 6rem var(--wrapper-padd) 6.5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.12);
   background-color: var(--beige);
 }
 
-.mod-footer__top {
+.nib-page-wrapper .mod-footer__top {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  flex-wrap: wrap;
+  gap: 1rem;
   padding-bottom: 3.5rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.mod-footer__logo {
+.nib-page-wrapper .mod-footer__logo {
   font-family: var(--f-medium);
   font-size: 2.2rem;
   letter-spacing: -0.02em;
 }
 
-.mod-footer__tagline {
+.nib-page-wrapper .mod-footer__tagline {
   opacity: 0.6;
   letter-spacing: 0.1em;
 }
 
-.mod-footer__info-grid {
+.nib-page-wrapper .mod-footer__info-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4rem;
   margin: 4.5rem 0;
 }
 
-.footer-info-col {
+.nib-page-wrapper .footer-info-col {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
 }
 
-.footer-label {
+.nib-page-wrapper .footer-label {
   font-family: var(--f-izmir);
   font-size: 0.72rem;
   font-weight: 600;
@@ -1685,34 +1685,36 @@ main .mod-scroll__cierre__content__image {
   text-transform: uppercase;
 }
 
-.footer-val {
+.nib-page-wrapper .footer-val {
   font-family: var(--f-edit);
   font-size: var(--parrafo-l);
   line-height: 1.6;
 }
 
-.mod-footer__bottom {
+.nib-page-wrapper .mod-footer__bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
   padding-top: 2rem;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   opacity: 0.6;
 }
 
-.mod-footer__links {
+.nib-page-wrapper .mod-footer__links {
   display: flex;
   gap: 2rem;
   padding-right: 14rem;
 }
 
-.mod-footer__links a {
+.nib-page-wrapper .mod-footer__links a {
   color: inherit;
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
-.mod-footer__links a:hover {
+.nib-page-wrapper .mod-footer__links a:hover {
   color: var(--bronze);
 }
 
@@ -1720,152 +1722,375 @@ main .mod-scroll__cierre__content__image {
    RESPONSIVE DESIGN (TABLET & MOBILE)
    ========================================================================== */
 @media (max-width: 991px) {
-  header .header {
+  .nib-page-wrapper header {
+    height: auto;
+  }
+
+  .nib-page-wrapper header .header {
+    height: auto;
+    align-items: center;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    padding: 1rem var(--wrapper-padd);
+    padding: 0.85rem var(--wrapper-padd);
+    pointer-events: all;
   }
 
-  header .header__logo {
+  .nib-page-wrapper header .header__logo {
     position: static;
+    width: auto;
+    height: auto;
+    font-size: 1.1rem;
+    opacity: 1 !important;
+    pointer-events: all;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.45rem;
   }
 
-  .header__controls {
+  .nib-page-wrapper header .header__logo .logo__normal,
+  .nib-page-wrapper header .header__logo .logo__group {
+    position: static !important;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: all;
+  }
+
+  .nib-page-wrapper header .header__logo .logo__group {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.35rem;
+    right: auto;
+  }
+
+  .nib-page-wrapper header .header__logo .logo__is {
+    font-size: 0.9em;
+  }
+
+  .nib-page-wrapper header .header__logo .logo__boring,
+  .nib-page-wrapper header .header__logo .logo__boring .reg {
     position: static;
+    transform: none;
+    font-size: 0.78em;
+    margin: 0;
   }
 
-  main .mod-scroll {
+  .nib-page-wrapper .header__controls {
+    position: static;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: all !important;
+  }
+
+  .nib-page-wrapper main .mod-scroll {
     display: flex;
     flex-direction: column;
     width: 100% !important;
     height: auto !important;
   }
 
-  main .mod-scroll > * {
+  .nib-page-wrapper main .mod-scroll > * {
     width: 100% !important;
-    min-width: unset !important;
+    min-width: 0 !important;
     height: auto !important;
-    padding: 5rem var(--wrapper-padd);
+    padding: 4.5rem var(--wrapper-padd);
   }
 
-  .mod-scroll__intro__wrap-titles {
-    grid-template-columns: 1fr;
-    row-gap: 2rem;
+  .nib-page-wrapper main .mod-scroll__intro {
+    padding-top: 6rem;
+    padding-bottom: 4rem;
   }
 
-  .mod-scroll__intro__menu {
+  .nib-page-wrapper main .mod-scroll__intro .wrapper {
+    height: auto;
+    min-height: 70vh;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 2rem;
+    padding: 0;
+  }
+
+  .nib-page-wrapper main .mod-scroll__intro__logo {
     display: none;
   }
 
-  .mod-scroll__images.principal,
-  .mod-scroll__images.secundario {
-    flex-direction: column;
-    height: auto !important;
+  .nib-page-wrapper .mod-scroll__intro__section,
+  .nib-page-wrapper .mod-scroll__intro__copyright {
+    position: static;
+    transform: none;
   }
 
-  .mod-scroll__images__image-single,
-  .flipMedia__media {
+  .nib-page-wrapper .mod-scroll__intro__content {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .nib-page-wrapper .mod-scroll__intro__wrap-titles {
+    grid-template-columns: 1fr;
+    row-gap: 1.75rem;
+  }
+
+  .nib-page-wrapper .mod-scroll__intro__text {
+    max-width: 44ch;
+    margin-right: 0;
+  }
+
+  .nib-page-wrapper .mod-scroll__intro__menu {
+    display: none;
+  }
+
+  .nib-page-wrapper main .mod-scroll__images.principal,
+  .nib-page-wrapper main .mod-scroll__images.secundario {
+    flex-direction: column;
+    height: auto !important;
+    gap: 2rem;
+  }
+
+  .nib-page-wrapper .mod-scroll__images__flip.flipMedia,
+  .nib-page-wrapper .mod-scroll__images-text__flip {
+    width: 100%;
+    flex-direction: column;
+    height: auto !important;
+    gap: 2rem;
+  }
+
+  .nib-page-wrapper .mod-scroll__images__image-single,
+  .nib-page-wrapper .flipMedia__media {
     width: 100% !important;
-    height: 55vh !important;
+    height: clamp(280px, 52vh, 460px) !important;
   }
 
-  .mod-scroll__images__flip.flipMedia {
-    flex-direction: column;
-    height: auto !important;
+  .nib-page-wrapper .flipMedia__media .media__source {
+    height: 100%;
   }
 
-  main .mod-scroll__images-text .wrapper {
+  .nib-page-wrapper .mod-scroll__text__section {
+    position: static;
+    margin-bottom: 1rem;
+  }
+
+  .nib-page-wrapper .mod-scroll__text__wrap-text {
+    margin-top: 0;
+  }
+
+  .nib-page-wrapper .mod-scroll__text__title .line {
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .nib-page-wrapper .mod-scroll__text__title .line:nth-child(4) {
+    padding-left: 0;
+    text-align: left;
+  }
+
+  .nib-page-wrapper .mod-scroll__text__telemetry {
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  .nib-page-wrapper main .mod-scroll__images-text .wrapper {
     flex-direction: column;
-    row-gap: 3rem;
+    align-items: stretch;
+    row-gap: 2.5rem;
     height: auto;
+    padding: 0;
   }
 
-  .mod-scroll__images-text__text {
+  .nib-page-wrapper .mod-scroll__images-text__text {
     max-width: 100%;
     padding-left: 0;
   }
 
-  main .mod-scroll__carousel {
+  .nib-page-wrapper main .mod-scroll__carousel {
     width: 100% !important;
-    min-width: unset !important;
-    padding: 4rem var(--wrapper-padd);
+    min-width: 0 !important;
+    padding: 3.5rem var(--wrapper-padd);
   }
 
-  .mod-scroll__carousel__content {
+  .nib-page-wrapper .mod-scroll__carousel__content {
     writing-mode: horizontal-tb;
-    transform: none;
-    font-size: 2.5rem;
+    transform: none !important;
+    font-size: 2.25rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem 2.5rem;
   }
 
-  main .mod-scroll__terms {
+  .nib-page-wrapper main .mod-scroll__terms {
     flex-direction: column;
-    gap: 3rem;
+    align-items: stretch;
+    gap: 2.5rem;
     height: auto !important;
   }
 
-  .mod-scroll__terms__term {
+  .nib-page-wrapper .mod-scroll__terms__term {
     width: 100%;
     height: auto;
-    padding: 1.5rem 0;
+    padding: 1.25rem 0;
   }
 
-  .mod-scroll__terms .follow__mouse {
-    display: none;
+  .nib-page-wrapper .mod-scroll__terms .follow__mouse {
+    display: none !important;
   }
 
-  main .mod-scroll__projects {
+  .nib-page-wrapper main .mod-scroll__projects {
     flex-direction: column;
-    gap: 3rem;
+    gap: 2.5rem;
   }
 
-  .mod-scroll__projects__wrap-text,
-  .mod-scroll__projects__item,
-  .mod-scroll__projects__item.is-active,
-  .mod-scroll__projects__item.last-item {
+  .nib-page-wrapper main .mod-scroll__projects__wrap-text {
     width: 100% !important;
-    min-width: unset !important;
-    flex-direction: column;
-  }
-
-  .mod-scroll__projects__item__image .media__source {
-    height: 50vh !important;
-  }
-
-  .last-item__carousel,
-  .last-item__content {
-    width: 100% !important;
-    min-width: unset !important;
+    min-width: 0 !important;
     height: auto !important;
-    padding: 2rem 0;
+    padding: 0;
   }
 
-  .mod-media--double {
+  .nib-page-wrapper main .mod-scroll__projects__text {
+    width: 100%;
+    max-width: 44ch;
+  }
+
+  .nib-page-wrapper main .mod-scroll__projects__item,
+  .nib-page-wrapper main .mod-scroll__projects__item.is-active,
+  .nib-page-wrapper main .mod-scroll__projects .last-item {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
     flex-direction: column;
   }
 
-  .mod-media--double .mod-media__col {
-    height: 50vh;
+  .nib-page-wrapper main .mod-scroll__projects__item__content {
+    height: auto !important;
   }
 
-  .mod-content--cols {
+  .nib-page-wrapper main .mod-scroll__projects__item__image .media__source {
+    height: clamp(260px, 48vh, 460px) !important;
+  }
+
+  .nib-page-wrapper main .mod-scroll__projects__item__text {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    min-height: 0;
+    padding: 1.5rem 1.25rem;
+  }
+
+  .nib-page-wrapper main .mod-scroll__projects__item__text__title {
+    order: 1;
+    padding: 0;
+    white-space: normal;
+    text-align: left;
+  }
+
+  .nib-page-wrapper main .mod-scroll__projects__item__text__data {
+    position: static;
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.65rem 1rem;
+    order: 2;
+  }
+
+  .nib-page-wrapper main .mod-scroll__projects__item__text__data > * {
+    position: static;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+  }
+
+  .nib-page-wrapper main .mod-scroll__projects .last-item__carousel,
+  .nib-page-wrapper main .mod-scroll__projects .last-item__content {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+  }
+
+  .nib-page-wrapper main .mod-scroll__projects .last-item__content {
+    padding: 2.5rem var(--wrapper-padd);
+  }
+
+  .nib-page-wrapper main .mod-scroll__projects .last-item__content__wrap {
+    padding: 0;
+  }
+
+  .nib-page-wrapper main .mod-scroll__projects .last-item__content__section {
+    position: static;
+  }
+
+  .nib-page-wrapper main .mod-scroll__projects .last-item__carousel__item {
+    height: clamp(220px, 32vh, 320px);
+  }
+
+  .nib-page-wrapper main .mod-scroll__projects .last-item__carousel__item--link {
+    height: 96px;
+  }
+
+  .nib-page-wrapper main .mod-scroll__cierre {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+  }
+
+  .nib-page-wrapper main .mod-scroll__cierre__content {
+    width: 100%;
+    height: auto;
+  }
+
+  .nib-page-wrapper main .mod-scroll__cierre__content__image {
+    width: 100%;
+    max-width: 100%;
+    flex-direction: column;
+    gap: 1.5rem;
+    aspect-ratio: auto;
+  }
+
+  .nib-page-wrapper .mod-media--double {
+    flex-direction: column;
+    gap: 2rem;
+    padding-bottom: 4.5rem;
+  }
+
+  .nib-page-wrapper .mod-media--double .mod-media__col {
+    height: clamp(280px, 50vh, 460px);
+  }
+
+  .nib-page-wrapper .mod-content--cols {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    padding-bottom: 4.5rem;
+  }
+
+  .nib-page-wrapper .mod-content--center {
+    padding-bottom: 6rem;
+  }
+
+  .nib-page-wrapper .btn--monolith-cta {
+    padding: 1.25rem 2.2rem;
+  }
+
+  .nib-page-wrapper .mod-footer__info-grid {
     grid-template-columns: 1fr;
     gap: 2.5rem;
   }
 
-  .mod-footer__info-grid {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
+  .nib-page-wrapper .mod-footer__links {
+    padding-right: 0;
   }
 
-  .header__menu__inner {
+  .nib-page-wrapper .header__menu__inner {
     flex-direction: column;
     justify-content: center;
     gap: 3rem;
   }
 
-  .header__menu__content {
+  .nib-page-wrapper .header__menu__content {
     display: none;
   }
 }
@@ -1873,7 +2098,7 @@ main .mod-scroll__cierre__content__image {
 /* ==========================================================================
    CUSTOM KINETIC CURSOR (#mouse)
    ========================================================================== */
-#mouse {
+.nib-page-wrapper #mouse {
   position: fixed;
   top: 0;
   left: 0;
@@ -1893,7 +2118,7 @@ main .mod-scroll__cierre__content__image {
               opacity 0.3s ease;
 }
 
-#mouse.is-expanded {
+.nib-page-wrapper #mouse.is-expanded {
   width: 7.15rem;
   height: 7.15rem;
   background-color: var(--white);
@@ -1903,7 +2128,7 @@ main .mod-scroll__cierre__content__image {
   border: none;
 }
 
-#mouse span {
+.nib-page-wrapper #mouse span {
   font-family: var(--f-izmir);
   font-size: 0.75rem;
   font-weight: 600;
@@ -1915,17 +2140,486 @@ main .mod-scroll__cierre__content__image {
   pointer-events: none;
 }
 
-#mouse.is-expanded span {
+.nib-page-wrapper #mouse.is-expanded span {
   opacity: 1;
 }
 
-#mouse.is-hidden {
+.nib-page-wrapper #mouse.is-hidden {
   opacity: 0;
   transform: translate(-50%, -50%) scale(0);
 }
 
 @media (max-width: 991px) {
-  #mouse {
+  .nib-page-wrapper #mouse {
     display: none !important;
+  }
+}
+
+/* ==========================================================================
+   REDUCED MOTION SUPPORT (BOTH .is-reduced-motion AND @media prefers-reduced-motion)
+   Switches desktop horizontal rail into an accessible, static vertical layout.
+   ========================================================================== */
+.nib-page-wrapper.is-reduced-motion .nib-preloader-backdrop,
+.nib-page-wrapper.is-reduced-motion #mouse,
+.nib-page-wrapper.is-reduced-motion .mod-scroll__terms .follow__mouse {
+  display: none !important;
+}
+
+.nib-page-wrapper.is-reduced-motion header {
+  height: auto;
+}
+
+.nib-page-wrapper.is-reduced-motion header .header {
+  height: auto;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0.9rem var(--wrapper-padd);
+  pointer-events: all;
+}
+
+.nib-page-wrapper.is-reduced-motion header .header__logo {
+  position: static;
+  width: auto;
+  height: auto;
+  font-size: 1.25rem;
+  opacity: 1 !important;
+  color: var(--black) !important;
+  pointer-events: all;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.nib-page-wrapper.is-reduced-motion header .header__logo .logo__normal,
+.nib-page-wrapper.is-reduced-motion header .header__logo .logo__group {
+  position: static !important;
+  transform: none !important;
+  opacity: 1 !important;
+  pointer-events: all;
+}
+
+.nib-page-wrapper.is-reduced-motion header .header__logo .logo__group {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.35rem;
+  right: auto;
+}
+
+.nib-page-wrapper.is-reduced-motion header .header__logo .logo__is {
+  font-size: 0.9em;
+}
+
+.nib-page-wrapper.is-reduced-motion header .header__logo .logo__boring,
+.nib-page-wrapper.is-reduced-motion header .header__logo .logo__boring .reg {
+  position: static;
+  transform: none;
+  font-size: 0.78em;
+  margin: 0;
+}
+
+.nib-page-wrapper.is-reduced-motion .header__controls {
+  position: static;
+  transform: none !important;
+  opacity: 1 !important;
+  pointer-events: all !important;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll {
+  display: flex;
+  flex-direction: column;
+  width: 100% !important;
+  height: auto !important;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll > * {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  padding: 5rem var(--wrapper-padd);
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__intro {
+  padding-top: 7rem;
+  padding-bottom: 5rem;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__intro .wrapper {
+  height: auto;
+  min-height: 60vh;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2rem;
+  padding: 0;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__intro__logo,
+.nib-page-wrapper.is-reduced-motion .mod-scroll__intro__menu {
+  display: none;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__intro__section,
+.nib-page-wrapper.is-reduced-motion .mod-scroll__intro__copyright {
+  position: static;
+  transform: none;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__intro__content {
+  align-items: flex-start;
+  width: 100%;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__intro__text {
+  max-width: 48ch;
+  margin-right: 0;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__images.principal,
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__images.secundario {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2rem;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__images__image-single {
+  width: 100% !important;
+  height: clamp(320px, 56vh, 560px) !important;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__images__flip.flipMedia,
+.nib-page-wrapper.is-reduced-motion .mod-scroll__images-text__flip {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+  height: auto !important;
+}
+
+.nib-page-wrapper.is-reduced-motion .flipMedia__media {
+  width: 100% !important;
+  height: clamp(280px, 48vh, 460px) !important;
+}
+
+.nib-page-wrapper.is-reduced-motion .flipMedia__media .media__source {
+  height: 100%;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__text__section {
+  position: static;
+  margin-bottom: 1rem;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__text__wrap-text {
+  margin-top: 0;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__text__title .line {
+  white-space: normal;
+  overflow: visible;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__text__title .line:nth-child(4) {
+  padding-left: 0;
+  text-align: left;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__text__telemetry {
+  flex-wrap: wrap;
+  gap: 2rem 4rem;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__images-text .wrapper {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2.5rem;
+  height: auto;
+  padding: 0;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__images-text__text {
+  max-width: 100%;
+  padding-left: 0;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__images-text__text p span {
+  opacity: 1 !important;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__carousel {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 3.5rem var(--wrapper-padd);
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__carousel__content {
+  transform: none !important;
+  writing-mode: horizontal-tb;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem 2.5rem;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__terms {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2rem;
+  height: auto !important;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-scroll__terms__term {
+  width: 100%;
+  height: auto;
+  padding: 1.5rem 0;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects {
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects__wrap-text {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  padding: 0;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects__text {
+  width: 100%;
+  max-width: 48ch;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects__item,
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects__item.is-active,
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects .last-item {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  flex-direction: column;
+  cursor: default;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects__item__content {
+  height: auto !important;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects__item__image .media__source {
+  height: clamp(280px, 50vh, 480px) !important;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects__item__text {
+  opacity: 1 !important;
+  transform: none !important;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+  min-height: 0;
+  padding: 1.75rem 1.5rem;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects__item__text__title {
+  order: 1;
+  padding: 0;
+  white-space: normal;
+  text-align: left;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects__item__text__data {
+  position: static;
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  order: 2;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects__item__text__data > * {
+  position: static;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects .last-item__carousel,
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects .last-item__content {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  transform: none !important;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects .last-item__content {
+  padding: 2.5rem var(--wrapper-padd);
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects .last-item__content__wrap {
+  padding: 0;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects .last-item__content__section {
+  position: static;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects .last-item__carousel__item {
+  height: clamp(220px, 32vh, 320px);
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__projects .last-item__carousel__item--link {
+  height: 96px;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__cierre {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__cierre__content {
+  width: 100%;
+  height: auto;
+}
+
+.nib-page-wrapper.is-reduced-motion main .mod-scroll__cierre__content__image {
+  width: 100%;
+  max-width: 100%;
+  gap: 1.5rem;
+  aspect-ratio: auto;
+}
+
+.nib-page-wrapper.is-reduced-motion .mod-footer__links {
+  padding-right: 0;
+}
+
+.nib-page-wrapper.is-reduced-motion *,
+.nib-page-wrapper.is-reduced-motion *::before,
+.nib-page-wrapper.is-reduced-motion *::after {
+  animation: none !important;
+  transition: none !important;
+  will-change: auto !important;
+}
+
+.nib-page-wrapper.is-reduced-motion .header__menu__nav-site li a:hover,
+.nib-page-wrapper.is-reduced-motion .header__menu__nav-single__proyectos__item:hover,
+.nib-page-wrapper.is-reduced-motion .btn--monolith-cta:hover,
+.nib-page-wrapper.is-reduced-motion .btn--monolith-cta:hover .cta-arrow,
+.nib-page-wrapper.is-reduced-motion .mod-media--double .mod-media__img {
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nib-page-wrapper .nib-preloader-backdrop,
+  .nib-page-wrapper #mouse,
+  .nib-page-wrapper .mod-scroll__terms .follow__mouse {
+    display: none !important;
+  }
+
+  .nib-page-wrapper header {
+    height: auto;
+  }
+
+  .nib-page-wrapper header .header {
+    height: auto;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 0.9rem var(--wrapper-padd);
+    pointer-events: all;
+  }
+
+  .nib-page-wrapper header .header__logo {
+    position: static;
+    width: auto;
+    height: auto;
+    font-size: 1.25rem;
+    opacity: 1 !important;
+    color: var(--black) !important;
+    pointer-events: all;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .nib-page-wrapper header .header__logo .logo__normal,
+  .nib-page-wrapper header .header__logo .logo__group {
+    position: static !important;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: all;
+  }
+
+  .nib-page-wrapper header .header__logo .logo__group {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.35rem;
+    right: auto;
+  }
+
+  .nib-page-wrapper header .header__logo .logo__is {
+    font-size: 0.9em;
+  }
+
+  .nib-page-wrapper header .header__logo .logo__boring,
+  .nib-page-wrapper header .header__logo .logo__boring .reg {
+    position: static;
+    transform: none;
+    font-size: 0.78em;
+    margin: 0;
+  }
+
+  .nib-page-wrapper .header__controls {
+    position: static;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: all !important;
+  }
+
+  .nib-page-wrapper main .mod-scroll {
+    display: flex;
+    flex-direction: column;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .nib-page-wrapper main .mod-scroll > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    padding: 5rem var(--wrapper-padd);
+  }
+
+  .nib-page-wrapper main .mod-scroll__intro__logo,
+  .nib-page-wrapper .mod-scroll__intro__menu {
+    display: none;
+  }
+
+  .nib-page-wrapper .mod-scroll__images-text__text p span,
+  .nib-page-wrapper main .mod-scroll__projects__item__text {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .nib-page-wrapper .mod-scroll__carousel__content {
+    transform: none !important;
+    writing-mode: horizontal-tb;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nib-page-wrapper *,
+  .nib-page-wrapper *::before,
+  .nib-page-wrapper *::after {
+    animation: none !important;
+    transition: none !important;
+    will-change: auto !important;
   }
 }

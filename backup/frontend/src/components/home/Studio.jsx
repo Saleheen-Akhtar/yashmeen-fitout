@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { Link } from "react-router-dom";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
 
@@ -6,24 +7,32 @@ export default function Studio() {
   const studio = content?.studio || {};
   const activeServices = (content?.services || []).filter((s) => s.active !== false);
   const rawHeadline = studio.headline || "DESIGN TO\nDELIVERY";
+  const headlineLines = String(rawHeadline).split(/\r?\n/);
 
   return (
     <section className="studio-manifesto-section wrap" id="manifesto" aria-label="Studio Manifesto">
       {/* Eyebrow & Monumental Display Title */}
       <div className="studio-headline-block">
         <span className="eyebrow">{studio.eyebrow || "(ONE TEAM. EVERY STAGE.)"}</span>
-        <h2 key={rawHeadline} className="u-text-display" style={{ whiteSpace: "pre-line" }}>
-          {rawHeadline}
+        <h2 className="u-text-display" key={rawHeadline}>
+          {headlineLines.map((line, i) => (
+            <Fragment key={i}>
+              {line}
+              {i < headlineLines.length - 1 && <br />}
+            </Fragment>
+          ))}
         </h2>
       </div>
 
       {/* Centered Inset Photograph with Generous Whitespace */}
       <div className="studio-inset-image-wrap">
-        <img
-          src="/static/studio.jpg"
-          alt="Bespoke architectural joinery bench in Al Quoz, Dubai"
-          loading="lazy"
-        />
+        <div className="studio-inset-image-inner">
+          <img
+            src="/static/studio.jpg"
+            alt="Bespoke architectural joinery bench in Al Quoz, Dubai"
+            loading="lazy"
+          />
+        </div>
       </div>
 
       {/* 2-Column Editorial Narrative */}

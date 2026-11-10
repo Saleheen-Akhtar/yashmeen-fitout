@@ -155,14 +155,3 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .parallax__layers,
-  .parallax__layer-img {
-    will-change: auto;
-  }
-
-  .parallax [data-parallax-layer] {
-    transform: none !important;
-  }
-}

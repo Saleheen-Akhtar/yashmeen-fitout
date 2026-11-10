@@ -724,8 +724,7 @@ export default function InteractiveBrandLettering({
     if (!canvas || !container) return;
 
     const ctx = canvas.getContext("2d");
-    const motionMq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    reducedMotionRef.current = motionMq.matches;
+    reducedMotionRef.current = false;
     let width = 0,
       height = 0,
       ratio = 1;
@@ -1026,26 +1025,6 @@ export default function InteractiveBrandLettering({
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    const handleMotionChange = (e) => {
-      reducedMotionRef.current = e.matches;
-      const world = worldRef.current;
-      if (!world) return;
-      world.reducedMotion = e.matches;
-      if (e.matches) {
-        world.drag = null;
-        world.sleep();
-        draw();
-        if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current);
-          rafRef.current = 0;
-        }
-      } else {
-        wake();
-      }
-    };
-    if (motionMq.addEventListener) motionMq.addEventListener("change", handleMotionChange);
-    else motionMq.addListener(handleMotionChange);
-
     let io = null;
     if (typeof IntersectionObserver !== "undefined") {
       io = new IntersectionObserver(
@@ -1072,8 +1051,6 @@ export default function InteractiveBrandLettering({
     return () => {
       observer.disconnect();
       if (io) io.disconnect();
-      if (motionMq.removeEventListener) motionMq.removeEventListener("change", handleMotionChange);
-      else motionMq.removeListener(handleMotionChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);

@@ -318,8 +318,6 @@ export default function QuotePage() {
         .enqpg-done h3{ margin:28px 0 0; font-size:26px; font-weight:700; }
         .enqpg-done p{ margin:12px auto 0; max-width:400px; font-size:14.5px; line-height:1.75; color:var(--g500); }
         .enqpg-done .enqpg-btn{ margin-top:28px; }
-
-        @media(prefers-reduced-motion:reduce){ .enqpg-page *{ animation:none !important; transition:none !important; } }
       `}</style>
 
       <section className="enqpg-hero" style={{ backgroundImage: `url(${HERO_BG})` }}>

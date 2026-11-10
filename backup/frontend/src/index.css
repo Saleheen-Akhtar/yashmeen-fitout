@@ -493,19 +493,3 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .skip-link,
-  .btn-pill,
-  .g-circle,
-  .card,
-  .spatial-card,
-  .btn,
-  .link-arrow {
-    transition: none;
-  }
-
-  .btn-pill:hover .g-circle {
-    transform: none;
-  }
-}

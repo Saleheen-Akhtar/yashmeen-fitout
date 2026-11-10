@@ -544,8 +544,4 @@ const css = `
     .cryptusLoginRightPanel { padding: 20px 16px !important; }
     .cryptusLoginCard { padding: 24px 20px !important; border-radius: 12px !important; }
   }
-
-  @media (prefers-reduced-motion: reduce) {
-    .cryptusLoginCard { animation: none !important; }
-  }
 `;

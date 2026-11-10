@@ -2298,9 +2298,6 @@
   .atelier-hero-index { gap: 9px 12px; margin-top: 22px; padding: 12px 0; font-size: 8px; letter-spacing: .08em; }
   .atelier-hero-location { width: 100%; margin: 4px 0 0; justify-content: space-between; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .atelier-hero-visual img { animation: none; }
-}
 
 /* Full-bleed editorial homepage opening */
 .aperture-hero { padding: 0; color: #fff; background: #111; }
@@ -2374,75 +2371,4 @@ html:not(.motion) .aperture-parallax-layer { transform: none !important; }
   .aperture-intro { margin-top: 10px; font-size: 12.5px; }
   .aperture-actions { margin-top: 14px; }
   .aperture-cta { min-height: 42px; min-width: 180px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .aperture-hero-photo img,
-  .aperture-copy-inner,
-  .aperture-word,
-  .aperture-kicker,
-  .aperture-intro,
-  .aperture-actions,
-  .aperture-proof,
-  .aperture-project-link,
-  .atelier-grain-overlay,
-  .sound-bar,
-  .pre-enter-prompt,
-  .badge-3d-dot,
-  .glide-prompt-cursor {
-    animation: none;
-  }
-
-  .aperture-hero-photo img,
-  .aperture-copy-inner,
-  .aperture-word,
-  .aperture-kicker,
-  .aperture-intro,
-  .aperture-actions,
-  .aperture-proof,
-  .aperture-project-link {
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: none !important;
-    will-change: auto;
-  }
-
-  .aperture-copy-parallax,
-  .aperture-parallax-layer {
-    transform: none !important;
-    will-change: auto;
-  }
-
-  .studio-inset-image-inner,
-  .works-card-image-inner,
-  .aperture-cta,
-  .btn-gold-primary,
-  .btn-circle-arrow,
-  .bottom-scroll-cue .scroll-arrow,
-  .glide-hero-badge,
-  .glide-badge-arrow,
-  .glide-prompt-build-btn,
-  .works-switch-btn,
-  .process-accordion-item,
-  .testimonial-project-link span:last-child,
-  .testimonial-carousel-progress span,
-  .testimonial-carousel-arrows button,
-  .atelier-hero-cta {
-    transition: none;
-  }
-
-  .studio-inset-image-wrap:hover .studio-inset-image-inner,
-  .works-card:hover .works-card-image-inner,
-  .aperture-cta:hover,
-  .btn-gold-primary:hover,
-  .btn-gold-primary:hover .btn-circle-arrow,
-  .bottom-scroll-cue:hover .scroll-arrow,
-  .glide-hero-badge:hover,
-  .glide-hero-badge:hover .glide-badge-arrow,
-  .glide-prompt-build-btn:hover {
-    transform: none;
-  }
-
-  .testimonial-carousel-track {
-    scroll-behavior: auto;
-  }
 }

@@ -24,11 +24,7 @@ export default function YashmeenNibExperience() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isMouseInTerms, setIsMouseInTerms] = useState(false);
   const [activeProjectIdx, setActiveProjectIdx] = useState(0);
-  const [reducedMotion, setReducedMotion] = useState(() =>
-    typeof window !== "undefined"
-      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      : false
-  );
+  const [reducedMotion] = useState(false);
 
   const containerRef = useRef(null);
   const mainRef = useRef(null);
@@ -348,18 +344,6 @@ export default function YashmeenNibExperience() {
         </span>
       </span>
     ));
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const onChange = (e) => setReducedMotion(e.matches);
-    setReducedMotion(mq.matches);
-    if (mq.addEventListener) mq.addEventListener("change", onChange);
-    else mq.addListener(onChange);
-    return () => {
-      if (mq.removeEventListener) mq.removeEventListener("change", onChange);
-      else mq.removeListener(onChange);
-    };
-  }, []);
 
   // --------------------------------------------------------------------------
   // 1. PRELOADER & INTRO ENTRANCE ANIMATION

@@ -80,32 +80,3 @@
 [data-magnetic] {
   will-change: transform;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  #scroll-progress {
-    display: none;
-  }
-
-  .split-child,
-  .hero-editorial .hero-media-wrap img,
-  [data-magnetic] {
-    will-change: auto;
-  }
-
-  .hero-editorial .hero-media-wrap img {
-    transition: none;
-  }
-
-  .line-draw::before {
-    transition: none;
-    transform: scaleX(1);
-  }
-
-  [data-image-cover] {
-    display: none;
-  }
-
-  [data-magnetic] {
-    transition: none !important;
-  }
-}

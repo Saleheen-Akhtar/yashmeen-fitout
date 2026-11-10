@@ -13,28 +13,24 @@ export default function HeroSection() {
 
   useGSAP(
     () => {
-      const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        // Entrance choreography
-        gsap.from(".hero2-meta > *", { y: 24, opacity: 0, duration: 1, ease: "power3.out", stagger: 0.12, delay: 0.9, clearProps: "transform,opacity" });
-        gsap.from(".hero2-cue", { opacity: 0, duration: 1, delay: 1.6, clearProps: "opacity" });
+      // Entrance choreography
+      gsap.from(".hero2-meta > *", { y: 24, opacity: 0, duration: 1, ease: "power3.out", stagger: 0.12, delay: 0.9, clearProps: "transform,opacity" });
+      gsap.from(".hero2-cue", { opacity: 0, duration: 1, delay: 1.6, clearProps: "opacity" });
 
-        // Media starts inset and opens to full bleed as you scroll
-        gsap.fromTo(".hero2-media", { clipPath: "inset(0 9vw 0 9vw round 20px)" }, {
-          clipPath: "inset(0 0vw 0 0vw round 0px)", ease: "none",
-          scrollTrigger: { trigger: ".hero2-media", start: "top 92%", end: "top 8%", scrub: true },
-        });
-        gsap.fromTo(".hero2-media img", { scale: 1.25, yPercent: -6 }, {
-          scale: 1, yPercent: 6, ease: "none",
-          scrollTrigger: { trigger: ".hero2-media", start: "top bottom", end: "bottom top", scrub: true },
-        });
-        // Headline drifts up slightly faster than the page
-        gsap.to(".hero2-title", {
-          yPercent: -12, ease: "none",
-          scrollTrigger: { trigger: ".hero2", start: "top top", end: "bottom top", scrub: true },
-        });
+      // Media starts inset and opens to full bleed as you scroll
+      gsap.fromTo(".hero2-media", { clipPath: "inset(0 9vw 0 9vw round 20px)" }, {
+        clipPath: "inset(0 0vw 0 0vw round 0px)", ease: "none",
+        scrollTrigger: { trigger: ".hero2-media", start: "top 92%", end: "top 8%", scrub: true },
       });
-      return () => mm.revert();
+      gsap.fromTo(".hero2-media img", { scale: 1.25, yPercent: -6 }, {
+        scale: 1, yPercent: 6, ease: "none",
+        scrollTrigger: { trigger: ".hero2-media", start: "top bottom", end: "bottom top", scrub: true },
+      });
+      // Headline drifts up slightly faster than the page
+      gsap.to(".hero2-title", {
+        yPercent: -12, ease: "none",
+        scrollTrigger: { trigger: ".hero2", start: "top top", end: "bottom top", scrub: true },
+      });
     },
     { scope: root }
   );

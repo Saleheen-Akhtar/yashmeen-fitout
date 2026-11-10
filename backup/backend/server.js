@@ -93,9 +93,13 @@ app.use("/api", async (req, res, next) => {
         await connectDB();
         return next();
     } catch (err) {
+        const missingEnv = !process.env.MONGO_URI;
         return res.status(503).json({
             success: false,
-            message: "Database connection unavailable",
+            message: missingEnv
+                ? "Database unavailable: MONGO_URI environment variable is not set"
+                : "Database connection unavailable",
+            code: missingEnv ? "MISSING_MONGO_URI" : (err?.name || "DB_CONNECT_FAILED"),
             error: process.env.NODE_ENV === "development" ? err.message : undefined,
         });
     }

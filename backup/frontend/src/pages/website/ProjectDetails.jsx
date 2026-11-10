@@ -591,10 +591,6 @@ export default function ProjectDetailsPage() {
         .lb-prev{ left:12px; top:50%; transform:translateY(-50%); }
         .lb-next{ right:12px; top:50%; transform:translateY(-50%); }
 
-        @media (prefers-reduced-motion:reduce){
-          *{ transition:none !important; scroll-behavior:auto !important; }
-          .tile:hover img{ transform:none; }
-        }
       `}</style>
 
       {loading ? (

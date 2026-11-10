@@ -34,10 +34,9 @@ export default function Hero() {
     const stage = stageRef.current;
     if (!stage || typeof window === "undefined") return undefined;
 
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     let ctx = null;
 
-    if (!mq.matches && stage.getBoundingClientRect().bottom > 0) {
+    if (stage.getBoundingClientRect().bottom > 0) {
       ctx = gsap.context(() => {
         const words = stage.querySelectorAll(".aperture-word");
         const kicker = stage.querySelector(".aperture-kicker");
@@ -141,18 +140,7 @@ export default function Hero() {
       }, stageRef);
     }
 
-    const onReduceChange = (e) => {
-      if (e.matches && ctx) {
-        ctx.revert();
-        ctx = null;
-      }
-    };
-    if (mq.addEventListener) mq.addEventListener("change", onReduceChange);
-    else mq.addListener(onReduceChange);
-
     return () => {
-      if (mq.removeEventListener) mq.removeEventListener("change", onReduceChange);
-      else mq.removeListener(onReduceChange);
       if (ctx) {
         ctx.revert();
         ctx = null;

@@ -392,16 +392,6 @@ export default function PhotoGallery() {
         @media (max-width:980px){ .photogal-masonry-grid{ column-count:2; } }
         @media (max-width:620px){ .photogal-masonry-grid{ column-count:1; } }
         @media (max-width:720px){ .photogal-photo-count{ margin-left:0 !important; width:100%; padding-top:6px; } }
-        @media (prefers-reduced-motion: reduce){
-          .photogal-fade-in{ animation:none; opacity:1; transform:none; }
-          .photogal-photo-tile,
-          .photogal-photo-tile img,
-          .photogal-tile-corner,
-          .photogal-tile-expand,
-          .photogal-filter-chip{ transition:none; }
-          .photogal-photo-tile:hover,
-          .photogal-photo-tile:hover img{ transform:none; }
-        }
       `}</style>
 
       {/* HERO BAND */}

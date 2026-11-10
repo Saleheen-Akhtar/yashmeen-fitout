@@ -70,14 +70,6 @@ export default function ClientsSection() {
             transform: translateX(-50%);
           }
         }
-
-        @media (prefers-reduced-motion: reduce) {
-          .marquee-track {
-            animation: none;
-            flex-wrap: wrap;
-            justify-content: center;
-          }
-        }
       `}</style>
 
       <div className="marquee-track" aria-hidden="true">

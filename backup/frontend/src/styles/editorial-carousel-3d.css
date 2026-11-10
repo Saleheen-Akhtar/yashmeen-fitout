@@ -182,15 +182,3 @@
   white-space: nowrap;
   border: 0;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .editorial-card,
-  .editorial-card-content,
-  .editorial-carousel-track {
-    will-change: auto;
-  }
-
-  .editorial-card-img {
-    transition: none;
-  }
-}

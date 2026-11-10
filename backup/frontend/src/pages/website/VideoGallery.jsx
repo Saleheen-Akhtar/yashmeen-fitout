@@ -304,17 +304,6 @@ export default function VideoGallery() {
         @media (max-width:980px){ .vidgal-card-grid{ grid-template-columns:repeat(2,1fr); } }
         @media (max-width:620px){ .vidgal-card-grid{ grid-template-columns:1fr; } }
         @media (max-width:720px){ .vidgal-film-count{ margin-left:0 !important; width:100%; padding-top:6px; } }
-        @media (prefers-reduced-motion: reduce){
-          .vidgal-fade-in{ animation:none; opacity:1; transform:none; }
-          .vidgal-video-card,
-          .vidgal-video-card img,
-          .vidgal-card-corner,
-          .vidgal-play-btn,
-          .vidgal-filter-chip{ transition:none; }
-          .vidgal-video-card:hover,
-          .vidgal-video-card:hover img{ transform:none; }
-          .vidgal-video-card:hover .vidgal-play-btn{ transform:translate(-50%,-50%); }
-        }
       `}</style>
 
       {/* HERO BAND */}

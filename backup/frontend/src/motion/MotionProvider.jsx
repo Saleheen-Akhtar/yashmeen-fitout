@@ -24,28 +24,12 @@ export let lenisInstance = null;
 
 export default function MotionProvider() {
   const { pathname, hash, key } = useLocation();
-  const [reducedMotion, setReducedMotion] = useState(() =>
-    typeof window !== "undefined"
-      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      : false
-  );
+  const [reducedMotion] = useState(false);
 
-  /* Track OS/browser reduced-motion changes and mirror html.motion class */
+  /* Ensure html.motion class stays active on all visitor routes */
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = (matches) => {
-      setReducedMotion(matches);
-      document.documentElement.classList.toggle("motion", !matches);
-    };
-    sync(mq.matches);
-
-    const onChange = (e) => sync(e.matches);
-    if (mq.addEventListener) mq.addEventListener("change", onChange);
-    else mq.addListener(onChange);
-
+    document.documentElement.classList.add("motion");
     return () => {
-      if (mq.removeEventListener) mq.removeEventListener("change", onChange);
-      else mq.removeListener(onChange);
       document.documentElement.classList.remove("motion");
     };
   }, []);
@@ -69,7 +53,7 @@ export default function MotionProvider() {
       touchMultiplier: 1.2,
       infinite: false,
       autoResize: true,
-      respectReducedMotion: true,
+      respectReducedMotion: false,
     });
     lenisInstance = lenis;
     window.__lenis = lenis;

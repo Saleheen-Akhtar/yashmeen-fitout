@@ -257,11 +257,7 @@ export function SpatialGallery3D({
   const [hoveredItem, setHoveredItem] = useState<SpatialGalleryItem | null>(null);
   const [focusItem, setFocusItem] = useState<SpatialGalleryItem | null>(null);
   const [filterTransitioning, setFilterTransitioning] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState<boolean>(() =>
-    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      : false,
-  );
+  const [reducedMotion] = useState<boolean>(false);
 
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
     typeof window !== 'undefined' ? window.innerWidth : 1440,
@@ -271,14 +267,6 @@ export function SpatialGallery3D({
     const onResize = () => setViewportWidth(window.innerWidth);
     window.addEventListener('resize', onResize, { passive: true });
     return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const sync = () => setReducedMotion(mq.matches);
-    mq.addEventListener('change', sync);
-    return () => mq.removeEventListener('change', sync);
   }, []);
 
   // Helix architectural parameters adapting seamlessly between desktop & mobile

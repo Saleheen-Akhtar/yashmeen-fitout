@@ -707,37 +707,3 @@
     align-items: flex-start;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .site-header,
-  .site-nav-link,
-  .header-btn-enquire,
-  .header-btn-menu,
-  .menu-curtain,
-  .menu-curtain-close,
-  .menu-curtain-link,
-  .menu-curtain-bottom a,
-  .modal-overlay,
-  .modal-card,
-  .modal-close-btn,
-  .option-box,
-  .footer-nav-link {
-    transition: none;
-  }
-
-  .menu-curtain-link {
-    will-change: auto;
-    transform: none;
-  }
-
-  .menu-curtain.is-open .menu-curtain-link,
-  .menu-curtain-link:hover,
-  .modal-card {
-    transform: none;
-  }
-
-  .interactive-brand-monument .brand-play-hint,
-  .interactive-brand-monument button {
-    transition: none !important;
-  }
-}

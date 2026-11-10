@@ -22,23 +22,7 @@ export function ParallaxComponent({
   showContent = true,
 }: ParallaxComponentProps) {
   const parallaxRef = useRef<HTMLDivElement>(null);
-  const [reducedMotion, setReducedMotion] = useState(() =>
-    typeof window !== 'undefined'
-      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      : false
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-    setReducedMotion(mq.matches);
-    if (mq.addEventListener) mq.addEventListener('change', onChange);
-    else mq.addListener(onChange);
-    return () => {
-      if (mq.removeEventListener) mq.removeEventListener('change', onChange);
-      else mq.removeListener(onChange);
-    };
-  }, []);
+  const [reducedMotion] = useState(false);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);

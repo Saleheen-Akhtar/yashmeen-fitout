@@ -20,9 +20,8 @@ export default function Testimonial() {
   const goTo = (index) => {
     const nextIndex = (index + testimonials.length) % testimonials.length;
     setActiveIndex(nextIndex);
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     trackRef.current?.children[nextIndex]?.scrollIntoView({
-      behavior: reduced ? "auto" : "smooth",
+      behavior: "smooth",
       block: "nearest",
       inline: "start",
     });

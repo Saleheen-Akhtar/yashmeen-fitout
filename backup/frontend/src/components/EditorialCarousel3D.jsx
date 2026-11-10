@@ -567,18 +567,8 @@ export default function EditorialCarousel3D({
     const handleWindowResize = () => updateLayout();
     window.addEventListener("resize", handleWindowResize);
 
-    // Reduced motion media query listener
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    reducedMotionRef.current = mq.matches;
-    const handleMQ = (evt) => {
-      reducedMotionRef.current = evt.matches;
-      if (evt.matches) {
-        posRef.current = targetRef.current;
-        requestTick();
-      }
-    };
-    if (mq.addEventListener) mq.addEventListener("change", handleMQ);
-    else mq.addListener(handleMQ);
+    // Motion runs unconditionally on all systems
+    reducedMotionRef.current = false;
 
     // Page visibility listener
     const handleVisibility = () => {
@@ -620,8 +610,6 @@ export default function EditorialCarousel3D({
       if (io) io.disconnect();
       window.removeEventListener("resize", handleWindowResize);
       document.removeEventListener("visibilitychange", handleVisibility);
-      if (mq.removeEventListener) mq.removeEventListener("change", handleMQ);
-      else mq.removeListener(handleMQ);
       if (rAFIdRef.current) {
         cancelAnimationFrame(rAFIdRef.current);
         rAFIdRef.current = null;

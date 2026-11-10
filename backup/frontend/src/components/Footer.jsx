@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import InteractiveBrandLettering from "./footer/InteractiveBrandLettering";
+import useWebsiteContent from "../hooks/useWebsiteContent";
 import "../styles/shell.css";
 
 const NAV_LINKS = [
@@ -13,8 +14,26 @@ const NAV_LINKS = [
 ];
 
 export default function Footer() {
+  const { content } = useWebsiteContent();
   const [dubaiTime, setDubaiTime] = useState("");
   const [isOpenOffice, setIsOpenOffice] = useState(false);
+
+  const addr = content?.address || {};
+  const formattedAddress = [addr.street, addr.city, addr.country]
+    .filter(Boolean)
+    .join(", ") || "Bay Square, Building 12, Office G01, Business Bay, Dubai, UAE";
+  const email = content?.email || "info@yfbfitoutcontracting.com";
+  const mobile = content?.mobile || "+971 54 386 2870";
+  const workingHours = content?.workingHours || "Monday to Friday, 8:30am - 6:00pm";
+
+  const socialLinks =
+    Array.isArray(content?.socialLinks) && content.socialLinks.length > 0
+      ? content.socialLinks
+      : [
+          { platform: "Instagram", url: "https://www.instagram.com/yashmeenfuture" },
+          { platform: "Facebook", url: "https://www.facebook.com/profile.php?id=61595342604561" },
+          { platform: "YouTube", url: "https://www.youtube.com/@YashmeenFuture" },
+        ];
 
   useEffect(() => {
     const updateTime = () => {
@@ -91,17 +110,17 @@ export default function Footer() {
           <div>
             <div className="footer-col-title">(INFO)</div>
             <div className="footer-info-item">
-              <strong>A:</strong> Bay Square, Building 12, Office G01, Business Bay, Dubai, UAE
+              <strong>A:</strong> {formattedAddress}
             </div>
             <div className="footer-info-item">
               <strong>E:</strong>{" "}
-              <a href="mailto:info@yfbfitoutcontracting.com">info@yfbfitoutcontracting.com</a>
+              <a href={`mailto:${email}`}>{email}</a>
             </div>
             <div className="footer-info-item">
-              <strong>P:</strong> <a href="tel:+971543862870">+971 54 386 2870</a>
+              <strong>P:</strong> <a href={`tel:${mobile.replace(/\s+/g, "")}`}>{mobile}</a>
             </div>
             <div className="footer-info-item" style={{ marginTop: 10, color: "var(--muted)" }}>
-              <strong>H:</strong> Monday to Friday, 8:30am - 6:00pm
+              <strong>H:</strong> {workingHours}
             </div>
           </div>
 
@@ -124,7 +143,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Cole Derochie Inspired Soft-Body Interactive Inflatable Brand Monument */}
+        {/* Interactive Brand Monument */}
         <InteractiveBrandLettering word="YASHMEEN" color="#080807" haloColor="#fcfcfc" />
 
         {/* Footer Bottom Bar */}
@@ -145,30 +164,17 @@ export default function Footer() {
             <Link to="/about" style={{ color: "var(--muted)" }}>
               Privacy Policy
             </Link>
-            <a
-              href="https://www.instagram.com/yashmeenfuture"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "var(--muted)" }}
-            >
-              Instagram
-            </a>
-            <a
-              href="https://www.facebook.com/profile.php?id=61595342604561"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "var(--muted)" }}
-            >
-              Facebook
-            </a>
-            <a
-              href="https://www.youtube.com/@YashmeenFuture"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "var(--muted)" }}
-            >
-              YouTube
-            </a>
+            {socialLinks.map((soc, i) => (
+              <a
+                key={i}
+                href={soc.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "var(--muted)", textTransform: "capitalize" }}
+              >
+                {soc.platform}
+              </a>
+            ))}
           </div>
         </div>
       </div>

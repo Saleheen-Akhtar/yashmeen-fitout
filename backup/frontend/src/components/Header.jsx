@@ -2,21 +2,19 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import MenuOverlay from "./layout/MenuOverlay";
 import QuestionnaireModal from "./layout/QuestionnaireModal";
+import useWebsiteContent from "../hooks/useWebsiteContent";
 import "../styles/shell.css";
 
 const NAV_LINKS = [
-  { label: "Works", href: "/projects" },
-  { label: "Studio", href: "/about" },
-  { label: "Process", href: "/#process" },
-  { label: "Gallery", href: "/photo-gallery" },
-];
-const HOME_NAV_LINKS = [
   { label: "Projects", href: "/projects" },
-  { label: "Approach", href: "/about" },
+  { label: "About", href: "/about" },
+  { label: "Services", href: "/services" },
+  { label: "Gallery", href: "/photo-gallery" },
   { label: "Contact", href: "/contact" },
 ];
 
 export default function Header() {
+  const { content } = useWebsiteContent();
   const [menuOpen, setMenuOpen] = useState(false);
   const [questionnaireOpen, setQuestionnaireOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -24,10 +22,11 @@ export default function Header() {
   const lastY = useRef(0);
   const { pathname } = useLocation();
 
-  // Reset overlay on navigation
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    if (menuOpen) setMenuOpen(false);
+  }
 
   // Listen for global open-questionnaire and open-menu events
   useEffect(() => {
@@ -59,22 +58,23 @@ export default function Header() {
   }, []);
 
   const isHomePage = pathname === "/";
+  const isLightHeaderPage = pathname === "/photo-gallery" || pathname === "/gallery";
 
   return (
     <>
       <header
-        className={`site-header ${scrolled ? "is-scrolled" : ""} ${hidden ? "is-hidden" : ""} ${isHomePage ? "is-homepage" : ""} ${isHomePage && !scrolled ? "is-homepage-top" : ""}`}
+        className={`site-header ${scrolled ? "is-scrolled" : ""} ${hidden ? "is-hidden" : ""} ${isHomePage ? "is-homepage" : ""} ${isHomePage && !scrolled ? "is-homepage-top" : ""} ${isLightHeaderPage ? "is-light-page" : ""}`}
       >
         <div className="site-header-inner">
           {/* Brand Left */}
           <Link to="/" className="site-brand" aria-label="Yashmeen Future Building Homepage">
-            <span className="site-brand-text">{isHomePage ? "YASHMEEN FIT-OUT" : "YASHMEEN"}</span>
-            <span className="site-brand-city">DUBAI</span>
+            <span className="site-brand-text">{content?.brandName || "YASHMEEN FIT-OUT"}</span>
+            <span className="site-brand-city">{content?.cityLabel || "DUBAI"}</span>
           </Link>
 
           {/* Center Links with comma separation */}
           <nav className="site-nav-center" aria-label="Primary Navigation">
-            {(isHomePage ? HOME_NAV_LINKS : NAV_LINKS).map((item, idx) => (
+            {NAV_LINKS.map((item, idx) => (
               <span key={item.href} style={{ display: "inline-flex", alignItems: "center" }}>
                 <Link
                   to={item.href}
@@ -82,7 +82,7 @@ export default function Header() {
                 >
                   {item.label}
                 </Link>
-                {idx < (isHomePage ? HOME_NAV_LINKS : NAV_LINKS).length - 1 && <span className={`site-nav-sep ${isHomePage ? "home-nav-sep" : ""}`}>{isHomePage ? "/" : ","}</span>}
+                {idx < NAV_LINKS.length - 1 && <span className="site-nav-sep">,</span>}
               </span>
             ))}
           </nav>
@@ -96,7 +96,6 @@ export default function Header() {
               aria-label="Open Project Enquiry Questionnaire"
             >
               <span>Get in touch</span>
-              <span className="g-circle" aria-hidden="true" />
             </button>
 
             <button

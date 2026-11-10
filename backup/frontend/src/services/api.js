@@ -44,7 +44,7 @@ export const bannerAPI = {
 
 export const galleryAPI = {
   create: (data) => api.post('/gallery/create', data),
-  getAll: () => api.get('/gallery/getAll'),
+  getAll: (params) => api.get('/gallery/getAll', { params }),
   getById: (id) => api.get(`/gallery/getById/${id}`),
   update: (id, data) => api.put(`/gallery/update/${id}`, data),
   status: (id) => api.patch(`/gallery/status/${id}`),
@@ -61,7 +61,7 @@ export const popupAPI = {
 
 export const categoryAPI = {
   create: (data) => api.post('/category/create', data),
-  getAll: () => api.get("/category/getAll"),
+  getAll: (params) => api.get("/category/getAll", { params }),
   status: (id) => api.put(`/category/status/${id}`),
   update: (id, data) => api.put(`/category/update/${id}`, data),
   delete: (id) => api.delete(`/category/delete/${id}`),
@@ -69,7 +69,7 @@ export const categoryAPI = {
 
 export const projectAPI = {
   create: (data) => api.post('/project/create', data),
-  getAll: () => api.get('/project/getAll'),
+  getAll: (params) => api.get('/project/getAll', { params }),
   getById: (id) => api.get(`/project/getById/${id}`),
   update: (id, data) => api.put(`/project/update/${id}`, data),
   delete: (id) => api.delete(`/project/delete/${id}`),

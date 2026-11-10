@@ -1,37 +1,9 @@
-const PROCESS_STEPS = [
-  {
-    num: "(01)",
-    title: "Consultation & Spatial Feasibility",
-    desc: "Site survey, spatial zoning, landlord criteria, and statutory authority pre-assessment across Dubai.",
-  },
-  {
-    num: "(02)",
-    title: "Concept Design & Material Selection",
-    desc: "Curated materiality boards, architectural layouts, bespoke joinery details, and photorealistic 3D renders.",
-  },
-  {
-    num: "(03)",
-    title: "Dubai Authority Approvals",
-    desc: "Direct submission and expedited clearances through Dubai Municipality, Civil Defence, Tecom, and Master Developers.",
-  },
-  {
-    num: "(04)",
-    title: "Bespoke Joinery & Factory Fabrication",
-    desc: "Precision millwork, timber panelling, and metalwork fabricated in our 35,000 sq.ft Al Quoz manufacturing facility.",
-  },
-  {
-    num: "(05)",
-    title: "Turnkey Site Construction & MEP Integration",
-    desc: "Comprehensive site execution with dedicated mechanical, electrical, and plumbing engineering on a single critical path.",
-  },
-  {
-    num: "(06)",
-    title: "Snag-Free Handover & 12-Month Guarantee",
-    desc: "Full testing, commissioning approvals, operation manuals, and an unconditional 12-month defect liability guarantee.",
-  },
-];
+import useWebsiteContent from "../../hooks/useWebsiteContent";
 
 export default function Process() {
+  const { content } = useWebsiteContent();
+  const steps = content?.processSteps || [];
+
   const openEnquiry = () => {
     window.dispatchEvent(new CustomEvent("open-questionnaire"));
   };
@@ -53,9 +25,9 @@ export default function Process() {
           </div>
 
           <div className="process-accordion-list">
-            {PROCESS_STEPS.map((step) => (
-              <div key={step.num} className="process-accordion-item">
-                <span className="process-item-index">{step.num}</span>
+            {steps.map((step, i) => (
+              <div key={step.num || i} className="process-accordion-item">
+                <span className="process-item-index">{step.num || `(${String(i + 1).padStart(2, "0")})`}</span>
                 <div>
                   <h3 className="process-item-title">{step.title}</h3>
                   <p className="process-item-desc">{step.desc}</p>

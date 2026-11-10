@@ -28,8 +28,8 @@ export const createCategory = async (req, res) => {
 
 export const getAllCategories = async (req, res) => {
     try {
-        console.log("hit");
-        const categories = await CategoryModel.find().sort({ categoryName: 1 });
+        const { status } = req.query; const filter = {}; if (status !== undefined) filter.status = status === "true";
+        const categories = await CategoryModel.find(filter).sort({ categoryName: 1 }).lean();
 
         return res.status(200).json({ success: true, data: categories });
     } catch (error) {
@@ -115,7 +115,7 @@ export const updateCategoryStatus = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid category id" });
         }
 
-        const category = await CategoryModel.findByIdAndUpdate(id);
+        const category = await CategoryModel.findById(id);
         if (!category) {
             return res.status(404).json({ success: false, message: "Category not found" });
         }

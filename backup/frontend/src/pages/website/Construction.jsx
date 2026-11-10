@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useWebsiteContent from "../../hooks/useWebsiteContent";
 import {
   FiCheck,
   FiArrowRight,
@@ -169,6 +170,9 @@ const CONS_FAQS = [
 
 export default function Construction() {
   const [openFaq, setOpenFaq] = useState(0);
+  const { content } = useWebsiteContent();
+  const liveSrv = (content?.services || []).find((s) => s.slug === "construction");
+  const livePoints = liveSrv?.highlights?.length ? liveSrv.highlights : CONS_INTRO_POINTS;
 
   return (
     <div className="conspg-page">
@@ -710,10 +714,10 @@ export default function Construction() {
             <div>
               <div className="conspg-eyebrow">
                 <span className="conspg-eyebrow-bar" />
-                Construction
+                {liveSrv?.title || "Construction"}
               </div>
               <h2 className="conspg-section-heading">
-                Built to last, delivered on schedule.
+                {liveSrv?.shortDesc || "Built to last, delivered on schedule."}
               </h2>
               <p className="conspg-intro-copy">
                 From groundwork to the final handover, our construction team
@@ -723,7 +727,7 @@ export default function Construction() {
                 roof, your project stays coordinated at every stage.
               </p>
               <ul className="conspg-check-list">
-                {CONS_INTRO_POINTS.map((point) => (
+                {livePoints.map((point) => (
                   <li key={point} className="conspg-check-item">
                     <span className="conspg-check-icon">
                       <FiCheck size={14} />

@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
+import useWebsiteContent from "../../hooks/useWebsiteContent";
 
 export default function Hero() {
+  const { content } = useWebsiteContent();
+  const hero = content?.hero || {};
+  const rawTitle = hero.title || "From brief\nto built.";
+
   const openEnquiry = () => {
     window.dispatchEvent(new CustomEvent("open-questionnaire"));
   };
@@ -25,17 +30,32 @@ export default function Hero() {
         </div>
 
         <div className="aperture-copy" data-parallax-layer="4">
-          <p className="aperture-kicker">DUBAI · DESIGN / ENGINEERING / FIT-OUT</p>
-          <h1 id="aperture-hero-title" data-parallax-layer="3">From brief<br />to built.</h1>
-          <p className="aperture-intro">One team shapes the space, makes the details and delivers the finished interior.</p>
+          <p className="aperture-kicker">{hero.kicker || "DUBAI · DESIGN / ENGINEERING / FIT-OUT"}</p>
+          <h1
+            key={rawTitle}
+            id="aperture-hero-title"
+            data-parallax-layer="3"
+            className="no-split"
+            style={{ whiteSpace: "pre-line" }}
+          >
+            {rawTitle}
+          </h1>
+          <p className="aperture-intro">
+            {hero.intro || "One team shapes the space, makes the details and delivers the finished interior."}
+          </p>
           <div className="aperture-actions">
             <button type="button" className="aperture-cta" onClick={openEnquiry}>
-              START A PROJECT <span aria-hidden="true">↗</span>
+              {hero.ctaText || "START A PROJECT"} <span aria-hidden="true">↗</span>
             </button>
           </div>
         </div>
-        <p className="aperture-proof"><strong>35,000 sq. ft.</strong><span>Al Quoz atelier</span></p>
-        <Link className="aperture-project-link" to="/projects" aria-label="Explore selected projects">SCROLL TO EXPLORE <span aria-hidden="true">↓</span></Link>
+        <p className="aperture-proof">
+          <strong>{hero.proofMetric || "35,000 sq. ft."}</strong>
+          <span>{hero.proofLabel || "Al Quoz atelier"}</span>
+        </p>
+        <Link className="aperture-project-link" to="/projects" aria-label="Explore selected projects">
+          SCROLL TO EXPLORE <span aria-hidden="true">↓</span>
+        </Link>
       </div>
     </section>
   );

@@ -198,10 +198,32 @@ export const updateProject = async (req, res) => {
         }
 
         const oldImages = [...(project.images || [])];
-        const hasNewImages = req.files && req.files.length > 0;
+        const newUploadedPaths = (req.files || []).map(toDbPath);
 
-        // New upload replaces all existing images
-        if (hasNewImages) project.images = req.files.map(toDbPath);
+        let keptImages = oldImages;
+        let hasExplicitExisting = false;
+        if (req.body.existingImages !== undefined) {
+            try {
+                const parsed = typeof req.body.existingImages === 'string'
+                    ? JSON.parse(req.body.existingImages)
+                    : req.body.existingImages;
+                if (Array.isArray(parsed)) {
+                    keptImages = parsed.filter((item) => typeof item === 'string' && item.trim().length > 0);
+                    hasExplicitExisting = true;
+                }
+            } catch {
+                // Ignore malformed existingImages payload and fall back safely
+            }
+        }
+
+        let removedImages = [];
+        if (hasExplicitExisting) {
+            project.images = [...keptImages, ...newUploadedPaths];
+            removedImages = oldImages.filter((img) => !keptImages.includes(img));
+        } else if (newUploadedPaths.length > 0) {
+            project.images = newUploadedPaths;
+            removedImages = oldImages;
+        }
 
         if (categoryId !== undefined) project.categoryId = categoryId;
         if (title !== undefined) project.title = title.trim();
@@ -215,8 +237,8 @@ export const updateProject = async (req, res) => {
 
         await project.save();
 
-        // Delete the old images only after the new data is saved successfully
-        if (hasNewImages) deleteLocalFiles(oldImages);
+        // Delete removed images only after the new data is saved successfully
+        if (removedImages.length > 0) deleteLocalFiles(removedImages);
 
         return res.status(200).json({ success: true, message: "Project updated successfully", data: project });
     } catch (error) {

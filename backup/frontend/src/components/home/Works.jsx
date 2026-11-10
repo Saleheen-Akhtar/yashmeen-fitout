@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import EditorialCarousel3D from "../EditorialCarousel3D";
+import { projectAPI, itemPath } from "../../services/api";
 
-const FEATURED_PROJECTS = [
+const CURATED_PROJECTS = [
   {
     id: 1,
     num: "(01)",
@@ -65,16 +66,89 @@ const FEATURED_PROJECTS = [
   },
 ];
 
-const CAROUSEL_PROJECTS = FEATURED_PROJECTS.map((project) => ({
-  id: project.id,
-  src: project.img,
-  alt: project.imgAlt,
-  category: project.tag,
-  title: project.name,
-}));
+const BENTO_CLASSES = [
+  "is-landscape",
+  "is-portrait is-monumental offset-top",
+  "is-portrait is-monumental",
+  "is-landscape offset-top",
+  "is-landscape",
+  "is-portrait is-monumental offset-top",
+];
+
+const FALLBACK_IMAGES = [
+  "/static/hero-aperture.png",
+  "/static/work-oh-office.jpg",
+  "/static/Office-fit-out.jpg",
+  "/static/joinery-bay.jpg",
+  "/static/hero-editorial.png",
+  "/static/studio.jpg",
+];
+
+const resolveProjectImage = (img, idx) => {
+  if (!img) return FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
+  if (/^https?:\/\//i.test(img) || /^\/static\//i.test(img) || /^\/images\//i.test(img)) {
+    return img;
+  }
+  return `${itemPath ?? "/uploads"}/${String(img).replace(/^\/+/, "")}`;
+};
 
 export default function Works() {
   const [viewMode, setViewMode] = useState("grid");
+  const [liveProjects, setLiveProjects] = useState([]);
+
+  const loadProjects = useCallback(async () => {
+    try {
+      const res = await projectAPI.getAll({ limit: 12 });
+      const items = res?.data?.data ?? [];
+      if (Array.isArray(items) && items.length > 0) {
+        const mapped = items.slice(0, 6).map((p, idx) => {
+          const catLabel =
+            typeof p.categoryId === "object" && p.categoryId?.categoryName
+              ? p.categoryId.categoryName
+              : p.sector || "FIT-OUT";
+          const locLabel = p.location || "DUBAI";
+          const yearStr = p.createdAt
+            ? String(new Date(p.createdAt).getFullYear())
+            : "2026";
+          return {
+            id: p._id,
+            num: `(${String(idx + 1).padStart(2, "0")})`,
+            name: p.title,
+            tag: `${catLabel.toUpperCase()} · ${locLabel.toUpperCase()}`,
+            year: yearStr,
+            img: resolveProjectImage(p.images?.[0], idx),
+            imgAlt: `${p.title} - ${locLabel}`,
+            className: BENTO_CLASSES[idx % BENTO_CLASSES.length],
+          };
+        });
+        setLiveProjects(mapped);
+      }
+    } catch {
+      /* fallback smoothly */
+    }
+  }, []);
+
+  useEffect(() => {
+    loadProjects();
+    const onRefresh = () => loadProjects();
+    window.addEventListener("site-content-updated", onRefresh);
+    window.addEventListener("projects-updated", onRefresh);
+    window.addEventListener("focus", onRefresh);
+    return () => {
+      window.removeEventListener("site-content-updated", onRefresh);
+      window.removeEventListener("projects-updated", onRefresh);
+      window.removeEventListener("focus", onRefresh);
+    };
+  }, [loadProjects]);
+
+  const displayedProjects = liveProjects.length > 0 ? liveProjects : CURATED_PROJECTS;
+  const carouselProjects = displayedProjects.map((project) => ({
+    id: project.id,
+    src: project.img,
+    alt: project.imgAlt,
+    category: project.tag,
+    title: project.name,
+  }));
 
   return (
     <section className="works-bento-section wrap" id="works" aria-label="Selected Works">
@@ -87,15 +161,30 @@ export default function Works() {
 
         <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
           <div className="works-view-switcher">
-            <button type="button" className={`works-switch-btn ${viewMode === "grid" ? "active" : ""}`} onClick={() => setViewMode("grid")}>Editorial Bento</button>
-            <button type="button" className={`works-switch-btn ${viewMode === "carousel" ? "active" : ""}`} onClick={() => setViewMode("carousel")}>3D Carousel</button>
+            <button
+              type="button"
+              className={`works-switch-btn ${viewMode === "grid" ? "active" : ""}`}
+              onClick={() => setViewMode("grid")}
+            >
+              Editorial Bento
+            </button>
+            <button
+              type="button"
+              className={`works-switch-btn ${viewMode === "carousel" ? "active" : ""}`}
+              onClick={() => setViewMode("carousel")}
+            >
+              3D Carousel
+            </button>
           </div>
-          <span className="works-bento-count" aria-label="Six featured projects">(06)</span>
+          <span className="works-bento-count" aria-label="Featured projects count">
+            ({String(displayedProjects.length).padStart(2, "0")})
+          </span>
         </div>
       </div>
 
-      {viewMode === "grid" ? <div className="works-bento-grid">
-          {FEATURED_PROJECTS.map((proj) => (
+      {viewMode === "grid" ? (
+        <div className="works-bento-grid">
+          {displayedProjects.map((proj, idx) => (
             <Link
               key={proj.id}
               to={`/project/details/${proj.id}`}
@@ -106,6 +195,9 @@ export default function Works() {
                   src={proj.img}
                   alt={proj.imgAlt}
                   loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.src = FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
+                  }}
                 />
               </div>
 
@@ -120,12 +212,15 @@ export default function Works() {
               </div>
             </Link>
           ))}
-      </div> : <div style={{ margin: "2rem -2rem 0" }}>
-        <EditorialCarousel3D
-          items={CAROUSEL_PROJECTS}
-          ariaLabel="Selected work 3D carousel"
-        />
-      </div>}
+        </div>
+      ) : (
+        <div style={{ margin: "2rem -2rem 0" }}>
+          <EditorialCarousel3D
+            items={carouselProjects}
+            ariaLabel="Selected work 3D carousel"
+          />
+        </div>
+      )}
 
       {/* Archive Link */}
       <div style={{ textAlign: "center", marginTop: "4rem" }}>

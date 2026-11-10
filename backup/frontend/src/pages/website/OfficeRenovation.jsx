@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useWebsiteContent from "../../hooks/useWebsiteContent";
 import {
   FiCheck,
   FiArrowRight,
@@ -181,6 +182,8 @@ const OFFREN_FAQS = [
 
 export default function OfficeRenovation() {
   const [openFaq, setOpenFaq] = useState(0);
+  const { content } = useWebsiteContent();
+  const liveSrv = (content?.services || []).find((s) => s.slug === "office-renovation");
 
   return (
     <div className="offrenpg-page">
@@ -773,10 +776,10 @@ export default function OfficeRenovation() {
             <div>
               <div className="offrenpg-eyebrow">
                 <span className="offrenpg-eyebrow-bar" />
-                Office Renovation
+                {liveSrv?.title || "Office Renovation"}
               </div>
               <h2 className="offrenpg-section-heading">
-                Is it time to renovate your office?
+                {liveSrv?.shortDesc || "Is it time to renovate your office?"}
               </h2>
               <p className="offrenpg-signs-copy">
                 Offices rarely fail all at once. They slowly stop matching how

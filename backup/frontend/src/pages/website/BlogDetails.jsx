@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { FiArrowLeft, FiCalendar, FiClock } from "react-icons/fi";
 // TODO: adjust this path to where your API module lives
 import { postAPI, itemPath } from "../../services/api";
 
-// Route: /blob/details/:blogId  (the param name must be blogId)
+// Route: /blog/details/:blogId  (the param name must be blogId)
 const BLOG_LIST_PATH = "/blogs";
-const FALLBACK_HERO =
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1800&q=80";
+const FALLBACK_HERO = "/static/hero-bg.jpg";
 
-// Absolute URLs are used as-is; stored paths are resolved via itemPath
+// Absolute / local static URLs are used as-is; stored paths are resolved via itemPath
 const fileUrl = (path = "") =>
-  /^https?:\/\//i.test(path)
+  /^(https?:|data:|blob:|\/static\/|\/images\/|\/uploads\/)/i.test(path)
     ? path
     : `${itemPath}/${String(path).replace(/^\/+/, "")}`;
 
@@ -45,16 +44,18 @@ const toPost = (res) => {
 
 export default function BlogDetails() {
   const { blogId } = useParams();
+  return <BlogDetailsInner key={blogId} blogId={blogId} />;
+}
+
+function BlogDetailsInner({ blogId }) {
+  const location = useLocation();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError("");
-    setPost(null);
-    window.scrollTo({ top: 0 });
+    window.scrollTo?.({ top: 0 });
 
     (async () => {
       try {
@@ -86,16 +87,6 @@ export default function BlogDetails() {
     };
   }, [blogId]);
 
-  // browser tab title
-  useEffect(() => {
-    if (!post?.title) return;
-    const previous = document.title;
-    document.title = post.title;
-    return () => {
-      document.title = previous;
-    };
-  }, [post]);
-
   const meta = useMemo(() => {
     if (!post) return null;
     const words = textOf(post.content).split(" ").filter(Boolean).length;
@@ -106,6 +97,45 @@ export default function BlogDetails() {
       html: cleanContent(post.content),
     };
   }, [post]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (error || !post) {
+      window.dispatchEvent(
+        new CustomEvent("seo-update", {
+          detail: {
+            pathname: location.pathname,
+            title: "Article Not Found | Yashmeen Fit-Out Dubai",
+            description:
+              "The requested architectural article could not be found on Yashmeen Future Building.",
+            robots: "noindex, follow",
+          },
+        }),
+      );
+      return;
+    }
+
+    const excerpt = textOf(post.content).slice(0, 160);
+    window.dispatchEvent(
+      new CustomEvent("seo-update", {
+        detail: {
+          pathname: location.pathname,
+          title: `${post.title} | Yashmeen Fit-Out Dubai`,
+          description:
+            excerpt ||
+            `${post.title} - Architectural insights and interior fit-out execution guidance from Yashmeen Future Building.`,
+          image: meta?.hero || FALLBACK_HERO,
+          robots: "index, follow",
+        },
+      }),
+    );
+  }, [loading, error, post, meta, location.pathname]);
+
+  useEffect(() => {
+    return () => {
+      window.dispatchEvent(new CustomEvent("seo-update", { detail: null }));
+    };
+  }, []);
 
   return (
     <div className="bd-page">
@@ -191,8 +221,10 @@ export default function BlogDetails() {
         <div className="bd-state">Loading article…</div>
       ) : error ? (
         <div className="bd-state error">
-          {error}
-          <br />
+          <h1 className="bd-title" style={{ color: "var(--ink)", marginBottom: "14px" }}>
+            Article Not Found
+          </h1>
+          <p style={{ margin: 0 }}>{error}</p>
           <Link to={BLOG_LIST_PATH}>Back to all articles</Link>
         </div>
       ) : (
@@ -223,7 +255,7 @@ export default function BlogDetails() {
               </div>
             </header>
 
-            <main className="bd-article">
+            <article className="bd-article">
               <div className="bd-container">
                 {/* Content is HTML written in your admin editor */}
                 <div
@@ -236,7 +268,7 @@ export default function BlogDetails() {
                   </Link>
                 </div>
               </div>
-            </main>
+            </article>
           </>
         )
       )}

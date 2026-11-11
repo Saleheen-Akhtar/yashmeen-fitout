@@ -8,19 +8,19 @@ export const createEnquiry = async (req, res) => {
     try {
         const { name, mobile, email, services, message } = req.body;
 
-        if (!name || !name.trim()) {
+        if (typeof name !== "string" || !name.trim()) {
             return res.status(400).json({ success: false, message: "name is required" });
         }
-        if (!mobile || !mobile.trim()) {
+        if (typeof mobile !== "string" || !mobile.trim()) {
             return res.status(400).json({ success: false, message: "mobile is required" });
         }
-        if (!email || !email.trim()) {
+        if (typeof email !== "string" || !email.trim()) {
             return res.status(400).json({ success: false, message: "email is required" });
         }
         if (!EMAIL_REGEX.test(email.trim())) {
             return res.status(400).json({ success: false, message: "Invalid email format" });
         }
-        if (!services || !services.trim()) {
+        if (typeof services !== "string" || !services.trim()) {
             return res.status(400).json({ success: false, message: "services is required" });
         }
 
@@ -29,7 +29,7 @@ export const createEnquiry = async (req, res) => {
             mobile: mobile.trim(),
             email: email.trim(),
             services: services.trim(),
-            message,
+            message: typeof message === "string" ? message : undefined,
         });
 
         // Send email notification — don't let email failure block the saved enquiry
@@ -44,7 +44,8 @@ export const createEnquiry = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        return res.status(500).json({ success: false, message: "Failed to submit enquiry", error: error.message });
+        console.error("Failed to submit enquiry:", error);
+        return res.status(500).json({ success: false, message: "Failed to submit enquiry" });
     }
 };
 
@@ -53,7 +54,8 @@ export const getAllEnquiries = async (req, res) => {
         const enquiries = await EnquiryModel.find().sort({ createdAt: -1 });
         return res.status(200).json({ success: true, data: enquiries });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch enquiries", error: error.message });
+        console.error("Failed to fetch enquiries:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch enquiries" });
     }
 };
 

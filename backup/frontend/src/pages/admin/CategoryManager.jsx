@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { categoryAPI } from "../../services/api";
+import { clearProjectsCache, clearGalleryCache } from "../../libs/publicCache";
 import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
 const invalidateSiteCaches = () => {
-  try {
-    localStorage.removeItem("photogallery:data:v1");
-    localStorage.removeItem("photogallery:data:v5");
-  } catch {
-    /* ignore */
-  }
+  clearProjectsCache();
+  clearGalleryCache();
   window.dispatchEvent(new CustomEvent("projects-updated"));
+};
+
+const loadCategoriesData = async () => {
+  const { data: res } = await categoryAPI.getAll();
+  return res?.data ?? [];
 };
 
 const ToggleSwitch = ({ checked, onChange, disabled, label }) => (
@@ -65,23 +67,26 @@ export default function CategoryManager() {
   const [deleting, setDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState(null);
 
-  const fetchCategories = async () => {
-    setLoading(true);
-    try {
-      const { data: res } = await categoryAPI.getAll();
-      setCategories(res?.data ?? []);
-    } catch (err) {
-      setBanner({
-        type: "error",
-        text: err?.response?.data?.message || "Failed to load categories.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchCategories();
+    let cancelled = false;
+    loadCategoriesData()
+      .then((list) => {
+        if (!cancelled) setCategories(list);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setBanner({
+            type: "error",
+            text: err?.response?.data?.message || "Failed to load categories.",
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const openCreateModal = () => {

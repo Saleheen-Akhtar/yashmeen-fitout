@@ -1,12 +1,18 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { itemPath, postAPI } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import Loading from "../../components/Loading";
 import { tokenExpired } from "../../libs/helpers";
+import { clearPostsCache } from "../../libs/publicCache";
 import { toast } from "sonner";
 import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
-const FALLBACK_IMG = "/static/hero-aperture.png";
+const FALLBACK_IMG = "/static/hero-aperture-v2.webp";
+
+const loadPostsData = async () => {
+  const { data: res } = await postAPI.getAll();
+  return (res?.data || []).slice().reverse();
+};
 
 const resolvePostImg = (file) => {
   if (!file) return "";
@@ -16,7 +22,7 @@ const resolvePostImg = (file) => {
 
 export default function PostList() {
   const [postData, setPostData] = useState([]);
-  const [pageLoading, setPageLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [togglingId, setTogglingId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -24,22 +30,24 @@ export default function PostList() {
 
   const navigate = useNavigate();
 
-  const fetchPosts = async ({ silent = false } = {}) => {
-    try {
-      if (!silent) setPageLoading(true);
-      const { data: res } = await postAPI.getAll();
-      setPostData((res?.data || []).slice().reverse());
-    } catch (error) {
-      const msg = error?.response?.data?.message || "Failed to load journal posts.";
-      tokenExpired(msg);
-      toast.error(msg);
-    } finally {
-      if (!silent) setPageLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchPosts();
+    let cancelled = false;
+    loadPostsData()
+      .then((list) => {
+        if (!cancelled) setPostData(list);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        const msg = error?.response?.data?.message || "Failed to load journal posts.";
+        tokenExpired(msg);
+        toast.error(msg);
+      })
+      .finally(() => {
+        if (!cancelled) setPageLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const updatePostStatus = async (post) => {
@@ -53,6 +61,7 @@ export default function PostList() {
     );
     try {
       await postAPI.status(post._id);
+      clearPostsCache();
       toast.success(!prevStatus ? "Post published." : "Post moved to draft.");
     } catch (error) {
       setPostData((prev) =>
@@ -71,6 +80,7 @@ export default function PostList() {
     setDeleting(true);
     try {
       await postAPI.delete(deleteTarget._id);
+      clearPostsCache();
       setPostData((prev) => prev.filter((p) => p._id !== deleteTarget._id));
       toast.success(`"${deleteTarget.title}" deleted.`);
       setDeleteTarget(null);

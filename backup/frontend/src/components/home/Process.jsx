@@ -59,7 +59,7 @@ export default function Process() {
             onClick={openEnquiry}
             className="btn-pill btn-pill-dark"
           >
-            <span>GET TO KNOW OUR PROCESS</span>
+            <span>DISCUSS YOUR PROJECT</span>
             <span className="g-circle" aria-hidden="true" />
           </button>
         </div>

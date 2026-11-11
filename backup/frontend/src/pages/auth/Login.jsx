@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { authAPI } from "../../services/api";
 import createStore from "../../store";
@@ -89,9 +89,18 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle");
   const [loading, setLoading] = useState(false);
+  const redirectTimerRef = useRef(null);
 
   const navigate = useNavigate();
   const { user, setCredentials } = createStore((state) => state);
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleChange = (field) => (e) => {
     setFormData((prev) => ({ ...prev, [field]: e.target.value }));
@@ -102,25 +111,56 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
 
-    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
-    if (!emailRegex.test(formData.email)) {
-      toast.error("Please enter a valid work email address.");
+    const trimmedEmail = formData.email.trim();
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    const nextErrors = {};
+
+    if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
+      nextErrors.email = "Please enter a valid work email address.";
+    }
+    if (!formData.password) {
+      nextErrors.password = "Please enter your password.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      toast.error(nextErrors.email || nextErrors.password);
       setLoading(false);
       return;
     }
+
     try {
       const { data: res } = await authAPI.login({
-        email: formData.email,
+        email: trimmedEmail,
         password: formData.password,
       });
 
       if (res?.data) {
-        const userInfo = { ...res?.data, token: res.token };
-        localStorage.setItem("user", JSON.stringify(userInfo));
+        if (res.data.usertype !== "admin") {
+          toast.error("Administrator privileges required.");
+          return;
+        }
+        const userInfo = { ...res.data, token: res.token };
+        const serialized = JSON.stringify(userInfo);
+        if (remember) {
+          localStorage.setItem("user", serialized);
+          try {
+            sessionStorage.removeItem("user");
+          } catch {
+            /* ignore */
+          }
+        } else {
+          sessionStorage.setItem("user", serialized);
+          try {
+            localStorage.removeItem("user");
+          } catch {
+            /* ignore */
+          }
+        }
         setCredentials(res.data, res.token);
         toast.success("Welcome back to Yashmeen Atelier");
         setStatus("success");
-        setTimeout(() => navigate("/dashboard"), 500);
+        redirectTimerRef.current = setTimeout(() => navigate("/dashboard"), 500);
       }
     } catch (error) {
       console.error(error);
@@ -130,7 +170,7 @@ export default function Login() {
     }
   };
 
-  if (user) return <Navigate to="/dashboard" />;
+  if (user?.usertype === "admin") return <Navigate to="/dashboard" replace />;
 
   return (
     <div className="cryptusLoginPage" style={styles.page}>
@@ -233,15 +273,20 @@ export default function Login() {
                     <input
                       id="clg-email"
                       type="email"
-                      placeholder="admin@gmail.com"
+                      autoComplete="email"
+                      placeholder="director@yashmeen.com"
                       value={formData.email}
                       onChange={handleChange("email")}
+                      aria-invalid={Boolean(errors.email)}
+                      aria-describedby={errors.email ? "clg-email-error" : undefined}
                       className="cryptusLoginInput"
                       style={styles.input}
                     />
                   </div>
                   {errors.email && (
                     <span
+                      id="clg-email-error"
+                      role="alert"
                       className="cryptusLoginErrorMsg"
                       style={styles.errorMsg}
                     >
@@ -273,9 +318,12 @@ export default function Login() {
                     <input
                       id="clg-password"
                       type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
                       placeholder="••••••••••••"
                       value={formData.password}
                       onChange={handleChange("password")}
+                      aria-invalid={Boolean(errors.password)}
+                      aria-describedby={errors.password ? "clg-password-error" : undefined}
                       className="cryptusLoginInput"
                       style={styles.input}
                     />
@@ -293,6 +341,8 @@ export default function Login() {
                   </div>
                   {errors.password && (
                     <span
+                      id="clg-password-error"
+                      role="alert"
                       className="cryptusLoginErrorMsg"
                       style={styles.errorMsg}
                     >
@@ -302,21 +352,19 @@ export default function Login() {
                 </div>
 
                 <div style={styles.rowBetween}>
-                  <label style={styles.checkboxRow}>
-                    <div
-                      style={{
-                        ...styles.checkbox,
-                        background: remember ? palette.black : "transparent",
-                        borderColor: palette.black,
-                      }}
-                      onClick={() => setRemember((r) => !r)}
-                    >
-                      {remember && <CheckIcon />}
-                    </div>
+                  <label htmlFor="clg-remember" style={styles.checkboxRow}>
+                    <input
+                      id="clg-remember"
+                      type="checkbox"
+                      checked={remember}
+                      onChange={(e) => setRemember(e.target.checked)}
+                      className="cryptusLoginCheckboxNative"
+                      style={styles.checkboxNative}
+                    />
                     <span style={styles.checkboxLabel}>Remember me</span>
                   </label>
 
-                  <Link to="/forgot-password" style={styles.link}>
+                  <Link to="/forgot-password" className="cryptusLoginLink" style={styles.link}>
                     Forgot password?
                   </Link>
                 </div>
@@ -331,7 +379,7 @@ export default function Login() {
                 </button>
 
                 <div style={styles.backToSiteRow}>
-                  <Link to="/" style={styles.backToSiteLink}>
+                  <Link to="/" className="cryptusLoginBackToSiteLink" style={styles.backToSiteLink}>
                     ← Return to Yashmeen Website
                   </Link>
                 </div>
@@ -589,17 +637,12 @@ const styles = {
     gap: "8px",
     cursor: "pointer",
   },
-  checkbox: {
+  checkboxNative: {
     width: "16px",
     height: "16px",
-    borderRadius: "3px",
-    border: "1.5px solid #000000",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#ffffff",
+    margin: 0,
+    accentColor: "#000000",
     cursor: "pointer",
-    transition: "all 0.15s ease",
     flexShrink: 0,
   },
   checkboxLabel: {
@@ -678,6 +721,14 @@ const css = `
     color: #000000 !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+  }
+  .cryptusLoginBtnPrimary:focus-visible,
+  .cryptusLoginLink:focus-visible,
+  .cryptusLoginBackToSiteLink:focus-visible,
+  .cryptusLoginEyeBtn:focus-visible,
+  .cryptusLoginCheckboxNative:focus-visible {
+    outline: 2px solid #000000;
+    outline-offset: 2px;
   }
   .cryptusLoginBackToSiteLink:hover {
     color: #000000 !important;

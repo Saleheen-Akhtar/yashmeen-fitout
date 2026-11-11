@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 // TODO: adjust this path to where your API module lives
 import { postAPI, itemPath } from "../services/api";
+import { subscribeCacheInvalidation } from "../libs/publicCache";
 
 /* ---------------- helpers ---------------- */
 
@@ -11,9 +12,9 @@ const toList = (res) => {
   return Array.isArray(list) ? list : [];
 };
 
-// Absolute URLs are used as-is; stored paths are resolved via itemPath
+// Absolute / local static URLs are used as-is; stored paths are resolved via itemPath
 const fileUrl = (path = "") =>
-  /^https?:\/\//i.test(path)
+  /^(https?:|data:|blob:|\/static\/|\/images\/|\/uploads\/)/i.test(path)
     ? path
     : `${itemPath}/${String(path).replace(/^\/+/, "")}`;
 
@@ -61,10 +62,14 @@ let versionInflight = null; // de-dupes simultaneous version checks
 
 function readCache(limit) {
   const key = cacheKey(limit);
-  if (memoryCache[key]) return memoryCache[key];
   try {
     const raw = localStorage.getItem(key);
-    if (raw) memoryCache[key] = JSON.parse(raw);
+    if (!raw) {
+      delete memoryCache[key];
+      return null;
+    }
+    if (memoryCache[key]) return memoryCache[key];
+    memoryCache[key] = JSON.parse(raw);
   } catch {
     /* ignore */
   }
@@ -132,46 +137,83 @@ function fetchLatest(limit, version) {
   return inflight[limit];
 }
 
+async function resolveLatestPosts(limit, force = false) {
+  const c = force ? null : readCache(limit);
+  try {
+    const serverVersion = await getServerVersion();
+
+    if (!force && c) {
+      const upToDate =
+        serverVersion !== undefined
+          ? c.version === serverVersion // server says nothing changed
+          : Date.now() - c.savedAt < CACHE_TTL; // no version endpoint -> timer
+      if (upToDate) return { skipped: true, hadCache: true };
+    }
+
+    const data = await fetchLatest(limit, serverVersion);
+    return { skipped: false, posts: data.posts, hadCache: !!c };
+  } catch (err) {
+    err.hadCache = !!c;
+    throw err;
+  }
+}
+
 /* ---------------- hook ---------------- */
 // useLatestPosts(3) -> latest 3 active posts, useLatestPosts(null) -> all active posts
 export default function useLatestPosts(limit = 3) {
   const [posts, setPosts] = useState(() => readCache(limit)?.posts ?? null);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      const c = readCache(limit);
-      try {
-        const serverVersion = await getServerVersion();
-
-        if (c) {
-          const upToDate =
-            serverVersion !== undefined
-              ? c.version === serverVersion // server says nothing changed
-              : Date.now() - c.savedAt < CACHE_TTL; // no version endpoint -> timer
-          if (upToDate) return; // skip the full API call
-        }
-
-        const data = await fetchLatest(limit, serverVersion);
-        if (!cancelled) {
-          setPosts(data.posts);
+  const startFetch = useCallback(
+    (force = false) => {
+      let cancelled = false;
+      resolveLatestPosts(limit, force)
+        .then((res) => {
+          if (cancelled || res.skipped) return;
+          setPosts(res.posts);
           setError("");
-        }
-      } catch (err) {
-        console.error("Failed to load posts:", err);
-        // if cached posts are already on screen, fail silently
-        if (!cancelled && !c) {
-          setError(err?.response?.data?.message || "Could not load articles.");
-        }
-      }
-    })();
+        })
+        .catch((err) => {
+          console.error("Failed to load posts:", err);
+          // if cached posts are already on screen, fail silently
+          if (!cancelled && !err?.hadCache) {
+            setError(err?.response?.data?.message || "Could not load articles.");
+          }
+        });
 
-    return () => {
-      cancelled = true;
+      return () => {
+        cancelled = true;
+      };
+    },
+    [limit],
+  );
+
+  useEffect(() => {
+    let cancel = startFetch(false);
+
+    const handleInvalidate = () => {
+      clearPostsCache();
+      cancel?.();
+      cancel = startFetch(true);
     };
-  }, [limit]);
+
+    const unsubscribe = subscribeCacheInvalidation((scope) => {
+      if (scope === "posts") handleInvalidate();
+    });
+
+    const handleStorage = (e) => {
+      if (!e.key || e.key.startsWith("posts:latest:")) {
+        handleInvalidate();
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      cancel?.();
+      unsubscribe();
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [startFetch]);
 
   return { posts: posts ?? [], loading: posts === null && !error, error };
 }

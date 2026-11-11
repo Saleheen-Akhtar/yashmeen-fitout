@@ -7,13 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/**/*.test.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@ckeditor/ckeditor5-build-classic": "^41.4.2",
     "@ckeditor/ckeditor5-react": "^11.2.0",
     "@gsap/react": "^2.1.2",
-    "@studio-freight/lenis": "^1.0.42",
     "@tailwindcss/vite": "^4.3.5",
     "axios": "^1.20.0",
     "clsx": "^2.1.1",

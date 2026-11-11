@@ -1,6 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { enquiryAPI } from "../../services/api";
 import { FiEye, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+
+const loadEnquiriesData = async () => {
+  const { data: res } = await enquiryAPI.getAll();
+  const list = res?.data ?? [];
+  return [...list].sort(
+    (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+  );
+};
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -39,13 +47,8 @@ export default function EnquiryManager() {
   const fetchEnquiries = async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
     try {
-      const { data: res } = await enquiryAPI.getAll();
-      const list = res?.data ?? [];
-      setEnquiries(
-        [...list].sort(
-          (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
-        ),
-      );
+      const sorted = await loadEnquiriesData();
+      setEnquiries(sorted);
     } catch (err) {
       setBanner({
         type: "error",
@@ -57,7 +60,25 @@ export default function EnquiryManager() {
   };
 
   useEffect(() => {
-    fetchEnquiries();
+    let cancelled = false;
+    loadEnquiriesData()
+      .then((sorted) => {
+        if (!cancelled) setEnquiries(sorted);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setBanner({
+            type: "error",
+            text: err?.response?.data?.message || "Failed to load enquiries.",
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleDeleteOld = async () => {

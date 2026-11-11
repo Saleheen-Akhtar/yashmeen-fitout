@@ -1,5 +1,3 @@
-import { FiTarget } from "react-icons/fi";
-
 const FOUNDER = {
   name: "Mohammad Danish Adnan",
   title: "Founder & Managing Director",
@@ -26,20 +24,6 @@ function SignatureMark() {
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function PortraitPlaceholder() {
-  // Stand-in silhouette - swap the whole frame contents for an <img> of the founder.
-  return (
-    <svg viewBox="0 0 320 320" width="100%" height="100%">
-      <rect width="320" height="320" fill="var(--gray-50)" />
-      <circle cx="160" cy="128" r="56" fill="var(--gray-200)" />
-      <path
-        d="M40 300c0-70 54-118 120-118s120 48 120 118"
-        fill="var(--gray-200)"
       />
     </svg>
   );

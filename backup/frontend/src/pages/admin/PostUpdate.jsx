@@ -1,15 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { CustomUploadAdapterPlugin } from "../../libs/uploader";
 import { tokenExpired } from "../../libs/helpers";
+import { clearPostsCache } from "../../libs/publicCache";
 import { itemPath, postAPI } from "../../services/api";
 import Loading from "../../components/Loading";
 import { toast } from "sonner";
 import { FiArrowLeft, FiImage } from "react-icons/fi";
 
-const FALLBACK_POSTER = "/static/hero-aperture.png";
+const FALLBACK_POSTER = "/static/hero-aperture-v2.webp";
+
+const loadPostById = async (postId) => {
+  const { data: res } = await postAPI.getBy(postId);
+  return res?.data ?? null;
+};
 
 const resolvePostImg = (src) => {
   if (!src) return FALLBACK_POSTER;
@@ -23,37 +29,40 @@ export default function PostUpdate() {
   const [previewImage, setPreviewImage] = useState("");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const blobUrlRef = useRef("");
   const { postId } = useParams();
   const navigate = useNavigate();
 
-  const fetchPost = async () => {
-    try {
-      setPageLoading(true);
-      const { data: res } = await postAPI.getBy(postId);
-      const post = res?.data;
-      if (post) {
+  const [prevPostId, setPrevPostId] = useState(postId);
+  if (prevPostId !== postId) {
+    setPrevPostId(postId);
+    setPageLoading(true);
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+    loadPostById(postId)
+      .then((post) => {
+        if (cancelled || !post) return;
         setTitle(post.title || "");
         setPreviewImage(post.file || "");
         setContent(post.content || "");
-      }
-    } catch (error) {
-      const msg = error?.response?.data?.message || "Failed to load article.";
-      tokenExpired(msg);
-      toast.error(msg);
-    } finally {
-      setPageLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPost();
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        const msg = error?.response?.data?.message || "Failed to load article.";
+        tokenExpired(msg);
+        toast.error(msg);
+      })
+      .finally(() => {
+        if (!cancelled) setPageLoading(false);
+      });
     return () => {
+      cancelled = true;
       if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
   const handleImageChange = (e) => {
@@ -80,6 +89,7 @@ export default function PostUpdate() {
       if (featuredImage) fd.append("file", featuredImage);
 
       await postAPI.update(postId, fd);
+      clearPostsCache();
       toast.success("Post updated.");
       navigate("/dashboard/blog-manager");
     } catch (error) {

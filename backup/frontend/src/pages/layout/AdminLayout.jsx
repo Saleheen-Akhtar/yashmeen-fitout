@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import useCreateStore from "../../store";
 import { getInitials } from "../../libs/helpers";
@@ -43,6 +43,15 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const { user, logout } = useCreateStore();
 
+  // Close menus on route transition
+  const routeKey = `${location.pathname}${location.search}`;
+  const [prevRouteKey, setPrevRouteKey] = useState(routeKey);
+  if (prevRouteKey !== routeKey) {
+    setPrevRouteKey(routeKey);
+    if (mobileMenuOpen) setMobileMenuOpen(false);
+    if (studioMenuOpen) setStudioMenuOpen(false);
+  }
+
   useEffect(() => {
     const updateTime = () => {
       try {
@@ -63,12 +72,6 @@ export default function AdminLayout() {
     const interval = setInterval(updateTime, 30000);
     return () => clearInterval(interval);
   }, []);
-
-  // Close menus on route transition
-  useEffect(() => {
-    setMobileMenuOpen(false);
-    setStudioMenuOpen(false);
-  }, [location.pathname, location.search]);
 
   // Close Studio dropdown on outside click
   useEffect(() => {

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import InteractiveBrandLettering from "./footer/InteractiveBrandLettering";
 import useWebsiteContent from "../hooks/useWebsiteContent";
+import { getDubaiAtelierStatus } from "../libs/helpers";
 import "../styles/shell.css";
 
 const NAV_LINKS = [
@@ -15,13 +16,12 @@ const NAV_LINKS = [
 
 export default function Footer() {
   const { content } = useWebsiteContent();
-  const [dubaiTime, setDubaiTime] = useState("");
-  const [isOpenOffice, setIsOpenOffice] = useState(false);
+  const [atelierStatus, setAtelierStatus] = useState(() => getDubaiAtelierStatus());
 
   const addr = content?.address || {};
-  const formattedAddress = [addr.street, addr.city, addr.country]
-    .filter(Boolean)
-    .join(", ") || "Bay Square, Building 12, Office G01, Business Bay, Dubai, UAE";
+  const formattedAddress =
+    [addr.street, addr.city, addr.country].filter(Boolean).join(", ") ||
+    "Bay Square, Building 12, Office G01, Business Bay, Dubai, UAE";
   const email = content?.email || "info@yfbfitoutcontracting.com";
   const mobile = content?.mobile || "+971 54 386 2870";
   const workingHours = content?.workingHours || "Monday to Friday, 8:30am - 6:00pm";
@@ -36,39 +36,9 @@ export default function Footer() {
         ];
 
   useEffect(() => {
-    const updateTime = () => {
-      try {
-        const now = new Date();
-        const timeFormatter = new Intl.DateTimeFormat("en-US", {
-          timeZone: "Asia/Dubai",
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        });
-        const hourFormatter = new Intl.DateTimeFormat("en-US", {
-          timeZone: "Asia/Dubai",
-          hour: "numeric",
-          hour12: false,
-        });
-        const dayFormatter = new Intl.DateTimeFormat("en-US", {
-          timeZone: "Asia/Dubai",
-          weekday: "short",
-        });
-
-        const timeStr = timeFormatter.format(now);
-        const hourNum = parseInt(hourFormatter.format(now), 10);
-        const dayStr = dayFormatter.format(now);
-
-        const open = dayStr !== "Sun" && hourNum >= 8 && hourNum < 18;
-        setDubaiTime(timeStr);
-        setIsOpenOffice(open);
-      } catch {
-        setDubaiTime("Dubai, UAE");
-      }
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 30000);
+    const interval = setInterval(() => {
+      setAtelierStatus(getDubaiAtelierStatus());
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -100,8 +70,10 @@ export default function Footer() {
             <div className="footer-text-block">
               <p style={{ marginBottom: 10 }}>Dubai Municipality Approved Contractor</p>
               <p style={{ marginBottom: 10 }}>Dubai Civil Defence (DCD) Certified</p>
-              <p style={{ marginBottom: 10 }}>Tecom, DCCA & DDA Approved Fit-Out</p>
-              <p style={{ marginBottom: 10 }}>Nakheel & EMAAR Certified Delivery Partner</p>
+              <p style={{ marginBottom: 10 }}>Tecom, DCCA &amp; DDA Approved Fit-Out</p>
+              <p style={{ marginBottom: 10 }}>
+                Developer Fit-Out Submissions (Nakheel &amp; Emaar Developments)
+              </p>
               <p>ISO 9001:2015 Quality Management Certified</p>
             </div>
           </div>
@@ -113,8 +85,7 @@ export default function Footer() {
               <strong>A:</strong> {formattedAddress}
             </div>
             <div className="footer-info-item">
-              <strong>E:</strong>{" "}
-              <a href={`mailto:${email}`}>{email}</a>
+              <strong>E:</strong> <a href={`mailto:${email}`}>{email}</a>
             </div>
             <div className="footer-info-item">
               <strong>P:</strong> <a href={`tel:${mobile.replace(/\s+/g, "")}`}>{mobile}</a>
@@ -152,16 +123,17 @@ export default function Footer() {
 
           <div className="footer-telemetry-clock">
             <span
-              className={`footer-clock-dot ${isOpenOffice ? "is-open" : ""}`}
+              className={`footer-clock-dot ${atelierStatus.isOpen ? "is-open" : ""}`}
               aria-hidden="true"
             />
             <span>
-              {dubaiTime} GST DUBAI, {isOpenOffice ? "ATELIER IS OPEN" : "ATELIER IS CLOSED"}
+              {atelierStatus.dubaiTime} GST DUBAI,{" "}
+              {atelierStatus.isOpen ? "ATELIER IS OPEN" : "ATELIER IS CLOSED"}
             </span>
           </div>
 
           <div style={{ display: "flex", gap: 20 }}>
-            <Link to="/about" style={{ color: "var(--muted)" }}>
+            <Link to="/privacy-policy" style={{ color: "var(--muted)" }}>
               Privacy Policy
             </Link>
             {socialLinks.map((soc, i) => (

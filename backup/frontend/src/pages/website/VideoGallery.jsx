@@ -1,12 +1,10 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { FiX } from "react-icons/fi";
 import { BsPlayFill } from "react-icons/bs";
 import { categoryAPI, videoAPI, itemPath } from "../../services/api"; // adjust the path to your project
+import { subscribeCacheInvalidation } from "../../libs/publicCache";
 
-// Replace with your own fit-out / interior image (best: a local asset)
-// e.g. import heroBg from "../../assets/video-hero.jpg";
-const VIDEO_HERO_BG_IMAGE =
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1800&q=80";
+const VIDEO_HERO_BG_IMAGE = "/static/hero-bg.jpg";
 
 // Works with both `{ data: { data: [...] } }` and `{ data: [...] }` responses
 const toList = (res) => {
@@ -31,9 +29,9 @@ const getYouTubeId = (url = "") => {
   return m ? m[1] : null;
 };
 
-// Absolute URLs are used as-is; stored paths are resolved via itemPath
+// Absolute / local static URLs are used as-is; stored paths are resolved via itemPath
 const fileUrl = (path = "") =>
-  /^https?:\/\//i.test(path)
+  /^(https?:|data:|blob:|\/static\/|\/images\/|\/uploads\/)/i.test(path)
     ? path
     : `${itemPath}/${String(path).replace(/^\/+/, "")}`;
 
@@ -45,7 +43,7 @@ const buildVideo = (g) => {
     title: g.title,
     categoryId: String(getCategoryId(g)),
     isYouTube: !!ytId,
-    embedUrl: ytId ? `https://www.youtube.com/embed/${ytId}` : null,
+    embedUrl: ytId ? `https://www.youtube-nocookie.com/embed/${ytId}` : null,
     fileSrc: ytId ? null : fileUrl(g.path),
     thumb: ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null,
   };
@@ -62,10 +60,14 @@ let memoryCache = null; // survives route changes
 let inflight = null; // de-dupes simultaneous requests
 
 function readCache() {
-  if (memoryCache) return memoryCache;
   try {
     const raw = localStorage.getItem(CACHE_KEY);
-    if (raw) memoryCache = JSON.parse(raw);
+    if (!raw) {
+      memoryCache = null;
+      return null;
+    }
+    if (memoryCache) return memoryCache;
+    memoryCache = JSON.parse(raw);
   } catch {
     /* ignore */
   }
@@ -81,8 +83,8 @@ function writeCache(data) {
   }
 }
 
-// Call this from your admin panel after add / edit / delete of videos or categories
-export function clearVideoGalleryCache() {
+// Clear local cache when triggered via admin invalidation event
+function clearVideoGalleryCache() {
   memoryCache = null;
   inflight = null;
   try {
@@ -119,6 +121,35 @@ async function fetchVideoGalleryData(version) {
   return inflight;
 }
 
+async function resolveVideoGalleryData(force = false) {
+  const c = force ? null : readCache();
+  try {
+    let serverVersion;
+    if (typeof videoAPI?.getVersion === "function") {
+      try {
+        const res = await videoAPI.getVersion();
+        serverVersion = res?.data?.version;
+      } catch (vErr) {
+        console.warn("Video version check failed, using timer cache:", vErr);
+      }
+    }
+
+    if (!force && c) {
+      const versionKnown = serverVersion !== undefined;
+      const upToDate = versionKnown
+        ? c.version === serverVersion // server says nothing changed
+        : Date.now() - c.savedAt < CACHE_TTL; // no version endpoint -> use timer
+      if (upToDate) return { skipped: true, hasCache: true };
+    }
+
+    const data = await fetchVideoGalleryData(serverVersion);
+    return { skipped: false, data, hasCache: !!c };
+  } catch (err) {
+    err.hasCache = !!c;
+    throw err;
+  }
+}
+
 export default function VideoGallery() {
   const cached = readCache();
 
@@ -129,53 +160,68 @@ export default function VideoGallery() {
   const [filter, setFilter] = useState("all"); // "all" or a category _id
   const [lightbox, setLightbox] = useState(null); // index into filtered
 
-  useEffect(() => {
+  const startFetch = useCallback((force = false) => {
     let cancelled = false;
-
-    (async () => {
-      const c = readCache();
-      try {
-        // Tiny request: just a number that changes when data changes.
-        // If it fails (endpoint missing etc.) we fall back to loading the lists.
-        let serverVersion;
-        if (typeof videoAPI?.getVersion === "function") {
-          try {
-            const res = await videoAPI.getVersion();
-            serverVersion = res?.data?.version;
-          } catch (vErr) {}
-        }
-
-        if (c) {
-          const versionKnown = serverVersion !== undefined;
-          const upToDate = versionKnown
-            ? c.version === serverVersion // server says nothing changed
-            : Date.now() - c.savedAt < CACHE_TTL; // no version endpoint → use timer
-          // Cache is up to date → skip the two big API calls
-          if (upToDate) return;
-        }
-
-        const data = await fetchVideoGalleryData(serverVersion);
-        if (cancelled) return;
-        setCategories(data.categories);
-        setVideos(data.videos);
+    resolveVideoGalleryData(force)
+      .then((res) => {
+        if (cancelled || res.skipped) return;
+        setCategories(res.data.categories);
+        setVideos(res.data.videos);
         setError("");
-      } catch (err) {
+      })
+      .catch((err) => {
         console.error("Video gallery load failed:", err);
-        // if cached data is already on screen, fail silently
-        if (!cancelled && !c) {
+        if (!cancelled && !err?.hasCache) {
           setError(
             err?.response?.data?.message || "Could not load the videos.",
           );
         }
-      } finally {
+      })
+      .finally(() => {
         if (!cancelled) setLoading(false);
-      }
-    })();
+      });
 
     return () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancel = startFetch(false);
+
+    const handleSync = () => {
+      clearVideoGalleryCache();
+      cancel?.();
+      cancel = startFetch(true);
+    };
+    const unsubscribe = subscribeCacheInvalidation((scope) => {
+      if (scope === "videos" || scope === "gallery") handleSync();
+    });
+    const onStorage = (e) => {
+      if (!e.key || e.key === CACHE_KEY) handleSync();
+    };
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      cancel?.();
+      unsubscribe();
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [startFetch]);
+
+  useEffect(() => {
+    if (lightbox === null) return undefined;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setLightbox(null);
+    };
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [lightbox]);
 
   const categoryLabel = useMemo(() => {
     const map = {};
@@ -297,9 +343,12 @@ export default function VideoGallery() {
         .vidgal-video-card:hover .vidgal-card-corner{ opacity:1; }
         .vidgal-play-btn{ transition: all .35s cubic-bezier(.2,.8,.2,1); }
         .vidgal-video-card:hover .vidgal-play-btn{ background:${brass}; border-color:${brass}; transform:translate(-50%,-50%) scale(1.12); }
-        .vidgal-video-card:hover .vidgal-play-btn svg{ color:#181410; }
+        .vidgal-video-card:hover .vidgal-play-btn svg{ color:#ffffff; }
+        .vidgal-video-card:focus-visible{ outline:2px solid ${brass}; outline-offset:3px; }
         .vidgal-filter-chip{ transition: all .25s ease; }
+        .vidgal-filter-chip:focus-visible{ outline:2px solid ${brass}; outline-offset:2px; }
         .vidgal-close-btn:hover{ border-color:${brass} !important; color:${brass} !important; }
+        .vidgal-close-btn:focus-visible{ outline:2px solid ${ovInk}; outline-offset:2px; }
         .vidgal-card-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:26px; padding-top:30px; }
         @media (max-width:980px){ .vidgal-card-grid{ grid-template-columns:repeat(2,1fr); } }
         @media (max-width:620px){ .vidgal-card-grid{ grid-template-columns:1fr; } }
@@ -350,6 +399,8 @@ export default function VideoGallery() {
             {filters.map((f) => (
               <button
                 key={f.id}
+                type="button"
+                aria-pressed={filter === f.id}
                 onClick={() => {
                   setFilter(f.id);
                   setLightbox(null);
@@ -400,6 +451,9 @@ export default function VideoGallery() {
               {filtered.map((v, i) => (
                 <div
                   key={v.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Play video: ${v.title}`}
                   className="vidgal-video-card vidgal-fade-in"
                   style={{
                     animationDelay: `${Math.min(i, 18) * 0.035}s`,
@@ -411,6 +465,12 @@ export default function VideoGallery() {
                     border: `1px solid ${line}`,
                   }}
                   onClick={() => setLightbox(i)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setLightbox(i);
+                    }
+                  }}
                 >
                   <div
                     style={{
@@ -472,7 +532,7 @@ export default function VideoGallery() {
                     <span className="vidgal-play-btn" style={playStyle}>
                       <BsPlayFill
                         size={17}
-                        color={ink}
+                        color={ovInk}
                         style={{ marginLeft: 2 }}
                       />
                     </span>
@@ -489,18 +549,18 @@ export default function VideoGallery() {
                       >
                         {categoryLabel[v.categoryId]}
                       </div>
-                      <h3
+                      <h2
                         style={{
                           margin: 0,
                           fontFamily: "var(--font-serif)",
                           fontWeight: 400,
                           fontSize: 18,
                           lineHeight: 1.25,
-                          color: ink,
+                          color: ovInk,
                         }}
                       >
                         {v.title}
-                      </h3>
+                      </h2>
                     </div>
                   </div>
                 </div>
@@ -513,6 +573,9 @@ export default function VideoGallery() {
       {/* Lightbox */}
       {active && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={active.title}
           style={overlayStyle}
           onClick={(e) => e.target === e.currentTarget && setLightbox(null)}
         >
@@ -523,12 +586,14 @@ export default function VideoGallery() {
                 <h2 style={lbTitleStyle}>{active.title}</h2>
               </div>
               <button
+                type="button"
+                autoFocus
                 onClick={() => setLightbox(null)}
                 style={closeBtnStyle}
                 className="vidgal-close-btn"
                 aria-label="Close"
               >
-                <FiX size={16} color={ink} />
+                <FiX size={16} color={ovInk} />
               </button>
             </div>
             <div
@@ -548,6 +613,7 @@ export default function VideoGallery() {
                   title={active.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
+                  referrerPolicy="strict-origin-when-cross-origin"
                   style={{
                     width: "100%",
                     height: "100%",

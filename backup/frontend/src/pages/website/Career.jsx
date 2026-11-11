@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   FiMapPin,
   FiBriefcase,
@@ -9,12 +9,10 @@ import {
   FiMail,
 } from "react-icons/fi";
 import { vacancyAPI } from "../../services/api";
+import { subscribeCacheInvalidation } from "../../libs/publicCache";
 import Loading from "../../components/Loading";
 
-// Replace with your own fit-out / interior image (best: a local asset)
-// e.g. import heroBg from "../../assets/career-hero.jpg";
-const CAREER_HERO_BG_IMAGE =
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1800&q=80";
+const CAREER_HERO_BG_IMAGE = "/static/hero-bg.jpg";
 
 // Where candidates send their CV
 const APPLY_EMAIL = "info@yfbfitoutcontracting.com";
@@ -60,13 +58,13 @@ const isActive = (v) => {
 };
 
 /* ---------------- cache layer ----------------
-   Goal: vacancyAPI.getAll runs ONLY when the data has changed on the server.
+   Goal: vacancyAPI.opens runs ONLY when the data has changed on the server.
 
    1. The vacancy list is cached (memory + localStorage) together with the
       server "data version" it was fetched with.
    2. Opening the page again shows the cached list instantly (no spinner).
    3. A tiny version request (vacancyAPI.getVersion) asks the server whether
-      anything changed. Same version -> keep the cache, skip getAll.
+      anything changed. Same version -> keep the cache, skip opens.
       Different version -> fetch the list again and update the cache.
    4. The version request is throttled (VERSION_CHECK_INTERVAL).
    5. If the version endpoint is missing or fails, a timer (CACHE_TTL) is used.
@@ -84,13 +82,16 @@ let inflight = null; // de-dupes simultaneous requests
 let lastVersionCheck = 0; // time of the last version request
 
 function readCache() {
-  if (memoryCache) return memoryCache;
   try {
     const raw = localStorage.getItem(CACHE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed?.vacancies)) memoryCache = parsed;
+    if (!raw) {
+      memoryCache = null;
+      lastVersionCheck = 0;
+      return null;
     }
+    if (memoryCache) return memoryCache;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed?.vacancies)) memoryCache = parsed;
   } catch {
     /* ignore */
   }
@@ -106,8 +107,7 @@ function writeCache(vacancies, version) {
   }
 }
 
-// Call from your admin panel after add / edit / delete (same browser only)
-export function clearVacancyCache() {
+function clearVacancyCache() {
   memoryCache = null;
   inflight = null;
   lastVersionCheck = 0;
@@ -134,7 +134,7 @@ async function fetchServerVersion() {
 function fetchVacancies(version) {
   if (inflight) return inflight;
   inflight = (async () => {
-    const res = await vacancyAPI.getAll();
+    const res = await vacancyAPI.opens();
     const list = toList(res);
     if (!list) throw new Error("Unexpected response from the vacancy API.");
     writeCache(list, version); // an empty list is valid ("no openings") and is cached too
@@ -143,6 +143,33 @@ function fetchVacancies(version) {
     inflight = null;
   });
   return inflight;
+}
+
+async function resolveVacanciesData(force = false) {
+  const c = force ? null : readCache();
+  const hasData = !!c;
+  try {
+    if (!force && hasData && Date.now() - lastVersionCheck < VERSION_CHECK_INTERVAL) {
+      return { skipped: true, hasData };
+    }
+
+    const serverVersion = await fetchServerVersion();
+    lastVersionCheck = Date.now();
+
+    if (!force && hasData) {
+      const versionKnown = serverVersion !== undefined;
+      const upToDate = versionKnown
+        ? c.version === serverVersion
+        : Date.now() - c.savedAt < CACHE_TTL;
+      if (upToDate) return { skipped: true, hasData };
+    }
+
+    const list = await fetchVacancies(serverVersion);
+    return { skipped: false, list, hasData };
+  } catch (err) {
+    err.hasData = hasData;
+    throw err;
+  }
 }
 
 export default function Career() {
@@ -156,51 +183,54 @@ export default function Career() {
   const [applyId, setApplyId] = useState(null);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
 
-  /* ---------- load vacancies (cache first, API only if data changed) ---------- */
-  useEffect(() => {
+  const startFetch = useCallback((force = false) => {
     let cancelled = false;
-
-    (async () => {
-      const c = readCache();
-      const hasData = !!c;
-      try {
-        // Checked recently -> trust the cache, send no request at all
-        if (hasData && Date.now() - lastVersionCheck < VERSION_CHECK_INTERVAL) return;
-
-        // Tiny request: has the data changed on the server?
-        const serverVersion = await fetchServerVersion();
-        lastVersionCheck = Date.now();
-
-        if (hasData) {
-          const versionKnown = serverVersion !== undefined;
-          const upToDate = versionKnown
-            ? c.version === serverVersion
-            : Date.now() - c.savedAt < CACHE_TTL;
-          if (upToDate) return; // nothing changed -> skip getAll
-        }
-
-        // First visit, or data changed -> fetch fresh data and cache it
-        const list = await fetchVacancies(serverVersion);
-        if (cancelled) return;
-        setVacancies(list);
+    resolveVacanciesData(force)
+      .then((res) => {
+        if (cancelled || res.skipped) return;
+        setVacancies(res.list);
         setError("");
-      } catch (err) {
+      })
+      .catch((err) => {
         console.error("Vacancy load failed:", err);
-        // if cached data is already on screen, fail silently
-        if (!cancelled && !c) {
+        if (!cancelled && !err?.hasData) {
           setError(
             err?.response?.data?.message || "Could not load current openings.",
           );
         }
-      } finally {
+      })
+      .finally(() => {
         if (!cancelled) setPageLoading(false);
-      }
-    })();
+      });
 
     return () => {
       cancelled = true;
     };
   }, []);
+
+  /* ---------- load vacancies (cache first, API only if data changed) ---------- */
+  useEffect(() => {
+    let cancel = startFetch(false);
+
+    const handleSync = () => {
+      clearVacancyCache();
+      cancel?.();
+      cancel = startFetch(true);
+    };
+    const unsubscribe = subscribeCacheInvalidation((scope) => {
+      if (scope === "vacancies") handleSync();
+    });
+    const onStorage = (e) => {
+      if (!e.key || e.key === CACHE_KEY) handleSync();
+    };
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      cancel?.();
+      unsubscribe();
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [startFetch]);
 
   // Open vacancies only, newest first (re-checked on every render, so expired ones drop off)
   const vacancyData = useMemo(
@@ -458,15 +488,17 @@ export default function Career() {
           color:var(--careerpg-brass-deep);
         }
         .careerpg-apply-btn{
-          background:var(--careerpg-black);
-          color:var(--careerpg-ink);
+          background:#1b1a17;
+          color:#ffffff;
           border-radius:6px;
           padding:13px 26px;
           font-size:13.5px;
           font-weight:700;
           transition:background-color .15s ease;
         }
-        .careerpg-apply-btn:hover{ background:var(--careerpg-brass); }
+        .careerpg-apply-btn:hover{ background:var(--careerpg-brass-deep); color:#ffffff; }
+        .careerpg-apply-btn:focus-visible,
+        .careerpg-details-btn:focus-visible{ outline:2px solid var(--careerpg-brass); outline-offset:2px; }
 
         /* EMPTY / ERROR STATE */
         .careerpg-empty-box{
@@ -582,8 +614,8 @@ export default function Career() {
           display:inline-flex;
           align-items:center;
           gap:8px;
-          background:var(--careerpg-black);
-          color:var(--careerpg-ink);
+          background:#1b1a17;
+          color:#ffffff;
           border-radius:6px;
           padding:13px 22px;
           font-size:13.5px;
@@ -591,7 +623,8 @@ export default function Career() {
           text-decoration:none;
           transition:background-color .15s ease;
         }
-        .careerpg-mail-btn:hover{ background:var(--careerpg-brass); }
+        .careerpg-mail-btn:hover{ background:var(--careerpg-brass-deep); color:#ffffff; }
+        .careerpg-mail-btn:focus-visible{ outline:2px solid var(--careerpg-brass); outline-offset:2px; }
       `}</style>
 
       {/* HERO BAND */}
@@ -622,7 +655,7 @@ export default function Career() {
 
           {error && vacancyData.length === 0 ? (
             <div className="careerpg-empty-box">
-              <h4 className="careerpg-empty-title">Something went wrong</h4>
+              <h3 className="careerpg-empty-title">Something went wrong</h3>
               <p className="careerpg-empty-copy careerpg-error-copy">{error}</p>
             </div>
           ) : vacancyData.length === 0 ? (
@@ -632,9 +665,9 @@ export default function Career() {
                 src="/static/no-jobs.svg"
                 alt="No Jobs"
               />
-              <h4 className="careerpg-empty-title">
+              <h3 className="careerpg-empty-title">
                 No current openings that suit you?
-              </h4>
+              </h3>
               <p className="careerpg-empty-copy">
                 Stay ahead! Create a job alert and get notified as soon as we
                 post relevant roles.
@@ -711,6 +744,7 @@ export default function Career() {
                       <button
                         type="button"
                         className="careerpg-details-btn"
+                        aria-expanded={isOpen}
                         onClick={() => handleToggle(job?._id)}
                       >
                         {isOpen ? "Hide Details" : "Show Details"}

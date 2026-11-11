@@ -37,7 +37,7 @@ export default function ServiceDetail() {
           display: "flex",
           alignItems: "flex-end",
           padding: "120px 24px 64px",
-          backgroundImage: `url(${service.image || "/static/hero-aperture.png"})`,
+          backgroundImage: `url(${service.image || "/static/hero-aperture-v2.webp"})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -71,7 +71,7 @@ export default function ServiceDetail() {
               letterSpacing: "-0.025em",
             }}
           >
-            {service.title} — Yashmeen Future Building
+            {service.title} | Yashmeen Future Building
           </h1>
         </div>
       </section>

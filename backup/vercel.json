@@ -10,7 +10,7 @@
       "framework": "vite",
       "rewrites": [
         {
-          "source": "/((?!assets/|static/|images/).*)",
+          "source": "/((?!assets/|static/|images/|robots\\.txt|sitemap\\.xml).*)",
           "destination": "/index.html"
         }
       ],

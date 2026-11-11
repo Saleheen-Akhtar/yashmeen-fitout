@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { webDetailsAPI } from "../services/api";
+import { clearProjectsCache } from "../libs/publicCache";
 
 export const DEFAULT_WEBSITE_CONTENT = {
   brandName: "YASHMEEN FIT-OUT",
@@ -43,7 +44,7 @@ export const DEFAULT_WEBSITE_CONTENT = {
         "Concept planning, Dubai Municipality & developer approvals, and structural coordination.",
       description:
         "End-to-end architectural planning, authority submissions, structural design and build coordination for luxury residential villas and flagship commercial developments across the UAE.",
-      image: "/static/hero-aperture.png",
+      image: "/static/hero-aperture-v2.webp",
       route: "/services/architecture",
       active: true,
       highlights: [
@@ -146,6 +147,7 @@ export const DEFAULT_WEBSITE_CONTENT = {
 };
 
 const STORAGE_CACHE_KEY = "yashmeen:webContent:v1";
+const CONTENT_TTL = 60 * 1000;
 
 function mergeContent(remote) {
   if (!remote || typeof remote !== "object") return DEFAULT_WEBSITE_CONTENT;
@@ -175,77 +177,123 @@ function mergeContent(remote) {
   };
 }
 
-export function notifyWebsiteContentUpdated(newContent) {
+function readInitialContent() {
   try {
-    if (newContent) {
-      localStorage.setItem(STORAGE_CACHE_KEY, JSON.stringify(newContent));
-    }
-    localStorage.setItem("yashmeen:syncPing", String(Date.now()));
-    localStorage.removeItem("photogallery:data:v5");
+    const cached = localStorage.getItem(STORAGE_CACHE_KEY);
+    if (cached) return mergeContent(JSON.parse(cached));
   } catch {
     /* ignore */
   }
-  window.dispatchEvent(new CustomEvent("site-content-updated", { detail: newContent }));
+  return DEFAULT_WEBSITE_CONTENT;
 }
 
-export default function useWebsiteContent() {
-  const [content, setContent] = useState(() => {
+// Shared module store so multiple mounted components (Header, Hero, Studio, Process, Footer)
+// never trigger redundant API calls on mount or window focus.
+let sharedContent = readInitialContent();
+let inflightRequest = null;
+let lastFetchedAt = 0;
+let globalListenersAttached = false;
+const subscribers = new Set();
+
+function publishContent(next) {
+  sharedContent = next;
+  subscribers.forEach((fn) => {
     try {
-      const cached = localStorage.getItem(STORAGE_CACHE_KEY);
-      if (cached) return mergeContent(JSON.parse(cached));
+      fn(next);
     } catch {
       /* ignore */
     }
-    return DEFAULT_WEBSITE_CONTENT;
   });
+}
 
-  const refresh = useCallback(async () => {
+async function fetchSharedContent({ force = false } = {}) {
+  if (!force && Date.now() - lastFetchedAt < CONTENT_TTL && lastFetchedAt > 0) {
+    return sharedContent;
+  }
+  if (inflightRequest) return inflightRequest;
+
+  inflightRequest = (async () => {
     try {
       const res = await webDetailsAPI.details();
       const raw = res?.data?.data ?? res?.data;
       if (raw && typeof raw === "object") {
         const merged = mergeContent(raw);
-        setContent(merged);
+        lastFetchedAt = Date.now();
         try {
           localStorage.setItem(STORAGE_CACHE_KEY, JSON.stringify(merged));
         } catch {
           /* ignore */
         }
+        publishContent(merged);
       }
     } catch {
       /* keep cached/default gracefully */
+    } finally {
+      inflightRequest = null;
     }
-  }, []);
+    return sharedContent;
+  })();
+
+  return inflightRequest;
+}
+
+function ensureGlobalListeners() {
+  if (globalListenersAttached || typeof window === "undefined") return;
+  globalListenersAttached = true;
+
+  window.addEventListener("site-content-updated", (e) => {
+    if (e?.detail) {
+      lastFetchedAt = Date.now();
+      publishContent(mergeContent(e.detail));
+    } else {
+      fetchSharedContent({ force: true });
+    }
+  });
+
+  window.addEventListener("storage", (e) => {
+    if (e.key === STORAGE_CACHE_KEY || e.key === "yashmeen:syncPing") {
+      fetchSharedContent({ force: true });
+    }
+  });
+
+  window.addEventListener("focus", () => {
+    fetchSharedContent({ force: false });
+  });
+}
+
+export function notifyWebsiteContentUpdated(newContent) {
+  const merged = newContent ? mergeContent(newContent) : null;
+  if (merged) {
+    lastFetchedAt = Date.now();
+    publishContent(merged);
+  }
+  try {
+    if (merged) {
+      localStorage.setItem(STORAGE_CACHE_KEY, JSON.stringify(merged));
+    }
+    localStorage.setItem("yashmeen:syncPing", String(Date.now()));
+  } catch {
+    /* ignore */
+  }
+  clearProjectsCache();
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("site-content-updated", { detail: merged || newContent }));
+  }
+}
+
+export default function useWebsiteContent() {
+  const [content, setContent] = useState(() => sharedContent);
+
+  const refresh = useCallback(() => fetchSharedContent({ force: true }), []);
 
   useEffect(() => {
-    refresh();
-
-    const onUpdated = (e) => {
-      if (e?.detail) {
-        setContent(mergeContent(e.detail));
-      } else {
-        refresh();
-      }
-    };
-    const onStorage = (e) => {
-      if (e.key === STORAGE_CACHE_KEY || e.key === "yashmeen:syncPing") {
-        refresh();
-      }
-    };
-    const onFocus = () => {
-      refresh();
-    };
-
-    window.addEventListener("site-content-updated", onUpdated);
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("focus", onFocus);
-
+    ensureGlobalListeners();
+    subscribers.add(setContent);
+    fetchSharedContent({ force: false });
     return () => {
-      window.removeEventListener("site-content-updated", onUpdated);
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("focus", onFocus);
+      subscribers.delete(setContent);
     };
-  }, [refresh]);
+  }, []);
 
   return { content, refresh };
 }

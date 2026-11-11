@@ -39,3 +39,22 @@ export const adminOnly = (req, res, next) => {
     }
     next();
 };
+
+export const isAdminRequest = async (req) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) return false;
+        const token = authHeader.split(" ")[1];
+        if (!token) return false;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const account = await AccountModel.findById(decoded.id).select("+activeToken");
+        return Boolean(
+            account &&
+            account.isActive &&
+            account.activeToken === token &&
+            account.usertype === "admin"
+        );
+    } catch {
+        return false;
+    }
+};

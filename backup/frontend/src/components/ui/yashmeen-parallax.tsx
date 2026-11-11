@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from '@studio-freight/lenis';
+import Lenis from 'lenis';
 import { Building2, Sparkles, Clock, ArrowRight, ShieldCheck } from 'lucide-react';
 import '../../styles/yashmeen-parallax.css';
 
@@ -21,23 +21,15 @@ export function YashmeenParallax({
   tagline = "Dubai's fit-out partner for considered interiors",
   eyebrow = "Yashmeen Future Building & Fit-Out Contracting",
   backgroundImage = "/static/hero-cinematic.jpg",
-  foregroundImage = "/static/yashmeen-layer-counter.png"
+  foregroundImage = "/static/yashmeen-layer-counter.webp"
 }: YashmeenParallaxProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [reducedMotion] = useState(false);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
     const triggerElement = containerRef.current?.querySelector('[data-parallax-layers]');
     const layerNodes = triggerElement?.querySelectorAll('[data-parallax-layer]');
-
-    if (reducedMotion) {
-      if (layerNodes?.length) {
-        gsap.set(layerNodes, { clearProps: 'yPercent,transform' });
-      }
-      return undefined;
-    }
 
     let tl: gsap.core.Timeline | null = null;
     const ctx = gsap.context(() => {
@@ -76,7 +68,7 @@ export function YashmeenParallax({
     let localLenis: Lenis | null = null;
     let tickerCallback: ((time: number) => void) | null = null;
 
-    if (typeof window !== 'undefined' && !(window as any).__lenis) {
+    if (typeof window !== 'undefined' && !(window as Window & { __lenis?: Lenis }).__lenis) {
       localLenis = new Lenis();
       localLenis.on('scroll', ScrollTrigger.update);
       tickerCallback = (time: number) => {
@@ -97,7 +89,7 @@ export function YashmeenParallax({
         localLenis.destroy();
       }
     };
-  }, [reducedMotion]);
+  }, []);
 
   return (
     <div className="yashmeen-parallax" ref={containerRef}>

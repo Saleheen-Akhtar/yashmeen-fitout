@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { postAPI } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import { tokenExpired } from "../../libs/helpers";
+import { clearPostsCache } from "../../libs/publicCache";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { CustomUploadAdapterPlugin } from "../../libs/uploader";
@@ -45,6 +46,7 @@ export default function PostCreate() {
       if (featuredImage) fd.append("file", featuredImage);
 
       await postAPI.create(fd);
+      clearPostsCache();
       toast.success("Article published to live website!");
       navigate("/dashboard/blog-manager");
     } catch (error) {

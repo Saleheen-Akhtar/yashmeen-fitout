@@ -2,6 +2,11 @@ import crypto from "crypto";
 import bcrypt from "bcrypt";
 import AccountModel from "../models/account.model.js";
 import { generateToken } from "../utils/generateToken.js";
+import {
+    isEmailConfigured,
+    sendVerificationEmail,
+    sendResetPasswordEmail,
+} from "../middlewares/sendEmail.js";
 
 const SALT_ROUNDS = 10;
 const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
@@ -11,11 +16,17 @@ export const register = async (req, res) => {
     try {
         const { name, email, password, mobile, city } = req.body;
 
-        if (!name || !email || !password || !mobile) {
+        if (
+            typeof name !== "string" || !name.trim() ||
+            typeof email !== "string" || !email.trim() ||
+            typeof password !== "string" || !password ||
+            typeof mobile !== "string" || !mobile.trim()
+        ) {
             return res.status(400).json({ success: false, message: "Name, email, password and mobile are required" });
         }
 
-        const existingAccount = await AccountModel.findOne({ email });
+        const normalizedEmail = email.trim().toLowerCase();
+        const existingAccount = await AccountModel.findOne({ email: normalizedEmail });
         if (existingAccount) {
             return res.status(409).json({ success: false, message: "An account with this email already exists" });
         }
@@ -24,21 +35,34 @@ export const register = async (req, res) => {
         const verificationToken = crypto.randomBytes(32).toString("hex");
 
         const account = await AccountModel.create({
-            name,
-            email,
+            name: name.trim(),
+            email: normalizedEmail,
             password: hashedPassword,
-            mobile,
-            city,
-            // verificationToken,
-            // verificationTokenExpiresAt: Date.now() + VERIFICATION_TOKEN_TTL_MS,
+            mobile: mobile.trim(),
+            city: typeof city === "string" ? city.trim() : undefined,
+            usertype: "user",
+            verificationToken,
+            verificationTokenExpiresAt: Date.now() + VERIFICATION_TOKEN_TTL_MS,
         });
+
+        if (isEmailConfigured()) {
+            try {
+                await sendVerificationEmail(account.email, verificationToken);
+            } catch (emailError) {
+                console.error("Failed to send verification email:", emailError.message);
+            }
+        }
 
         return res.status(201).json({
             success: true,
             message: "Account created.",
         });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to register account", error: error.message });
+        if (error.name === "ValidationError") {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+        console.error("Failed to register account:", error);
+        return res.status(500).json({ success: false, message: "Failed to register account" });
     }
 };
 
@@ -46,12 +70,12 @@ export const verifyEmail = async (req, res) => {
     try {
         const { token } = req.query;
 
-        if (!token) {
+        if (typeof token !== "string" || !token.trim()) {
             return res.status(400).json({ success: false, message: "Verification token is required" });
         }
 
         const account = await AccountModel.findOne({
-            verificationToken: token,
+            verificationToken: token.trim(),
             verificationTokenExpiresAt: { $gt: Date.now() },
         }).select("+verificationToken");
 
@@ -66,15 +90,26 @@ export const verifyEmail = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Email verified successfully" });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to verify email", error: error.message });
+        console.error("Failed to verify email:", error);
+        return res.status(500).json({ success: false, message: "Failed to verify email" });
     }
 };
 
 export const resendVerificationEmail = async (req, res) => {
     try {
         const { email } = req.body;
+        if (typeof email !== "string" || !email.trim()) {
+            return res.status(400).json({ success: false, message: "Email is required" });
+        }
 
-        const account = await AccountModel.findOne({ email });
+        if (!isEmailConfigured()) {
+            return res.status(503).json({
+                success: false,
+                message: "Email service is not configured on this server.",
+            });
+        }
+
+        const account = await AccountModel.findOne({ email: email.trim().toLowerCase() });
         if (!account) {
             return res.status(404).json({ success: false, message: "No account found with this email" });
         }
@@ -88,11 +123,12 @@ export const resendVerificationEmail = async (req, res) => {
         account.verificationTokenExpiresAt = Date.now() + VERIFICATION_TOKEN_TTL_MS;
         await account.save();
 
-        //await sendVerificationEmail(account.email, verificationToken);
+        await sendVerificationEmail(account.email, verificationToken);
 
         return res.status(200).json({ success: true, message: "Verification email resent" });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to resend verification email", error: error.message });
+        console.error("Failed to resend verification email:", error);
+        return res.status(500).json({ success: false, message: "Failed to resend verification email" });
     }
 };
 
@@ -100,11 +136,11 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        if (!email || !password) {
+        if (typeof email !== "string" || typeof password !== "string" || !email.trim() || !password) {
             return res.status(400).json({ success: false, message: "Email and password are required" });
         }
 
-        const account = await AccountModel.findOne({ email }).select("+password +activeToken");
+        const account = await AccountModel.findOne({ email: email.trim().toLowerCase() }).select("+password +activeToken");
         if (!account) {
             return res.status(401).json({ success: false, message: "Invalid email or password" });
         }
@@ -138,7 +174,8 @@ export const login = async (req, res) => {
             },
         });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to login", error: error.message });
+        console.error("Failed to login:", error);
+        return res.status(500).json({ success: false, message: "Failed to login" });
     }
 };
 
@@ -149,7 +186,8 @@ export const logout = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Logged out successfully" });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to logout", error: error.message });
+        console.error("Failed to logout:", error);
+        return res.status(500).json({ success: false, message: "Failed to logout" });
     }
 };
 
@@ -158,15 +196,26 @@ export const getProfile = async (req, res) => {
         const account = await AccountModel.findById(req.account._id);
         return res.status(200).json({ success: true, data: account });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch profile", error: error.message });
+        console.error("Failed to fetch profile:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch profile" });
     }
 };
 
 export const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
+        if (typeof email !== "string" || !email.trim()) {
+            return res.status(400).json({ success: false, message: "Email is required" });
+        }
 
-        const account = await AccountModel.findOne({ email });
+        if (!isEmailConfigured()) {
+            return res.status(503).json({
+                success: false,
+                message: "Password reset email service is not configured. Please contact an administrator.",
+            });
+        }
+
+        const account = await AccountModel.findOne({ email: email.trim().toLowerCase() });
 
         if (!account) {
             return res.status(200).json({ success: true, message: "If that email exists, a reset link has been sent" });
@@ -177,11 +226,12 @@ export const forgotPassword = async (req, res) => {
         account.resetPasswordExpiresAt = Date.now() + RESET_TOKEN_TTL_MS;
         await account.save();
 
-        // await sendResetPasswordEmail(account.email, resetToken);
+        await sendResetPasswordEmail(account.email, resetToken);
 
         return res.status(200).json({ success: true, message: "If that email exists, a reset link has been sent" });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to process request", error: error.message });
+        console.error("Failed to process forgotPassword:", error);
+        return res.status(500).json({ success: false, message: "Failed to process request" });
     }
 };
 
@@ -190,12 +240,12 @@ export const resetPassword = async (req, res) => {
         const { token } = req.query;
         const { newPassword } = req.body;
 
-        if (!token || !newPassword) {
+        if (typeof token !== "string" || !token.trim() || typeof newPassword !== "string" || !newPassword) {
             return res.status(400).json({ success: false, message: "Token and new password are required" });
         }
 
         const account = await AccountModel.findOne({
-            resetPasswordToken: token,
+            resetPasswordToken: token.trim(),
             resetPasswordExpiresAt: { $gt: Date.now() },
         }).select("+resetPasswordToken +activeToken");
 
@@ -211,6 +261,7 @@ export const resetPassword = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Password reset successful, please log in" });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to reset password", error: error.message });
+        console.error("Failed to reset password:", error);
+        return res.status(500).json({ success: false, message: "Failed to reset password" });
     }
 };

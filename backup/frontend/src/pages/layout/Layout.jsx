@@ -6,12 +6,14 @@ import MotionProvider from "../../motion/MotionProvider";
 export default function Layout() {
   return (
     <>
-      <a href="#main" className="skip-link">Skip to content</a>
+      <a href="#main" className="skip-link">
+        Skip to content
+      </a>
       <MotionProvider />
       <Header />
-      <div id="main" tabIndex={-1}>
+      <main id="main" tabIndex={-1}>
         <Outlet />
-      </div>
+      </main>
       <Footer />
     </>
   );

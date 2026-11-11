@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from '@studio-freight/lenis';
+import Lenis from 'lenis';
 import '../../styles/parallax-scrolling.css';
 
 interface ParallaxComponentProps {
@@ -16,26 +16,18 @@ interface ParallaxComponentProps {
 
 export function ParallaxComponent({
   title = "Parallax",
-  layer1Image = "https://cdn.21st.dev/assets/mirror/a4/a43f4eae3459c461345ee676f12d6e1ddca65e8a5279a5af00d475b17ff83aea.webp",
-  layer2Image = "https://cdn.21st.dev/assets/mirror/50/50ca6a0d36d2780bfcb469d6db7eaec0be7e0d2961ba69a63d2a1473b040338d.webp",
-  layer4Image = "https://cdn.21st.dev/assets/mirror/e1/e1c8137b5f971c3b3ec1a0f9e79b9c17018767005f844a10082b890472afecfb.webp",
+  layer1Image = "/static/hero-bg.jpg",
+  layer2Image = "/static/hero-banner.jpg",
+  layer4Image = "/static/studio.jpg",
   showContent = true,
 }: ParallaxComponentProps) {
   const parallaxRef = useRef<HTMLDivElement>(null);
-  const [reducedMotion] = useState(false);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
     const triggerElement = parallaxRef.current?.querySelector('[data-parallax-layers]');
     const layerNodes = triggerElement?.querySelectorAll('[data-parallax-layer]');
-
-    if (reducedMotion) {
-      if (layerNodes?.length) {
-        gsap.set(layerNodes, { clearProps: 'yPercent,transform' });
-      }
-      return undefined;
-    }
 
     let tl: gsap.core.Timeline | null = null;
     const ctx = gsap.context(() => {
@@ -74,7 +66,7 @@ export function ParallaxComponent({
     let localLenis: Lenis | null = null;
     let tickerCallback: ((time: number) => void) | null = null;
 
-    if (typeof window !== 'undefined' && !(window as any).__lenis) {
+    if (typeof window !== 'undefined' && !(window as Window & { __lenis?: Lenis }).__lenis) {
       localLenis = new Lenis();
       localLenis.on('scroll', ScrollTrigger.update);
       tickerCallback = (time: number) => {
@@ -95,7 +87,7 @@ export function ParallaxComponent({
         localLenis.destroy();
       }
     };
-  }, [reducedMotion]);
+  }, []);
 
   return (
     <div className="parallax" ref={parallaxRef}>

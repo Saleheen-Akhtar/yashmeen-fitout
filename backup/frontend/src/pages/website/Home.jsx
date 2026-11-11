@@ -18,15 +18,13 @@ export default function Home() {
   }, []);
 
   return (
-    <>
-      <main>
-        <Hero />
-        <Studio />
-        <Works />
-        <Process />
-        <Testimonial />
-        <CTA />
-      </main>
-    </>
+    <div className="home-page">
+      <Hero />
+      <Studio />
+      <Works />
+      <Process />
+      <Testimonial />
+      <CTA />
+    </div>
   );
 }

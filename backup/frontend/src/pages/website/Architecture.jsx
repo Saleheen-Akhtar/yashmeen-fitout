@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
 import {
   FiCheck,
@@ -13,18 +14,11 @@ import {
   FiLayers,
 } from "react-icons/fi";
 
-// Helper to keep Unsplash URLs short
-const unsplash = (id, w = 900) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
+// Hero & Intro: local studio assets
+const ARCH_HERO_BG_IMAGE = "/static/hero-bg.jpg";
+const ARCH_INTRO_IMAGE = "/static/design-desk.jpg";
 
-// Replace these with your own project photos (best: local assets)
-// Hero: modern architectural exterior
-const ARCH_HERO_BG_IMAGE = unsplash("photo-1600585154340-be6161a56a0c", 1800);
-// Intro: architect working on plans / drawings
-const ARCH_INTRO_IMAGE = unsplash("photo-1503387762-592deb58ef4e", 900);
-
-// Replace with your real YouTube embed URL: https://www.youtube.com/embed/VIDEO_ID
-const ARCH_VIDEO_URL = "https://www.youtube.com/embed/CF97mtu3qlE";
+const ARCH_VIDEO_URL = "https://www.youtube-nocookie.com/embed/CF97mtu3qlE";
 
 // Placeholder numbers - replace with your real figures
 const ARCH_STATS = [
@@ -101,17 +95,17 @@ const ARCH_PROJECTS = [
   {
     title: "Contemporary Villa - Full Build",
     tag: "Residential",
-    img: unsplash("photo-1600596542815-ffad4c1539a9"), // modern villa exterior
+    img: "/static/work-myrtle.jpg",
   },
   {
     title: "Corporate Office - Design & Fit-Out",
     tag: "Commercial",
-    img: unsplash("photo-1497366216548-37526070297c"), // modern office interior
+    img: "/static/Office-fit-out.jpg",
   },
   {
     title: "Boutique Retail Space",
     tag: "Retail",
-    img: unsplash("photo-1441986300917-64674bd600d8"), // retail store interior
+    img: "/static/work-samford.jpg",
   },
 ];
 
@@ -546,6 +540,7 @@ export default function Architecture() {
         .archpg-cta-section{ padding:0 0 88px; background:var(--archpg-gray-50); }
         .archpg-cta-box{
           background:var(--archpg-black);
+          border:1px solid var(--archpg-gray-200);
           border-radius:10px;
           padding:44px 28px;
           display:flex;
@@ -585,8 +580,8 @@ export default function Architecture() {
         .archpg-cta-link-label{
           display:flex;
           align-items:center;
-          background:var(--archpg-black);
-          color:var(--archpg-ink);
+          background:#1b1a17;
+          color:#ffffff;
           padding:15px 26px;
           font-size:14.5px;
           font-weight:700;
@@ -603,6 +598,11 @@ export default function Architecture() {
           transition:background-color .15s ease;
         }
         .archpg-cta-link:hover .archpg-cta-link-icon{ background:var(--archpg-brass-deep); }
+        .archpg-faq-question:focus-visible,
+        .archpg-cta-link:focus-visible{
+          outline:2px solid var(--archpg-brass-deep);
+          outline-offset:2px;
+        }
       `}</style>
 
       {/* HERO BAND */}
@@ -747,6 +747,7 @@ export default function Architecture() {
               src={ARCH_VIDEO_URL}
               title="Architecture project film"
               loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
             />
@@ -826,12 +827,12 @@ export default function Architecture() {
                 Tell us about your space and we will arrange a consultation.
               </p>
             </div>
-            <a href="/contact" className="archpg-cta-link">
+            <Link to="/contact" className="archpg-cta-link">
               <span className="archpg-cta-link-label">Get in Touch</span>
               <span className="archpg-cta-link-icon">
                 <FiArrowRight size={18} />
               </span>
-            </a>
+            </Link>
           </div>
         </div>
       </section>

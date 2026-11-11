@@ -1,9 +1,11 @@
 import path from "path";
 import { fileURLToPath } from "url";
+import mongoose from "mongoose";
 
 import { convertTitleUrl } from "../utils/control.js";
 import PostModel from "../models/post.model.js";
 import { deleteFile } from "../middlewares/postUpload.js";
+import { isAdminRequest } from "../middlewares/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,9 +50,13 @@ export const createPost = async (req, res) => {
     try {
         const { _id } = req?.account;
         const { title, content } = req.body;
-        const convertTitle = convertTitleUrl(title);
+        if (typeof title !== "string" || !title.trim()) {
+            if (req.file) removeUploadedFiles([req.file.filename]);
+            return res.status(400).json({ message: "Title is required." });
+        }
+        const convertTitle = convertTitleUrl(title.trim());
         const newPost = {
-            title,
+            title: title.trim(),
             pageUrl: convertTitle,
             content,
             authorId: _id,
@@ -70,7 +76,9 @@ export const createPost = async (req, res) => {
 
 export const getPosts = async (req, res) => {
     try {
-        const post = await PostModel.find();
+        const isAdmin = await isAdminRequest(req);
+        const filter = isAdmin ? {} : { status: true };
+        const post = await PostModel.find(filter).sort({ createdAt: -1 });
         return res.status(200).json({ data: post });
     } catch (err) {
         console.error("Error fetching posts:", err);
@@ -80,7 +88,7 @@ export const getPosts = async (req, res) => {
 
 export const getActivePosts = async (req, res) => {
     try {
-        const post = await PostModel.find({ status: true });
+        const post = await PostModel.find({ status: true }).sort({ createdAt: -1 });
         return res.status(200).json({ data: post });
     } catch (err) {
         console.error("Error fetching active posts:", err);
@@ -91,7 +99,16 @@ export const getActivePosts = async (req, res) => {
 export const getPostDetailsById = async (req, res) => {
     try {
         const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid post id." });
+        }
         const post = await PostModel.findOne({ _id: id });
+        if (!post) {
+            return res.status(404).json({ message: "Post not found." });
+        }
+        if (!post.status && !(await isAdminRequest(req))) {
+            return res.status(404).json({ message: "Post not found." });
+        }
         return res.status(200).json({ data: post });
     } catch (err) {
         console.error("Error fetching post:", err);
@@ -102,7 +119,16 @@ export const getPostDetailsById = async (req, res) => {
 export const getPostDetails = async (req, res) => {
     try {
         const { slug } = req.params;
-        const post = await PostModel.findOne({ pageUrl: slug });
+        if (typeof slug !== "string" || !slug.trim()) {
+            return res.status(400).json({ message: "Invalid post slug." });
+        }
+        const post = await PostModel.findOne({ pageUrl: slug.trim() });
+        if (!post) {
+            return res.status(404).json({ message: "Post not found." });
+        }
+        if (!post.status && !(await isAdminRequest(req))) {
+            return res.status(404).json({ message: "Post not found." });
+        }
         return res.status(200).json({ data: post });
     } catch (err) {
         console.error("Error fetching post:", err);
@@ -113,6 +139,10 @@ export const getPostDetails = async (req, res) => {
 export const updatePostById = async (req, res) => {
     try {
         const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            if (req.file) removeUploadedFiles([req.file.filename]);
+            return res.status(400).json({ message: "Invalid post id." });
+        }
         const { title, content } = req.body;
 
         const post = await PostModel.findById(id);
@@ -164,6 +194,9 @@ export const updatePostById = async (req, res) => {
 export const updatePostStatus = async (req, res) => {
     try {
         const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid post id." });
+        }
 
         const post = await PostModel.findById(id);
         if (!post) return res.status(404).json({ message: "Post not found." });
@@ -181,6 +214,9 @@ export const deletePost = async (req, res) => {
     try {
         // Works with either route style: /delete/:id or /delete/:postId
         const id = req.params.id ?? req.params.postId;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid post id." });
+        }
 
         const isExist = await PostModel.findById(id);
         if (!isExist) return res.status(404).json({ message: "Post not found" });

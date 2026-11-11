@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 
 const FAQ_GROUPS = [
   {
@@ -360,9 +361,9 @@ export default function FAQ() {
             Our team is happy to walk you through anything specific to your
             project - no obligation, just answers.
           </p>
-          <a href="/contact" className="faq-page-cta-btn">
+          <Link to="/contact" className="faq-page-cta-btn">
             ENQUIRE NOW
-          </a>
+          </Link>
         </div>
       </section>
     </div>

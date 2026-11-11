@@ -1,30 +1,20 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { FiMaximize2 } from "react-icons/fi";
 import { categoryAPI, projectAPI, itemPath } from "../../services/api"; // adjust the path to your project
+import { subscribeCacheInvalidation } from "../../libs/publicCache";
 
-
-const CURATED_PROJECTS = [
-  { id: 1, title: "Palm Jumeirah Atelier", category: "Residential", src: "/static/work-oh-office.jpg", year: "2026", size: "14,500 sq.ft", location: "Palm Jumeirah, Dubai" },
-  { id: 2, title: "Emirates Hills Residence", category: "Residential", src: "/static/work-myrtle.jpg", year: "2025", size: "22,000 sq.ft", location: "Emirates Hills, Dubai" },
-  { id: 3, title: "DIFC Corporate Headquarters", category: "Commercial", src: "/static/work-clifton.jpg", year: "2026", size: "18,200 sq.ft", location: "DIFC, Dubai" },
-  { id: 4, title: "Al Quoz Design Pavilion", category: "Atelier", src: "/static/work-runic.jpg", year: "2025", size: "8,500 sq.ft", location: "Al Quoz, Dubai" },
-  { id: 5, title: "Dubai Hills Modern Sanctuary", category: "Residential", src: "/static/work-stanley.jpg", year: "2026", size: "11,800 sq.ft", location: "Dubai Hills Estate, Dubai" },
-  { id: 6, title: "Downtown Fashion Concept Store", category: "Retail", src: "/static/work-samford.jpg", year: "2025", size: "6,200 sq.ft", location: "Downtown Dubai" },
-];
-
-const GALLERY_HERO_BG_IMAGE =
-  "https://images.unsplash.com/photo-1758448721205-8465cebc26af?auto=format&fit=crop&w=1800&q=80";
+const GALLERY_HERO_BG_IMAGE = "/static/hero-bg.jpg";
 
 // If your backend paginates (e.g. default 10 per page), ask for more here.
 // Remove or rename the keys if your API uses different query params.
 const FALLBACK_PROJECT_IMAGES = [
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+  "/static/work-oh-office.jpg",
+  "/static/work-myrtle.jpg",
+  "/static/work-clifton.jpg",
+  "/static/work-runic.jpg",
+  "/static/work-stanley.jpg",
+  "/static/work-samford.jpg",
 ];
 
 const FETCH_PARAMS = { limit: 1000, page: 1 };
@@ -68,11 +58,13 @@ const getPhotoPath = (g) => {
   return first ?? "";
 };
 
-// Absolute URLs are used as-is; stored paths are resolved via itemPath
-const photoUrl = (path = "") =>
-  /^https?:\/\//i.test(path)
+// Absolute / local static URLs are used as-is; stored paths are resolved via itemPath
+const photoUrl = (path = "") => {
+  if (!path) return "";
+  return /^(https?:|data:|blob:|\/static\/|\/images\/|\/uploads\/)/i.test(path)
     ? path
     : `${itemPath ?? ""}/${String(path).replace(/^\/+/, "")}`;
+};
 
 // Only an explicit "off" hides a record; a missing/odd status value does not
 const isOff = (status) =>
@@ -118,10 +110,14 @@ try {
 }
 
 function readCache() {
-  if (memoryCache) return memoryCache;
   try {
     const raw = localStorage.getItem(CACHE_KEY);
-    if (raw) memoryCache = JSON.parse(raw);
+    if (!raw) {
+      memoryCache = null;
+      lastVersionCheck = 0;
+      return null;
+    }
+    if (!memoryCache) memoryCache = JSON.parse(raw);
   } catch {
     /* ignore */
   }
@@ -139,8 +135,8 @@ function writeCache(data) {
   }
 }
 
-// Call this from your admin panel after add / edit / delete (same browser only)
-export function clearGalleryCache() {
+// Clears in-memory + storage cache when triggered via admin invalidation event
+function clearGalleryCache() {
   memoryCache = null;
   inflight = null;
   lastVersionCheck = 0;
@@ -222,6 +218,36 @@ async function fetchGalleryData(version) {
   return inflight;
 }
 
+async function resolveProjectsData(force = false) {
+  const c = force ? null : readCache();
+  const hasData = !!c;
+  try {
+    // Checked recently -> trust the cache, send no request at all
+    if (!force && hasData && Date.now() - lastVersionCheck < VERSION_CHECK_INTERVAL) {
+      return { skipped: true, hasData };
+    }
+
+    // Tiny request: has the data changed on the server?
+    const serverVersion = await fetchServerVersion();
+    lastVersionCheck = Date.now();
+
+    if (!force && hasData) {
+      const versionKnown = serverVersion !== undefined;
+      const upToDate = versionKnown
+        ? c.version === serverVersion
+        : Date.now() - c.savedAt < CACHE_TTL;
+      if (upToDate) return { skipped: true, hasData }; // nothing changed -> skip the big API calls
+    }
+
+    // First visit, or data changed -> fetch fresh data and cache it
+    const data = await fetchGalleryData(serverVersion);
+    return { skipped: false, data, hasData };
+  } catch (err) {
+    err.hasData = hasData;
+    throw err;
+  }
+}
+
 export default function PhotoGallery() {
   const cached = readCache();
 
@@ -232,52 +258,57 @@ export default function PhotoGallery() {
   const [diag, setDiag] = useState("");
   const [filter, setFilter] = useState("all"); // "all" or a category _id
 
-  useEffect(() => {
+  const startFetch = useCallback((force = false) => {
     let cancelled = false;
-
-    (async () => {
-      const c = readCache();
-      const hasData = !!c;
-      try {
-        // Checked recently -> trust the cache, send no request at all
-        if (hasData && Date.now() - lastVersionCheck < VERSION_CHECK_INTERVAL) return;
-
-        // Tiny request: has the data changed on the server?
-        const serverVersion = await fetchServerVersion();
-        lastVersionCheck = Date.now();
-
-        if (hasData) {
-          const versionKnown = serverVersion !== undefined;
-          const upToDate = versionKnown
-            ? c.version === serverVersion
-            : Date.now() - c.savedAt < CACHE_TTL;
-          if (upToDate) return; // nothing changed -> skip the big API calls
-        }
-
-        // First visit, or data changed -> fetch fresh data and cache it
-        const data = await fetchGalleryData(serverVersion);
-        if (cancelled) return;
-        setCategories(data.categories);
-        setPhotos(data.photos);
-        setDiag(data.diag || "");
+    resolveProjectsData(force)
+      .then((res) => {
+        if (cancelled || res.skipped) return;
+        setCategories(res.data.categories);
+        setPhotos(res.data.photos);
+        setDiag(res.data.diag || "");
         setError("");
-      } catch (err) {
+      })
+      .catch((err) => {
         console.error("Gallery load failed:", err);
-        // if cached data is already on screen, fail silently
-        if (!cancelled && !c) {
+        if (!cancelled && !err?.hasData) {
           setError(
             err?.response?.data?.message || "Could not load the gallery.",
           );
         }
-      } finally {
+      })
+      .finally(() => {
         if (!cancelled) setLoading(false);
-      }
-    })();
+      });
 
     return () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancel = startFetch(false);
+
+    const handleSync = () => {
+      clearGalleryCache();
+      cancel?.();
+      cancel = startFetch(true);
+    };
+    const unsubscribe = subscribeCacheInvalidation((scope) => {
+      if (scope === "projects" || scope === "gallery") handleSync();
+    });
+    const onStorage = (e) => {
+      if (!e.key || e.key === CACHE_KEY) handleSync();
+    };
+    window.addEventListener("projects-updated", handleSync);
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      cancel?.();
+      unsubscribe();
+      window.removeEventListener("projects-updated", handleSync);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [startFetch]);
 
   const categoryLabel = useMemo(() => {
     const map = {};
@@ -387,7 +418,9 @@ export default function PhotoGallery() {
         .photogal-photo-tile:hover .photogal-tile-corner{ opacity:1; }
         .photogal-tile-expand{ opacity:0; transition:opacity .3s; }
         .photogal-photo-tile:hover .photogal-tile-expand{ opacity:1; }
+        .photogal-photo-tile:focus-visible{ outline:2px solid #8a6a28; outline-offset:3px; }
         .photogal-filter-chip{ transition: all .25s ease; }
+        .photogal-filter-chip:focus-visible{ outline:2px solid #8a6a28; outline-offset:2px; }
         .photogal-masonry-grid{ column-count:3; column-gap:20px; }
         @media (max-width:980px){ .photogal-masonry-grid{ column-count:2; } }
         @media (max-width:620px){ .photogal-masonry-grid{ column-count:1; } }
@@ -433,6 +466,8 @@ export default function PhotoGallery() {
             {filters.map((f) => (
               <button
                 key={f.id}
+                type="button"
+                aria-pressed={filter === f.id}
                 onClick={() => setFilter(f.id)}
                 className="photogal-filter-chip"
                 style={{
@@ -542,10 +577,10 @@ export default function PhotoGallery() {
                   />
                   <span style={tagStyle}>{categoryLabel[p.categoryId]}</span>
                   <span className="photogal-tile-expand" style={expandStyle}>
-                    <FiMaximize2 size={13} color={ink} />
+                    <FiMaximize2 size={13} color={ovInk} />
                   </span>
                   <div style={metaStyle}>
-                    <h3
+                    <h2
                       style={{
                         margin: 0,
                         fontFamily: "var(--font-serif)",
@@ -556,7 +591,7 @@ export default function PhotoGallery() {
                       }}
                     >
                       {p.title}
-                    </h3>
+                    </h2>
                   </div>
                 </Link>
               ))}
@@ -576,9 +611,7 @@ const line = "#e6e1d6";
 const brass = "#8a6a28";
 // Overlay palette: text that sits on photos or the dark lightbox
 const ovInk = "#f3eee2";
-const ovDim = "#cfc8b6";
 const ovBrass = "#e0bd7c";
-const ovLine = "#4a463f";
 
 const messageStyle = {
   padding: "80px 0",

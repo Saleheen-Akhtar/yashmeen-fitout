@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
 import {
   FiCheck,
@@ -11,19 +12,12 @@ import {
   FiVolume2,
   FiAlertCircle,
   FiUsers,
-  FiFeather,
 } from "react-icons/fi";
 
-// Helper to keep Unsplash URLs short
-const unsplash = (id, w = 800) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
-
-// Replace these with your own project photos (best: local assets)
 // Hero: modern renovated office interior
-const OFFREN_HERO_BG_IMAGE = unsplash("photo-1497366216548-37526070297c", 1800);
+const OFFREN_HERO_BG_IMAGE = "/static/Office-fit-out.jpg";
 
-// Replace with your real YouTube embed URL: https://www.youtube.com/embed/VIDEO_ID
-const OFFREN_VIDEO_URL = "https://www.youtube.com/embed/i7efTJ5hcnM";
+const OFFREN_VIDEO_URL = "https://www.youtube-nocookie.com/embed/i7efTJ5hcnM";
 
 // Placeholder numbers - replace with your real figures
 const OFFREN_STATS = [
@@ -116,17 +110,16 @@ const OFFREN_TRENDS = [
   },
 ];
 
-// Best practice: use real before/after photos of your own projects here
 const OFFREN_BEFORE_AFTER = [
   {
     title: "Open-Plan Workspace",
-    before: unsplash("photo-1497215728101-856f4ea42174"), // plain, dated office
-    after: unsplash("photo-1497366754035-f200968a6e72"), // modern open-plan office
+    before: "/static/raw-space.jpg",
+    after: "/static/work-oh-office.jpg",
   },
   {
     title: "Reception Area",
-    before: unsplash("photo-1524758631624-e2822e304c36"), // basic office interior
-    after: unsplash("photo-1604328698692-f76ea9498e76"), // modern reception
+    before: "/static/atelier-render.jpg",
+    after: "/static/studio.jpg",
   },
 ];
 
@@ -473,8 +466,8 @@ export default function OfficeRenovation() {
           margin-top:1px;
         }
         .offrenpg-package-card-featured .offrenpg-package-check{
-          background:rgba(225,178,122,0.2);
-          color:#E1B27A;
+          background:rgba(169,121,63,0.16);
+          color:var(--offrenpg-brass-deep);
         }
 
         /* TRENDS (dark band) */
@@ -674,6 +667,7 @@ export default function OfficeRenovation() {
         .offrenpg-cta-section{ padding:0 0 88px; background:var(--offrenpg-gray-50); }
         .offrenpg-cta-box{
           background:var(--offrenpg-black);
+          border:1px solid var(--offrenpg-gray-200);
           border-radius:10px;
           padding:44px 28px;
           display:flex;
@@ -726,7 +720,7 @@ export default function OfficeRenovation() {
           display:flex;
           align-items:center;
           justify-content:center;
-          color:#E1B27A;
+          color:var(--offrenpg-brass-deep);
         }
         .offrenpg-cta-link{
           display:flex;
@@ -736,8 +730,8 @@ export default function OfficeRenovation() {
         .offrenpg-cta-link-label{
           display:flex;
           align-items:center;
-          background:var(--offrenpg-black);
-          color:var(--offrenpg-ink);
+          background:#1b1a17;
+          color:#ffffff;
           padding:15px 26px;
           font-size:14.5px;
           font-weight:700;
@@ -754,6 +748,12 @@ export default function OfficeRenovation() {
           transition:background-color .15s ease;
         }
         .offrenpg-cta-link:hover .offrenpg-cta-link-icon{ background:var(--offrenpg-brass-deep); }
+        .offrenpg-faq-question:focus-visible,
+        .offrenpg-cta-phone:focus-visible,
+        .offrenpg-cta-link:focus-visible{
+          outline:2px solid var(--offrenpg-brass-deep);
+          outline-offset:2px;
+        }
       `}</style>
 
       {/* HERO BAND */}
@@ -990,6 +990,7 @@ export default function OfficeRenovation() {
               src={OFFREN_VIDEO_URL}
               title="Office renovation project film"
               loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
             />
@@ -1050,12 +1051,12 @@ export default function OfficeRenovation() {
                 </span>
                 +971 54 386 2870
               </a>
-              <a href="/contact" className="offrenpg-cta-link">
+              <Link to="/contact" className="offrenpg-cta-link">
                 <span className="offrenpg-cta-link-label">Get in Touch</span>
                 <span className="offrenpg-cta-link-icon">
                   <FiArrowRight size={18} />
                 </span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

@@ -2138,6 +2138,27 @@
   line-height: 1.5;
 }
 
+.studio-service-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.35rem;
+  border: 1px solid rgba(8, 8, 7, 0.14);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.65);
+  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease), background-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.studio-service-card:hover,
+.studio-service-card:focus-visible {
+  border-color: var(--ink);
+  background: #ffffff;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-sm);
+}
+
 /* 7. Atelier hero: editorial project plate that leads into the studio manifesto. */
 .atelier-hero {
   width: min(100%, 1680px);

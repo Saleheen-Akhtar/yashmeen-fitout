@@ -146,6 +146,7 @@ export default function EditorialCarousel3D({
   const lastPointerTimeRef = useRef(0);
   const velocityTrackerRef = useRef(0);
   const rAFIdRef = useRef(null);
+  const tickRef = useRef(() => {});
   const layoutRef = useRef(null);
   const isSettledRef = useRef(true);
   const isVisibleRef = useRef(true);
@@ -320,7 +321,7 @@ export default function EditorialCarousel3D({
     if (moving || isDraggingRef.current) {
       isSettledRef.current = false;
       if (isVisibleRef.current) {
-        rAFIdRef.current = requestAnimationFrame(tick);
+        rAFIdRef.current = requestAnimationFrame(() => tickRef.current());
       }
     } else {
       isSettledRef.current = true;
@@ -345,8 +346,12 @@ export default function EditorialCarousel3D({
     isVisibleRef.current = true;
     isSettledRef.current = false;
     if (!rAFIdRef.current) {
-      rAFIdRef.current = requestAnimationFrame(tick);
+      rAFIdRef.current = requestAnimationFrame(() => tickRef.current());
     }
+  }, []);
+
+  useEffect(() => {
+    tickRef.current = tick;
   }, [tick]);
 
   // Apply layout measurements and CSS custom properties
@@ -676,7 +681,8 @@ export default function EditorialCarousel3D({
                     loading={idx < 3 ? "eager" : "lazy"}
                     draggable={false}
                     onError={(e) => {
-                      if (item.fallbackSrc && e.currentTarget.src !== item.fallbackSrc) {
+                      if (item.fallbackSrc && !e.currentTarget.dataset.fallbackApplied) {
+                        e.currentTarget.dataset.fallbackApplied = "1";
                         e.currentTarget.src = item.fallbackSrc;
                       }
                     }}

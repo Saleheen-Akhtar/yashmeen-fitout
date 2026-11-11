@@ -4,8 +4,6 @@
    All rules scoped to .nib-page-wrapper to prevent style leaks across routes.
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;700;800&display=swap');
-
 @layer base {
   .nib-page-wrapper,
   .nib-page-wrapper *,
@@ -21,14 +19,14 @@
   --100vh: 100vh;
   --fsize: 1.0416666667vw;
 
-  /* High-End Editorial Typography Stacks (No CORS Errors) */
-  --f-regular: "DM Serif Display", "Bodoni Moda", "Playfair Display", Georgia, serif;
-  --f-medium: "DM Serif Display", "Bodoni Moda", "Playfair Display", Georgia, serif;
+  /* Consolidated Core Typography Stacks (Zero render-blocking @import) */
+  --f-regular: "Cormorant Garamond", Georgia, serif;
+  --f-medium: "Cormorant Garamond", Georgia, serif;
   --f-light: "Cormorant Garamond", Georgia, serif;
-  --f-edit: "Cormorant Garamond", "Editorial New", Georgia, serif;
-  --f-edit-regular: "Cormorant Garamond", "Bodoni Moda", Georgia, serif;
-  --f-edit-italic: "Cormorant Garamond", "Bodoni Moda", Georgia, italic, serif;
-  --f-izmir: "Space Grotesk", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --f-edit: "Cormorant Garamond", Georgia, serif;
+  --f-edit-regular: "Cormorant Garamond", Georgia, serif;
+  --f-edit-italic: "Cormorant Garamond", Georgia, italic, serif;
+  --f-izmir: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* Typography Scales */
   --supertitulo-xl: clamp(4.5rem, 8vw, 11rem);

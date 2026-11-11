@@ -1,8 +1,19 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { videoAPI, categoryAPI } from "../../services/api";
+import { clearVideoGalleryCache } from "../../libs/publicCache";
 import { FiEdit2, FiPlay, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
 const VIDEO_BASE = "";
+
+const loadVideosData = async () => {
+  const { data: res } = await videoAPI.getAll();
+  return res?.data ?? [];
+};
+
+const loadVideoCategoriesData = async () => {
+  const { data: res } = await categoryAPI.getAll();
+  return res?.data ?? [];
+};
 
 const resolveVideoUrl = (path) => {
   if (!path) return "";
@@ -115,8 +126,8 @@ export default function VideoManager() {
   const fetchVideos = async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
     try {
-      const { data: res } = await videoAPI.getAll();
-      setVideos(res?.data ?? []);
+      const list = await loadVideosData();
+      setVideos(list);
     } catch (err) {
       setBanner({
         type: "error",
@@ -127,21 +138,40 @@ export default function VideoManager() {
     }
   };
 
-  const fetchCategories = async () => {
-    try {
-      const { data: res } = await categoryAPI.getAll();
-      setCategories(res?.data ?? []);
-    } catch (err) {
-      setBanner({
-        type: "error",
-        text: err?.response?.data?.message || "Failed to load categories.",
-      });
-    }
-  };
-
   useEffect(() => {
-    fetchVideos();
-    fetchCategories();
+    let cancelled = false;
+    loadVideosData()
+      .then((list) => {
+        if (!cancelled) setVideos(list);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setBanner({
+            type: "error",
+            text: err?.response?.data?.message || "Failed to load videos.",
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    loadVideoCategoriesData()
+      .then((list) => {
+        if (!cancelled) setCategories(list);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setBanner({
+            type: "error",
+            text: err?.response?.data?.message || "Failed to load categories.",
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const getCategoryId = (video) =>
@@ -209,6 +239,7 @@ export default function VideoManager() {
         await videoAPI.create(payload);
         setBanner({ type: "success", text: "Video created." });
       }
+      clearVideoGalleryCache();
       await fetchVideos({ silent: true });
       setModalOpen(false);
     } catch (err) {
@@ -231,6 +262,7 @@ export default function VideoManager() {
     setDeleting(true);
     try {
       await videoAPI.delete(deleteTarget._id);
+      clearVideoGalleryCache();
       setVideos((prev) => prev.filter((v) => v._id !== deleteTarget._id));
       setBanner({
         type: "success",
@@ -255,6 +287,7 @@ export default function VideoManager() {
     );
     try {
       await videoAPI.status(video._id);
+      clearVideoGalleryCache();
     } catch (err) {
       setVideos((prev) =>
         prev.map((v) =>

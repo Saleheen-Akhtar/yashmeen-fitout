@@ -96,17 +96,15 @@ export default function Studio() {
               <Link
                 key={srv.id || srv.slug || idx}
                 to={srv.route || "/services/interior-design"}
+                className="studio-service-card"
                 style={{
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
                   padding: "1.35rem",
-                  border: "1px solid rgba(0,0,0,0.08)",
                   borderRadius: "4px",
                   textDecoration: "none",
                   color: "inherit",
-                  background: "rgba(255,255,255,0.4)",
-                  transition: "border-color 0.2s ease, transform 0.2s ease",
                 }}
               >
                 <div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import {
   FiMaximize,
   FiMapPin,
@@ -11,92 +11,33 @@ import {
   FiX,
 } from "react-icons/fi";
 import { projectAPI, itemPath } from "../../services/api"; // adjust the path to your project
+import { subscribeCacheInvalidation } from "../../libs/publicCache";
 
-const CURATED_DETAILS = {
-  "1": {
-    _id: "1",
-    id: "1",
-    title: "Palm Jumeirah Atelier",
-    name: "Palm Jumeirah Atelier",
-    location: "Palm Jumeirah, Dubai",
-    size: "14,500 sq.ft",
-    scope: "Turnkey Architecture, Bespoke Joinery & MEP Fit-Out",
-    sector: "Luxury Residential",
-    description: "A private waterfront residence featuring custom oak millwork, bookmatched travertine, precision recessed architectural lighting, and seamless indoor-outdoor transitions overlooking the Arabian Gulf.",
-    images: ["/static/work-oh-office.jpg", "/static/hero.jpg", "/static/studio.jpg"],
-  },
-  "2": {
-    _id: "2",
-    id: "2",
-    title: "Emirates Hills Residence",
-    name: "Emirates Hills Residence",
-    location: "Emirates Hills, Dubai",
-    size: "22,000 sq.ft",
-    scope: "Structural Modifications, Architectural Joinery & Turnkey Interior",
-    sector: "Private Villa",
-    description: "Extensive full-villa architectural reconfiguration with bespoke fluted bronze panels, curved walnut cabinetry, integrated home automation, and landscaped courtyard pavilions.",
-    images: ["/static/work-myrtle.jpg", "/static/why-us.jpg", "/static/hero.jpg"],
-  },
-  "3": {
-    _id: "3",
-    id: "3",
-    title: "DIFC Corporate Headquarters",
-    name: "DIFC Corporate Headquarters",
-    location: "Gate Precinct, DIFC, Dubai",
-    size: "18,200 sq.ft",
-    scope: "Acoustic Engineering, Turnkey Commercial Fit-Out & Authority Approvals",
-    sector: "Corporate HQ",
-    description: "State-of-the-art financial atelier with frameless double-glazed partitions, micro-cement reception monoliths, and integrated ergonomic executive suites.",
-    images: ["/static/work-clifton.jpg", "/static/work-runic.jpg", "/static/work-oh-office.jpg"],
-  },
-  "4": {
-    _id: "4",
-    id: "4",
-    title: "Al Quoz Design Pavilion",
-    name: "Al Quoz Design Pavilion",
-    location: "Al Quoz Creative Zone, Dubai",
-    size: "8,500 sq.ft",
-    scope: "Industrial Architecture, Bench Fabrication & Exhibition Space",
-    sector: "Atelier & Gallery",
-    description: "Exposed structural steel elements, blackened hot-rolled metal panels, monolithic poured terrazzo floors, and bespoke prototyping workbenches.",
-    images: ["/static/work-runic.jpg", "/static/studio.jpg", "/static/work-clifton.jpg"],
-  },
-  "5": {
-    _id: "5",
-    id: "5",
-    title: "Dubai Hills Modern Sanctuary",
-    name: "Dubai Hills Modern Sanctuary",
-    location: "Dubai Hills Estate, Dubai",
-    size: "11,800 sq.ft",
-    scope: "Turnkey Interior Fit-Out, Custom Wardrobes & Smart MEP",
-    sector: "Residential Penthouse",
-    description: "A serene urban sanctuary celebrating subtle natural tones, continuous limestone floor slabs, custom slatted timber walls, and minimalist flush doors.",
-    images: ["/static/work-stanley.jpg", "/static/work-myrtle.jpg", "/static/hero.jpg"],
-  },
-  "6": {
-    _id: "6",
-    id: "6",
-    title: "Downtown Fashion Concept Store",
-    name: "Downtown Fashion Concept Store",
-    location: "Downtown Dubai, UAE",
-    size: "6,200 sq.ft",
-    scope: "High-End Retail Fit-Out, Architectural Glazing & Lighting",
-    sector: "Luxury Retail",
-    description: "Sculptural retail destination featuring sandblasted cast glass fixtures, brushed nickel garment rails, and museum-grade color rendering index lighting.",
-    images: ["/static/work-samford.jpg", "/static/work-stanley.jpg", "/static/work-runic.jpg"],
-  },
+const FALLBACK_HERO = "/static/hero-bg.jpg";
+const FALLBACK_IMAGES = [
+  "/static/hero-aperture-v2.webp",
+  "/static/work-oh-office.jpg",
+  "/static/Office-fit-out.jpg",
+  "/static/joinery-bay.jpg",
+  "/static/hero-editorial.webp",
+  "/static/studio.jpg",
+];
+const handleProjectImgError = (idx) => (e) => {
+  if (!e.currentTarget.dataset.fallbackApplied) {
+    e.currentTarget.dataset.fallbackApplied = "1";
+    e.currentTarget.src = FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
+  }
 };
-
-const FALLBACK_HERO =
-  "https://images.unsplash.com/photo-1758448721205-8465cebc26af?auto=format&fit=crop&w=1800&q=80";
 
 /* ---------------- helpers: map whatever the API returns ---------------- */
 
-// Absolute URLs are used as-is; stored paths are resolved via itemPath
-const photoUrl = (path = "") =>
-  /^https?:\/\//i.test(path) || /^\/static\//i.test(path) || /^\/images\//i.test(path)
+// Absolute / local static URLs are used as-is; stored paths are resolved via itemPath
+const photoUrl = (path = "") => {
+  if (!path) return "";
+  return /^(https?:|data:|blob:|\/static\/|\/images\/|\/uploads\/)/i.test(path)
     ? path
     : `${itemPath ?? ""}/${String(path).replace(/^\/+/, "")}`;
+};
 
 // Works with `{ data: { data: {...} } }`, `{ data: {...} }` and `{ data: { project: {...} } }`
 const toProject = (res) => {
@@ -165,15 +106,17 @@ let lastServerVersion; // result of the most recent version request
 
 function readCache(id) {
   const key = String(id);
-  if (memoryCache.has(key)) return memoryCache.get(key);
   try {
     const raw = localStorage.getItem(CACHE_PREFIX + key);
-    if (raw) {
-      const entry = JSON.parse(raw);
-      if (entry?.project) {
-        memoryCache.set(key, entry);
-        return entry;
-      }
+    if (!raw) {
+      memoryCache.delete(key);
+      return null;
+    }
+    if (memoryCache.has(key)) return memoryCache.get(key);
+    const entry = JSON.parse(raw);
+    if (entry?.project) {
+      memoryCache.set(key, entry);
+      return entry;
     }
   } catch {
     /* ignore */
@@ -192,8 +135,8 @@ function writeCache(id, project, version) {
   }
 }
 
-// Call from your admin panel after add / edit / delete (same browser only)
-export function clearProjectDetailsCache(id) {
+// Clear cache entries when triggered via admin invalidation
+function clearProjectDetailsCache(id) {
   lastVersionCheck = 0;
   lastServerVersion = undefined;
   try {
@@ -239,9 +182,47 @@ function fetchProject(id, version) {
   return p;
 }
 
+async function resolveProjectDetail(projectId, force = false) {
+  const cached = force ? null : readCache(projectId);
+  try {
+    const checkedRecently = !force && Date.now() - lastVersionCheck < VERSION_CHECK_INTERVAL;
+
+    if (cached && checkedRecently) {
+      return { skipped: true, hasCache: true };
+    }
+
+    let serverVersion;
+    if (checkedRecently) {
+      serverVersion = lastServerVersion;
+    } else {
+      serverVersion = await fetchServerVersion();
+      lastServerVersion = serverVersion;
+      lastVersionCheck = Date.now();
+    }
+
+    if (cached) {
+      const versionKnown = serverVersion !== undefined;
+      const upToDate = versionKnown
+        ? cached.version === serverVersion
+        : Date.now() - cached.savedAt < CACHE_TTL;
+      if (upToDate) return { skipped: true, hasCache: true };
+    }
+
+    const data = await fetchProject(projectId, serverVersion);
+    return { skipped: false, data, hasCache: !!cached };
+  } catch (err) {
+    err.hasCache = !!cached;
+    throw err;
+  }
+}
+
 export default function ProjectDetailsPage() {
   const { projectId } = useParams();
+  return <ProjectDetailsInner key={projectId} projectId={projectId} />;
+}
 
+function ProjectDetailsInner({ projectId }) {
+  const location = useLocation();
   const initial = readCache(projectId);
   const [project, setProject] = useState(initial?.project ?? null);
   const [loading, setLoading] = useState(!initial); // no spinner if cache exists
@@ -251,70 +232,112 @@ export default function ProjectDetailsPage() {
   const [lightbox, setLightbox] = useState(null);
   const stripRef = useRef(null);
 
+  const startFetch = useCallback(
+    (force = false) => {
+      let cancelled = false;
+      resolveProjectDetail(projectId, force)
+        .then((res) => {
+          if (cancelled || res.skipped) return;
+          if (!res.data) {
+            setProject(null);
+            setError("The requested architectural case study could not be found.");
+          } else {
+            setProject(res.data);
+            setError("");
+          }
+        })
+        .catch((err) => {
+          console.error("Project load failed:", err);
+          if (!cancelled && !err?.hasCache) {
+            setProject(null);
+            setError("The requested architectural case study could not be found.");
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    },
+    [projectId],
+  );
+
   /* ---------- load the project (cache first, API only if data changed) ---------- */
   useEffect(() => {
-    let cancelled = false;
-    const cached = readCache(projectId);
-
-    setActive(0);
-    setLightbox(null);
-    setError("");
-    setProject(cached?.project ?? null);
-    setLoading(!cached);
-
-    (async () => {
-      try {
-        const checkedRecently = Date.now() - lastVersionCheck < VERSION_CHECK_INTERVAL;
-
-        // Checked recently and we have this project -> trust the cache, send no request
-        if (cached && checkedRecently) return;
-
-        // Tiny request: has the data changed on the server?
-        let serverVersion;
-        if (checkedRecently) {
-          serverVersion = lastServerVersion;
-        } else {
-          serverVersion = await fetchServerVersion();
-          lastServerVersion = serverVersion;
-          lastVersionCheck = Date.now();
-        }
-
-        if (cached) {
-          const versionKnown = serverVersion !== undefined;
-          const upToDate = versionKnown
-            ? cached.version === serverVersion
-            : Date.now() - cached.savedAt < CACHE_TTL;
-          if (upToDate) return; // nothing changed -> skip getById
-        }
-
-        // First visit, or data changed -> fetch fresh data and cache it
-        const data = await fetchProject(projectId, serverVersion);
-        if (cancelled) return;
-        if (!data) {
-          setProject(null);
-          setProject(CURATED_DETAILS[String(projectId)] || CURATED_DETAILS["1"]); setError("");
-        } else {
-          setProject(data);
-          setError("");
-        }
-      } catch (err) {
-        if (cancelled) return;
-        console.error("Project load failed:", err);
-        if (!cached) {
-          const fallback = CURATED_DETAILS[String(projectId)] || CURATED_DETAILS["1"];
-          setProject(fallback);
-          setError("");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-
     window.scrollTo?.(0, 0);
-    return () => {
-      cancelled = true;
+    let cancel = startFetch(false);
+
+    const handleSync = () => {
+      clearProjectDetailsCache(projectId);
+      cancel?.();
+      cancel = startFetch(true);
     };
-  }, [projectId]);
+    const unsubscribe = subscribeCacheInvalidation((scope, id) => {
+      if (
+        (scope === "projects" || scope === "project-details") &&
+        (!id || String(id) === String(projectId))
+      ) {
+        handleSync();
+      }
+    });
+    const onStorage = (e) => {
+      if (!e.key || e.key === CACHE_PREFIX + String(projectId)) handleSync();
+    };
+    window.addEventListener("projects-updated", handleSync);
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      cancel?.();
+      unsubscribe();
+      window.removeEventListener("projects-updated", handleSync);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [projectId, startFetch]);
+
+  /* ---------- SEO metadata override per project / not-found ---------- */
+  useEffect(() => {
+    if (loading) return;
+    if (error || !project) {
+      window.dispatchEvent(
+        new CustomEvent("seo-update", {
+          detail: {
+            pathname: location.pathname,
+            title: "Project Not Found | Yashmeen Fit-Out Dubai",
+            description:
+              "The requested architectural case study could not be found. Browse completed projects by Yashmeen Future Building in Dubai.",
+            robots: "noindex, follow",
+          },
+        }),
+      );
+      return;
+    }
+
+    const projectTitle =
+      pick(project, ["title", "name", "projectName", "project_name"]) || "Project Case Study";
+    const desc =
+      pick(project, ["description", "summary", "scope"]) ||
+      `Architectural specifications and fit-out execution for ${projectTitle} in Dubai by Yashmeen Future Building.`;
+    const heroImg = getImages(project)[0] || "/static/hero-editorial.webp";
+    window.dispatchEvent(
+      new CustomEvent("seo-update", {
+        detail: {
+          pathname: location.pathname,
+          title: `${projectTitle} | Yashmeen Fit-Out Dubai`,
+          description: String(desc).replace(/\s+/g, " ").trim().slice(0, 160),
+          image: heroImg,
+          robots: "index, follow",
+        },
+      }),
+    );
+  }, [loading, error, project, location.pathname]);
+
+  useEffect(() => {
+    return () => {
+      window.dispatchEvent(new CustomEvent("seo-update", { detail: null }));
+    };
+  }, []);
 
   /* ---------- derived data ---------- */
   const images = project ? getImages(project) : [];
@@ -383,7 +406,7 @@ export default function ProjectDetailsPage() {
     <div className="page">
       <style>{`
 
-        :root{
+        .page{
           --ink:#1b1a17;
           --dark:#fbfaf7;
           --card:#ffffff;
@@ -409,12 +432,40 @@ export default function ProjectDetailsPage() {
         .edge-showcase{ padding:0 var(--showcase-pad, 0); }
         @media (min-width:768px){ .wrap{ padding:0 40px; } }
 
-        /* STATUS (loading / error) */
+        /* STATUS (loading / not-found) */
         .status{
-          min-height:60vh; display:flex; align-items:center; justify-content:center;
-          text-align:center; padding:24px; font-size:15px; color:var(--gray-500);
+          min-height:60vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+          text-align:center; padding:64px 24px; font-size:15px; color:var(--gray-500);
         }
-        .status.error{ color:#DC2626; }
+        .pd-nf-card{
+          max-width:560px; width:100%; background:#ffffff; border:1px solid var(--gray-200);
+          border-radius:16px; padding:44px 32px; box-shadow:0 16px 36px -24px rgba(27,26,23,0.18);
+        }
+        .pd-nf-kicker{
+          margin:0 0 10px; font-size:11.5px; font-weight:700; letter-spacing:0.14em;
+          text-transform:uppercase; color:var(--brass-deep);
+        }
+        .pd-nf-title{
+          margin:0 0 12px; font-family:var(--font-serif); font-size:clamp(28px,4vw,38px);
+          font-weight:600; line-height:1.18; color:var(--ink);
+        }
+        .pd-nf-copy{
+          margin:0 0 28px; font-size:14.5px; line-height:1.7; color:var(--gray-500);
+        }
+        .pd-nf-actions{
+          display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px;
+        }
+        .pd-nf-primary, .pd-nf-secondary{
+          display:inline-flex; align-items:center; justify-content:center; padding:12px 22px;
+          border-radius:999px; font-size:13px; font-weight:600; text-decoration:none; transition:all .2s ease;
+        }
+        .pd-nf-primary{ background:#1b1a17; color:#ffffff; }
+        .pd-nf-primary:hover{ background:var(--brass-deep); color:#ffffff; }
+        .pd-nf-secondary{ background:transparent; color:var(--ink); border:1px solid var(--gray-200); }
+        .pd-nf-secondary:hover{ border-color:var(--brass); color:var(--brass-deep); }
+        .pd-nf-primary:focus-visible, .pd-nf-secondary:focus-visible{
+          outline:2px solid var(--brass); outline-offset:2px;
+        }
 
         /* HERO */
         .hero{
@@ -596,7 +647,23 @@ export default function ProjectDetailsPage() {
       {loading ? (
         <div className="status">Loading project…</div>
       ) : error || !project ? (
-        <div className="status error">{error || "Project not found."}</div>
+        <section className="status">
+          <div className="pd-nf-card">
+            <p className="pd-nf-kicker">Case Study Unavailable</p>
+            <h1 className="pd-nf-title">Project Not Found</h1>
+            <p className="pd-nf-copy">
+              {error || "This architectural project could not be located or may have been archived."}
+            </p>
+            <div className="pd-nf-actions">
+              <Link to="/projects" className="pd-nf-primary">
+                Browse Selected Work
+              </Link>
+              <Link to="/contact" className="pd-nf-secondary">
+                Contact Us
+              </Link>
+            </div>
+          </div>
+        </section>
       ) : (
         <>
           {/* HERO */}
@@ -617,6 +684,7 @@ export default function ProjectDetailsPage() {
                   className="main-img"
                   src={images[active] ?? images[0]}
                   alt={`${title}, photo ${active + 1}`}
+                  onError={handleProjectImgError(active)}
                 />
 
                 {count > 1 && (
@@ -632,7 +700,7 @@ export default function ProjectDetailsPage() {
                             aria-label={`Show photo ${i + 1}`}
                             onClick={() => setActive(i)}
                           >
-                            <img src={src} alt="" loading="lazy" />
+                            <img src={src} alt="" onError={handleProjectImgError(i)} />
                           </button>
                         ))}
                       </div>
@@ -718,7 +786,7 @@ export default function ProjectDetailsPage() {
                       aria-label={`Open photo ${i + 1} full screen`}
                       onClick={() => setLightbox(i)}
                     >
-                      <img src={src} alt="" loading="lazy" />
+                      <img src={src} alt="" loading="lazy" onError={handleProjectImgError(i)} />
                     </button>
                   ))}
                 </div>
@@ -753,6 +821,7 @@ export default function ProjectDetailsPage() {
                 src={images[lightbox]}
                 alt={`${title}, photo ${lightbox + 1}`}
                 onClick={(e) => e.stopPropagation()}
+                onError={handleProjectImgError(lightbox)}
               />
               <div className="lb-count">{lightbox + 1} / {count}</div>
             </div>

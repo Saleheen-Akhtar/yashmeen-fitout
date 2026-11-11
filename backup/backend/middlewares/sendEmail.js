@@ -14,9 +14,26 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const escapeHtml = (value = "") =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const getFrontendBaseUrl = () =>
+  (process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
+
+export const isEmailConfigured = () =>
+  Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+
 export const sendEmail = async (to, subject, html) => {
+  if (!isEmailConfigured()) {
+    throw new Error("EMAIL_NOT_CONFIGURED");
+  }
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
+    from: process.env.EMAIL_FROM || process.env.SMTP_USER,
     to,
     subject,
     html,
@@ -24,13 +41,26 @@ export const sendEmail = async (to, subject, html) => {
 };
 
 export const sendVerificationEmail = async (to, token) => {
-    const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
+    const verifyUrl = `${getFrontendBaseUrl()}/verify-email?token=${encodeURIComponent(token)}`;
+    const safeUrl = escapeHtml(verifyUrl);
     await sendEmail(
         to,
         "Verify your email",
         `<p>Please verify your email by clicking the link below:</p>
-         <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+         <p><a href="${safeUrl}">${safeUrl}</a></p>
          <p>This link expires in 24 hours.</p>`
+    );
+};
+
+export const sendResetPasswordEmail = async (to, token) => {
+    const resetUrl = `${getFrontendBaseUrl()}/reset-password?token=${encodeURIComponent(token)}`;
+    const safeUrl = escapeHtml(resetUrl);
+    await sendEmail(
+        to,
+        "Reset your password",
+        `<p>You requested a password reset for your Yashmeen Fit-Out account.</p>
+         <p><a href="${safeUrl}">Reset your password</a></p>
+         <p>If you did not request this, you can safely ignore this email. This link expires in 1 hour.</p>`
     );
 };
 
@@ -41,30 +71,23 @@ export const sendEnquiryEmail = async ({
   services,
   message,
 }) => {
+  const serviceList = Array.isArray(services) ? services.join(", ") : services;
+
   await sendEmail(
     process.env.SMTP_USER,
     "New Enquiry",
     `<h3>Enquiry Details</h3>
          <ul>
-           <li><strong>Name:</strong> ${name}</li>
-           <li><strong>Mobile:</strong> ${mobile}</li>
-           <li><strong>Email:</strong> ${email}</li>
-           <li><strong>Service:</strong> ${services}</li>
-           <li><strong>Message:</strong> ${message}</li>
+           <li><strong>Name:</strong> ${escapeHtml(name)}</li>
+           <li><strong>Mobile:</strong> ${escapeHtml(mobile)}</li>
+           <li><strong>Email:</strong> ${escapeHtml(email)}</li>
+           <li><strong>Service:</strong> ${escapeHtml(serviceList)}</li>
+           <li><strong>Message:</strong> ${escapeHtml(message)}</li>
          </ul>
          <p>&copy; ${new Date().getFullYear()} Yashmeen Future Building. All rights reserved.</p>
          `,
   );
 };
-
-
-const escapeHtml = (value = "") =>
-  String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 
 export const sendQuotationEmail = async ( {
   name,

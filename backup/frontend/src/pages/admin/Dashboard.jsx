@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import {
   quoteAPI,
@@ -12,6 +12,10 @@ import {
   DEFAULT_WEBSITE_CONTENT,
   notifyWebsiteContentUpdated,
 } from "../../hooks/useWebsiteContent";
+import {
+  clearProjectsCache,
+  clearProjectDetailsCache,
+} from "../../libs/publicCache";
 import { toast } from "sonner";
 import useCreateStore from "../../store";
 import {
@@ -50,15 +54,15 @@ const STAGES = [
 ];
 
 const SERVICE_IMAGE_PRESETS = [
-  { label: "Villa Aperture", value: "/static/hero-aperture.png" },
+  { label: "Villa Aperture", value: "/static/hero-aperture-v2.webp" },
   { label: "Al Quoz Atelier", value: "/static/studio.jpg" },
   { label: "Joinery Bay", value: "/static/joinery-bay.jpg" },
   { label: "DIFC Office Fit-Out", value: "/static/Office-fit-out.jpg" },
-  { label: "Luxury Residence", value: "/static/hero-editorial.png" },
+  { label: "Luxury Residence", value: "/static/hero-editorial.webp" },
   { label: "Showroom Gallery", value: "/static/work-oh-office.jpg" },
 ];
 
-const FALLBACK_PROJECT_IMG = "/static/hero-aperture.png";
+const FALLBACK_PROJECT_IMG = "/static/hero-aperture-v2.webp";
 
 const resolveImage = (img) => {
   if (!img) return FALLBACK_PROJECT_IMG;
@@ -87,6 +91,42 @@ const formatDateShort = (dateStr) => {
   } catch {
     return "Recent";
   }
+};
+
+const fetchDashboardBundle = async () => {
+  const [qRes, eRes, pRes, cRes, wRes] = await Promise.allSettled([
+    quoteAPI.getAll({ limit: 100 }),
+    enquiryAPI.getAll(),
+    projectAPI.getAll({ limit: 100 }),
+    categoryAPI.getAll(),
+    webDetailsAPI.details(),
+  ]);
+
+  let mergedWeb = null;
+  if (wRes.status === "fulfilled" && wRes.value?.data?.data) {
+    const w = wRes.value.data.data;
+    mergedWeb = {
+      ...DEFAULT_WEBSITE_CONTENT,
+      ...w,
+      address: { ...DEFAULT_WEBSITE_CONTENT.address, ...(w.address || {}) },
+      hero: { ...DEFAULT_WEBSITE_CONTENT.hero, ...(w.hero || {}) },
+      studio: { ...DEFAULT_WEBSITE_CONTENT.studio, ...(w.studio || {}) },
+      services:
+        Array.isArray(w.services) && w.services.length > 0
+          ? w.services
+          : DEFAULT_WEBSITE_CONTENT.services,
+      crmTasks: Array.isArray(w.crmTasks) ? w.crmTasks : [],
+      calendarEvents: Array.isArray(w.calendarEvents) ? w.calendarEvents : [],
+    };
+  }
+
+  return {
+    quotes: qRes.status === "fulfilled" ? qRes.value?.data?.data || qRes.value?.data || [] : null,
+    enquiries: eRes.status === "fulfilled" ? eRes.value?.data?.data || eRes.value?.data || [] : null,
+    projects: pRes.status === "fulfilled" ? pRes.value?.data?.data || [] : null,
+    categories: cRes.status === "fulfilled" ? cRes.value?.data?.data || cRes.value?.data || [] : null,
+    webDetails: mergedWeb,
+  };
 };
 
 export default function Dashboard() {
@@ -152,7 +192,9 @@ export default function Dashboard() {
     active: true,
   });
 
-  const [siteModalOpen, setSiteModalOpen] = useState(false);
+  const [siteModalOpen, setSiteModalOpen] = useState(() =>
+    location.search.includes("open=site-settings")
+  );
   const [siteForm, setSiteForm] = useState(DEFAULT_WEBSITE_CONTENT);
 
   const [calendarModalOpen, setCalendarModalOpen] = useState(false);
@@ -168,47 +210,22 @@ export default function Dashboard() {
   const [addingTask, setAddingTask] = useState(false);
   const [inspectedItem, setInspectedItem] = useState(null);
 
+  const applyDashboardBundle = (bundle) => {
+    if (bundle.quotes !== null) setQuotes(bundle.quotes);
+    if (bundle.enquiries !== null) setEnquiries(bundle.enquiries);
+    if (bundle.projects !== null) setProjects(bundle.projects);
+    if (bundle.categories !== null) setCategories(bundle.categories);
+    if (bundle.webDetails) {
+      setWebDetails(bundle.webDetails);
+      setSiteForm(bundle.webDetails);
+    }
+  };
+
   // Load All Live MongoDB Data
   const loadDashboardData = async () => {
     try {
-      const [qRes, eRes, pRes, cRes, wRes] = await Promise.allSettled([
-        quoteAPI.getAll({ limit: 100 }),
-        enquiryAPI.getAll(),
-        projectAPI.getAll({ limit: 100 }),
-        categoryAPI.getAll(),
-        webDetailsAPI.details(),
-      ]);
-
-      if (qRes.status === "fulfilled") {
-        setQuotes(qRes.value?.data?.data || qRes.value?.data || []);
-      }
-      if (eRes.status === "fulfilled") {
-        setEnquiries(eRes.value?.data?.data || eRes.value?.data || []);
-      }
-      if (pRes.status === "fulfilled") {
-        setProjects(pRes.value?.data?.data || []);
-      }
-      if (cRes.status === "fulfilled") {
-        setCategories(cRes.value?.data?.data || cRes.value?.data || []);
-      }
-      if (wRes.status === "fulfilled" && wRes.value?.data?.data) {
-        const w = wRes.value.data.data;
-        const merged = {
-          ...DEFAULT_WEBSITE_CONTENT,
-          ...w,
-          address: { ...DEFAULT_WEBSITE_CONTENT.address, ...(w.address || {}) },
-          hero: { ...DEFAULT_WEBSITE_CONTENT.hero, ...(w.hero || {}) },
-          studio: { ...DEFAULT_WEBSITE_CONTENT.studio, ...(w.studio || {}) },
-          services:
-            Array.isArray(w.services) && w.services.length > 0
-              ? w.services
-              : DEFAULT_WEBSITE_CONTENT.services,
-          crmTasks: Array.isArray(w.crmTasks) ? w.crmTasks : [],
-          calendarEvents: Array.isArray(w.calendarEvents) ? w.calendarEvents : [],
-        };
-        setWebDetails(merged);
-        setSiteForm(merged);
-      }
+      const bundle = await fetchDashboardBundle();
+      applyDashboardBundle(bundle);
     } catch {
       toast.error("Could not refresh some CRM streams.");
     } finally {
@@ -216,26 +233,41 @@ export default function Dashboard() {
     }
   };
 
+  const [prevSearch, setPrevSearch] = useState(location.search);
+  if (prevSearch !== location.search) {
+    setPrevSearch(location.search);
+    if (location.search.includes("open=site-settings")) {
+      setSiteForm(webDetails);
+      setSiteModalOpen(true);
+    }
+  }
+
   useEffect(() => {
     webDetailsRef.current = webDetails;
   }, [webDetails]);
 
   useEffect(() => {
-    loadDashboardData();
+    let cancelled = false;
+    fetchDashboardBundle()
+      .then((bundle) => {
+        if (!cancelled) applyDashboardBundle(bundle);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Could not refresh some CRM streams.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
     const onOpenSettings = () => {
       setSiteForm(webDetailsRef.current);
       setSiteModalOpen(true);
     };
     window.addEventListener("open-cms-settings", onOpenSettings);
-    return () => window.removeEventListener("open-cms-settings", onOpenSettings);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("open-cms-settings", onOpenSettings);
+    };
   }, []);
-
-  useEffect(() => {
-    if (location.search.includes("open=site-settings")) {
-      setSiteForm(webDetailsRef.current);
-      setSiteModalOpen(true);
-    }
-  }, [location.search, webDetails]);
 
   // Studio Session Stopwatch Effect
   useEffect(() => {
@@ -414,11 +446,11 @@ export default function Dashboard() {
         ];
 
   const featuredProj = projects[featuredIndex % Math.max(projects.length, 1)] || {
-    title: "Palm Jumeirah Atelier",
+    title: "Atelier Showcase",
     sector: "Luxury Residential",
     location: "Dubai, UAE",
     size: "14,500 sq.ft",
-    images: ["/static/hero-aperture.png"],
+    images: ["/static/hero-aperture-v2.webp"],
   };
 
   // Horizontal Capsule Strip Percentages (derived dynamically from real database totals)
@@ -593,7 +625,8 @@ export default function Dashboard() {
       }
 
       setProjectModalOpen(false);
-      localStorage.removeItem("photogallery:data:v5");
+      clearProjectsCache();
+      clearProjectDetailsCache(editingProject?._id);
       window.dispatchEvent(new CustomEvent("projects-updated"));
       await loadDashboardData();
     } catch (err) {
@@ -608,7 +641,8 @@ export default function Dashboard() {
     try {
       await projectAPI.delete(id);
       toast.success("Project removed from website");
-      localStorage.removeItem("photogallery:data:v5");
+      clearProjectsCache();
+      clearProjectDetailsCache(id);
       window.dispatchEvent(new CustomEvent("projects-updated"));
       await loadDashboardData();
     } catch (err) {
@@ -1701,7 +1735,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Accordion 2: Services (Default Open — mirrors "Devices -> MacBook Air" card) */}
+          {/* Accordion 2: Services (Default Open - mirrors "Devices -> MacBook Air" card) */}
           <div style={{ borderBottom: "1px solid var(--crex-line)", paddingBottom: "12px", marginBottom: "10px" }}>
             <button
               type="button"

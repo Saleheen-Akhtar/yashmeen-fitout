@@ -2,15 +2,16 @@ import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { SpatialGallery3D } from "@/components/ui/spatial-gallery-3d";
 import { categoryAPI, galleryAPI, itemPath } from "../../services/api";
+import { subscribeCacheInvalidation } from "../../libs/publicCache";
 
 const FALLBACK_GALLERY_IMAGES = [
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1280&h=720&fit=crop&auto=format&q=80",
-  "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=1280&h=720&fit=crop&auto=format&q=80",
-  "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1280&h=720&fit=crop&auto=format&q=80",
-  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1280&h=720&fit=crop&auto=format&q=80",
-  "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1280&h=720&fit=crop&auto=format&q=80",
-  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1280&h=720&fit=crop&auto=format&q=80",
-  "https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=1280&h=720&fit=crop&auto=format&q=80",
+  "/static/hero-bg.jpg",
+  "/static/hero-banner.jpg",
+  "/static/studio.jpg",
+  "/static/Office-fit-out.jpg",
+  "/static/Residential-Fit-Out.jpg",
+  "/static/joinery-bay.jpg",
+  "/static/design-desk.jpg",
 ];
 
 // Clean editorial display labels for legacy DB category strings while keeping IDs unchanged
@@ -75,23 +76,26 @@ let memoryCache = null;
 let inflight = null;
 
 function readCache() {
-  if (memoryCache) return memoryCache;
   try {
     localStorage.removeItem("photogallery:data:v1");
     const raw = localStorage.getItem(CACHE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      const hasBrokenPrefix =
-        Array.isArray(parsed?.photos) &&
-        parsed.photos.some(
-          (p) => typeof p?.src === "string" && p.src.startsWith("/gallery/"),
-        );
-      if (hasBrokenPrefix) {
-        localStorage.removeItem(CACHE_KEY);
-        return null;
-      }
-      memoryCache = parsed;
+    if (!raw) {
+      memoryCache = null;
+      return null;
     }
+    if (memoryCache) return memoryCache;
+    const parsed = JSON.parse(raw);
+    const hasBrokenPrefix =
+      Array.isArray(parsed?.photos) &&
+      parsed.photos.some(
+        (p) => typeof p?.src === "string" && p.src.startsWith("/gallery/"),
+      );
+    if (hasBrokenPrefix) {
+      localStorage.removeItem(CACHE_KEY);
+      memoryCache = null;
+      return null;
+    }
+    memoryCache = parsed;
   } catch {
     /* ignore */
   }
@@ -193,10 +197,14 @@ export default function PhotoGallery() {
       cancel?.();
       cancel = startFetch(null);
     };
+    const unsubscribe = subscribeCacheInvalidation((scope) => {
+      if (scope === "gallery" || scope === "projects") handleSync();
+    });
     window.addEventListener("projects-updated", handleSync);
     window.addEventListener("storage", handleSync);
     return () => {
       cancel?.();
+      unsubscribe();
       window.removeEventListener("projects-updated", handleSync);
       window.removeEventListener("storage", handleSync);
     };
@@ -321,7 +329,7 @@ export default function PhotoGallery() {
       : 0;
 
   return (
-    <main className="w-full bg-[#f5f3ef] text-[#171613]">
+    <div className="w-full bg-[#f5f3ef] text-[#171613]">
       {/* INTERACTIVE 360° CURVED WEBGL ARCHITECTURAL MUSEUM GALLERY */}
       <SpatialGallery3D
         items={spatialItems}
@@ -379,7 +387,7 @@ export default function PhotoGallery() {
             </button>
           </div>
 
-          {/* Intrinsic Print Viewing Stage — Click Open Margin Around Artwork to Close */}
+          {/* Intrinsic Print Viewing Stage - Click Open Margin Around Artwork to Close */}
           <div className="relative z-10 mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 items-center justify-center py-4 sm:py-6">
             {hasMultipleLightboxPhotos && (
               <button
@@ -494,6 +502,6 @@ export default function PhotoGallery() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
 import {
   FiCheck,
@@ -16,18 +17,11 @@ import {
   FiClock,
 } from "react-icons/fi";
 
-// Helper to keep Unsplash URLs short
-const unsplash = (id, w = 900) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
+// Hero & Intro: local studio assets
+const CONS_HERO_BG_IMAGE = "/static/production-facility.jpg";
+const CONS_INTRO_IMAGE = "/static/joinery-bay.jpg";
 
-// Replace these with your own project photos (best: local assets)
-// Hero: building under construction
-const CONS_HERO_BG_IMAGE = unsplash("photo-1541888946425-d81bb19240f5", 1800);
-// Intro: construction site team at work
-const CONS_INTRO_IMAGE = unsplash("photo-1504307651254-35680f356dfd", 900);
-
-// Replace with your real YouTube embed URL: https://www.youtube.com/embed/VIDEO_ID
-const CONS_VIDEO_URL = "https://www.youtube.com/embed/C0JYhtQcsGk";
+const CONS_VIDEO_URL = "https://www.youtube-nocookie.com/embed/C0JYhtQcsGk";
 
 // Placeholder numbers - replace with your real figures
 const CONS_STATS = [
@@ -131,17 +125,17 @@ const CONS_PROJECTS = [
   {
     title: "Private Villa - New Build",
     tag: "Residential",
-    img: unsplash("photo-1613490493576-7fde63acd811"), // finished modern villa
+    img: "/static/work-stanley.jpg",
   },
   {
     title: "Office Building Construction",
     tag: "Commercial",
-    img: unsplash("photo-1486406146926-c627a92ad1ab"), // office building exterior
+    img: "/static/work-oh-office.jpg",
   },
   {
     title: "Villa Extension & Renovation",
     tag: "Renovation",
-    img: unsplash("photo-1503594384566-461fe158e797"), // building works in progress
+    img: "/static/raw-space.jpg",
   },
 ];
 
@@ -469,8 +463,8 @@ export default function Construction() {
           width:52px;
           height:52px;
           border-radius:50%;
-          background:rgba(169,121,63,0.2);
-          color:#E1B27A;
+          background:rgba(169,121,63,0.16);
+          color:var(--conspg-brass-deep);
           display:flex;
           align-items:center;
           justify-content:center;
@@ -635,6 +629,7 @@ export default function Construction() {
         .conspg-cta-section{ padding:0 0 88px; background:var(--conspg-gray-50); }
         .conspg-cta-box{
           background:var(--conspg-black);
+          border:1px solid var(--conspg-gray-200);
           border-radius:10px;
           padding:44px 28px;
           display:flex;
@@ -674,8 +669,8 @@ export default function Construction() {
         .conspg-cta-link-label{
           display:flex;
           align-items:center;
-          background:var(--conspg-black);
-          color:var(--conspg-ink);
+          background:#1b1a17;
+          color:#ffffff;
           padding:15px 26px;
           font-size:14.5px;
           font-weight:700;
@@ -692,6 +687,11 @@ export default function Construction() {
           transition:background-color .15s ease;
         }
         .conspg-cta-link:hover .conspg-cta-link-icon{ background:var(--conspg-brass-deep); }
+        .conspg-faq-question:focus-visible,
+        .conspg-cta-link:focus-visible{
+          outline:2px solid var(--conspg-brass-deep);
+          outline-offset:2px;
+        }
       `}</style>
 
       {/* HERO BAND */}
@@ -876,6 +876,7 @@ export default function Construction() {
               src={CONS_VIDEO_URL}
               title="Construction project film"
               loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
             />
@@ -956,12 +957,12 @@ export default function Construction() {
                 quotation.
               </p>
             </div>
-            <a href="/contact" className="conspg-cta-link">
+            <Link to="/contact" className="conspg-cta-link">
               <span className="conspg-cta-link-label">Get in Touch</span>
               <span className="conspg-cta-link-icon">
                 <FiArrowRight size={18} />
               </span>
-            </a>
+            </Link>
           </div>
         </div>
       </section>

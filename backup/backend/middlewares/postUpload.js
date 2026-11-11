@@ -4,7 +4,13 @@ import fs from "fs";
 import os from "os";
 
 const isVercel = Boolean(process.env.VERCEL);
-const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const MIME_TO_EXT = {
+    "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+};
+const allowedTypes = Object.keys(MIME_TO_EXT);
 const uploadDir = isVercel ? path.join(os.tmpdir(), "uploads", "posts") : "uploads/posts";
 
 const ensureUploadDir = () => {
@@ -28,7 +34,11 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        cb(null, uniqueName + path.extname(file.originalname));
+        const ext = MIME_TO_EXT[String(file.mimetype || "").toLowerCase()];
+        if (!ext) {
+            return cb(new Error("Invalid file type. Only JPG, JPEG, PNG, and WebP formats are allowed."));
+        }
+        cb(null, uniqueName + ext);
     },
 });
 

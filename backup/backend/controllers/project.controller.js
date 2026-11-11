@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
 import ProjectModel from '../models/project.model.js'; // adjust path as needed
+import CategoryModel from '../models/category.model.js';
 
 // Physical folder where multer saves files: <project>/uploads/projects/<filename>
 // The DB stores only "/projects/<filename>" (relative to the uploads folder).
@@ -112,7 +113,25 @@ export const createProject = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        return res.status(500).json({ success: false, message: "Failed to create project", error: error.message });
+        console.error("Failed to create project:", error);
+        return res.status(500).json({ success: false, message: "Failed to create project" });
+    }
+};
+
+export const getProjectsVersion = async (req, res) => {
+    try {
+        const [pCount, pLatest, cCount, cLatest] = await Promise.all([
+            ProjectModel.countDocuments(),
+            ProjectModel.findOne().sort({ updatedAt: -1 }).select("updatedAt").lean(),
+            CategoryModel.countDocuments(),
+            CategoryModel.findOne().sort({ updatedAt: -1 }).select("updatedAt").lean(),
+        ]);
+        const pMs = pLatest?.updatedAt ? new Date(pLatest.updatedAt).getTime() : 0;
+        const cMs = cLatest?.updatedAt ? new Date(cLatest.updatedAt).getTime() : 0;
+        return res.status(200).json({ success: true, version: `${pCount}:${pMs}:${cCount}:${cMs}` });
+    } catch (error) {
+        console.error("Failed to compute project version:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch project version" });
     }
 };
 
@@ -131,7 +150,8 @@ export const getAllProjects = async (req, res) => {
         const projects = await ProjectModel.find(filter).populate('categoryId').sort({ createdAt: -1 });
         return res.status(200).json({ success: true, data: projects });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch projects", error: error.message });
+        console.error("Failed to fetch projects:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch projects" });
     }
 };
 
@@ -149,7 +169,8 @@ export const getProjectById = async (req, res) => {
 
         return res.status(200).json({ success: true, data: project });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch project", error: error.message });
+        console.error("Failed to fetch project:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch project" });
     }
 };
 
@@ -246,7 +267,8 @@ export const updateProject = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        return res.status(500).json({ success: false, message: "Failed to update project", error: error.message });
+        console.error("Failed to update project:", error);
+        return res.status(500).json({ success: false, message: "Failed to update project" });
     }
 };
 
@@ -266,6 +288,7 @@ export const deleteProject = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Project deleted successfully" });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to delete project", error: error.message });
+        console.error("Failed to delete project:", error);
+        return res.status(500).json({ success: false, message: "Failed to delete project" });
     }
 };

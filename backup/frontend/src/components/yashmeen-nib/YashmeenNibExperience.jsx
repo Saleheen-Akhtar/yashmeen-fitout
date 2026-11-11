@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { FiArrowRight, FiX } from "react-icons/fi";
+import { FiArrowRight } from "react-icons/fi";
 import "../../styles/yashmeen-nib.css";
 
 // Register GreenSock ScrollTrigger
@@ -348,28 +348,12 @@ export default function YashmeenNibExperience() {
   // --------------------------------------------------------------------------
   // 1. PRELOADER & INTRO ENTRANCE ANIMATION
   // --------------------------------------------------------------------------
-  const runSequence = useCallback(() => {
+  useEffect(() => {
     if (timelineRef.current) {
       timelineRef.current.kill();
       timelineRef.current = null;
     }
 
-    if (reducedMotion) {
-      setProgress(100);
-      setIsPreloading(false);
-      if (backdropRef.current) {
-        backdropRef.current.style.opacity = "0";
-        backdropRef.current.style.display = "none";
-      }
-      gsap.set(".mod-scroll__intro .splitline .char", { y: "0%" });
-      gsap.set(".mod-scroll__intro__text p", { opacity: 1, y: 0 });
-      gsap.set(".mod-scroll__intro__menu .menu-item", { y: 0, opacity: 1 });
-      gsap.set(".mod-scroll__images__image-single img", { scale: 1 });
-      return;
-    }
-
-    setIsPreloading(true);
-    setProgress(0);
     if (backdropRef.current) {
       backdropRef.current.style.display = "flex";
       backdropRef.current.style.opacity = "1";
@@ -438,17 +422,14 @@ export default function YashmeenNibExperience() {
         "-=0.5"
       );
     }
-  }, [reducedMotion]);
 
-  useEffect(() => {
-    runSequence();
     return () => {
       if (timelineRef.current) {
         timelineRef.current.kill();
         timelineRef.current = null;
       }
     };
-  }, [runSequence]);
+  }, []);
 
   // --------------------------------------------------------------------------
   // 2. SMOOTH SCROLL (LENIS) + HORIZONTAL PINNED TRACK & VERTICAL PARALLAX
@@ -456,16 +437,6 @@ export default function YashmeenNibExperience() {
   useEffect(() => {
     const modScroll = modScrollRef.current;
     if (!modScroll || !containerRef.current) return undefined;
-
-    if (reducedMotion) {
-      setIsHeaderDark(false);
-      scrollHTriggerRef.current = null;
-      lenisRef.current = null;
-      gsap.set(".mod-scroll > *", { clearProps: "x,transform" });
-      gsap.set(".mod-scroll__images-text__text p span", { opacity: 1 });
-      gsap.set(".mod-scroll__projects__item__text", { opacity: 1, y: 0 });
-      return undefined;
-    }
 
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
@@ -1419,6 +1390,21 @@ export default function YashmeenNibExperience() {
 
               {/* Asymmetric Editorial Headline Grid & Narrative Text */}
               <div className="mod-scroll__intro__content">
+                <h1
+                  style={{
+                    position: "absolute",
+                    width: 1,
+                    height: 1,
+                    padding: 0,
+                    margin: -1,
+                    overflow: "hidden",
+                    clipPath: "inset(50%)",
+                    whiteSpace: "nowrap",
+                    border: 0,
+                  }}
+                >
+                  {`${currentText.line1_a} ${currentText.line1_b} ${currentText.line2_a} ${currentText.line2_b} ${currentText.line3_lead} ${currentText.line3_climax}`}
+                </h1>
                 <div className="mod-scroll__intro__wrap-titles">
                   {/* Col 1, Row 1 */}
                   <div className="mod-scroll__intro__title f-izmir t-titulo-xxl line lh-less is_home">
@@ -2081,7 +2067,7 @@ export default function YashmeenNibExperience() {
             </div>
             <div className="mod-footer__links f-izmir t-subtitulo">
               <Link to="/">Home</Link>
-              <Link to="/about-us">About Us</Link>
+              <Link to="/about">About Us</Link>
               <Link to="/contact">Contact</Link>
             </div>
           </div>

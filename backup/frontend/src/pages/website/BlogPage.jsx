@@ -112,7 +112,7 @@ export default function BlogsPage() {
         </div>
       </header>
 
-      <main className="bp-section">
+      <div className="bp-section">
         <div className="bp-wrap">
           {loading ? (
             <div className="bp-state">Loading articles…</div>
@@ -161,7 +161,7 @@ export default function BlogsPage() {
             </>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

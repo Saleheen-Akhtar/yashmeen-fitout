@@ -57,9 +57,65 @@ export const getRatingDistribution = (reviews) => {
   }));
 };
 
+const AUTH_EXPIRED_MESSAGES = new Set([
+  "jwt expired",
+  "invalid signature",
+  "Invalid or expired session",
+  "No token provided!",
+  "Not authorized, no token provided",
+  "Account not found",
+  "Session expired, please log in again",
+  "Not authorized, invalid or expired token",
+]);
+
 export const tokenExpired = (text) => {
-    if (text === "jwt expired" || text === "invalid signature" || text === "Invalid or expired session" || text == "No token provided!") {
-        localStorage.removeItem("user");
-        window.location.reload();
+  if (AUTH_EXPIRED_MESSAGES.has(text)) {
+    try {
+      localStorage.removeItem("user");
+    } catch {
+      /* ignore */
     }
-}
+    try {
+      sessionStorage.removeItem("user");
+    } catch {
+      /* ignore */
+    }
+    window.location.reload();
+  }
+};
+
+// Mon-Fri 8:30am - 6:00pm Asia/Dubai (GST)
+export const getDubaiAtelierStatus = (now = new Date()) => {
+  try {
+    const timeStr = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Dubai",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(now);
+
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Dubai",
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(now);
+
+    const map = {};
+    for (const part of parts) {
+      map[part.type] = part.value;
+    }
+
+    const weekday = map.weekday || "";
+    const hourNum = Number.parseInt(map.hour ?? "0", 10) % 24;
+    const minNum = Number.parseInt(map.minute ?? "0", 10);
+    const totalMinutes = hourNum * 60 + minNum;
+    const isWeekday = ["Mon", "Tue", "Wed", "Thu", "Fri"].includes(weekday);
+    const isOpen = isWeekday && totalMinutes >= 510 && totalMinutes < 1080;
+
+    return { dubaiTime: timeStr, isOpen };
+  } catch {
+    return { dubaiTime: "Dubai, UAE", isOpen: false };
+  }
+};

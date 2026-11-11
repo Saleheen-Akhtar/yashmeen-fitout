@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function SVG() {
   // .fil4: #006097
   // .fil1: #0088CB
@@ -33,7 +31,7 @@ export default function SVG() {
         .fil1 { fill: ${fil1} }
         .fil3 { fill: ${fil5} }
         .fil6 { fill: #1A6682 }
-        .fil2 { fill: ${fil2}
+        .fil2 { fill: ${fil2} }
         .fil0 { fill: #F9FBFF }
         .fil5 { fill: white }
       `}</style>

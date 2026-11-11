@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
 import {
   FiCheck,
@@ -13,18 +14,11 @@ import {
   FiScissors,
 } from "react-icons/fi";
 
-// Helper to keep Unsplash URLs short
-const unsplash = (id, w = 900) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
+// Hero & Intro: local studio assets
+const INT_HERO_BG_IMAGE = "/static/Residential-Fit-Out.jpg";
+const INT_INTRO_IMAGE = "/static/studio.jpg";
 
-// Replace these with your own project photos (best: local assets)
-// Hero: elegant living room interior
-const INT_HERO_BG_IMAGE = unsplash("photo-1618221195710-dd6b41faaea6", 1800);
-// Intro: designed interior with furniture and décor
-const INT_INTRO_IMAGE = unsplash("photo-1616486338812-3dadae4b4ace", 900);
-
-// Replace with your real YouTube embed URL: https://www.youtube.com/embed/VIDEO_ID
-const INT_VIDEO_URL = "https://www.youtube.com/embed/bt7_sYLWhZg";
+const INT_VIDEO_URL = "https://www.youtube-nocookie.com/embed/bt7_sYLWhZg";
 
 // Placeholder numbers - replace with your real figures
 const INT_STATS = [
@@ -78,22 +72,22 @@ const INT_STYLES = [
   {
     title: "Modern",
     copy: "Clean lines, open layouts and a calm, neutral palette.",
-    img: unsplash("photo-1600210492486-724fe5c67fb0", 800),
+    img: "/static/work-stanley.jpg",
   },
   {
     title: "Contemporary",
     copy: "Current trends blended with warm textures and statement lighting.",
-    img: unsplash("photo-1600607687939-ce8a6c25118c", 800),
+    img: "/static/hero-editorial.webp",
   },
   {
     title: "Classic",
     copy: "Timeless detailing, rich materials and elegant proportions.",
-    img: unsplash("photo-1618219908412-a29a1bb7b86e", 800),
+    img: "/static/Custom-Furniture.jpg",
   },
   {
     title: "Minimalist",
     copy: "Understated spaces where every element has a purpose.",
-    img: unsplash("photo-1598928506311-c55ded91a20c", 800),
+    img: "/static/work-runic.jpg",
   },
 ];
 
@@ -124,17 +118,17 @@ const INT_PROJECTS = [
   {
     title: "Luxury Villa Living Space",
     tag: "Residential",
-    img: unsplash("photo-1600607687920-4e2a09cf159d"), // villa living room
+    img: "/static/hero-aperture-v2.webp",
   },
   {
     title: "Executive Office Interior",
     tag: "Commercial",
-    img: unsplash("photo-1497366811353-6870744d04b2"), // executive office
+    img: "/static/work-clifton.jpg",
   },
   {
     title: "Fine Dining Restaurant",
     tag: "F & B",
-    img: unsplash("photo-1517248135467-4c7edcad34c4"), // restaurant interior
+    img: "/static/work-myrtle.jpg",
   },
 ];
 
@@ -620,6 +614,7 @@ export default function InteriorDesign() {
         .intpg-cta-section{ padding:0 0 88px; }
         .intpg-cta-box{
           background:var(--intpg-black);
+          border:1px solid var(--intpg-gray-200);
           border-radius:10px;
           padding:44px 28px;
           display:flex;
@@ -659,8 +654,8 @@ export default function InteriorDesign() {
         .intpg-cta-link-label{
           display:flex;
           align-items:center;
-          background:var(--intpg-black);
-          color:var(--intpg-ink);
+          background:#1b1a17;
+          color:#ffffff;
           padding:15px 26px;
           font-size:14.5px;
           font-weight:700;
@@ -677,6 +672,11 @@ export default function InteriorDesign() {
           transition:background-color .15s ease;
         }
         .intpg-cta-link:hover .intpg-cta-link-icon{ background:var(--intpg-brass-deep); }
+        .intpg-faq-question:focus-visible,
+        .intpg-cta-link:focus-visible{
+          outline:2px solid var(--intpg-brass-deep);
+          outline-offset:2px;
+        }
       `}</style>
 
       {/* HERO BAND */}
@@ -854,6 +854,7 @@ export default function InteriorDesign() {
               src={INT_VIDEO_URL}
               title="Interior design project film"
               loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
             />
@@ -934,12 +935,12 @@ export default function InteriorDesign() {
                 consultation.
               </p>
             </div>
-            <a href="/contact" className="intpg-cta-link">
+            <Link to="/contact" className="intpg-cta-link">
               <span className="intpg-cta-link-label">Get in Touch</span>
               <span className="intpg-cta-link-icon">
                 <FiArrowRight size={18} />
               </span>
-            </a>
+            </Link>
           </div>
         </div>
       </section>

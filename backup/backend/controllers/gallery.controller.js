@@ -67,7 +67,8 @@ export const createGallery = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        return res.status(500).json({ success: false, message: "Failed to create gallery item", error: error.message });
+        console.error("Failed to create gallery item:", error);
+        return res.status(500).json({ success: false, message: "Failed to create gallery item" });
     }
 };
 
@@ -87,7 +88,8 @@ export const getAllGalleries = async (req, res) => {
         const galleries = await GalleryModel.find(filter).populate('categoryId').lean();
         return res.status(200).json({ success: true, data: galleries });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch gallery items", error: error.message });
+        console.error("Failed to fetch gallery items:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch gallery items" });
     }
 };
 
@@ -105,7 +107,8 @@ export const getGalleryById = async (req, res) => {
 
         return res.status(200).json({ success: true, data: gallery });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch gallery item", error: error.message });
+        console.error("Failed to fetch gallery item:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch gallery item" });
     }
 };
 
@@ -158,7 +161,8 @@ export const updateGallery = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        return res.status(500).json({ success: false, message: "Failed to update gallery item", error: error.message });
+        console.error("Failed to update gallery item:", error);
+        return res.status(500).json({ success: false, message: "Failed to update gallery item" });
     }
 };
 
@@ -178,7 +182,8 @@ export const deleteGallery = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Gallery item deleted successfully" });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to delete gallery item", error: error.message });
+        console.error("Failed to delete gallery item:", error);
+        return res.status(500).json({ success: false, message: "Failed to delete gallery item" });
     }
 };
 
@@ -200,6 +205,7 @@ export const updateGalleryStatus = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Gallery item status updated", data: gallery });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to update gallery item status", error: error.message });
+        console.error("Failed to update gallery item status:", error);
+        return res.status(500).json({ success: false, message: "Failed to update gallery item status" });
     }
 };

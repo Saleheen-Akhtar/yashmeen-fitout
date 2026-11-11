@@ -68,7 +68,8 @@ export const createPopup = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        return res.status(500).json({ success: false, message: "Failed to create popup", error: error.message });
+        console.error("Failed to create popup:", error);
+        return res.status(500).json({ success: false, message: "Failed to create popup" });
     }
 };
 
@@ -82,7 +83,8 @@ export const getAllPopups = async (req, res) => {
         const popups = await PopupModel.find(filter);
         return res.status(200).json({ success: true, data: popups });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch popups", error: error.message });
+        console.error("Failed to fetch popups:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch popups" });
     }
 };
 
@@ -96,10 +98,10 @@ export const getActivePopup = async (req, res) => {
 
         return res.status(200).json({ success: true, data: popup });
     } catch (error) {
+        console.error("Failed to fetch active popup:", error);
         return res.status(500).json({
             success: false,
             message: "Failed to fetch active popup",
-            error: error.message,
         });
     }
 };
@@ -118,7 +120,8 @@ export const getPopupById = async (req, res) => {
 
         return res.status(200).json({ success: true, data: popup });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch popup", error: error.message });
+        console.error("Failed to fetch popup:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch popup" });
     }
 };
 
@@ -164,7 +167,8 @@ export const updatePopup = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        return res.status(500).json({ success: false, message: "Failed to update popup", error: error.message });
+        console.error("Failed to update popup:", error);
+        return res.status(500).json({ success: false, message: "Failed to update popup" });
     }
 };
 
@@ -187,7 +191,8 @@ export const deletePopup = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Popup deleted successfully" });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to delete popup", error: error.message });
+        console.error("Failed to delete popup:", error);
+        return res.status(500).json({ success: false, message: "Failed to delete popup" });
     }
 };
 
@@ -208,6 +213,7 @@ export const updatePopupStatus = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Popup status updated", data: popup });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to update popup status", error: error.message });
+        console.error("Failed to update popup status:", error);
+        return res.status(500).json({ success: false, message: "Failed to update popup status" });
     }
 };

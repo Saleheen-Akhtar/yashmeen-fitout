@@ -1,8 +1,23 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { quoteAPI } from "../../services/api";
 import { FiEye, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
 const PAGE_SIZE = 10;
+
+const loadQuotesData = async ({ targetPage, search }) => {
+  const { data: res } = await quoteAPI.getAll({
+    page: targetPage,
+    limit: PAGE_SIZE,
+    search,
+  });
+  return {
+    quotes: res?.data ?? [],
+    pagination: {
+      total: res?.pagination?.total ?? 0,
+      totalPages: Math.max(res?.pagination?.totalPages ?? 1, 1),
+    },
+  };
+};
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -43,19 +58,17 @@ export default function QuoteManager() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const prevSearchRef = useRef("");
+
   const fetchQuotes = async ({ silent = false, targetPage = page } = {}) => {
     if (!silent) setLoading(true);
     try {
-      const { data: res } = await quoteAPI.getAll({
-        page: targetPage,
-        limit: PAGE_SIZE,
+      const data = await loadQuotesData({
+        targetPage,
         search: debouncedSearch,
       });
-      setQuotes(res?.data ?? []);
-      setPagination({
-        total: res?.pagination?.total ?? 0,
-        totalPages: Math.max(res?.pagination?.totalPages ?? 1, 1),
-      });
+      setQuotes(data.quotes);
+      setPagination(data.pagination);
     } catch (err) {
       setBanner({
         type: "error",
@@ -67,16 +80,38 @@ export default function QuoteManager() {
   };
 
   useEffect(() => {
+    const trimmed = search.trim();
+    if (trimmed === prevSearchRef.current) return undefined;
     const t = setTimeout(() => {
-      setDebouncedSearch(search.trim());
+      prevSearchRef.current = trimmed;
+      setLoading(true);
+      setDebouncedSearch(trimmed);
       setPage(1);
     }, 400);
     return () => clearTimeout(t);
   }, [search]);
 
   useEffect(() => {
-    fetchQuotes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    loadQuotesData({ targetPage: page, search: debouncedSearch })
+      .then((data) => {
+        if (cancelled) return;
+        setQuotes(data.quotes);
+        setPagination(data.pagination);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setBanner({
+          type: "error",
+          text: err?.response?.data?.message || "Failed to load quotations.",
+        });
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [page, debouncedSearch]);
 
   const handleDeleteOld = async () => {
@@ -245,7 +280,10 @@ export default function QuoteManager() {
                     className="adm-btn-secondary"
                     style={{ padding: "6px 14px", fontSize: "12.5px" }}
                     disabled={page <= 1}
-                    onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                    onClick={() => {
+                      setLoading(true);
+                      setPage((p) => Math.max(p - 1, 1));
+                    }}
                   >
                     Previous
                   </button>
@@ -257,7 +295,10 @@ export default function QuoteManager() {
                     className="adm-btn-secondary"
                     style={{ padding: "6px 14px", fontSize: "12.5px" }}
                     disabled={page >= pagination.totalPages}
-                    onClick={() => setPage((p) => p + 1)}
+                    onClick={() => {
+                      setLoading(true);
+                      setPage((p) => p + 1);
+                    }}
                   >
                     Next
                   </button>

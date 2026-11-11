@@ -1,5 +1,4 @@
 import { Fragment, useLayoutEffect, useRef } from "react";
-import { Link } from "react-router-dom";
 import gsap from "gsap";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
 
@@ -160,7 +159,7 @@ export default function Hero() {
             onError={(e) => {
               if (!e.currentTarget.dataset.fallback) {
                 e.currentTarget.dataset.fallback = "1";
-                e.currentTarget.src = "/static/hero-aperture-v2.png";
+                e.currentTarget.src = "/static/hero-bg.jpg";
               }
             }}
           />
@@ -203,9 +202,13 @@ export default function Hero() {
           <strong>{hero.proofMetric || "35,000 sq. ft."}</strong>
           <span>{hero.proofLabel || "Al Quoz atelier"}</span>
         </p>
-        <Link className="aperture-project-link" to="/projects" aria-label="Explore selected projects">
+        <a
+          className="aperture-project-link"
+          href="#manifesto"
+          aria-label="Scroll to explore studio manifesto"
+        >
           SCROLL TO EXPLORE <span aria-hidden="true">↓</span>
-        </Link>
+        </a>
       </div>
     </section>
   );

@@ -1,20 +1,27 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { projectAPI, categoryAPI, itemPath } from "../../services/api";
+import { clearProjectsCache, clearProjectDetailsCache } from "../../libs/publicCache";
 import { FiEdit2, FiImage, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
-const FALLBACK_IMG = "/static/hero-aperture.png";
+const FALLBACK_IMG = "/static/hero-aperture-v2.webp";
 const FETCH_PARAMS = { limit: 1000, page: 1 };
 const MAX_IMAGES = 10;
 const MAX_IMAGE_MB = 5;
 
-const invalidateSiteCaches = () => {
-  try {
-    localStorage.removeItem("photogallery:data:v1");
-    localStorage.removeItem("photogallery:data:v5");
-  } catch {
-    /* ignore */
-  }
+const invalidateSiteCaches = (projectId) => {
+  clearProjectsCache();
+  clearProjectDetailsCache(projectId);
   window.dispatchEvent(new CustomEvent("projects-updated"));
+};
+
+const loadProjectsData = async () => {
+  const { data: res } = await projectAPI.getAll(FETCH_PARAMS);
+  return res?.data ?? [];
+};
+
+const loadProjectCategoriesData = async () => {
+  const { data: res } = await categoryAPI.getAll(FETCH_PARAMS);
+  return res?.data ?? [];
 };
 
 const getCategoryId = (p) =>
@@ -70,8 +77,8 @@ export default function ProjectManager() {
   const fetchProjects = async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
     try {
-      const { data: res } = await projectAPI.getAll(FETCH_PARAMS);
-      setProjects(res?.data ?? []);
+      const list = await loadProjectsData();
+      setProjects(list);
     } catch (err) {
       setBanner({
         type: "error",
@@ -82,21 +89,40 @@ export default function ProjectManager() {
     }
   };
 
-  const fetchCategories = async () => {
-    try {
-      const { data: res } = await categoryAPI.getAll(FETCH_PARAMS);
-      setCategories(res?.data ?? []);
-    } catch (err) {
-      setBanner({
-        type: "error",
-        text: err?.response?.data?.message || "Failed to load categories.",
-      });
-    }
-  };
-
   useEffect(() => {
-    fetchProjects();
-    fetchCategories();
+    let cancelled = false;
+    loadProjectsData()
+      .then((list) => {
+        if (!cancelled) setProjects(list);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setBanner({
+            type: "error",
+            text: err?.response?.data?.message || "Failed to load projects.",
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    loadProjectCategoriesData()
+      .then((list) => {
+        if (!cancelled) setCategories(list);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setBanner({
+            type: "error",
+            text: err?.response?.data?.message || "Failed to load categories.",
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const resetNewFiles = () => {
@@ -225,7 +251,7 @@ export default function ProjectManager() {
         setBanner({ type: "success", text: "Project created and published to live site." });
       }
       await fetchProjects({ silent: true });
-      invalidateSiteCaches();
+      invalidateSiteCaches(editingId || undefined);
       resetNewFiles();
       setModalOpen(false);
     } catch (err) {
@@ -249,7 +275,7 @@ export default function ProjectManager() {
     try {
       await projectAPI.delete(deleteTarget._id);
       setProjects((prev) => prev.filter((p) => p._id !== deleteTarget._id));
-      invalidateSiteCaches();
+      invalidateSiteCaches(deleteTarget._id);
       setBanner({ type: "success", text: `"${deleteTarget.title}" deleted.` });
       setDeleteTarget(null);
     } catch (err) {

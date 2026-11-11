@@ -8,7 +8,7 @@ export const DEFAULT_SERVICES = [
         eyebrow: "CONCEPT TO AUTHORITIES",
         shortDesc: "Concept planning, Dubai Municipality & developer approvals, and structural coordination.",
         description: "End-to-end architectural planning, authority submissions, structural design and build coordination for luxury residential villas and flagship commercial developments across the UAE.",
-        image: "/static/hero-aperture.png",
+        image: "/static/hero-aperture-v2.webp",
         route: "/services/architecture",
         active: true,
         highlights: [
@@ -200,9 +200,10 @@ export const getWebDetails = async (req, res) => {
             data: details,
         });
     } catch (error) {
+        console.error("Failed to fetch website details:", error);
         return res.status(500).json({
             success: false,
-            message: error.message || "Failed to fetch website details.",
+            message: "Failed to fetch website details.",
         });
     }
 };
@@ -291,9 +292,10 @@ export const updateWebDetails = async (req, res) => {
             });
         }
 
+        console.error("Failed to update website details:", error);
         return res.status(500).json({
             success: false,
-            message: error.message || "Failed to update website details.",
+            message: "Failed to update website details.",
         });
     }
 };

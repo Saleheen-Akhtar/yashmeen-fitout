@@ -1,9 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { itemPath, popupAPI } from "../../services/api";
 import { FiImage, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
 const MAX_FILE_MB = 5;
-const FALLBACK_IMG = "/static/hero-aperture.png";
+const FALLBACK_IMG = "/static/hero-aperture-v2.webp";
+
+const loadPopupsData = async () => {
+  const { data: res } = await popupAPI.getAll();
+  return res?.data ?? [];
+};
 
 const resolveImage = (photo) => {
   if (!photo) return "";
@@ -69,8 +74,8 @@ export default function PopupManager() {
   const fetchPopups = async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
     try {
-      const { data: res } = await popupAPI.getAll();
-      setPopups(res?.data ?? []);
+      const list = await loadPopupsData();
+      setPopups(list);
     } catch (err) {
       setBanner({
         type: "error",
@@ -82,7 +87,25 @@ export default function PopupManager() {
   };
 
   useEffect(() => {
-    fetchPopups();
+    let cancelled = false;
+    loadPopupsData()
+      .then((list) => {
+        if (!cancelled) setPopups(list);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setBanner({
+            type: "error",
+            text: err?.response?.data?.message || "Failed to load popups.",
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {

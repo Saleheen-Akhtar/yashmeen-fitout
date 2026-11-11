@@ -46,14 +46,27 @@ export const createVacancy = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        return res.status(500).json({ success: false, message: "Failed to create vacancy", error: error.message });
+        console.error("Failed to create vacancy:", error);
+        return res.status(500).json({ success: false, message: "Failed to create vacancy" });
+    }
+};
+
+export const getVacanciesVersion = async (req, res) => {
+    try {
+        const [count, latest] = await Promise.all([
+            VacancyModel.countDocuments(),
+            VacancyModel.findOne().sort({ updatedAt: -1 }).select("updatedAt").lean(),
+        ]);
+        const ms = latest?.updatedAt ? new Date(latest.updatedAt).getTime() : 0;
+        return res.status(200).json({ success: true, version: `${count}:${ms}` });
+    } catch (error) {
+        console.error("Failed to fetch vacancy version:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch vacancy version" });
     }
 };
 
 export const getAllVacancies = async (req, res) => {
     try {
-        console.log("clicked");
-        
         const { status } = req.query;
         const filter = {};
         if (status) filter.status = status;
@@ -61,7 +74,8 @@ export const getAllVacancies = async (req, res) => {
         const vacancies = await VacancyModel.find(filter).sort({ createdAt: -1 });
         return res.status(200).json({ success: true, data: vacancies });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch vacancies", error: error.message });
+        console.error("Failed to fetch vacancies:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch vacancies" });
     }
 };
 
@@ -75,7 +89,8 @@ export const getOpenVacancies = async (req, res) => {
         const vacancies = await VacancyModel.find(filter).sort({ createdAt: -1 });
         return res.status(200).json({ success: true, data: vacancies });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch vacancies", error: error.message });
+        console.error("Failed to fetch open vacancies:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch vacancies" });
     }
 };
 
@@ -92,7 +107,8 @@ export const getVacancyById = async (req, res) => {
         }
         return res.status(200).json({ success: true, data: vacancy });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch vacancy", error: error.message });
+        console.error("Failed to fetch vacancy:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch vacancy" });
     }
 };
 
@@ -133,7 +149,8 @@ export const updateVacancy = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        return res.status(500).json({ success: false, message: "Failed to update vacancy", error: error.message });
+        console.error("Failed to update vacancy:", error);
+        return res.status(500).json({ success: false, message: "Failed to update vacancy" });
     }
 };
 
@@ -150,7 +167,8 @@ export const deleteVacancy = async (req, res) => {
         }
         return res.status(200).json({ success: true, message: "Vacancy deleted successfully" });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to delete vacancy", error: error.message });
+        console.error("Failed to delete vacancy:", error);
+        return res.status(500).json({ success: false, message: "Failed to delete vacancy" });
     }
 };
 
@@ -173,6 +191,7 @@ export const updateVacancyStatus = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Vacancy status updated", data: vacancy });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to update vacancy status", error: error.message });
+        console.error("Failed to update vacancy status:", error);
+        return res.status(500).json({ success: false, message: "Failed to update vacancy status" });
     }
 };

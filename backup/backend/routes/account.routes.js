@@ -9,11 +9,11 @@ import {
     forgotPassword,
     resetPassword,
 } from "../controllers/account.controller.js";
-import { protect } from "../middlewares/auth.js";
+import { protect, adminOnly } from "../middlewares/auth.js";
 
 const accountRouter = express.Router();
 
-accountRouter.post("/create", register);
+accountRouter.post("/create", protect, adminOnly, register);
 accountRouter.get("/verify-email", verifyEmail);
 accountRouter.post("/resend-verification", resendVerificationEmail);
 accountRouter.post("/login", login);

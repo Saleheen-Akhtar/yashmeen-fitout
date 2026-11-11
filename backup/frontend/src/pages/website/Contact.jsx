@@ -4,33 +4,10 @@ import { enquiryAPI } from "../../services/api";
 import { SERVICES } from "../../libs/static";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
 
-const INFO_BLOCKS = [
-  {
-    icon: FiPhone,
-    label: "Call Us",
-    lines: ["+971 54 386 2870"],
-  },
-  {
-    icon: FiMail,
-    label: "Email Us",
-    lines: ["info@yfbfitoutcontracting.com"],
-  },
-  {
-    icon: FiMapPin,
-    label: "Address",
-    lines: [
-      "Bay Square, Building 12 - Office G01, Marasi Dr - Business Bay, Bay Square - Dubai - UAE",
-    ],
-  },
-];
-
 const MAP_EMBED_SRC =
   "https://maps.google.com/maps?q=Bay%20Square%2C%20Building%2012%20-%20Office%20G01%2C%20Marasi%20Dr%20-%20Business%20Bay%2C%20Bay%20Square%20-%20Dubai%20-%20UAE&t=&z=16&ie=UTF8&iwloc=&output=embed";
 
-// Replace with your own fit-out / interior image (best: a local asset)
-// e.g. import heroBg from "../../assets/contact-hero.jpg";
-const HERO_BG_IMAGE =
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1800&q=80";
+const HERO_BG_IMAGE = "/static/hero-bg.jpg";
 
 const INITIAL_FORM = {
   name: "",
@@ -343,6 +320,18 @@ export default function ContactPage() {
           min-height:120px;
         }
 
+        .contactpg-sr-only{
+          position:absolute;
+          width:1px;
+          height:1px;
+          padding:0;
+          margin:-1px;
+          overflow:hidden;
+          clip:rect(0,0,0,0);
+          white-space:nowrap;
+          border:0;
+        }
+
         .contactpg-submit-row{
           display:flex;
           align-items:stretch;
@@ -352,15 +341,22 @@ export default function ContactPage() {
         .contactpg-submit-btn{
           display:flex;
           align-items:center;
-          background:var(--contactpg-black);
-          color:var(--contactpg-ink);
+          background:#1b1a17;
+          color:#ffffff;
           padding:15px 26px;
           font-size:14.5px;
           font-weight:700;
           border-radius:6px 0 0 6px;
           transition:background-color .15s ease;
         }
-        .contactpg-submit-btn:hover{ background:#000000; }
+        .contactpg-submit-btn:hover{
+          background:#000000;
+          color:#ffffff;
+        }
+        .contactpg-submit-btn:focus-visible{
+          outline:2px solid var(--contactpg-brass);
+          outline-offset:2px;
+        }
         .contactpg-submit-btn:disabled{
           opacity:0.65;
           cursor:not-allowed;
@@ -502,65 +498,95 @@ export default function ContactPage() {
                   {error && <div className="contactpg-error-box">{error}</div>}
 
                   <div className="contactpg-form-row">
-                    <input
-                      required
-                      type="text"
-                      name="name"
-                      placeholder="Your Name *"
-                      className="contactpg-field-input"
-                      value={formData.name}
-                      onChange={handleChange}
-                      disabled={loading}
-                    />
-                    <input
-                      required
-                      type="email"
-                      name="email"
-                      placeholder="Your Email *"
-                      className="contactpg-field-input"
-                      value={formData.email}
-                      onChange={handleChange}
-                      disabled={loading}
-                    />
+                    <div>
+                      <label htmlFor="contact-name" className="contactpg-sr-only">
+                        Your Name
+                      </label>
+                      <input
+                        id="contact-name"
+                        required
+                        type="text"
+                        name="name"
+                        placeholder="Your Name *"
+                        className="contactpg-field-input"
+                        value={formData.name}
+                        onChange={handleChange}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="contact-email" className="contactpg-sr-only">
+                        Your Email
+                      </label>
+                      <input
+                        id="contact-email"
+                        required
+                        type="email"
+                        name="email"
+                        placeholder="Your Email *"
+                        className="contactpg-field-input"
+                        value={formData.email}
+                        onChange={handleChange}
+                        disabled={loading}
+                      />
+                    </div>
                   </div>
                   <div className="contactpg-form-row">
-                    <input
-                      required
-                      type="tel"
-                      name="mobile"
-                      placeholder="Your Mobile *"
+                    <div>
+                      <label htmlFor="contact-mobile" className="contactpg-sr-only">
+                        Your Mobile
+                      </label>
+                      <input
+                        id="contact-mobile"
+                        required
+                        type="tel"
+                        name="mobile"
+                        placeholder="Your Mobile *"
+                        className="contactpg-field-input"
+                        value={formData.mobile}
+                        onChange={handleChange}
+                        disabled={loading}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="contact-services" className="contactpg-sr-only">
+                        Select a Service
+                      </label>
+                      <select
+                        id="contact-services"
+                        required
+                        name="services"
+                        className="contactpg-field-input"
+                        value={formData.services}
+                        onChange={handleChange}
+                        disabled={loading}
+                      >
+                        <option value="" disabled>
+                          Select a Service *
+                        </option>
+                        {Array.from(new Set([...(content?.services || []).filter((s) => s.active !== false).map((s) => s.title), ...SERVICES])).map((service) => (
+                          <option key={service} value={service}>
+                            {service}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="contact-message" className="contactpg-sr-only">
+                      Message
+                    </label>
+                    <textarea
+                      id="contact-message"
+                      name="message"
+                      placeholder="Message"
                       className="contactpg-field-input"
-                      value={formData.mobile}
+                      rows={4}
+                      value={formData.message}
                       onChange={handleChange}
                       disabled={loading}
                     />
-                    <select
-                      required
-                      name="services"
-                      className="contactpg-field-input"
-                      value={formData.services}
-                      onChange={handleChange}
-                      disabled={loading}
-                    >
-                      <option value="" disabled>
-                        Select a Service *
-                      </option>
-                      {Array.from(new Set([...(content?.services || []).filter((s) => s.active !== false).map((s) => s.title), ...SERVICES])).map((service) => (
-                        <option key={service} value={service}>
-                          {service}
-                        </option>
-                      ))}
-                    </select>
                   </div>
-                  <textarea
-                    name="message"
-                    placeholder="Message"
-                    className="contactpg-field-input"
-                    rows={4}
-                    value={formData.message}
-                    onChange={handleChange}
-                    disabled={loading}
-                  />
 
                   <div className="contactpg-submit-row">
                     <button

@@ -68,7 +68,8 @@ export const createBanner = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        return res.status(500).json({ success: false, message: "Failed to create banner", error: error.message });
+        console.error("Failed to create banner:", error);
+        return res.status(500).json({ success: false, message: "Failed to create banner" });
     }
 };
 
@@ -82,7 +83,8 @@ export const getAllBanners = async (req, res) => {
         const banners = await BannerModel.find(filter).sort({ order: 1 });
         return res.status(200).json({ success: true, data: banners });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch banners", error: error.message });
+        console.error("Failed to fetch banners:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch banners" });
     }
 };
 
@@ -100,7 +102,8 @@ export const getBannerById = async (req, res) => {
 
         return res.status(200).json({ success: true, data: banner });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to fetch banner", error: error.message });
+        console.error("Failed to fetch banner:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch banner" });
     }
 };
 
@@ -152,7 +155,8 @@ export const updateBanner = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        return res.status(500).json({ success: false, message: "Failed to update banner", error: error.message });
+        console.error("Failed to update banner:", error);
+        return res.status(500).json({ success: false, message: "Failed to update banner" });
     }
 };
 
@@ -172,7 +176,8 @@ export const deleteBanner = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Banner deleted successfully" });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to delete banner", error: error.message });
+        console.error("Failed to delete banner:", error);
+        return res.status(500).json({ success: false, message: "Failed to delete banner" });
     }
 };
 
@@ -194,6 +199,7 @@ export const updateBannerStatus = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Banner status updated", data: banner });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Failed to update banner status", error: error.message });
+        console.error("Failed to update banner status:", error);
+        return res.status(500).json({ success: false, message: "Failed to update banner status" });
     }
 };

@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
+import { authAPI } from "../../services/api";
 /**
  * ForgotPasswordPage - split-screen "reset password" screen for
  * Yashmeen Future Building, a Dubai-based fit-out and design studio.
@@ -96,21 +98,30 @@ export default function ForgotPassword() {
     if (error) setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim()) {
+    const trimmed = email.trim();
+    if (!trimmed) {
       setError("Enter your work email.");
       return;
     }
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
+    if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(trimmed)) {
       setError("Enter a valid email address.");
       return;
     }
 
     setStatus("submitting");
-    setTimeout(() => {
+    try {
+      await authAPI.forgotPassword({ email: trimmed });
       setStatus("sent");
-    }, 1200);
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        "Unable to send reset link right now. Please contact an administrator.";
+      setError(msg);
+      setStatus("idle");
+      toast.error(msg);
+    }
   };
 
   return (
@@ -289,13 +300,12 @@ const styles = {
     gridTemplateColumns: "1fr 1fr",
     minHeight: "100vh",
     width: "100%",
-    fontFamily:
-      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontFamily: "var(--font-sans, 'Plus Jakarta Sans', system-ui, sans-serif)",
     background: palette.slate50,
   },
   leftPanel: {
     position: "relative",
-    backgroundImage: `linear-gradient(160deg, rgba(11,18,32,0.90) 0%, rgba(16,26,48,0.82) 55%, rgba(11,18,32,0.92) 100%), url("https://images.unsplash.com/photo-1758448500688-3ababa93fd67?fm=jpg&q=80&w=1600&auto=format&fit=crop")`,
+    backgroundImage: `linear-gradient(160deg, rgba(11,18,32,0.90) 0%, rgba(16,26,48,0.82) 55%, rgba(11,18,32,0.92) 100%), url("/static/hero-bg.jpg")`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
@@ -496,8 +506,6 @@ const styles = {
 /* ---------- CSS block: only what inline style can't do ---------- */
 
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-
   .cryptusLoginPage * { box-sizing: border-box; }
 
   .cryptusLoginCard {

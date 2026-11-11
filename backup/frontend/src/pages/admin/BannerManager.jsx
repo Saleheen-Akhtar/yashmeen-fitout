@@ -1,9 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { bannerAPI, itemPath } from "../../services/api";
 import { FiImage, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
 const MAX_FILE_MB = 5;
-const FALLBACK_IMG = "/static/hero-aperture.png";
+const FALLBACK_IMG = "/static/hero-aperture-v2.webp";
+
+const loadBannersData = async () => {
+  const { data: res } = await bannerAPI.getAll();
+  return res?.data ?? [];
+};
 
 const resolveImage = (photo) => {
   if (!photo) return "";
@@ -71,8 +76,8 @@ export default function BannerManager() {
   const fetchBanners = async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
     try {
-      const { data: res } = await bannerAPI.getAll();
-      setBanners(res?.data ?? []);
+      const list = await loadBannersData();
+      setBanners(list);
     } catch (err) {
       setBanner({
         type: "error",
@@ -84,7 +89,25 @@ export default function BannerManager() {
   };
 
   useEffect(() => {
-    fetchBanners();
+    let cancelled = false;
+    loadBannersData()
+      .then((list) => {
+        if (!cancelled) setBanners(list);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setBanner({
+            type: "error",
+            text: err?.response?.data?.message || "Failed to load banners.",
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {

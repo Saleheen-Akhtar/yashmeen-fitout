@@ -1,6 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { vacancyAPI } from "../../services/api";
+import { clearVacancyCache } from "../../libs/publicCache";
 import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+
+const loadVacanciesData = async () => {
+  const { data: res } = await vacancyAPI.getAll();
+  return res?.data ?? [];
+};
 
 const STATUS_OPTIONS = [
   { value: "open", label: "Open" },
@@ -65,8 +71,8 @@ export default function VacancyManager() {
   const fetchVacancies = async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
     try {
-      const { data: res } = await vacancyAPI.getAll();
-      setVacancies(res?.data ?? []);
+      const list = await loadVacanciesData();
+      setVacancies(list);
     } catch (err) {
       setBanner({
         type: "error",
@@ -78,7 +84,25 @@ export default function VacancyManager() {
   };
 
   useEffect(() => {
-    fetchVacancies();
+    let cancelled = false;
+    loadVacanciesData()
+      .then((list) => {
+        if (!cancelled) setVacancies(list);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setBanner({
+            type: "error",
+            text: err?.response?.data?.message || "Failed to load vacancies.",
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const openCreateModal = () => {
@@ -156,6 +180,7 @@ export default function VacancyManager() {
         await vacancyAPI.create(payload);
         setBanner({ type: "success", text: "Vacancy created." });
       }
+      clearVacancyCache();
       await fetchVacancies({ silent: true });
       setModalOpen(false);
     } catch (err) {
@@ -178,6 +203,7 @@ export default function VacancyManager() {
     setDeleting(true);
     try {
       await vacancyAPI.delete(deleteTarget._id);
+      clearVacancyCache();
       setVacancies((prev) => prev.filter((v) => v._id !== deleteTarget._id));
       setBanner({
         type: "success",
@@ -202,6 +228,7 @@ export default function VacancyManager() {
     );
     try {
       await vacancyAPI.status(vacancy._id, { status: nextStatus });
+      clearVacancyCache();
     } catch (err) {
       setVacancies((prev) =>
         prev.map((v) =>

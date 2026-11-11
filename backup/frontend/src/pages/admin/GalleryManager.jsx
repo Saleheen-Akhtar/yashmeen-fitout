@@ -1,18 +1,24 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { galleryAPI, categoryAPI, itemPath } from "../../services/api";
+import { clearGalleryCache } from "../../libs/publicCache";
 import { FiEdit2, FiImage, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
 const MAX_FILE_MB = 5;
-const FALLBACK_IMG = "/static/hero-aperture.png";
+const FALLBACK_IMG = "/static/hero-aperture-v2.webp";
 
 const invalidateSiteCaches = () => {
-  try {
-    localStorage.removeItem("photogallery:data:v1");
-    localStorage.removeItem("photogallery:data:v5");
-  } catch {
-    /* ignore */
-  }
+  clearGalleryCache();
   window.dispatchEvent(new CustomEvent("projects-updated"));
+};
+
+const loadGalleryItemsData = async () => {
+  const { data: res } = await galleryAPI.getAll();
+  return res?.data ?? [];
+};
+
+const loadGalleryCategoriesData = async () => {
+  const { data: res } = await categoryAPI.getAll();
+  return res?.data ?? [];
 };
 
 const resolveImage = (photo) => {
@@ -83,8 +89,8 @@ export default function GalleryManager() {
   const fetchItems = async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
     try {
-      const { data: res } = await galleryAPI.getAll();
-      setItems(res?.data ?? []);
+      const list = await loadGalleryItemsData();
+      setItems(list);
     } catch (err) {
       setBanner({
         type: "error",
@@ -95,21 +101,40 @@ export default function GalleryManager() {
     }
   };
 
-  const fetchCategories = async () => {
-    try {
-      const { data: res } = await categoryAPI.getAll();
-      setCategories(res?.data ?? []);
-    } catch (err) {
-      setBanner({
-        type: "error",
-        text: err?.response?.data?.message || "Failed to load categories.",
-      });
-    }
-  };
-
   useEffect(() => {
-    fetchItems();
-    fetchCategories();
+    let cancelled = false;
+    loadGalleryItemsData()
+      .then((list) => {
+        if (!cancelled) setItems(list);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setBanner({
+            type: "error",
+            text: err?.response?.data?.message || "Failed to load gallery.",
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    loadGalleryCategoriesData()
+      .then((list) => {
+        if (!cancelled) setCategories(list);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setBanner({
+            type: "error",
+            text: err?.response?.data?.message || "Failed to load categories.",
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {

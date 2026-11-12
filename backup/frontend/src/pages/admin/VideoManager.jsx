@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { videoAPI, categoryAPI } from "../../services/api";
-import { clearVideoGalleryCache } from "../../libs/publicCache";
+import { clearVideoGalleryCache } from "../../lib/publicCache";
 import { FiEdit2, FiPlay, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
 const VIDEO_BASE = "";

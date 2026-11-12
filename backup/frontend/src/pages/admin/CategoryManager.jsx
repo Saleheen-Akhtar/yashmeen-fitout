@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { categoryAPI } from "../../services/api";
-import { clearProjectsCache, clearGalleryCache } from "../../libs/publicCache";
+import { clearProjectsCache, clearGalleryCache } from "../../lib/publicCache";
 import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
 const invalidateSiteCaches = () => {

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { itemPath, postAPI } from "../../services/api";
 import { useNavigate } from "react-router-dom";
-import Loading from "../../components/Loading";
-import { tokenExpired } from "../../libs/helpers";
-import { clearPostsCache } from "../../libs/publicCache";
+import Loading from "../../components/ui/Loading";
+import { tokenExpired } from "../../lib/helpers";
+import { clearPostsCache } from "../../lib/publicCache";
 import { toast } from "sonner";
 import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 

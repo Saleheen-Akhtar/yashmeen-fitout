@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import { CustomUploadAdapterPlugin } from "../../libs/uploader";
-import { tokenExpired } from "../../libs/helpers";
-import { clearPostsCache } from "../../libs/publicCache";
+import { CustomUploadAdapterPlugin } from "../../lib/uploader";
+import { tokenExpired } from "../../lib/helpers";
+import { clearPostsCache } from "../../lib/publicCache";
 import { itemPath, postAPI } from "../../services/api";
-import Loading from "../../components/Loading";
+import Loading from "../../components/ui/Loading";
 import { toast } from "sonner";
 import { FiArrowLeft, FiImage } from "react-icons/fi";
 

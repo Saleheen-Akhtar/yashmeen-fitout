@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { galleryAPI, categoryAPI, itemPath } from "../../services/api";
-import { clearGalleryCache } from "../../libs/publicCache";
+import { clearGalleryCache } from "../../lib/publicCache";
 import { FiEdit2, FiImage, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
 const MAX_FILE_MB = 5;

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { webDetailsAPI } from "../services/api";
-import { clearProjectsCache } from "../libs/publicCache";
+import { clearProjectsCache } from "../lib/publicCache";
 
 export const DEFAULT_WEBSITE_CONTENT = {
   brandName: "YASHMEEN FIT-OUT",

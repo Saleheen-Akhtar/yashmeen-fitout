@@ -15,7 +15,7 @@ import {
 import {
   clearProjectsCache,
   clearProjectDetailsCache,
-} from "../../libs/publicCache";
+} from "../../lib/publicCache";
 import { toast } from "sonner";
 import useCreateStore from "../../store";
 import {

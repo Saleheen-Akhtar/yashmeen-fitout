@@ -1,10 +1,10 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { projectAPI, itemPath } from "../../services/api";
-import { subscribeCacheInvalidation } from "../../libs/publicCache";
-import Loading from "../Loading";
+import { subscribeCacheInvalidation } from "../../lib/publicCache";
+import Loading from "../ui/Loading";
 
-const EditorialCarousel3D = lazy(() => import("../EditorialCarousel3D"));
+const EditorialCarousel3D = lazy(() => import("./EditorialCarousel3D"));
 
 const CURATED_PROJECTS = [
   {

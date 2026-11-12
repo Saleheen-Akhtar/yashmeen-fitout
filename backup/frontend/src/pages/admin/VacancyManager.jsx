@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { vacancyAPI } from "../../services/api";
-import { clearVacancyCache } from "../../libs/publicCache";
+import { clearVacancyCache } from "../../lib/publicCache";
 import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
 const loadVacanciesData = async () => {

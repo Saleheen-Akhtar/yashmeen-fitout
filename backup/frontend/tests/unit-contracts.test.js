@@ -13,8 +13,8 @@ import {
   getRatingDistribution,
   tokenExpired,
   getDubaiAtelierStatus,
-} from "../src/libs/helpers.js";
-import { getRouteSeo, normalizePathname } from "../src/libs/seoConfig.js";
+} from "../src/lib/helpers.js";
+import { getRouteSeo, normalizePathname } from "../src/lib/seoConfig.js";
 import {
   CACHE_KEYS,
   subscribeCacheInvalidation,
@@ -24,7 +24,7 @@ import {
   clearVacancyCache,
   clearVideoGalleryCache,
   clearPostsCache,
-} from "../src/libs/publicCache.js";
+} from "../src/lib/publicCache.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -179,7 +179,7 @@ describe("Layer 2B: Storage resilience & environment config parity", () => {
 
 describe("Layer 2C: Frontend <-> Backend schema & route contract parity", () => {
   it("Contact.jsx payload satisfies backend EnquiryModel schema and /enquiry/create route", () => {
-    const contactSrc = readFrontend("src/pages/website/Contact.jsx");
+    const contactSrc = readFrontend("src/pages/public/Contact.jsx");
     const enquiryRoute = readBackend("routes/enquiry.routes.js");
     const enquiryModel = readBackend("models/enquiry.model.js");
 
@@ -198,7 +198,7 @@ describe("Layer 2C: Frontend <-> Backend schema & route contract parity", () => 
   });
 
   it("Quote.jsx payload satisfies backend QuoteModel schema (including enum & array services)", () => {
-    const quoteSrc = readFrontend("src/pages/website/Quote.jsx");
+    const quoteSrc = readFrontend("src/pages/public/Quote.jsx");
     const quoteModel = readBackend("models/quotes.model.js");
 
     assert.match(quoteModel, /PROJECT_TYPES\s*=\s*\["Residential",\s*"Commercial",\s*"Hospitality",\s*"Retail",\s*"Other"\]/);
@@ -240,7 +240,7 @@ describe("Layer 2C: Frontend <-> Backend schema & route contract parity", () => 
   });
 
   it("Career.jsx fetches public /vacancy/opens rather than admin-protected /vacancy/getAll", () => {
-    const careerSrc = readFrontend("src/pages/website/Career.jsx");
+    const careerSrc = readFrontend("src/pages/public/Career.jsx");
     const vacancyRoute = readBackend("routes/vacancy.route.js");
 
     assert.match(vacancyRoute, /vacancyRouter\.get\(['"]\/getAll['"],\s*protect,\s*adminOnly/);
@@ -286,7 +286,7 @@ describe("Layer 2C: Frontend <-> Backend schema & route contract parity", () => 
   });
 
   it("Opening-hours logic in Header/MenuOverlay/Footer matches stated Mon-Fri 8:30am-6:00pm schedule", () => {
-    const footerSrc = readFrontend("src/components/Footer.jsx");
+    const footerSrc = readFrontend("src/components/layout/Footer.jsx");
     assert.match(footerSrc, /Monday to Friday, 8:30am - 6:00pm/);
 
     // Verify computed `open` check does not evaluate to true on Saturday or at 8:10am Friday

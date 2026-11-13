@@ -160,7 +160,7 @@ export default function QuestionnaireModal({ isOpen, onClose }) {
         return;
       }
     }
-    if (step < 8) {
+    if (step < 3) {
       setStep((prev) => prev + 1);
     }
   };
@@ -278,7 +278,7 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
               (PROJECT ENQUIRY)
             </span>
             <p className="modal-header-desc">
-              Provide initial details about your space. Our senior directors review every brief
+              Provide your details in 3 simple steps. Our studio directors review every brief
               and respond within one working day.
             </p>
           </div>
@@ -324,17 +324,12 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
           ) : (
             <>
               <div className="step-indicator">
-                {step === 1 && "YOUR PERSONAL DETAILS (01/08)"}
-                {step === 2 && "PREVIOUS EXPERIENCE (02/08)"}
-                {step === 3 && "PROJECT PARTICULARS (03/08)"}
-                {step === 4 && "LOCATION & TIMELINE (04/08)"}
-                {step === 5 && "ESTIMATED BUDGET RANGE (05/08)"}
-                {step === 6 && "DRAWINGS & APPROVALS (06/08)"}
-                {step === 7 && "DESIGN BRIEF & VISION (07/08)"}
-                {step === 8 && "ADDITIONAL INFORMATION (08/08)"}
+                {step === 1 && "STEP 1 OF 3: YOUR CONTACT DETAILS"}
+                {step === 2 && "STEP 2 OF 3: PROJECT PARTICULARS"}
+                {step === 3 && "STEP 3 OF 3: SCOPE, STATUS & BRIEF"}
               </div>
 
-              {/* Step 1: Personal Details */}
+              {/* Step 1: Contact Details */}
               {step === 1 && (
                 <div>
                   <h3 className="step-heading">Who are we designing with?</h3>
@@ -345,6 +340,7 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
                         id="modal-name"
                         type="text"
                         placeholder="e.g. Sarah Jenkins"
+                        autoComplete="name"
                         value={formData.name}
                         onChange={(e) => updateField("name", e.target.value)}
                         autoFocus
@@ -355,6 +351,8 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
                       <input
                         id="modal-email"
                         type="email"
+                        inputMode="email"
+                        autoComplete="email"
                         placeholder="e.g. sarah@example.com"
                         value={formData.email}
                         onChange={(e) => updateField("email", e.target.value)}
@@ -365,191 +363,169 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
                       <input
                         id="modal-phone"
                         type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
                         placeholder="+971 50 000 0000"
                         value={formData.phone}
                         onChange={(e) => updateField("phone", e.target.value)}
                       />
+                      <small style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "4px" }}>
+                        UAE (+971) or international format. Direct WhatsApp updates will be sent here.
+                      </small>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Step 2 */}
+              {/* Step 2: Project Particulars */}
               {step === 2 && (
                 <div>
-                  <h3 className="step-heading">
-                    Have you worked with an architect or fit-out contractor before?
-                  </h3>
-                  <div className="options-grid">
-                    {["Yes", "No"].map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        aria-pressed={formData.workedWithArchitect === opt}
-                        className={`option-box ${formData.workedWithArchitect === opt ? "is-selected" : ""}`}
-                        onClick={() => updateField("workedWithArchitect", opt)}
-                      >
-                        <span>{opt}</span>
-                        {formData.workedWithArchitect === opt && <span aria-hidden="true">✓</span>}
-                      </button>
-                    ))}
+                  <h3 className="step-heading">Tell us about your space &amp; investment</h3>
+                  <div style={{ display: "grid", gap: 20 }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ink)", marginBottom: 8 }}>
+                        Project Type
+                      </label>
+                      <div className="options-grid">
+                        {PROJECT_TYPES.map((type) => (
+                          <button
+                            key={type}
+                            type="button"
+                            aria-pressed={formData.projectType === type}
+                            className={`option-box ${formData.projectType === type ? "is-selected" : ""}`}
+                            onClick={() => updateField("projectType", type)}
+                          >
+                            <span>{type}</span>
+                            {formData.projectType === type && <span aria-hidden="true">✓</span>}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
+                      <div className="field">
+                        <label htmlFor="modal-loc">Project Location</label>
+                        <input
+                          id="modal-loc"
+                          type="text"
+                          placeholder="e.g. Palm Jumeirah, DIFC, Downtown Dubai"
+                          value={formData.location}
+                          onChange={(e) => updateField("location", e.target.value)}
+                        />
+                      </div>
+                      <div className="field">
+                        <label htmlFor="modal-time">Desired Timeline</label>
+                        <select
+                          id="modal-time"
+                          value={formData.timeline}
+                          onChange={(e) => updateField("timeline", e.target.value)}
+                        >
+                          {TIMELINES.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ink)", marginBottom: 8 }}>
+                        Anticipated Budget Range
+                      </label>
+                      <div className="options-grid">
+                        {BUDGET_RANGES.map((b) => (
+                          <button
+                            key={b}
+                            type="button"
+                            aria-pressed={formData.budget === b}
+                            className={`option-box ${formData.budget === b ? "is-selected" : ""}`}
+                            onClick={() => updateField("budget", b)}
+                          >
+                            <span>{b}</span>
+                            {formData.budget === b && <span aria-hidden="true">✓</span>}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Step 3 */}
+              {/* Step 3: Scope, Status & Brief */}
               {step === 3 && (
                 <div>
-                  <h3 className="step-heading">What type of project are you looking for?</h3>
-                  <div className="options-grid">
-                    {PROJECT_TYPES.map((type) => (
-                      <button
-                        key={type}
-                        type="button"
-                        aria-pressed={formData.projectType === type}
-                        className={`option-box ${formData.projectType === type ? "is-selected" : ""}`}
-                        onClick={() => updateField("projectType", type)}
-                      >
-                        <span>{type}</span>
-                        {formData.projectType === type && <span aria-hidden="true">✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Step 4 */}
-              {step === 4 && (
-                <div>
-                  <h3 className="step-heading">
-                    Where is your project located, and what is your timeline?
-                  </h3>
-                  <div style={{ display: "grid", gap: 16 }}>
-                    <div className="field">
-                      <label htmlFor="modal-loc">
-                        Project Location (Community, Tower, or City)
+                  <h3 className="step-heading">Approvals status &amp; brief</h3>
+                  <div style={{ display: "grid", gap: 20 }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ink)", marginBottom: 8 }}>
+                        Do you currently have approved architectural drawings?
                       </label>
-                      <input
-                        id="modal-loc"
-                        type="text"
-                        placeholder="e.g. Palm Jumeirah, Emirates Hills, DIFC, or Downtown Dubai"
-                        value={formData.location}
-                        onChange={(e) => updateField("location", e.target.value)}
-                      />
-                    </div>
-                    <div className="field">
-                      <label htmlFor="modal-time">Desired Timeline</label>
-                      <select
-                        id="modal-time"
-                        value={formData.timeline}
-                        onChange={(e) => updateField("timeline", e.target.value)}
-                      >
-                        {TIMELINES.map((t) => (
-                          <option key={t} value={t}>
-                            {t}
-                          </option>
+                      <div style={{ display: "grid", gap: 8 }}>
+                        {DRAWING_STATUSES.map((d) => (
+                          <button
+                            key={d}
+                            type="button"
+                            aria-pressed={formData.drawingStatus === d}
+                            className={`option-box ${formData.drawingStatus === d ? "is-selected" : ""}`}
+                            onClick={() => updateField("drawingStatus", d)}
+                            style={{ textAlign: "left", justifyContent: "space-between", padding: "12px 16px" }}
+                          >
+                            <span style={{ fontSize: "0.88rem" }}>{d}</span>
+                            {formData.drawingStatus === d && <span aria-hidden="true">✓</span>}
+                          </button>
                         ))}
-                      </select>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              )}
 
-              {/* Step 5 */}
-              {step === 5 && (
-                <div>
-                  <h3 className="step-heading">What is your anticipated project budget?</h3>
-                  <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginBottom: 16 }}>
-                    Yashmeen operates an in-house 35,000 sq.ft Al Quoz workshop. Direct bench
-                    fabrication maximizes value and architectural finish within your allocated
-                    investment.
-                  </p>
-                  <div className="options-grid">
-                    {BUDGET_RANGES.map((b) => (
-                      <button
-                        key={b}
-                        type="button"
-                        aria-pressed={formData.budget === b}
-                        className={`option-box ${formData.budget === b ? "is-selected" : ""}`}
-                        onClick={() => updateField("budget", b)}
-                      >
-                        <span>{b}</span>
-                        {formData.budget === b && <span aria-hidden="true">✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Step 6 */}
-              {step === 6 && (
-                <div>
-                  <h3 className="step-heading">
-                    Do you currently have approved architectural drawings?
-                  </h3>
-                  <div style={{ display: "grid", gap: 12 }}>
-                    {DRAWING_STATUSES.map((d) => (
-                      <button
-                        key={d}
-                        type="button"
-                        aria-pressed={formData.drawingStatus === d}
-                        className={`option-box ${formData.drawingStatus === d ? "is-selected" : ""}`}
-                        onClick={() => updateField("drawingStatus", d)}
-                      >
-                        <span>{d}</span>
-                        {formData.drawingStatus === d && <span aria-hidden="true">✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Step 7 */}
-              {step === 7 && (
-                <div>
-                  <h3 className="step-heading">Share key details or ideas for your brief</h3>
-                  <div className="field">
-                    <label htmlFor="modal-brief">Design Brief &amp; Spatial Needs (Optional)</label>
-                    <textarea
-                      id="modal-brief"
-                      rows={5}
-                      placeholder="Tell us about the space: estimated square footage, desired aesthetics, specific joinery requirements, or authority milestone targets."
-                      value={formData.brief}
-                      onChange={(e) => updateField("brief", e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Step 8 */}
-              {step === 8 && (
-                <div>
-                  <h3 className="step-heading">How did you hear about Yashmeen?</h3>
-                  <div className="options-grid">
-                    {REFERRAL_SOURCES.map((r) => (
-                      <button
-                        key={r}
-                        type="button"
-                        aria-pressed={formData.referral === r}
-                        className={`option-box ${formData.referral === r ? "is-selected" : ""}`}
-                        onClick={() => updateField("referral", r)}
-                      >
-                        <span>{r}</span>
-                        {formData.referral === r && <span aria-hidden="true">✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                  {formData.referral === "Other" && (
-                    <div className="field" style={{ marginTop: 12 }}>
-                      <label htmlFor="modal-other-referral">Please tell us how:</label>
-                      <input
-                        id="modal-other-referral"
-                        type="text"
-                        value={formData.otherReferral}
-                        onChange={(e) => updateField("otherReferral", e.target.value)}
+                    <div className="field">
+                      <label htmlFor="modal-brief">Design Brief &amp; Spatial Needs (Optional)</label>
+                      <textarea
+                        id="modal-brief"
+                        rows={4}
+                        placeholder="Tell us about the space: estimated square footage, desired aesthetics, specific joinery requirements, or authority milestone targets."
+                        value={formData.brief}
+                        onChange={(e) => updateField("brief", e.target.value)}
                       />
                     </div>
-                  )}
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ink)", marginBottom: 8 }}>
+                          Worked with an architect before?
+                        </label>
+                        <div style={{ display: "flex", gap: 10 }}>
+                          {["Yes", "No"].map((opt) => (
+                            <button
+                              key={opt}
+                              type="button"
+                              aria-pressed={formData.workedWithArchitect === opt}
+                              className={`option-box ${formData.workedWithArchitect === opt ? "is-selected" : ""}`}
+                              onClick={() => updateField("workedWithArchitect", opt)}
+                              style={{ flex: 1, padding: "10px" }}
+                            >
+                              <span>{opt}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="field">
+                        <label htmlFor="modal-ref">How did you hear about us?</label>
+                        <select
+                          id="modal-ref"
+                          value={formData.referral}
+                          onChange={(e) => updateField("referral", e.target.value)}
+                        >
+                          {REFERRAL_SOURCES.map((r) => (
+                            <option key={r} value={r}>
+                              {r}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -581,7 +557,7 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
               <div />
             )}
 
-            {step < 8 ? (
+            {step < 3 ? (
               <button type="button" onClick={handleNext} className="btn-pill btn-pill-dark">
                 NEXT STEP →
               </button>

@@ -504,4 +504,35 @@ describe("tidy + hardening regressions", () => {
     const reveal = readFrontend("src/motion/reveal.js");
     assert.ok(reveal.includes("export function initSplitTextReveals"));
   });
+
+  it("Header renders an accessible Services dropdown listing all 4 core disciplines", () => {
+    const header = readFrontend("src/components/layout/Header.jsx");
+    assert.ok(header.includes("SERVICES_MENU"));
+    assert.ok(header.includes("/services/architecture"));
+    assert.ok(header.includes("/services/interior-design"));
+    assert.ok(header.includes("/services/construction"));
+    assert.ok(header.includes("/services/office-renovation"));
+    assert.ok(header.includes("nav-dropdown-wrapper"));
+  });
+
+  it("tokens.css defines single source of truth architectural and dark tokens", () => {
+    const tokens = readFrontend("src/styles/tokens.css");
+    assert.ok(tokens.includes("--bg:"));
+    assert.ok(tokens.includes("--surface-dark:"));
+    assert.ok(tokens.includes("--ink-on-dark:"));
+    assert.ok(tokens.includes("--accent:"));
+    assert.ok(tokens.includes("--font-sans:"));
+    assert.ok(tokens.includes("--font-serif:"));
+  });
+
+  it("Consent Mode v2 and CookieConsentBar are implemented with zero em-dashes", () => {
+    const analytics = readFrontend("src/lib/analytics.js");
+    assert.ok(analytics.includes("analytics_storage"));
+    assert.ok(analytics.includes("grantConsent"));
+    assert.ok(analytics.includes("denyConsent"));
+
+    const bar = readFrontend("src/components/layout/CookieConsentBar.jsx");
+    assert.ok(!bar.includes("\u2014"), "CookieConsentBar has em-dash");
+    assert.ok(!bar.includes("\u2013"), "CookieConsentBar has en-dash");
+  });
 });

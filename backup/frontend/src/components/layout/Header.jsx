@@ -13,11 +13,19 @@ const NAV_LINKS = [
   { label: "Contact", href: "/contact" },
 ];
 
+const SERVICES_MENU = [
+  { label: "Architecture & Approvals", href: "/services/architecture" },
+  { label: "Interior Design & Fit-Out", href: "/services/interior-design" },
+  { label: "Construction & Civil Works", href: "/services/construction" },
+  { label: "Commercial Office Renovation", href: "/services/office-renovation" },
+];
+
 export default function Header() {
   const { content } = useWebsiteContent();
   const { pathname } = useLocation();
   const [menuState, setMenuState] = useState({ open: false, path: pathname });
   const [questionnaireOpen, setQuestionnaireOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const lastY = useRef(0);
@@ -111,19 +119,61 @@ export default function Header() {
             <span className="site-brand-city">{content?.cityLabel || "DUBAI"}</span>
           </Link>
 
-          {/* Center Links with comma separation */}
+          {/* Center Links with comma separation & Services dropdown */}
           <nav className="site-nav-center" aria-label="Primary Navigation">
-            {NAV_LINKS.map((item, idx) => (
-              <span key={item.href} style={{ display: "inline-flex", alignItems: "center" }}>
-                <Link
-                  to={item.href}
-                  className={`site-nav-link ${pathname === item.href ? "active" : ""}`}
-                >
-                  {item.label}
-                </Link>
-                {idx < NAV_LINKS.length - 1 && <span className="site-nav-sep">,</span>}
-              </span>
-            ))}
+            {NAV_LINKS.map((item, idx) => {
+              const isServices = item.label === "Services";
+              const isActive = isServices
+                ? pathname.startsWith("/services")
+                : pathname === item.href;
+
+              return (
+                <span key={item.href} style={{ display: "inline-flex", alignItems: "center" }}>
+                  {isServices ? (
+                    <div
+                      className="nav-dropdown-wrapper"
+                      onMouseEnter={() => setServicesOpen(true)}
+                      onMouseLeave={() => setServicesOpen(false)}
+                    >
+                      <Link
+                        to={item.href}
+                        className={`site-nav-link ${isActive ? "active" : ""}`}
+                        aria-expanded={servicesOpen}
+                        aria-haspopup="true"
+                        onClick={() => setServicesOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                      <div
+                        className={`nav-dropdown-menu ${servicesOpen ? "is-open" : ""}`}
+                        role="menu"
+                        aria-label="Services Submenu"
+                      >
+                        {SERVICES_MENU.map((srv) => (
+                          <Link
+                            key={srv.href}
+                            to={srv.href}
+                            className="nav-dropdown-item"
+                            role="menuitem"
+                            onClick={() => setServicesOpen(false)}
+                          >
+                            {srv.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <Link
+                      to={item.href}
+                      className={`site-nav-link ${isActive ? "active" : ""}`}
+                    >
+                      {item.label}
+                    </Link>
+                  )}
+                  {idx < NAV_LINKS.length - 1 && <span className="site-nav-sep">,</span>}
+                </span>
+              );
+            })}
           </nav>
 
           {/* Right Action Pills */}

@@ -483,4 +483,25 @@ describe("tidy + hardening regressions", () => {
     const pkg = JSON.parse(readFrontend("package.json"));
     assert.ok(pkg.scripts.build.includes("node scripts/prerender.mjs"));
   });
+
+  it("Motion system is modularized into lenis, magnetic, parallax, and reveal modules", () => {
+    const provider = readFrontend("src/motion/MotionProvider.jsx");
+    assert.ok(provider.includes('from "./lenis"'));
+    assert.ok(provider.includes('from "./magnetic"'));
+    assert.ok(provider.includes('from "./parallax"'));
+    assert.ok(provider.includes('from "./reveal"'));
+    assert.ok(provider.split("\n").length < 300, "MotionProvider.jsx is still monolithic (>300 lines)");
+
+    const lenis = readFrontend("src/motion/lenis.js");
+    assert.ok(lenis.includes("export function initLenis"));
+
+    const magnetic = readFrontend("src/motion/magnetic.js");
+    assert.ok(magnetic.includes("export function initHeaderMagnetic"));
+
+    const parallax = readFrontend("src/motion/parallax.js");
+    assert.ok(parallax.includes("export function initApertureParallax"));
+
+    const reveal = readFrontend("src/motion/reveal.js");
+    assert.ok(reveal.includes("export function initSplitTextReveals"));
+  });
 });

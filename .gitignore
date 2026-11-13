@@ -13,11 +13,13 @@ dist-ssr/
 *.env
 *.env.local
 .env.*.local
+apps/api/.env
 backup/backend/.env
 */.env
 */*/.env
 details.txt
 backup/details.txt
+apps/details.txt
 */details.txt
 
 # Large binary archives & video files

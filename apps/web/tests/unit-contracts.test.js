@@ -29,7 +29,9 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const FRONTEND_ROOT = path.resolve(__dirname, "..");
-const BACKEND_ROOT = path.resolve(__dirname, "../../backend");
+const BACKEND_ROOT = fs.existsSync(path.resolve(__dirname, "../../api"))
+  ? path.resolve(__dirname, "../../api")
+  : path.resolve(__dirname, "../../backend");
 
 const readFrontend = (rel) => fs.readFileSync(path.join(FRONTEND_ROOT, rel), "utf8");
 const readBackend = (rel) => fs.readFileSync(path.join(BACKEND_ROOT, rel), "utf8");

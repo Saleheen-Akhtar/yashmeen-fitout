@@ -1,0 +1,19 @@
+{
+  "name": "yashmeen-fitout-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo for Yashmeen Future Building & Fit-Out Contracting LLC (Web & API)",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm --prefix apps/web run dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "dev:api": "node apps/api/server.js",
+    "build": "npm --prefix apps/web run build",
+    "test:web": "npm --prefix apps/web test",
+    "test:api": "npm --prefix apps/api test",
+    "test": "npm --prefix apps/web test && npm --prefix apps/api test",
+    "check:locks": "npm --prefix apps/web run check:locks"
+  }
+}

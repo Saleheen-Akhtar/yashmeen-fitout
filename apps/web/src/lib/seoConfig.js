@@ -119,20 +119,6 @@ export const ROUTE_SEO = {
     robots: "index, follow",
     image: "/static/studio.jpg",
   },
-  "/experience": {
-    title: "Atelier Spatial Experience | Yashmeen Fit-Out Dubai",
-    description:
-      "An interactive editorial exploration of architecture, joinery craftsmanship, and built form across Dubai by Yashmeen Future Building.",
-    robots: "index, follow",
-    image: "/static/hero-cinematic.jpg",
-  },
-  "/normal-is-boring": {
-    title: "Atelier Spatial Experience | Yashmeen Fit-Out Dubai",
-    description:
-      "An interactive editorial exploration of architecture, joinery craftsmanship, and built form across Dubai by Yashmeen Future Building.",
-    robots: "noindex, follow",
-    image: "/static/hero-cinematic.jpg",
-  },
   "/privacy-policy": {
     title: "Privacy Policy | Yashmeen Fit-Out Dubai",
     description:

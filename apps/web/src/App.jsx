@@ -32,10 +32,9 @@ const BlogsPage = lazy(() => import("./pages/public/blog/BlogPage"));
 const PrivacyPolicy = lazy(() => import("./pages/public/PrivacyPolicy"));
 const NotFound = lazy(() => import("./pages/public/NotFound"));
 
-// Lazy Auth & Experience Pages
+// Lazy Auth Pages
 const Login = lazy(() => import("./pages/auth/Login"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
-const YashmeenNibExperience = lazy(() => import("./components/experiments/YashmeenNibExperience"));
 
 // Lazy Admin Layout & Pages (Isolates CKEditor & Admin dashboard from visitor bundle)
 const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
@@ -63,8 +62,6 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/normal-is-boring" element={<YashmeenNibExperience />} />
-          <Route path="/experience" element={<YashmeenNibExperience />} />
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<AboutPage />} />

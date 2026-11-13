@@ -1,0 +1,147 @@
+/* ==========================================================================
+   YASHMEEN AUTHENTICATION STYLESHEET
+   Modular styles for Login and Forgot Password pages.
+   ========================================================================== */
+
+/* --- Login Page --- */
+.cryptusLoginAuth .cryptusLoginCard {
+  animation: cryptusFade 0.3s ease both;
+}
+
+@keyframes cryptusFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cryptusLoginAuth .cryptusLoginInputWrap:focus-within {
+  border-color: #000000 !important;
+  box-shadow: 0 0 0 2px #000000 !important;
+}
+
+.cryptusLoginAuth .cryptusLoginInputError {
+  border-color: #000000 !important;
+}
+
+.cryptusLoginAuth .cryptusLoginBtnPrimary:hover:not(:disabled) {
+  background: #ffffff !important;
+  border-color: #000000 !important;
+  color: #000000 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+}
+
+.cryptusLoginAuth .cryptusLoginBtnPrimary:focus-visible,
+.cryptusLoginAuth .cryptusLoginLink:focus-visible,
+.cryptusLoginAuth .cryptusLoginBackToSiteLink:focus-visible,
+.cryptusLoginAuth .cryptusLoginEyeBtn:focus-visible,
+.cryptusLoginAuth .cryptusLoginCheckboxNative:focus-visible {
+  outline: 2px solid #000000;
+  outline-offset: 2px;
+}
+
+.cryptusLoginAuth .cryptusLoginBackToSiteLink:hover {
+  color: #000000 !important;
+}
+
+@media (max-width: 960px) {
+  .cryptusLoginAuth.cryptusLoginPage {
+    grid-template-columns: 1fr !important;
+  }
+  .cryptusLoginAuth .cryptusLoginLeftPanel {
+    padding: 36px 24px !important;
+  }
+  .cryptusLoginAuth .cryptusLoginFeatureList {
+    display: none !important;
+  }
+  .cryptusLoginAuth .cryptusLoginStat {
+    display: none !important;
+  }
+}
+
+/* --- Forgot Password Page --- */
+.cryptusForgotAuth * {
+  box-sizing: border-box;
+}
+
+.cryptusForgotAuth .cryptusLoginCard {
+  animation: cryptusLoginFadeUp 0.5s ease both;
+}
+
+@keyframes cryptusLoginFadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cryptusForgotAuth .cryptusLoginInputWrap:focus-within {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.cryptusForgotAuth .cryptusLoginInputError {
+  border-color: #dc2626 !important;
+}
+
+.cryptusForgotAuth .cryptusLoginInput::placeholder {
+  color: #94a3b8;
+}
+
+.cryptusForgotAuth .cryptusLoginBtnPrimary:hover:not(:disabled) {
+  background: #60a5fa;
+}
+
+.cryptusForgotAuth .cryptusLoginBtnPrimary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.cryptusForgotAuth .cryptusLoginBtnPrimary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.cryptusForgotAuth .cryptusLoginBtnPrimary:focus-visible,
+.cryptusForgotAuth .cryptusLoginLink:focus-visible,
+.cryptusForgotAuth .cryptusLoginBackLink:focus-visible,
+.cryptusForgotAuth .cryptusLoginLinkBtn:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.cryptusForgotAuth .cryptusLoginLink:hover {
+  text-decoration: underline;
+}
+
+.cryptusForgotAuth .cryptusLoginBackLink:hover {
+  color: #0f172a;
+}
+
+.cryptusForgotAuth .cryptusLoginLinkBtn:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 960px) {
+  .cryptusForgotAuth.cryptusLoginPage {
+    grid-template-columns: 1fr !important;
+  }
+  .cryptusForgotAuth .cryptusLoginLeftPanel {
+    padding: 32px 24px !important;
+  }
+  .cryptusForgotAuth .cryptusLoginFeatureList {
+    display: none !important;
+  }
+  .cryptusForgotAuth .cryptusLoginStat {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .cryptusForgotAuth .cryptusLoginLeftPanel {
+    padding: 24px 20px !important;
+  }
+  .cryptusForgotAuth .cryptusLoginRightPanel {
+    padding: 20px 16px !important;
+  }
+  .cryptusForgotAuth .cryptusLoginCard {
+    padding: 24px 20px !important;
+    border-radius: 12px !important;
+  }
+}

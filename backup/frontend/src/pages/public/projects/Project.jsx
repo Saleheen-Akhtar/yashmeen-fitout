@@ -1,3 +1,4 @@
+import "../../../styles/projects.css";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { FiMaximize2 } from "react-icons/fi";
@@ -344,88 +345,7 @@ export default function PhotoGallery() {
         minHeight: "100vh",
         fontFamily: "'Manrope', sans-serif",
       }}
-    >
-      <style>{`
-
-        /* HERO (same look as Contact page) */
-        .photogal-hero-section{
-          position:relative;
-          isolation:isolate;
-          padding:80px 0;
-          background-color:#0A0A0A;
-          background-size:cover;
-          background-position:center;
-          background-repeat:no-repeat;
-        }
-        @media (min-width:768px){
-          .photogal-hero-section{ padding:120px 0; }
-        }
-        .photogal-hero-dark-overlay{
-          position:absolute;
-          inset:0;
-          z-index:0;
-          background:linear-gradient(
-            to bottom,
-            rgba(10,10,10,0.72),
-            rgba(10,10,10,0.60)
-          );
-        }
-        .photogal-hero-inner-container{
-          position:relative;
-          z-index:1;
-          max-width:1180px;
-          margin:0 auto;
-          padding:0 24px;
-        }
-        @media (min-width:768px){
-          .photogal-hero-inner-container{ padding:0 40px; }
-        }
-        .photogal-hero-heading{
-          margin:0;
-          text-align:center;
-          font-family:var(--font-sans);
-          font-weight:800;
-          color:#FFFFFF;
-          font-size:34px;
-          line-height:1.15;
-          letter-spacing:-0.01em;
-        }
-        @media (min-width:640px){ .photogal-hero-heading{ font-size:46px; } }
-        @media (min-width:1024px){ .photogal-hero-heading{ font-size:56px; } }
-
-        /* GALLERY SECTION */
-        .photogal-gallery-section{
-          position:relative;
-          background:${bg};
-        }
-        .photogal-blueprint-grid{
-          position:absolute; inset:0; pointer-events:none;
-          opacity:0.35;
-          background-image:
-            linear-gradient(rgba(185,144,90,0.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(185,144,90,0.06) 1px, transparent 1px);
-          background-size:64px 64px;
-          -webkit-mask-image:radial-gradient(1200px 700px at 50% 0%, black, transparent 75%);
-          mask-image:radial-gradient(1200px 700px at 50% 0%, black, transparent 75%);
-        }
-        .photogal-fade-in{ animation: photogal-rise-keyframes .6s cubic-bezier(.2,.8,.2,1) forwards; opacity:0; transform:translateY(18px); }
-        @keyframes photogal-rise-keyframes{ to{ opacity:1; transform:translateY(0); } }
-        .photogal-photo-tile{ transition: transform .45s cubic-bezier(.2,.8,.2,1), border-color .3s; }
-        .photogal-photo-tile:hover{ transform:translateY(-5px); border-color:#544d3b; }
-        .photogal-photo-tile img{ transition: transform .7s cubic-bezier(.2,.8,.2,1), filter .5s; }
-        .photogal-photo-tile:hover img{ transform:scale(1.1); filter:grayscale(12%) sepia(6%) saturate(120%) brightness(0.62) contrast(1.05) !important; }
-        .photogal-tile-corner{ opacity:0; transition:opacity .3s; }
-        .photogal-photo-tile:hover .photogal-tile-corner{ opacity:1; }
-        .photogal-tile-expand{ opacity:0; transition:opacity .3s; }
-        .photogal-photo-tile:hover .photogal-tile-expand{ opacity:1; }
-        .photogal-photo-tile:focus-visible{ outline:2px solid #8a6a28; outline-offset:3px; }
-        .photogal-filter-chip{ transition: all .25s ease; }
-        .photogal-filter-chip:focus-visible{ outline:2px solid #8a6a28; outline-offset:2px; }
-        .photogal-masonry-grid{ column-count:3; column-gap:20px; }
-        @media (max-width:980px){ .photogal-masonry-grid{ column-count:2; } }
-        @media (max-width:620px){ .photogal-masonry-grid{ column-count:1; } }
-        @media (max-width:720px){ .photogal-photo-count{ margin-left:0 !important; width:100%; padding-top:6px; } }
-      `}</style>
+    >
 
       {/* HERO BAND */}
       <section

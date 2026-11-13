@@ -1,3 +1,4 @@
+import "../../../styles/video-gallery.css";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { FiX } from "react-icons/fi";
 import { BsPlayFill } from "react-icons/bs";
@@ -259,101 +260,9 @@ export default function VideoGallery() {
         background: bg,
         color: ink,
         minHeight: "100vh",
-        fontFamily: "'Manrope', sans-serif",
+        fontFamily: "var(--font-sans)",
       }}
-    >
-      <style>{`
-
-        /* HERO (same look as Contact page) */
-        .vidgal-hero-section{
-          position:relative;
-          isolation:isolate;
-          padding:80px 0;
-          background-color:#0A0A0A;
-          background-size:cover;
-          background-position:center;
-          background-repeat:no-repeat;
-        }
-        @media (min-width:768px){
-          .vidgal-hero-section{ padding:120px 0; }
-        }
-        .vidgal-hero-dark-overlay{
-          position:absolute;
-          inset:0;
-          z-index:0;
-          background:linear-gradient(
-            to bottom,
-            rgba(10,10,10,0.72),
-            rgba(10,10,10,0.60)
-          );
-        }
-        .vidgal-hero-inner-container{
-          position:relative;
-          z-index:1;
-          max-width:1180px;
-          margin:0 auto;
-          padding:0 24px;
-          text-align:center;
-        }
-        @media (min-width:768px){
-          .vidgal-hero-inner-container{ padding:0 40px; }
-        }
-        .vidgal-hero-heading{
-          margin:0;
-          font-family:var(--font-sans);
-          font-weight:800;
-          color:#FFFFFF;
-          font-size:34px;
-          line-height:1.15;
-          letter-spacing:-0.01em;
-        }
-        @media (min-width:640px){ .vidgal-hero-heading{ font-size:46px; } }
-        @media (min-width:1024px){ .vidgal-hero-heading{ font-size:56px; } }
-        .vidgal-hero-copy{
-          margin:22px auto 0;
-          max-width:640px;
-          font-family:var(--font-sans);
-          font-weight:500;
-          font-size:15.5px;
-          line-height:1.7;
-          color:rgba(255,255,255,0.85);
-        }
-
-        /* GALLERY SECTION */
-        .vidgal-gallery-section{
-          position:relative;
-          background:${bg};
-        }
-        .vidgal-blueprint-grid{
-          position:absolute; inset:0; pointer-events:none; opacity:0.35;
-          background-image:
-            linear-gradient(rgba(185,144,90,0.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(185,144,90,0.06) 1px, transparent 1px);
-          background-size:64px 64px;
-          -webkit-mask-image:radial-gradient(1200px 700px at 50% 0%, black, transparent 75%);
-          mask-image:radial-gradient(1200px 700px at 50% 0%, black, transparent 75%);
-        }
-        .vidgal-fade-in{ animation: vidgal-rise-keyframes .6s cubic-bezier(.2,.8,.2,1) forwards; opacity:0; transform:translateY(18px); }
-        @keyframes vidgal-rise-keyframes{ to{ opacity:1; transform:translateY(0); } }
-        .vidgal-video-card{ transition: transform .45s cubic-bezier(.2,.8,.2,1), border-color .3s; }
-        .vidgal-video-card:hover{ transform:translateY(-5px); border-color:#544d3b; }
-        .vidgal-video-card img{ transition: transform .7s cubic-bezier(.2,.8,.2,1), filter .5s; }
-        .vidgal-video-card:hover img{ transform:scale(1.12); filter:grayscale(15%) sepia(8%) saturate(120%) brightness(0.6) contrast(1.05) !important; }
-        .vidgal-card-corner{ opacity:0; transition:opacity .3s; }
-        .vidgal-video-card:hover .vidgal-card-corner{ opacity:1; }
-        .vidgal-play-btn{ transition: all .35s cubic-bezier(.2,.8,.2,1); }
-        .vidgal-video-card:hover .vidgal-play-btn{ background:${brass}; border-color:${brass}; transform:translate(-50%,-50%) scale(1.12); }
-        .vidgal-video-card:hover .vidgal-play-btn svg{ color:#ffffff; }
-        .vidgal-video-card:focus-visible{ outline:2px solid ${brass}; outline-offset:3px; }
-        .vidgal-filter-chip{ transition: all .25s ease; }
-        .vidgal-filter-chip:focus-visible{ outline:2px solid ${brass}; outline-offset:2px; }
-        .vidgal-close-btn:hover{ border-color:${brass} !important; color:${brass} !important; }
-        .vidgal-close-btn:focus-visible{ outline:2px solid ${ovInk}; outline-offset:2px; }
-        .vidgal-card-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:26px; padding-top:30px; }
-        @media (max-width:980px){ .vidgal-card-grid{ grid-template-columns:repeat(2,1fr); } }
-        @media (max-width:620px){ .vidgal-card-grid{ grid-template-columns:1fr; } }
-        @media (max-width:720px){ .vidgal-film-count{ margin-left:0 !important; width:100%; padding-top:6px; } }
-      `}</style>
+    >
 
       {/* HERO BAND */}
       <section

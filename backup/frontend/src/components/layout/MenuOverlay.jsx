@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
-import { getDubaiAtelierStatus } from "../../libs/helpers";
+import { getDubaiAtelierStatus } from "../../lib/helpers";
 
 const MENU_ITEMS = [
   { label: "Home", href: "/" },

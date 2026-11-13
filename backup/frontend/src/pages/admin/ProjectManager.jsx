@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { projectAPI, categoryAPI, itemPath } from "../../services/api";
-import { clearProjectsCache, clearProjectDetailsCache } from "../../libs/publicCache";
+import { clearProjectsCache, clearProjectDetailsCache } from "../../lib/publicCache";
 import { FiEdit2, FiImage, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
 const FALLBACK_IMG = "/static/hero-aperture-v2.webp";

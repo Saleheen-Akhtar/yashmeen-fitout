@@ -13,8 +13,8 @@ import {
   getRatingDistribution,
   tokenExpired,
   getDubaiAtelierStatus,
-} from "../src/libs/helpers.js";
-import { getRouteSeo, normalizePathname } from "../src/libs/seoConfig.js";
+} from "../src/lib/helpers.js";
+import { getRouteSeo, normalizePathname } from "../src/lib/seoConfig.js";
 import {
   CACHE_KEYS,
   subscribeCacheInvalidation,
@@ -24,7 +24,7 @@ import {
   clearVacancyCache,
   clearVideoGalleryCache,
   clearPostsCache,
-} from "../src/libs/publicCache.js";
+} from "../src/lib/publicCache.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -179,7 +179,7 @@ describe("Layer 2B: Storage resilience & environment config parity", () => {
 
 describe("Layer 2C: Frontend <-> Backend schema & route contract parity", () => {
   it("Contact.jsx payload satisfies backend EnquiryModel schema and /enquiry/create route", () => {
-    const contactSrc = readFrontend("src/pages/website/Contact.jsx");
+    const contactSrc = readFrontend("src/pages/public/Contact.jsx");
     const enquiryRoute = readBackend("routes/enquiry.routes.js");
     const enquiryModel = readBackend("models/enquiry.model.js");
 
@@ -198,7 +198,7 @@ describe("Layer 2C: Frontend <-> Backend schema & route contract parity", () => 
   });
 
   it("Quote.jsx payload satisfies backend QuoteModel schema (including enum & array services)", () => {
-    const quoteSrc = readFrontend("src/pages/website/Quote.jsx");
+    const quoteSrc = readFrontend("src/pages/public/Quote.jsx");
     const quoteModel = readBackend("models/quotes.model.js");
 
     assert.match(quoteModel, /PROJECT_TYPES\s*=\s*\["Residential",\s*"Commercial",\s*"Hospitality",\s*"Retail",\s*"Other"\]/);
@@ -240,7 +240,7 @@ describe("Layer 2C: Frontend <-> Backend schema & route contract parity", () => 
   });
 
   it("Career.jsx fetches public /vacancy/opens rather than admin-protected /vacancy/getAll", () => {
-    const careerSrc = readFrontend("src/pages/website/Career.jsx");
+    const careerSrc = readFrontend("src/pages/public/Career.jsx");
     const vacancyRoute = readBackend("routes/vacancy.route.js");
 
     assert.match(vacancyRoute, /vacancyRouter\.get\(['"]\/getAll['"],\s*protect,\s*adminOnly/);
@@ -286,7 +286,7 @@ describe("Layer 2C: Frontend <-> Backend schema & route contract parity", () => 
   });
 
   it("Opening-hours logic in Header/MenuOverlay/Footer matches stated Mon-Fri 8:30am-6:00pm schedule", () => {
-    const footerSrc = readFrontend("src/components/Footer.jsx");
+    const footerSrc = readFrontend("src/components/layout/Footer.jsx");
     assert.match(footerSrc, /Monday to Friday, 8:30am - 6:00pm/);
 
     // Verify computed `open` check does not evaluate to true on Saturday or at 8:10am Friday
@@ -389,5 +389,43 @@ describe("Layer 2D: Atelier hours, SEO config, and public cache invalidation", (
     } finally {
       delete globalThis.localStorage;
     }
+  });
+});
+
+describe("tidy + hardening regressions", () => {
+  it("homepage Works never falls back to invented projects", () => {
+    const src = readFrontend("src/components/home/Works.jsx");
+    assert.ok(!src.includes("CURATED_PROJECTS"));
+    assert.ok(src.includes("works-empty"));
+  });
+
+  it("stray demo routes are gone", () => {
+    const app = readFrontend("src/App.jsx");
+    assert.ok(!app.includes('"/svg"'));
+    assert.ok(!app.includes("parallax-demo"));
+  });
+
+  it("src has no legacy libs/ or pages/website directories", () => {
+    assert.ok(!fs.existsSync(path.join(FRONTEND_ROOT, "src/libs")));
+    assert.ok(!fs.existsSync(path.join(FRONTEND_ROOT, "src/pages/website")));
+  });
+
+  it("password reset tokens are stored hashed", () => {
+    const src = readBackend("controllers/account.controller.js");
+    assert.ok(src.includes("hashToken(resetToken)"));
+    assert.ok(src.includes("hashToken(token.trim())"));
+  });
+
+  it("server trusts the proxy on Vercel and gates preview CORS behind an env flag", () => {
+    const src = readBackend("server.js");
+    assert.ok(src.includes('app.set("trust proxy", 1)'));
+    assert.ok(src.includes("ALLOW_VERCEL_PREVIEWS"));
+    assert.ok(!/yashmeen-\[a-z0-9-\]\+\\\./.test(src));
+  });
+
+  it("canonical origin follows VITE_SITE_URL", () => {
+    const cfg = readFrontend("vite.config.js");
+    assert.ok(cfg.includes("VITE_SITE_URL"));
+    assert.ok(fs.existsSync(path.join(FRONTEND_ROOT, "scripts/generate-seo-files.mjs")));
   });
 });

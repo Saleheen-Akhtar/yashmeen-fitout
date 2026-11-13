@@ -173,7 +173,7 @@ export default function Login() {
   if (user?.usertype === "admin") return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="cryptusLoginPage" style={styles.page}>
+    <main className="cryptusLoginPage" style={styles.page}>
       <style>{css}</style>
 
       {/* Left Panel: Stark Architectural Monolith */}
@@ -388,7 +388,7 @@ export default function Login() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

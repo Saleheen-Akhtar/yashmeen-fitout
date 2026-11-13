@@ -1,46 +1,44 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
-import { PrivateRoute, AdminProtectedRoute } from "./pages/routes/AuthRoute";
-import ScrollToTop from "./components/ScrollToTop";
-import SeoHead from "./components/SeoHead";
-import Loading from "./components/Loading";
+import { PrivateRoute, AdminProtectedRoute } from "./routes/AuthRoute";
+import ScrollToTop from "./components/layout/ScrollToTop";
+import SeoHead from "./components/seo/SeoHead";
+import Loading from "./components/ui/Loading";
 
 // Core Website Layout & Landing Page (Eager for immediate first-paint LCP)
-import Layout from "./pages/layout/Layout";
-import Home from "./pages/website/Home";
+import Layout from "./layouts/Layout";
+import Home from "./pages/public/Home";
 
 // Lazy Website Subpages
-const SVG = lazy(() => import("./pages/website/SVG"));
-const Contact = lazy(() => import("./pages/website/Contact"));
-const AboutPage = lazy(() => import("./pages/website/About"));
-const FoundersMessage = lazy(() => import("./pages/website/foundersMessage"));
-const WhyUs = lazy(() => import("./pages/website/WhyUs"));
-const FAQ = lazy(() => import("./pages/website/FAQ"));
-const Career = lazy(() => import("./pages/website/Career"));
-const PhotoGallery = lazy(() => import("./pages/website/PhotoGallery"));
-const VideoGallery = lazy(() => import("./pages/website/VideoGallery"));
-const Architecture = lazy(() => import("./pages/website/Architecture"));
-const InteriorDesign = lazy(() => import("./pages/website/InteriorDesign"));
-const Construction = lazy(() => import("./pages/website/Construction"));
-const OfficeRenovation = lazy(() => import("./pages/website/OfficeRenovation"));
-const ServiceDetail = lazy(() => import("./pages/website/ServiceDetail"));
-const ProjectsPage = lazy(() => import("./pages/website/Project"));
-const ProjectDetailsPage = lazy(() => import("./pages/website/ProjectDetails"));
-const QuotePage = lazy(() => import("./pages/website/Quote"));
-const BlogDetails = lazy(() => import("./pages/website/BlogDetails"));
-const BlogsPage = lazy(() => import("./pages/website/BlogPage"));
-const PrivacyPolicy = lazy(() => import("./pages/website/PrivacyPolicy"));
-const NotFound = lazy(() => import("./pages/website/NotFound"));
+const Contact = lazy(() => import("./pages/public/Contact"));
+const AboutPage = lazy(() => import("./pages/public/About"));
+const FoundersMessage = lazy(() => import("./pages/public/FoundersMessage"));
+const WhyUs = lazy(() => import("./pages/public/WhyUs"));
+const FAQ = lazy(() => import("./pages/public/FAQ"));
+const Career = lazy(() => import("./pages/public/Career"));
+const PhotoGallery = lazy(() => import("./pages/public/media/PhotoGallery"));
+const VideoGallery = lazy(() => import("./pages/public/media/VideoGallery"));
+const Architecture = lazy(() => import("./pages/public/services/Architecture"));
+const InteriorDesign = lazy(() => import("./pages/public/services/InteriorDesign"));
+const Construction = lazy(() => import("./pages/public/services/Construction"));
+const OfficeRenovation = lazy(() => import("./pages/public/services/OfficeRenovation"));
+const ServiceDetail = lazy(() => import("./pages/public/services/ServiceDetail"));
+const ProjectsPage = lazy(() => import("./pages/public/projects/Project"));
+const ProjectDetailsPage = lazy(() => import("./pages/public/projects/ProjectDetails"));
+const QuotePage = lazy(() => import("./pages/public/Quote"));
+const BlogDetails = lazy(() => import("./pages/public/blog/BlogDetails"));
+const BlogsPage = lazy(() => import("./pages/public/blog/BlogPage"));
+const PrivacyPolicy = lazy(() => import("./pages/public/PrivacyPolicy"));
+const NotFound = lazy(() => import("./pages/public/NotFound"));
 
 // Lazy Auth & Experience Pages
 const Login = lazy(() => import("./pages/auth/Login"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
-const ParallaxDemo = lazy(() => import("./demos/default"));
-const YashmeenNibExperience = lazy(() => import("./components/yashmeen-nib/YashmeenNibExperience"));
+const YashmeenNibExperience = lazy(() => import("./components/experiments/YashmeenNibExperience"));
 
 // Lazy Admin Layout & Pages (Isolates CKEditor & Admin dashboard from visitor bundle)
-const AdminLayout = lazy(() => import("./pages/layout/AdminLayout"));
+const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const CategoryManager = lazy(() => import("./pages/admin/CategoryManager"));
 const EnquiryManager = lazy(() => import("./pages/admin/EnquiryManager"));
@@ -65,12 +63,10 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/parallax-demo" element={<ParallaxDemo />} />
           <Route path="/normal-is-boring" element={<YashmeenNibExperience />} />
           <Route path="/experience" element={<YashmeenNibExperience />} />
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
-            <Route path="/svg" element={<SVG />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/quote" element={<QuotePage />} />

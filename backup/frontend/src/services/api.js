@@ -1,5 +1,5 @@
 import axios from "axios";
-import { tokenExpired } from "../libs/helpers";
+import { tokenExpired } from "../lib/helpers";
 
 export const itemPath = import.meta.env.VITE_ITEM_PATH || "/uploads";
 

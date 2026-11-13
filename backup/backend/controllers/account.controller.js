@@ -1,4 +1,7 @@
 import crypto from "crypto";
+
+// Reset tokens are stored hashed; only the emailed value can be redeemed.
+const hashToken = (value) => crypto.createHash("sha256").update(String(value)).digest("hex");
 import bcrypt from "bcrypt";
 import AccountModel from "../models/account.model.js";
 import { generateToken } from "../utils/generateToken.js";
@@ -222,7 +225,7 @@ export const forgotPassword = async (req, res) => {
         }
 
         const resetToken = crypto.randomBytes(32).toString("hex");
-        account.resetPasswordToken = resetToken;
+        account.resetPasswordToken = hashToken(resetToken);
         account.resetPasswordExpiresAt = Date.now() + RESET_TOKEN_TTL_MS;
         await account.save();
 
@@ -245,7 +248,7 @@ export const resetPassword = async (req, res) => {
         }
 
         const account = await AccountModel.findOne({
-            resetPasswordToken: token.trim(),
+            resetPasswordToken: hashToken(token.trim()),
             resetPasswordExpiresAt: { $gt: Date.now() },
         }).select("+resetPasswordToken +activeToken");
 

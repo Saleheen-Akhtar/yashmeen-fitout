@@ -2393,3 +2393,12 @@ html:not(.motion) .aperture-parallax-layer { transform: none !important; }
   .aperture-actions { margin-top: 14px; }
   .aperture-cta { min-height: 42px; min-width: 180px; }
 }
+
+/* Works: honest empty state when the CMS has no projects yet */
+.works-empty {
+  padding: clamp(48px, 8vw, 96px) 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}

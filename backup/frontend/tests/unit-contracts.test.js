@@ -391,3 +391,41 @@ describe("Layer 2D: Atelier hours, SEO config, and public cache invalidation", (
     }
   });
 });
+
+describe("tidy + hardening regressions", () => {
+  it("homepage Works never falls back to invented projects", () => {
+    const src = readFrontend("src/components/home/Works.jsx");
+    assert.ok(!src.includes("CURATED_PROJECTS"));
+    assert.ok(src.includes("works-empty"));
+  });
+
+  it("stray demo routes are gone", () => {
+    const app = readFrontend("src/App.jsx");
+    assert.ok(!app.includes('"/svg"'));
+    assert.ok(!app.includes("parallax-demo"));
+  });
+
+  it("src has no legacy libs/ or pages/website directories", () => {
+    assert.ok(!fs.existsSync(path.join(FRONTEND_ROOT, "src/libs")));
+    assert.ok(!fs.existsSync(path.join(FRONTEND_ROOT, "src/pages/website")));
+  });
+
+  it("password reset tokens are stored hashed", () => {
+    const src = readBackend("controllers/account.controller.js");
+    assert.ok(src.includes("hashToken(resetToken)"));
+    assert.ok(src.includes("hashToken(token.trim())"));
+  });
+
+  it("server trusts the proxy on Vercel and gates preview CORS behind an env flag", () => {
+    const src = readBackend("server.js");
+    assert.ok(src.includes('app.set("trust proxy", 1)'));
+    assert.ok(src.includes("ALLOW_VERCEL_PREVIEWS"));
+    assert.ok(!/yashmeen-\[a-z0-9-\]\+\\\./.test(src));
+  });
+
+  it("canonical origin follows VITE_SITE_URL", () => {
+    const cfg = readFrontend("vite.config.js");
+    assert.ok(cfg.includes("VITE_SITE_URL"));
+    assert.ok(fs.existsSync(path.join(FRONTEND_ROOT, "scripts/generate-seo-files.mjs")));
+  });
+});

@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Changed
+- **Structure tidy:** `pages/website` split into `pages/public/{projects,services,media,blog}`, `components/` grouped (`layout`, `home`, `seo`, `ui`, `experiments`), `libs` and cache helpers merged into `lib/`, `layouts/` and `routes/` split out of `pages/`. Root README added; brand brief moved to `docs/`. Dead demo routes (`/svg`, `/parallax-demo`) removed.
+- **Homepage Works:** no invented fallback projects (honest empty state); desktop opens on the 3D carousel, small screens on the bento grid.
+- **SEO:** `scripts/generate-seo-files.mjs` builds `sitemap.xml` and `robots.txt` (adds project and blog URLs when `SITEMAP_API_URL` is set); `VITE_SITE_URL` drives canonical and OG tags in `index.html` too.
+- **Backend:** `trust proxy` on Vercel so rate limits are per visitor; password-reset tokens stored hashed; preview-origin CORS is opt-in (`ALLOW_VERCEL_PREVIEWS`); HSTS header.
+- `/login` and `/forgot-password` now render inside `<main>`.
 - **Light editorial redesign (all pages):** new token system in `index.css` (single bronze accent, two fonts, 4/8 spacing scale, flat cards, 44px+ targets).
 - **Header/Footer:** rewritten with CSS classes, keyboard-accessible dropdowns, active-route state, Escape to close, light footer, skip link.
 - **Homepage:** reduced from 8 sections to 6 (hero, services, projects, process, client words, contact). Removed auto-opening offer modal, scope configurator, client logo strip, GSAP hero.

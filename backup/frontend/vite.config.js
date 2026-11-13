@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
@@ -7,8 +7,18 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
+// Keeps the static <head> tags in index.html in sync with VITE_SITE_URL.
+const DEFAULT_ORIGIN = 'https://yashmeen-fitout.vercel.app'
+const siteUrlPlugin = (origin) => ({
+  name: 'site-url-html',
+  transformIndexHtml: (html) => (origin ? html.split(DEFAULT_ORIGIN).join(origin) : html),
+})
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const origin = (env.VITE_SITE_URL || '').replace(/\/+$/, '')
+  return {
+  plugins: [react(), tailwindcss(), siteUrlPlugin(origin)],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -57,5 +67,6 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+  }
   }
 })

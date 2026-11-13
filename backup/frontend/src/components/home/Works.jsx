@@ -6,69 +6,6 @@ import Loading from "../ui/Loading";
 
 const EditorialCarousel3D = lazy(() => import("./EditorialCarousel3D"));
 
-const CURATED_PROJECTS = [
-  {
-    id: 1,
-    num: "(01)",
-    name: "Palm Jumeirah Atelier",
-    tag: "RESIDENTIAL · DUBAI",
-    year: "2026",
-    img: "/static/hero-aperture-v2.webp",
-    imgAlt: "Dubai villa with a reflecting pool, sandstone facade, and palms at sunset",
-    className: "is-landscape",
-  },
-  {
-    id: 2,
-    num: "(02)",
-    name: "Emirates Hills Residence",
-    tag: "VILLA · DESIGN & FIT-OUT",
-    year: "2025",
-    img: "/static/work-oh-office.jpg",
-    imgAlt: "Contemporary residence nestled beneath a mature tree with illuminated glazing",
-    className: "is-portrait is-monumental offset-top",
-  },
-  {
-    id: 3,
-    num: "(03)",
-    name: "DIFC Corporate Headquarters",
-    tag: "COMMERCIAL · DIFC",
-    year: "2026",
-    img: "/static/Office-fit-out.jpg",
-    imgAlt: "Contemporary office fit-out with warm timber detailing and meeting spaces",
-    className: "is-portrait is-monumental",
-  },
-  {
-    id: 4,
-    num: "(04)",
-    name: "Al Quoz Design Pavilion",
-    tag: "ATELIER · AL QUOZ",
-    year: "2025",
-    img: "/static/joinery-bay.jpg",
-    imgAlt: "Craftsman building custom joinery in a fit-out workshop",
-    className: "is-landscape offset-top",
-  },
-  {
-    id: 5,
-    num: "(05)",
-    name: "Dubai Hills Modern Sanctuary",
-    tag: "RESIDENTIAL · DUBAI HILLS",
-    year: "2026",
-    img: "/static/hero-editorial.webp",
-    imgAlt: "Warm modern residence with timber screens and a landscaped palm garden",
-    className: "is-landscape",
-  },
-  {
-    id: 6,
-    num: "(06)",
-    name: "Downtown Fashion Concept Store",
-    tag: "RETAIL · DOWNTOWN DUBAI",
-    year: "2025",
-    img: "/static/studio.jpg",
-    imgAlt: "Bright commercial interior with lounge seating, meeting tables, and feature lighting",
-    className: "is-portrait is-monumental offset-top",
-  },
-];
-
 const BENTO_CLASSES = [
   "is-landscape",
   "is-portrait is-monumental offset-top",
@@ -97,7 +34,13 @@ const resolveProjectImage = (img, idx) => {
 
 export default function Works() {
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState("grid");
+  // Desktop opens on the 3D carousel; small screens keep the lighter bento grid.
+  const [viewMode, setViewMode] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches
+      ? "carousel"
+      : "grid"
+  );
+  const [status, setStatus] = useState("loading");
   const [liveProjects, setLiveProjects] = useState([]);
 
   useEffect(() => {
@@ -130,8 +73,9 @@ export default function Works() {
           });
           setLiveProjects(mapped);
         }
+        if (!cancelled) setStatus("ready");
       } catch {
-        /* fallback smoothly */
+        if (!cancelled) setStatus("ready");
       }
     };
 
@@ -153,7 +97,8 @@ export default function Works() {
     };
   }, []);
 
-  const displayedProjects = liveProjects.length > 0 ? liveProjects : CURATED_PROJECTS;
+  // Only real projects from the CMS are shown; no invented placeholders.
+  const displayedProjects = liveProjects;
   const carouselProjects = displayedProjects.map((project, idx) => ({
     id: project.id,
     src: project.img,
@@ -197,7 +142,13 @@ export default function Works() {
         </div>
       </div>
 
-      {viewMode === "grid" ? (
+      {displayedProjects.length === 0 ? (
+        <p className="works-empty" role="status">
+          {status === "loading"
+            ? "Loading projects..."
+            : "Our latest projects will appear here shortly."}
+        </p>
+      ) : viewMode === "grid" ? (
         <div className="works-bento-grid">
           {displayedProjects.map((proj, idx) => (
             <Link

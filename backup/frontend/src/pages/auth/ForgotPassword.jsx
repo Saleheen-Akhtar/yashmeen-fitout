@@ -125,7 +125,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="cryptusLoginPage" style={styles.page}>
+    <main className="cryptusLoginPage" style={styles.page}>
       <style>{css}</style>
 
       {/* LEFT - brand panel */}
@@ -288,7 +288,7 @@ export default function ForgotPassword() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

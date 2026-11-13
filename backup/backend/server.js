@@ -35,12 +35,19 @@ if (!isVercel) {
     connectDB().catch(() => {});
 }
 
+// Behind Vercel's proxy req.ip is the proxy unless trust proxy is set, which would
+// make every visitor share one rate-limit key.
+if (isVercel || process.env.TRUST_PROXY === "true") {
+    app.set("trust proxy", 1);
+}
+
 // Security headers (lightweight equivalent to helmet defaults)
 app.use((req, res, next) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
     res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
     next();
 });
 
@@ -66,7 +73,8 @@ app.use(
             if (
                 ALLOWED_ORIGINS.has(normalized) ||
                 /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(normalized) ||
-                /^https:\/\/yashmeen-[a-z0-9-]+\.vercel\.app$/i.test(normalized)
+                (process.env.ALLOW_VERCEL_PREVIEWS === "true" &&
+                    /^https:\/\/yashmeen-fitout(-[a-z0-9-]+)?\.vercel\.app$/i.test(normalized))
             ) {
                 return cb(null, true);
             }

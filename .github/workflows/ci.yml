@@ -19,19 +19,19 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: backup/frontend/package.json
+          cache-dependency-path: apps/web/package.json
 
       - name: Install Frontend Dependencies
-        run: npm --prefix backup/frontend install
+        run: npm --prefix apps/web install
 
       - name: Verify Design Locks (0 em-dashes, 2 font families)
-        run: npm --prefix backup/frontend run check:locks
+        run: npm --prefix apps/web run check:locks
 
       - name: Run Frontend Tests
-        run: npm --prefix backup/frontend test
+        run: npm --prefix apps/web test
 
       - name: Build & Prerender Static HTML
-        run: npm --prefix backup/frontend run build
+        run: npm --prefix apps/web run build
         env:
           VITE_SITE_URL: https://yashmeen-fitout.vercel.app
 
@@ -52,13 +52,13 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: backup/backend/package.json
+          cache-dependency-path: apps/api/package.json
 
       - name: Install Backend Dependencies
-        run: npm --prefix backup/backend install
+        run: npm --prefix apps/api install
 
       - name: Run Backend Tests
-        run: npm --prefix backup/backend test
+        run: npm --prefix apps/api test
         env:
           MONGO_URI: mongodb://localhost:27017/yashmeen-test
           JWT_SECRET: ci-test-secret-key-1234567890

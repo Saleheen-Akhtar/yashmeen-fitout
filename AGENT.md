@@ -8,26 +8,29 @@ Operational manual for AI agents and developers maintaining and evolving the **Y
 
 * **Repository:** `Saleheen-Akhtar/yashmeen-fitout` (Git branch `main`)
 * **Workspace Root:** `C:\Users\sahil\Projects\IT\Dan`
-* **Frontend:** `backup/frontend` — React 19, Vite, React Router DOM, plain CSS (no Tailwind)
-* **Backend:** `backup/backend` — Node.js, Express, MongoDB Atlas (`mongoose`), JWT auth, Multer file uploads, Nodemailer SMTP
+* **Frontend:** `apps/web` - React 19, Vite, React Router DOM, plain CSS
+* **Backend:** `apps/api` - Node.js, Express, MongoDB Atlas (`mongoose`), JWT auth, Multer file uploads, Nodemailer SMTP
 
 ### Local Development Commands
 ```bash
 # Frontend dev server (Port 3000)
-npm --prefix backup/frontend run dev
+npm run dev:web
+# or: npm --prefix apps/web run dev
 
 # Backend API server (Port 8000)
-node backup/backend/server.js
+npm run dev:api
+# or: node apps/api/server.js
 
-# Production bundle check
-npm --prefix backup/frontend run build
+# Production bundle check & static prerender
+npm run build
+# or: npm --prefix apps/web run build
 ```
 
 ---
 
 ## 2. Design System (Light Editorial)
 
-Source of truth: `backup/frontend/src/index.css` (tokens + primitives), `styles/shell.css` (header/footer), `styles/home.css` (homepage).
+Source of truth: `apps/web/src/styles/tokens.css` (tokens + primitives), `styles/shell.css` (header/footer), `styles/home.css` (homepage).
 
 * **Theme:** light, warm white (`--bg #fbfaf7`), alt surface `--surface-alt #f4f1ea`, ink `#1b1a17`, muted `#6b665c`, hairlines `#e6e1d6`. Footer is light too. No dark/light zebra sections.
 * **One accent:** bronze `--accent #8a6a28` (4.9:1 on white). No other golds. Photo overlays may use light text only on a dark gradient.
@@ -51,9 +54,9 @@ Source of truth: `backup/frontend/src/index.css` (tokens + primitives), `styles/
    * All administrative mutations (`POST`, `PUT`, `DELETE` on `/api/projects`, `/api/banners`, `/api/popups`, `/api/gallery`, `/api/videos`, `/api/vacancies`, `/api/enquiries`) MUST use `protect, adminOnly` middleware.
 2. **Credential Safety:**
    * Never commit `.env` or `details.txt`. Verify `.gitignore` before every commit.
-   * Document new configuration keys in `backup/backend/.env.example`.
+   * Document new configuration keys in `apps/api/.env.example`.
 3. **Uploads Handling:**
-   * Disk storage uses `backup/backend/uploads/`.
+   * Disk storage uses `apps/api/uploads/`.
    * Static route: `app.use("/uploads", express.static(path.join(__dirname, "uploads")))`.
 
 ---
@@ -61,7 +64,7 @@ Source of truth: `backup/frontend/src/index.css` (tokens + primitives), `styles/
 ## 4. Quality Assurance Checklist Before Shipping
 
 - [ ] Zero console errors or unhandled promise rejections in Chrome DevTools MCP.
-- [ ] `npm --prefix backup/frontend run build` exits with code 0.
-- [ ] Zero em-dashes (`—`) in modified components.
+- [ ] `npm run build` (or `npm --prefix apps/web run build`) exits with code 0.
+- [ ] Zero em-dashes in modified components.
 - [ ] Responsive inspection on desktop (1440px), tablet (768px), and mobile (375px).
 - [ ] All forms (Quote, Contact, Career) validate inputs cleanly and provide visual feedback.

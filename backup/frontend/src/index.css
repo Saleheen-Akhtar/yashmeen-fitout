@@ -3,6 +3,7 @@
    Design System: 12-Column CAD Grid, Paper Canvas (#FCFCFC), Obsidian Ink (#080807),
    Monumental Typography, Hairline Cadence, and Precision Pill Actions. */
 
+@import "./styles/fonts.css";
 @import "tailwindcss";
 
 @theme inline {

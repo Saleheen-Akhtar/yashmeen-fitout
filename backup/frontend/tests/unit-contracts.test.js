@@ -428,4 +428,59 @@ describe("tidy + hardening regressions", () => {
     assert.ok(cfg.includes("VITE_SITE_URL"));
     assert.ok(fs.existsSync(path.join(FRONTEND_ROOT, "scripts/generate-seo-files.mjs")));
   });
+
+  it("QuestionnaireModal is condensed into 3 focused steps with mobile autocomplete and inline feedback", () => {
+    const src = readFrontend("src/components/layout/QuestionnaireModal.jsx");
+    assert.ok(src.includes("STEP 1 OF 3"));
+    assert.ok(src.includes("STEP 2 OF 3"));
+    assert.ok(src.includes("STEP 3 OF 3"));
+    assert.ok(!src.includes("STEP 4 OF 8"));
+    assert.ok(src.includes('autoComplete="tel"'));
+    assert.ok(src.includes('inputMode="tel"'));
+  });
+
+  it("StickyMobileBar provides direct Call and WhatsApp triggers with >=44px tap targets", () => {
+    const src = readFrontend("src/components/layout/StickyMobileBar.jsx");
+    const layout = readFrontend("src/layouts/Layout.jsx");
+    const shell = readFrontend("src/styles/shell.css");
+    assert.ok(src.includes("tel:+971543862870"));
+    assert.ok(src.includes("wa.me/971543862870"));
+    assert.ok(layout.includes("<StickyMobileBar"));
+    assert.ok(shell.includes(".sticky-mobile-bar"));
+    assert.ok(shell.includes("min-height: 44px"));
+  });
+
+  it("Hero is simplified to 1 calm architectural photo without cluttering diagonal clip cards", () => {
+    const src = readFrontend("src/components/home/Hero.jsx");
+    assert.ok(!src.includes("aperture-parallax-architecture"));
+    assert.ok(!src.includes("aperture-parallax-ateliers"));
+    assert.ok(src.includes("aperture-hero-photo"));
+  });
+
+  it("Service pages are consolidated into data-driven templates with zero em-dashes", () => {
+    const servicesData = readFrontend("src/pages/public/services/servicesData.js");
+    assert.ok(servicesData.includes("architecture:"));
+    assert.ok(servicesData.includes('"interior-design":'));
+    assert.ok(servicesData.includes("construction:"));
+    assert.ok(servicesData.includes('"office-renovation":'));
+    // Strict zero em-dash / en-dash rule
+    assert.ok(!servicesData.includes("\u2014"), "servicesData contains illegal em-dash");
+    assert.ok(!servicesData.includes("\u2013"), "servicesData contains illegal en-dash");
+
+    // All 4 individual service files delegate cleanly to ServiceDetail
+    const archSrc = readFrontend("src/pages/public/services/Architecture.jsx");
+    const intSrc = readFrontend("src/pages/public/services/InteriorDesign.jsx");
+    const conSrc = readFrontend("src/pages/public/services/Construction.jsx");
+    const offSrc = readFrontend("src/pages/public/services/OfficeRenovation.jsx");
+
+    assert.ok(archSrc.includes("<ServiceDetail"));
+    assert.ok(intSrc.includes("<ServiceDetail"));
+    assert.ok(conSrc.includes("<ServiceDetail"));
+    assert.ok(offSrc.includes("<ServiceDetail"));
+  });
+
+  it("Frontend package.json chains static prerender script to production build", () => {
+    const pkg = JSON.parse(readFrontend("package.json"));
+    assert.ok(pkg.scripts.build.includes("node scripts/prerender.mjs"));
+  });
 });

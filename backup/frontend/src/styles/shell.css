@@ -771,3 +771,81 @@
     align-items: flex-start;
   }
 }
+
+/* ==========================================================================
+   5. STICKY MOBILE CONVERSION BAR (Dubai Direct Call & WhatsApp)
+   ========================================================================== */
+.sticky-mobile-bar {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .sticky-mobile-bar {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 90;
+    background: rgba(14, 13, 11, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    padding: 8px 12px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .sticky-mobile-bar-inner {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1.2fr;
+    gap: 8px;
+    align-items: center;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .sticky-mobile-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0 10px;
+    border-radius: 9999px;
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .sticky-mobile-btn:active {
+    transform: scale(0.97);
+  }
+
+  .sticky-mobile-call {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .sticky-mobile-whatsapp {
+    background: #25d366;
+    color: #0b2212;
+  }
+
+  .sticky-mobile-enquire {
+    background: #ffffff;
+    color: #080807;
+  }
+
+  body {
+    padding-bottom: 64px;
+  }
+}
+

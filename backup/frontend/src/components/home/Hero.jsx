@@ -165,13 +165,6 @@ export default function Hero() {
           />
         </div>
 
-        <div className="aperture-parallax-layer aperture-parallax-architecture" data-parallax-layer="1" aria-hidden="true">
-          <img src="/static/yashmeen-studio.jpg" alt="" loading="eager" decoding="async" />
-        </div>
-        <div className="aperture-parallax-layer aperture-parallax-ateliers" data-parallax-layer="2" aria-hidden="true">
-          <img src="/static/joinery-bay.jpg" alt="" loading="eager" decoding="async" />
-        </div>
-
         <div className="aperture-copy">
           <div className="aperture-copy-parallax" data-parallax-layer="4">
             <div className="aperture-copy-inner">

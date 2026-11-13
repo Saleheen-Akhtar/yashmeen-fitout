@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { authAPI } from "../../services/api";
+import "../../styles/auth.css";
 /**
  * ForgotPasswordPage - split-screen "reset password" screen for
  * Yashmeen Future Building, a Dubai-based fit-out and design studio.
@@ -125,8 +126,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <main className="cryptusLoginPage" style={styles.page}>
-      <style>{css}</style>
+    <main className="cryptusLoginPage cryptusForgotAuth" style={styles.page}>
 
       {/* LEFT - brand panel */}
       <div className="cryptusLoginLeftPanel" style={styles.leftPanel}>
@@ -502,54 +502,3 @@ const styles = {
     cursor: "pointer",
   },
 };
-
-/* ---------- CSS block: only what inline style can't do ---------- */
-
-const css = `
-  .cryptusLoginPage * { box-sizing: border-box; }
-
-  .cryptusLoginCard {
-    animation: cryptusLoginFadeUp 0.5s ease both;
-  }
-  @keyframes cryptusLoginFadeUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .cryptusLoginInputWrap:focus-within {
-    border-color: ${palette.blue500} !important;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-  }
-  .cryptusLoginInputError {
-    border-color: #DC2626 !important;
-  }
-  .cryptusLoginInput::placeholder { color: ${palette.slate400}; }
-
-  .cryptusLoginBtnPrimary:hover:not(:disabled) { background: ${palette.blue400}; }
-  .cryptusLoginBtnPrimary:active:not(:disabled) { transform: translateY(1px); }
-  .cryptusLoginBtnPrimary:disabled { opacity: 0.7; cursor: not-allowed; }
-  .cryptusLoginBtnPrimary:focus-visible,
-  .cryptusLoginLink:focus-visible,
-  .cryptusLoginBackLink:focus-visible,
-  .cryptusLoginLinkBtn:focus-visible {
-    outline: 2px solid ${palette.blue500};
-    outline-offset: 2px;
-  }
-
-  .cryptusLoginLink:hover { text-decoration: underline; }
-  .cryptusLoginBackLink:hover { color: ${palette.slate900}; }
-  .cryptusLoginLinkBtn:hover { text-decoration: underline; }
-
-  @media (max-width: 960px) {
-    .cryptusLoginPage { grid-template-columns: 1fr !important; }
-    .cryptusLoginLeftPanel { padding: 32px 24px !important; }
-    .cryptusLoginFeatureList { display: none !important; }
-    .cryptusLoginStat { display: none !important; }
-  }
-
-  @media (max-width: 560px) {
-    .cryptusLoginLeftPanel { padding: 24px 20px !important; }
-    .cryptusLoginRightPanel { padding: 20px 16px !important; }
-    .cryptusLoginCard { padding: 24px 20px !important; border-radius: 12px !important; }
-  }
-`;

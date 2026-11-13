@@ -1,0 +1,260 @@
+/* ==========================================================================
+   YASHMEEN FOUNDER'S MESSAGE PAGE STYLESHEET
+   ========================================================================== */
+:root{
+          --ink:#1b1a17;
+          --black:#fbfaf7;
+          --gray-50:#f4f1ea;
+          --gray-100:rgba(27,26,23,0.04);
+          --gray-200:#e6e1d6;
+          --gray-500:#6b665c;
+          --brass:#8a6a28;
+          --brass-deep:#6f541d;
+          --font-display:var(--font-sans);
+          --font-body:var(--font-sans);
+          --max-w:1180px;
+        }
+
+        *{ box-sizing:border-box; }
+
+        .fm-page{
+          min-height:100vh;
+          width:100%;
+          background:var(--black);
+          color:var(--ink);
+          font-family:var(--font-body);
+        }
+
+        a{ text-decoration:none; color:inherit; }
+
+        .wrap{
+          max-width:var(--max-w);
+          margin:0 auto;
+          padding:0 24px;
+        }
+        @media (min-width:768px){
+          .wrap{ padding:0 40px; }
+        }
+
+        .eyebrow{
+          display:flex;
+          align-items:center;
+          gap:8px;
+          font-size:13px;
+          font-weight:600;
+          text-transform:uppercase;
+          letter-spacing:0.14em;
+          color:var(--brass-deep);
+        }
+        .eyebrow-bar{
+          width:4px;
+          height:16px;
+          background:var(--brass);
+          border-radius:1px;
+        }
+
+        /* HERO */
+        .hero{
+          position:relative;
+          padding:18px 0;
+          text-align:center;
+          background-size:cover;
+          background-position:center;
+          isolation:isolate;
+        }
+        @media (min-width:768px){ 
+        .hero{ padding:50px 0 50px; } }
+        .hero::before{
+          content:"";
+          position:absolute;
+          inset:0;
+          background: #000;
+          z-index:0;
+        }
+        .hero > .wrap{
+          position:relative;
+          z-index:1;
+        }
+        .hero-eyebrow{
+          justify-content:center;
+          color:var(--brass);
+        }
+        .hero-title{
+          margin:18px 0 0;
+          font-family:var(--font-display);
+          font-weight:800;
+          color:#FFFFFF;
+          font-size:34px;
+          line-height:1.18;
+          letter-spacing:-0.01em;
+        }
+        @media (min-width:640px){ .hero-title{ font-size:46px; } }
+        @media (min-width:1024px){ .hero-title{ font-size:56px; } }
+        .hero-copy{
+          margin:20px auto 0;
+          max-width:560px;
+          font-size:15.5px;
+          line-height:1.75;
+          color:rgba(255,255,255,0.78);
+        }
+        @media (min-width:640px){ .hero-copy{ font-size:16.5px; } }
+
+        /* BODY */
+        .body-section{ padding:64px 0 88px; }
+        @media (min-width:768px){ .body-section{ padding:96px 0 112px; } }
+        .body-grid{
+          display:grid;
+          grid-template-columns:1fr;
+          gap:40px;
+          align-items:start;
+        }
+        @media (min-width:860px){
+          .body-grid{ grid-template-columns:0.75fr 1.25fr; gap:64px; }
+        }
+
+        /* PORTRAIT COLUMN */
+        .portrait-col{ position:static; }
+        @media (min-width:860px){
+          .portrait-col{ position:sticky; top:32px; }
+        }
+        .portrait-frame{
+          width:100%;
+          aspect-ratio:1/1;
+          border-radius:10px;
+          overflow:hidden;
+          border:1px solid var(--gray-200);
+        }
+        .founder-name{
+          margin-top:20px;
+          font-family:var(--font-display);
+          font-size:20px;
+          font-weight:700;
+          color:var(--ink);
+        }
+        .founder-title{
+          margin-top:4px;
+          font-size:13.5px;
+          font-weight:600;
+          color:var(--brass-deep);
+          text-transform:uppercase;
+          letter-spacing:0.08em;
+        }
+        .portrait-divider{
+          margin-top:20px;
+          height:1px;
+          background:var(--gray-200);
+        }
+        .portrait-foot{
+          margin-top:20px;
+          font-size:13.5px;
+          line-height:1.75;
+          color:var(--gray-500);
+        }
+
+        /* LETTER */
+        .letter-heading{
+          margin:16px 0 0;
+          font-family:var(--font-display);
+          font-weight:700;
+          font-size:30px;
+          line-height:1.28;
+          color:var(--ink);
+        }
+        @media (min-width:640px){ .letter-heading{ font-size:36px; } }
+        .greeting{
+          margin-top:28px;
+          font-size:16.5px;
+          font-weight:700;
+          color:var(--ink);
+        }
+        .paragraph{
+          margin-top:16px;
+          font-size:15px;
+          line-height:1.85;
+          color:var(--gray-500);
+        }
+
+        .quote-box{
+          margin:32px 0 8px;
+          padding:28px 30px;
+          background:var(--gray-50);
+          border-left:3px solid var(--brass);
+          border-radius:6px;
+        }
+        @media (min-width:640px){ .quote-box{ padding:30px 34px; } }
+        .quote-text{
+          margin-top:12px;
+          font-family:var(--font-display);
+          font-size:17px;
+          font-weight:600;
+          font-style:italic;
+          color:var(--ink);
+          line-height:1.55;
+        }
+        @media (min-width:640px){ .quote-text{ font-size:19px; } }
+
+        .sign-off{ margin-top:40px; }
+        .sign-off-line{
+          font-size:15px;
+          color:var(--gray-500);
+          margin-bottom:4px;
+        }
+        .sign-off-name{
+          margin-top:14px;
+          font-family:var(--font-display);
+          font-size:16px;
+          font-weight:700;
+          color:var(--ink);
+        }
+        .sign-off-title{
+          margin-top:2px;
+          font-size:13.5px;
+          color:var(--gray-500);
+        }
+
+        /* STATS */
+        .stats-section{
+          background:var(--gray-50);
+          border-top:1px solid var(--gray-200);
+          border-bottom:1px solid var(--gray-200);
+          padding:52px 0;
+        }
+        .stats-grid{
+          display:grid;
+          grid-template-columns:repeat(2,1fr);
+          gap:32px 16px;
+        }
+        @media (min-width:768px){
+          .stats-grid{ grid-template-columns:repeat(4,1fr); }
+        }
+        .stat{
+          text-align:center;
+          padding:0 8px;
+          position:relative;
+        }
+        @media (min-width:768px){
+          .stat:not(:first-child)::before{
+            content:"";
+            position:absolute;
+            left:0;
+            top:8px;
+            bottom:8px;
+            width:1px;
+            background:var(--gray-200);
+          }
+        }
+        .stat-value{
+          font-family:var(--font-display);
+          font-weight:800;
+          font-size:34px;
+          color:var(--brass-deep);
+        }
+        @media (min-width:640px){ .stat-value{ font-size:42px; } }
+        .stat-label{
+          margin-top:6px;
+          font-size:13px;
+          font-weight:500;
+          text-transform:uppercase;
+          letter-spacing:0.06em;
+          color:var(--gray-500);
+        }

@@ -3,6 +3,7 @@ import { Link, useNavigate, Navigate } from "react-router-dom";
 import { authAPI } from "../../services/api";
 import createStore from "../../store";
 import { toast } from "sonner";
+import "../../styles/auth.css";
 
 const palette = {
   black: "#000000",
@@ -173,8 +174,7 @@ export default function Login() {
   if (user?.usertype === "admin") return <Navigate to="/dashboard" replace />;
 
   return (
-    <main className="cryptusLoginPage" style={styles.page}>
-      <style>{css}</style>
+    <main className="cryptusLoginPage cryptusLoginAuth" style={styles.page}>
 
       {/* Left Panel: Stark Architectural Monolith */}
       <div className="cryptusLoginLeftPanel" style={styles.leftPanel}>
@@ -699,44 +699,3 @@ const styles = {
     margin: "0 auto 16px auto",
   },
 };
-
-const css = `
-  .cryptusLoginCard {
-    animation: cryptusFade 0.3s ease both;
-  }
-  @keyframes cryptusFade {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .cryptusLoginInputWrap:focus-within {
-    border-color: #000000 !important;
-    box-shadow: 0 0 0 2px #000000 !important;
-  }
-  .cryptusLoginInputError {
-    border-color: #000000 !important;
-  }
-  .cryptusLoginBtnPrimary:hover:not(:disabled) {
-    background: #ffffff !important;
-    border-color: #000000 !important;
-    color: #000000 !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
-  }
-  .cryptusLoginBtnPrimary:focus-visible,
-  .cryptusLoginLink:focus-visible,
-  .cryptusLoginBackToSiteLink:focus-visible,
-  .cryptusLoginEyeBtn:focus-visible,
-  .cryptusLoginCheckboxNative:focus-visible {
-    outline: 2px solid #000000;
-    outline-offset: 2px;
-  }
-  .cryptusLoginBackToSiteLink:hover {
-    color: #000000 !important;
-  }
-  @media (max-width: 960px) {
-    .cryptusLoginPage { grid-template-columns: 1fr !important; }
-    .cryptusLoginLeftPanel { padding: 36px 24px !important; }
-    .cryptusLoginFeatureList { display: none !important; }
-    .cryptusLoginStat { display: none !important; }
-  }
-`;

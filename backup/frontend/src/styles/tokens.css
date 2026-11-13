@@ -1,0 +1,109 @@
+/* ==========================================================================
+   YASHMEEN FUTURE BUILDING DESIGN SYSTEM TOKENS
+   Single source of truth for architectural surfaces, typography, cadence,
+   and precision UI interactions.
+   ========================================================================== */
+
+:root {
+  /* Surfaces: Paper Canvas & Neutral Surfaces */
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --surface-alt: #f4f1ea;
+  --surface-card: #ffffff;
+
+  /* Lines & Hairline Cadence */
+  --line: rgba(27, 26, 23, 0.12);
+  --line-strong: rgba(27, 26, 23, 0.24);
+  --border: var(--line);
+
+  /* Typography: Obsidian Ink & Monochromatic Tones */
+  --ink: #1b1a17;
+  --ink-soft: #302f2b;
+  --muted: #6b665c;
+  --muted-light: #948e82;
+
+  /* Accents: Architectural Brass & Bronze */
+  --accent: #8a6a28;
+  --accent-hover: #6f541d;
+  --accent-gold: #c5a059;
+  --accent-red: #d30000;
+  --danger: #b42318;
+  --success: #12b76a;
+
+  /* Sanctioned Dark Surface Tokens (MenuOverlay, Hero Scrims, 3D Carousel) */
+  --surface-dark: #0e0d0b;
+  --surface-dark-elevated: #171512;
+  --surface-dark-card: #1c1a16;
+  --ink-on-dark: #f7f4ec;
+  --muted-on-dark: #b6afa2;
+  --line-on-dark: rgba(247, 244, 236, 0.14);
+  --accent-on-dark: #dfba73;
+
+  /* Type System */
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-display: var(--font-sans);
+
+  /* Type Scale */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.8125rem;  /* 13px */
+  --text-base: 0.9375rem;/* 15px */
+  --text-md: 1.0625rem;  /* 17px */
+  --text-lg: 1.25rem;    /* 20px */
+  --text-xl: 1.5rem;     /* 24px */
+  --text-2xl: 1.875rem;  /* 30px */
+  --text-3xl: 2.25rem;   /* 36px */
+  --text-4xl: 3rem;      /* 48px */
+  --text-5xl: 3.75rem;   /* 60px */
+
+  /* Spacing Scale */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.5rem;   /* 24px */
+  --space-6: 2rem;     /* 32px */
+  --space-7: 3rem;     /* 48px */
+  --space-8: 4.5rem;   /* 72px */
+
+  /* 12-Column Architectural CAD Grid */
+  --site-margin: 2rem;
+  --column-count: 12;
+  --column-gap: 1rem;
+  --max-width: 1440px;
+  --section-pad-y: clamp(4.5rem, 7vw, 8.5rem);
+
+  /* Radii */
+  --radius-sm: 2px;
+  --radius: 4px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(8, 8, 7, 0.05);
+  --shadow-md: 0 8px 24px -6px rgba(8, 8, 7, 0.08);
+  --shadow-lg: 0 20px 48px -12px rgba(8, 8, 7, 0.14);
+
+  /* Motion Curves & Durations */
+  --ease-primary: cubic-bezier(0.87, 0, 0.13, 1);
+  --ease-secondary: cubic-bezier(0.16, 1, 0.35, 1);
+  --ease-menu: cubic-bezier(0.7, 0, 0.22, 1);
+  --duration-fast: 0.2s;
+  --duration-base: 0.45s;
+  --duration-slow: 0.8s;
+  --duration-hero: 1.05s;
+
+  /* Z-Index Layer Stack */
+  --z-base: 1;
+  --z-sticky: 10;
+  --z-header: 50;
+  --z-drawer: 80;
+  --z-modal: 100;
+  --z-toast: 110;
+
+  /* Breakpoint Variables */
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1440px;
+}

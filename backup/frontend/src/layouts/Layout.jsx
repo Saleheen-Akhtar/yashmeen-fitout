@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import StickyMobileBar from "../components/layout/StickyMobileBar";
+import CookieConsentBar from "../components/layout/CookieConsentBar";
 import MotionProvider from "../motion/MotionProvider";
 
 export default function Layout() {
@@ -17,6 +18,7 @@ export default function Layout() {
       </main>
       <Footer />
       <StickyMobileBar />
+      <CookieConsentBar />
     </>
   );
 }

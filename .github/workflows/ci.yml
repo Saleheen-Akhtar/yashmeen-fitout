@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    name: Frontend Lint, Locks, Tests & Prerender Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backup/frontend/package.json
+
+      - name: Install Frontend Dependencies
+        run: npm --prefix backup/frontend install
+
+      - name: Verify Design Locks (0 em-dashes, 2 font families)
+        run: npm --prefix backup/frontend run check:locks
+
+      - name: Run Frontend Tests
+        run: npm --prefix backup/frontend test
+
+      - name: Build & Prerender Static HTML
+        run: npm --prefix backup/frontend run build
+        env:
+          VITE_SITE_URL: https://yashmeen-fitout.vercel.app
+
+  backend:
+    name: Backend Unit, Route & Security Tests
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backup/backend/package.json
+
+      - name: Install Backend Dependencies
+        run: npm --prefix backup/backend install
+
+      - name: Run Backend Tests
+        run: npm --prefix backup/backend test
+        env:
+          MONGO_URI: mongodb://localhost:27017/yashmeen-test
+          JWT_SECRET: ci-test-secret-key-1234567890
+          ADMIN_KEY: test-admin-key
+          PORT: 8000

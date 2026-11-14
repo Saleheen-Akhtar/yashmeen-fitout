@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "check:locks": "node scripts/check-design-locks.mjs",
     "preview": "vite preview",
-    "test": "node scripts/check-design-locks.mjs && node --test tests/**/*.test.js",
+    "test": "node scripts/check-design-locks.mjs && node --test tests/*.test.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { enquiryAPI, quoteAPI } from "../../services/api";
+import { trackEvent } from "../../lib/analytics";
+import useWebsiteContent from "../../hooks/useWebsiteContent";
 
 const PROJECT_TYPES = [
   "Residential Villa",
@@ -64,11 +67,13 @@ const mapServiceScope = (raw = "") => {
 };
 
 export default function QuestionnaireModal({ isOpen, onClose }) {
+  const { content } = useWebsiteContent();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const cardRef = useRef(null);
+  const openedAtRef = useRef(0);
   const doneBtnRef = useRef(null);
 
   const [formData, setFormData] = useState({
@@ -98,6 +103,8 @@ export default function QuestionnaireModal({ isOpen, onClose }) {
       document.body.style.overflow = "";
       return undefined;
     }
+
+    openedAtRef.current = Date.now();
 
     document.body.style.overflow = "hidden";
 
@@ -202,21 +209,19 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
         location: formData.location.trim() || "Dubai",
         timeline: formData.timeline,
         message: composedMessage,
+        website: "",
+        formStartedAt: openedAtRef.current,
       };
 
-      const res = await fetch("/api/quote/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const quoteData = await res.json().catch(() => ({}));
-
-      if (res.ok) {
+      try {
+        await quoteAPI.create(payload);
+        trackEvent("generate_lead", { method: "project_questionnaire" });
         setSubmitted(true);
         return;
-      }
-
-      if (res.status >= 400 && res.status < 500) {
+      } catch (quoteError) {
+        const status = quoteError?.response?.status;
+        const quoteData = quoteError?.response?.data || {};
+        if (status >= 400 && status < 500) {
         const fieldErrors = quoteData?.errors
           ? Object.values(quoteData.errors).filter(Boolean).join(" ")
           : "";
@@ -226,26 +231,25 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
             "Please verify your contact details and project brief before submitting."
         );
         return;
+        }
       }
 
       // Secondary endpoint fallback when quote service is unavailable
-      const fallbackRes = await fetch("/api/enquiry/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      try {
+        await enquiryAPI.create({
           name: cleanName,
           email: cleanEmail,
           mobile: cleanMobile,
           services: serviceScope,
           message: composedMessage,
-        }),
-      });
-      const enqData = await fallbackRes.json().catch(() => ({}));
-
-      if (!fallbackRes.ok) {
+          website: "",
+          formStartedAt: openedAtRef.current,
+        });
+        trackEvent("generate_lead", { method: "project_questionnaire_fallback" });
+      } catch (fallbackError) {
         setErrorMsg(
-          enqData?.message ||
-            "We could not record your brief right now. Please try again or reach us at info@yfbfitoutcontracting.com."
+          fallbackError?.response?.data?.message ||
+            `We could not record your brief right now. Please try again or reach us at ${content.email}.`
         );
         return;
       }
@@ -253,7 +257,7 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
       setSubmitted(true);
     } catch {
       setErrorMsg(
-        "Unable to reach our server right now. Please check your connection or email info@yfbfitoutcontracting.com."
+        `Unable to reach our server right now. Please check your connection or email ${content.email}.`
       );
     } finally {
       setLoading(false);
@@ -402,7 +406,7 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
                       </div>
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))", gap: 16 }}>
                       <div className="field">
                         <label htmlFor="modal-loc">Project Location</label>
                         <input
@@ -489,7 +493,7 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
                       />
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 16 }}>
                       <div>
                         <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ink)", marginBottom: 8 }}>
                           Worked with an architect before?
@@ -528,20 +532,6 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
                   </div>
                 </div>
               )}
-
-              {errorMsg && (
-                <div
-                  role="alert"
-                  style={{
-                    color: "#d30000",
-                    fontSize: "0.875rem",
-                    fontWeight: 500,
-                    marginTop: 16,
-                  }}
-                >
-                  {errorMsg}
-                </div>
-              )}
             </>
           )}
         </div>
@@ -549,6 +539,7 @@ Referral: ${formData.referral}${formData.otherReferral ? ` (${formData.otherRefe
         {/* Modal Navigation Footer */}
         {!submitted && (
           <div className="modal-footer">
+            {errorMsg && <p role="alert" className="modal-error">{errorMsg}</p>}
             {step > 1 ? (
               <button type="button" onClick={handleBack} className="btn-pill btn-pill-light">
                 ← BACK

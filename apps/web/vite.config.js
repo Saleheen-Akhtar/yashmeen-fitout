@@ -15,7 +15,7 @@ const siteUrlPlugin = (origin) => ({
 })
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
+  const env = loadEnv(mode, __dirname, '')
   const origin = (env.VITE_SITE_URL || '').replace(/\/+$/, '')
   return {
   plugins: [react(), tailwindcss(), siteUrlPlugin(origin)],
@@ -33,7 +33,6 @@ export default defineConfig(({ mode }) => {
           groups: [
             { name: 'vendor-react', priority: 30, test: /node_modules[\\/](react|react-dom|react-router-dom|react-router|scheduler)[\\/]/ },
             { name: 'vendor-gsap', priority: 20, test: /node_modules[\\/](gsap|@gsap|lenis)[\\/]/ },
-            { name: 'vendor-motion', priority: 20, test: /node_modules[\\/]framer-motion[\\/]/ },
             { name: 'vendor-three', priority: 10, test: /node_modules[\\/]three[\\/]/ },
             { name: 'vendor-ckeditor', priority: 10, test: /node_modules[\\/]@ckeditor[\\/]/ },
           ],

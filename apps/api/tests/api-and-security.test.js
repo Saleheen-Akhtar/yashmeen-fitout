@@ -4,15 +4,20 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import crypto from "node:crypto";
+import { SMTPServer } from "smtp-server";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const BACKEND_ROOT = path.resolve(__dirname, "..");
 
-dotenv.config({ path: path.join(BACKEND_ROOT, ".env") });
+const TEST_MONGO_URI = String(process.env.TEST_MONGO_URI || "").trim();
+if (!TEST_MONGO_URI) {
+  throw new Error("TEST_MONGO_URI is required and must point to a disposable integration-test database");
+}
+process.env.MONGO_URI = TEST_MONGO_URI;
 
 import connectDB from "../config/db.config.js";
 import AccountModel from "../models/account.model.js";
@@ -20,6 +25,7 @@ import PostModel from "../models/post.model.js";
 import QuoteModel from "../models/quotes.model.js";
 import EnquiryModel from "../models/enquiry.model.js";
 import VacancyModel from "../models/vacancy.model.js";
+import WebDetailsModel from "../models/webDetails.model.js";
 
 const RUN_ID = `qatest-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 const TEST_ADMIN_EMAIL = `qa-admin-${RUN_ID}@qa-test.invalid`;
@@ -29,6 +35,23 @@ const TEST_PASS = "QaTest#2026!Pass";
 
 let API_BASE = process.env.TEST_API_URL || "http://localhost:8000";
 let spawnedServer = null;
+let smtpServer = null;
+let initialWebsiteDetails;
+let editedWebsiteDetailsId;
+const receivedEmails = [];
+const rejectEmailSubjects = new Set();
+
+function deliveredEmail(recipient, subject) {
+  const message = receivedEmails.findLast((mail) => mail.to.includes(recipient) && mail.raw.includes(`Subject: ${subject}`));
+  assert.ok(message, `Expected local SMTP delivery: ${subject}`);
+  return message.raw.replace(/=\r?\n/g, "").replace(/=([0-9a-f]{2})/gi, (_match, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
+
+function emailedToken(recipient, subject, route) {
+  const match = deliveredEmail(recipient, subject).match(new RegExp(`http://127\\.0\\.0\\.1:3000/${route}\\?token=([a-f0-9]{64})`));
+  assert.ok(match, "Expected an emailed token pointing to the configured frontend");
+  return match[1];
+}
 
 const createdFilesToDelete = new Set();
 const createdAccountEmails = new Set([TEST_ADMIN_EMAIL, TEST_USER_EMAIL, TEST_DEACTIVATED_EMAIL]);
@@ -64,19 +87,51 @@ async function httpJson(urlPath, { method = "GET", headers = {}, body } = {}) {
 
 before(async () => {
   await connectDB();
+  initialWebsiteDetails = await WebDetailsModel.findOne().lean();
 
-  // Check if local backend server is already running; otherwise spawn one
-  try {
-    const ping = await fetch(`${API_BASE}/api/webDetails/details`);
-    if (!ping.ok && ping.status >= 500) {
-      throw new Error("Server unhealthy");
-    }
-  } catch {
+  if (!process.env.TEST_API_URL) {
+    smtpServer = new SMTPServer({
+      disabledCommands: ["STARTTLS"],
+      logger: false,
+      onAuth(auth, _session, callback) {
+        if (auth.username !== "qa@test.invalid" || auth.password !== "qa-placeholder") return callback(new Error("Invalid local SMTP credentials"));
+        callback(null, { user: "qa" });
+      },
+      onData(stream, session, callback) {
+        const chunks = [];
+        stream.on("data", (chunk) => chunks.push(chunk));
+        stream.on("end", () => {
+          const raw = Buffer.concat(chunks).toString("utf8");
+          const subject = raw.match(/^Subject: (.*)$/m)?.[1]?.trim();
+          if (rejectEmailSubjects.delete(subject)) return callback(new Error("Synthetic SMTP rejection"));
+          receivedEmails.push({ to: session.envelope.rcptTo.map((recipient) => recipient.address), raw });
+          callback();
+        });
+        stream.on("error", callback);
+      },
+    });
+    await new Promise((resolve, reject) => {
+      smtpServer.once("error", reject);
+      smtpServer.listen(0, "127.0.0.1", resolve);
+    });
     const port = 8900 + Math.floor(Math.random() * 900);
     API_BASE = `http://127.0.0.1:${port}`;
     spawnedServer = spawn(process.execPath, ["server.js"], {
       cwd: BACKEND_ROOT,
-      env: { ...process.env, PORT: String(port) },
+      env: {
+        ...process.env,
+        MONGO_URI: TEST_MONGO_URI,
+        PORT: String(port),
+        NODE_ENV: "test",
+        RATE_LIMIT_BYPASS: "true",
+        SMTP_HOST: "127.0.0.1",
+        SMTP_PORT: String(smtpServer.server.address().port),
+        SMTP_USER: "qa@test.invalid",
+        SMTP_PASS: "qa-placeholder",
+        EMAIL_FROM: "qa@test.invalid",
+        CLIENT_URL: "http://127.0.0.1:3000",
+        FRONTEND_URL: "http://127.0.0.1:3000",
+      },
       stdio: "ignore",
     });
     let ready = false;
@@ -107,6 +162,7 @@ before(async () => {
       mobile: "+971500000001",
       usertype: "admin",
       isActive: true,
+      isVerified: true,
     },
     {
       name: `[QA-TEST] User ${RUN_ID}`,
@@ -115,6 +171,7 @@ before(async () => {
       mobile: "+971500000002",
       usertype: "user",
       isActive: true,
+      isVerified: true,
     },
     {
       name: `[QA-TEST] Deactivated ${RUN_ID}`,
@@ -123,6 +180,7 @@ before(async () => {
       mobile: "+971500000003",
       usertype: "user",
       isActive: false,
+      isVerified: true,
     },
   ]);
 
@@ -180,6 +238,10 @@ after(async () => {
       if (createdVacancyIds.size > 0) {
         await VacancyModel.deleteMany({ _id: { $in: [...createdVacancyIds] } });
       }
+      if (editedWebsiteDetailsId) {
+        if (initialWebsiteDetails) await WebDetailsModel.replaceOne({ _id: initialWebsiteDetails._id }, initialWebsiteDetails);
+        else await WebDetailsModel.deleteOne({ _id: editedWebsiteDetailsId });
+      }
     }
   } finally {
     for (const absPath of createdFilesToDelete) {
@@ -195,7 +257,153 @@ after(async () => {
     if (spawnedServer) {
       spawnedServer.kill();
     }
+    if (smtpServer) await new Promise((resolve) => smtpServer.close(resolve));
   }
+});
+
+describe("CMS persistence", () => {
+  const adminHeaders = () => ({ Authorization: `Bearer ${adminToken}` });
+
+  it("public and admin reads leave the database unchanged", async () => {
+    const beforeRead = await WebDetailsModel.find({}).lean();
+    const publicRead = await httpJson("/api/webDetails/details");
+    const adminRead = await httpJson("/api/webDetails/admin-details", { headers: adminHeaders() });
+    assert.equal(publicRead.status, 200);
+    assert.equal(adminRead.status, 200);
+    assert.deepEqual(await WebDetailsModel.find({}).lean(), beforeRead);
+    assert.equal(publicRead.json.data.crmTasks, undefined);
+    assert.equal(publicRead.json.data.calendarEvents, undefined);
+    assert.ok(Array.isArray(adminRead.json.data.crmTasks));
+  });
+
+  it("partial saves preserve nested siblings, empty lists and private/public separation", async () => {
+    const save = await httpJson("/api/webDetails/update", {
+      method: "PUT", headers: adminHeaders(),
+      body: { mobile: "+971500000022", hero: { title: "QA persisted title", intro: "QA preserved sibling" }, socialLinks: [] },
+    });
+    assert.equal(save.status, 200);
+    editedWebsiteDetailsId = save.json.data._id;
+    const patch = await httpJson("/api/webDetails/update", {
+      method: "PUT", headers: adminHeaders(), body: { hero: { intro: "QA updated intro" } },
+    });
+    assert.equal(patch.status, 200);
+    const stored = await WebDetailsModel.findById(editedWebsiteDetailsId).lean();
+    assert.equal(stored.mobile, "+971500000022");
+    assert.equal(stored.hero.title, "QA persisted title");
+    assert.equal(stored.hero.intro, "QA updated intro");
+    assert.deepEqual(stored.socialLinks, []);
+    const privateTask = { ...patch.json.data.crmTasks[0], id: `private-${RUN_ID}`, title: `Private task ${RUN_ID}` };
+    const privateSave = await httpJson("/api/webDetails/update", {
+      method: "PUT", headers: adminHeaders(), body: { crmTasks: [privateTask], calendarEvents: [] },
+    });
+    assert.equal(privateSave.status, 200);
+    const publicRead = await httpJson("/api/webDetails/details");
+    assert.equal(publicRead.json.data.mobile, "+971500000022");
+    assert.equal(publicRead.json.data.hero.title, "QA persisted title");
+    assert.deepEqual(publicRead.json.data.socialLinks, []);
+    assert.equal(publicRead.json.data.crmTasks, undefined);
+    assert.equal(publicRead.json.data.calendarEvents, undefined);
+    assert.ok(!publicRead.text.includes(`Private task ${RUN_ID}`));
+    const adminRead = await httpJson("/api/webDetails/admin-details", { headers: adminHeaders() });
+    assert.equal(adminRead.json.data.crmTasks[0].title, `Private task ${RUN_ID}`);
+    assert.deepEqual(adminRead.json.data.calendarEvents, []);
+  });
+
+  it("invalid saves leave previously stored content unchanged", async () => {
+    const beforeSave = await WebDetailsModel.find({}).lean();
+    for (const body of [{ email: "invalid-email" }, { services: [{ image: "javascript:alert(1)" }] }, { $set: { mobile: "injected" } }, { unknownField: "unsupported" }]) {
+      const response = await httpJson("/api/webDetails/update", { method: "PUT", headers: adminHeaders(), body });
+      assert.equal(response.status, 400);
+    }
+    assert.deepEqual(await WebDetailsModel.find({}).lean(), beforeSave);
+  });
+});
+
+describe("Local SMTP delivery and account workflows", { skip: Boolean(process.env.TEST_API_URL) }, () => {
+  it("delivers verification/resend/reset links, rejects replay and revokes prior sessions", async () => {
+    const email = `qa-delivery-${RUN_ID}@qa-test.invalid`;
+    createdAccountEmails.add(email);
+    const registration = await httpJson("/api/account/create", {
+      method: "POST", headers: { Authorization: `Bearer ${adminToken}` },
+      body: { name: "QA Email Delivery", email, password: TEST_PASS, mobile: "+971500000021", usertype: "admin" },
+    });
+    assert.equal(registration.status, 201);
+    assert.equal(registration.json.token, undefined);
+    const originalToken = emailedToken(email, "Verify your email", "verify-email");
+    const stored = await AccountModel.findOne({ email }).select("+verificationToken").lean();
+    assert.equal(stored.usertype, "user");
+    assert.equal(stored.isVerified, false);
+    assert.equal(stored.verificationToken, crypto.createHash("sha256").update(originalToken).digest("hex"));
+    const blockedLogin = await httpJson("/api/account/login", { method: "POST", body: { email, password: TEST_PASS } });
+    assert.equal(blockedLogin.json.code, "EMAIL_NOT_VERIFIED");
+    const resend = await httpJson("/api/account/resend-verification", { method: "POST", body: { email } });
+    assert.equal(resend.status, 200);
+    const token = emailedToken(email, "Verify your email", "verify-email");
+    assert.notEqual(token, originalToken);
+    assert.equal((await httpJson(`/api/account/verify-email?token=${originalToken}`)).status, 400);
+    assert.equal((await httpJson(`/api/account/verify-email?token=${token}`)).status, 200);
+    assert.equal((await httpJson(`/api/account/verify-email?token=${token}`)).status, 400);
+    const login = await httpJson("/api/account/login", { method: "POST", body: { email, password: TEST_PASS } });
+    assert.equal(login.status, 200);
+    const forgot = await httpJson("/api/account/forgot-password", { method: "POST", body: { email } });
+    assert.equal(forgot.status, 200);
+    const resetToken = emailedToken(email, "Reset your password", "reset-password");
+    const storedReset = await AccountModel.findOne({ email }).select("+resetPasswordToken").lean();
+    assert.equal(storedReset.resetPasswordToken, crypto.createHash("sha256").update(resetToken).digest("hex"));
+    const newPassword = `${TEST_PASS}-delivered`;
+    const reset = await httpJson("/api/account/reset-password", { method: "POST", body: { token: resetToken, newPassword } });
+    assert.equal(reset.status, 200);
+    assert.equal((await httpJson("/api/account/reset-password", { method: "POST", body: { token: resetToken, newPassword } })).status, 400);
+    assert.equal((await httpJson("/api/account/profile", { headers: { Authorization: `Bearer ${login.json.token}` } })).status, 401);
+    assert.equal((await httpJson("/api/account/login", { method: "POST", body: { email, password: TEST_PASS } })).status, 401);
+    assert.equal((await httpJson("/api/account/login", { method: "POST", body: { email, password: newPassword } })).status, 200);
+  });
+
+  it("rolls back account creation when SMTP rejects verification delivery", async () => {
+    const email = `qa-rejected-email-${RUN_ID}@qa-test.invalid`;
+    createdAccountEmails.add(email);
+    rejectEmailSubjects.add("Verify your email");
+    const response = await httpJson("/api/account/create", {
+      method: "POST", headers: { Authorization: `Bearer ${adminToken}` },
+      body: { name: "QA Rejected Email", email, password: TEST_PASS, mobile: "+971500000020" },
+    });
+    assert.equal(response.status, 502);
+    assert.equal(response.json.code, "VERIFICATION_EMAIL_FAILED");
+    assert.equal(await AccountModel.exists({ email }), null);
+  });
+
+  it("persists both lead forms and delivers escaped notification HTML", async () => {
+    for (const [kind, model, subject, services] of [["enquiry", EnquiryModel, "New Enquiry", "Interior Fit-Out"], ["quote", QuoteModel, "New Quotation Request", ["Turnkey fit-out"]]]) {
+      const email = `qa-notification-${kind}-${RUN_ID}@qa-test.invalid`;
+      (kind === "quote" ? createdQuoteEmails : createdEnquiryEmails).add(email);
+      const response = await httpJson(`/api/${kind}/create`, {
+        method: "POST", body: { name: "QA <script>alert(1)</script>", email, mobile: "+971500000019", services, projectType: "Residential", message: "QA <img src=x onerror=alert(1)> notification content." },
+      });
+      assert.equal(response.status, 201);
+      assert.equal(response.json.data, undefined);
+      const stored = await model.findOne({ email }).lean();
+      assert.equal(stored.email, email);
+      const mail = deliveredEmail("qa@test.invalid", subject);
+      assert.ok(mail.includes(email));
+      assert.ok(mail.includes("&lt;script&gt;"));
+      assert.ok(mail.includes("&lt;img"));
+      assert.ok(!mail.includes("<script>"));
+      assert.ok(!mail.includes("<img src=x"));
+    }
+  });
+
+  it("keeps both saved leads when SMTP rejects their notifications", async () => {
+    for (const [kind, model, subject, services] of [["enquiry", EnquiryModel, "New Enquiry", "Interior Fit-Out"], ["quote", QuoteModel, "New Quotation Request", ["Turnkey fit-out"]]]) {
+      const email = `qa-rejected-notification-${kind}-${RUN_ID}@qa-test.invalid`;
+      (kind === "quote" ? createdQuoteEmails : createdEnquiryEmails).add(email);
+      rejectEmailSubjects.add(subject);
+      const response = await httpJson(`/api/${kind}/create`, {
+        method: "POST", body: { name: "QA Failed Notification", email, mobile: "+971500000018", services, projectType: "Residential", message: "Lead must survive notification delivery failure." },
+      });
+      assert.equal(response.status, 201);
+      assert.ok(await model.exists({ email }));
+    }
+  });
 });
 
 describe("Layer 3A: Public API read endpoints", () => {
@@ -282,7 +490,7 @@ describe("Layer 3B: Validation boundaries, ObjectIds, query sanitization & CRUD"
     assert.ok(res.json?.errors?.message);
   });
 
-  it("POST /api/quote/create accepts valid Quote payload (201) and admin DELETE cleans it cleanly", async () => {
+  it("POST /api/quote/create accepts a valid payload without echoing the saved lead record", async () => {
     const email = `qa-quote-${RUN_ID}@qa-test.invalid`;
     createdQuoteEmails.add(email);
     const res = await httpJson("/api/quote/create", {
@@ -300,14 +508,8 @@ describe("Layer 3B: Validation boundaries, ObjectIds, query sanitization & CRUD"
       },
     });
     assert.equal(res.status, 201);
-    const id = res.json?.data?._id;
-    assert.ok(id, "Expected created quote _id");
-
-    const del = await httpJson(`/api/quote/delete/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${adminToken}` },
-    });
-    assert.equal(del.status, 200);
+    assert.equal(res.json?.data, undefined);
+    assert.ok(await QuoteModel.exists({ email }), "Expected the quote to be stored");
   });
 
   it("POST /api/enquiry/create rejects missing mobile or invalid email (400) and accepts valid payload (201)", async () => {
@@ -334,6 +536,93 @@ describe("Layer 3B: Validation boundaries, ObjectIds, query sanitization & CRUD"
       },
     });
     assert.equal(good.status, 201);
+    assert.equal(good.json?.data, undefined);
+  });
+
+  it("Public lead forms reject instant submissions and silently discard honeypot submissions", async () => {
+    const fastEmail = `qa-fast-${RUN_ID}@qa-test.invalid`;
+    const fast = await httpJson("/api/enquiry/create", {
+      method: "POST",
+      body: {
+        name: "QA Fast Submit",
+        mobile: "+971500000087",
+        email: fastEmail,
+        services: "Interior Fit-Out",
+        message: "Automated submission that completed too quickly.",
+        formStartedAt: Date.now(),
+      },
+    });
+    assert.equal(fast.status, 400);
+    assert.equal(await EnquiryModel.exists({ email: fastEmail }), null);
+
+    const trappedEmail = `qa-trapped-${RUN_ID}@qa-test.invalid`;
+    const trapped = await httpJson("/api/quote/create", {
+      method: "POST",
+      body: {
+        name: "QA Honeypot",
+        mobile: "+971500000086",
+        email: trappedEmail,
+        projectType: "Residential",
+        services: ["Turnkey fit-out"],
+        message: "Synthetic honeypot submission payload.",
+        website: "https://spam.invalid",
+        formStartedAt: Date.now() - 10_000,
+      },
+    });
+    assert.equal(trapped.status, 201);
+    assert.equal(await QuoteModel.exists({ email: trappedEmail }), null);
+  });
+
+  it("Old quote and enquiry cleanup archives records and excludes them from admin listings", async () => {
+    const oldDate = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000);
+    const quoteEmail = `qa-archive-quote-${RUN_ID}@qa-test.invalid`;
+    const enquiryEmail = `qa-archive-enquiry-${RUN_ID}@qa-test.invalid`;
+    createdQuoteEmails.add(quoteEmail);
+    createdEnquiryEmails.add(enquiryEmail);
+
+    const quote = await QuoteModel.create({
+      name: "QA Archive Quote",
+      mobile: "+971500000085",
+      email: quoteEmail,
+      projectType: "Residential",
+      services: ["Turnkey fit-out"],
+      message: "Old quote record for archive verification.",
+      createdAt: oldDate,
+      updatedAt: oldDate,
+    });
+    const enquiry = await EnquiryModel.create({
+      name: "QA Archive Enquiry",
+      mobile: "+971500000084",
+      email: enquiryEmail,
+      services: "Interior Fit-Out",
+      message: "Old enquiry record for archive verification.",
+      createdAt: oldDate,
+      updatedAt: oldDate,
+    });
+
+    const [quoteArchive, enquiryArchive] = await Promise.all([
+      httpJson("/api/quote/delete/older-than-month", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${adminToken}` },
+      }),
+      httpJson("/api/enquiry/delete/old", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${adminToken}` },
+      }),
+    ]);
+    assert.equal(quoteArchive.status, 200);
+    assert.equal(enquiryArchive.status, 200);
+
+    const [storedQuote, storedEnquiry, quoteList, enquiryList] = await Promise.all([
+      QuoteModel.findById(quote._id).lean(),
+      EnquiryModel.findById(enquiry._id).lean(),
+      httpJson("/api/quote/getAll", { headers: { Authorization: `Bearer ${adminToken}` } }),
+      httpJson("/api/enquiry/getAll", { headers: { Authorization: `Bearer ${adminToken}` } }),
+    ]);
+    assert.ok(storedQuote?.archivedAt);
+    assert.ok(storedEnquiry?.archivedAt);
+    assert.ok(!(quoteList.json?.data || []).some((item) => String(item._id) === String(quote._id)));
+    assert.ok(!(enquiryList.json?.data || []).some((item) => String(item._id) === String(enquiry._id)));
   });
 
   it("GET /api/vacancy/opens escapes regex metacharacters cleanly and filters out closed roles", async () => {
@@ -368,6 +657,19 @@ describe("Layer 3C: Upload limits, Multer error handling, static fallback & trav
     });
     assert.ok(res.status === 400 || res.status === 413, `Expected 400/413 on >5MB upload, got ${res.status}`);
     assert.ok(res.json !== null, `Expected JSON error for oversized upload, got ${res.headers.get("content-type")}`);
+  });
+
+  it("POST /api/upload rejects spoofed image MIME types using file signatures before Cloudinary", async () => {
+    const fd = new FormData();
+    fd.append("upload", new Blob(["<script>alert('not-an-image')</script>"], { type: "image/png" }), "spoofed.png");
+    const res = await httpJson("/api/upload", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: fd,
+    });
+    assert.equal(res.status, 400);
+    assert.equal(res.json?.uploaded, false);
+    assert.equal(res.json?.error?.code, "INVALID_IMAGE_SIGNATURE");
   });
 
   it("GET /uploads/..%2Fserver.js cannot traverse outside uploads directory", async () => {
@@ -440,6 +742,7 @@ describe("Layer 4: Security, Auth, RBAC, Account Lifecycle & Injection Penetrati
     ["POST", "/api/post/create"],
     ["POST", "/api/video/create"],
     ["PUT", "/api/webDetails/update"],
+    ["GET", "/api/webDetails/admin-details"],
   ];
 
   it("Unauthenticated requests to all admin endpoints return 401 and non-admin user tokens return 403", async () => {
@@ -528,7 +831,7 @@ describe("Layer 4: Security, Auth, RBAC, Account Lifecycle & Injection Penetrati
     );
   });
 
-  it("Account lifecycle: deactivated accounts blocked (403), superseded activeToken rejected (401), logout invalidates token", async () => {
+  it("Account lifecycle supports multiple device sessions and logout invalidates only the current token", async () => {
     // 1. Deactivated account login blocked
     const deactivatedLogin = await httpJson("/api/account/login", {
       method: "POST",
@@ -536,7 +839,7 @@ describe("Layer 4: Security, Auth, RBAC, Account Lifecycle & Injection Penetrati
     });
     assert.equal(deactivatedLogin.status, 403);
 
-    // 2. Concurrent login supersedes prior activeToken
+    // 2. Concurrent logins remain active on separate devices
     const tempEmail = `qa-session-${RUN_ID}@qa-test.invalid`;
     createdAccountEmails.add(tempEmail);
     const pwHash = await bcrypt.hash(TEST_PASS, 10);
@@ -547,6 +850,7 @@ describe("Layer 4: Security, Auth, RBAC, Account Lifecycle & Injection Penetrati
       mobile: "+971500000055",
       usertype: "user",
       isActive: true,
+      isVerified: true,
     });
 
     const login1 = await httpJson("/api/account/login", { method: "POST", body: { email: tempEmail, password: TEST_PASS } });
@@ -558,7 +862,7 @@ describe("Layer 4: Security, Auth, RBAC, Account Lifecycle & Injection Penetrati
     assert.ok(t2 && t2 !== t1);
 
     const oldProfile = await httpJson("/api/account/profile", { headers: { Authorization: `Bearer ${t1}` } });
-    assert.equal(oldProfile.status, 401);
+    assert.equal(oldProfile.status, 200);
 
     const activeProfile = await httpJson("/api/account/profile", { headers: { Authorization: `Bearer ${t2}` } });
     assert.equal(activeProfile.status, 200);
@@ -572,6 +876,149 @@ describe("Layer 4: Security, Auth, RBAC, Account Lifecycle & Injection Penetrati
 
     const afterLogout = await httpJson("/api/account/profile", { headers: { Authorization: `Bearer ${t2}` } });
     assert.equal(afterLogout.status, 401);
+
+    const otherDeviceAfterLogout = await httpJson("/api/account/profile", { headers: { Authorization: `Bearer ${t1}` } });
+    assert.equal(otherDeviceAfterLogout.status, 200);
+  });
+
+  it("Login locks an account after five failed attempts and rejects passwords over bcrypt's byte limit", async () => {
+    const lockEmail = `qa-lockout-${RUN_ID}@qa-test.invalid`;
+    createdAccountEmails.add(lockEmail);
+    await AccountModel.create({
+      name: "QA Lockout",
+      email: lockEmail,
+      password: await bcrypt.hash(TEST_PASS, 10),
+      mobile: "+971500000054",
+      usertype: "user",
+      isActive: true,
+      isVerified: true,
+    });
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const failed = await httpJson("/api/account/login", {
+        method: "POST",
+        body: { email: lockEmail, password: `${TEST_PASS}-wrong` },
+      });
+      assert.equal(failed.status, 401);
+    }
+    const locked = await httpJson("/api/account/login", {
+      method: "POST",
+      body: { email: lockEmail, password: TEST_PASS },
+    });
+    assert.equal(locked.status, 429);
+
+    const tooLongEmail = `qa-password-limit-${RUN_ID}@qa-test.invalid`;
+    createdAccountEmails.add(tooLongEmail);
+    const tooLong = await httpJson("/api/account/create", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: {
+        name: "QA Password Limit",
+        email: tooLongEmail,
+        password: "🔐".repeat(20),
+        mobile: "+971500000053",
+      },
+    });
+    assert.equal(tooLong.status, 400);
+    assert.match(tooLong.json?.message || "", /72 bytes/i);
+  });
+
+  it("Verification resend does not reveal whether an email exists or is already verified", async () => {
+    const unknown = await httpJson("/api/account/resend-verification", {
+      method: "POST",
+      body: { email: `qa-unknown-${RUN_ID}@qa-test.invalid` },
+    });
+    const verified = await httpJson("/api/account/resend-verification", {
+      method: "POST",
+      body: { email: TEST_USER_EMAIL },
+    });
+    assert.equal(unknown.status, 200);
+    assert.equal(verified.status, 200);
+    assert.equal(unknown.json?.message, verified.json?.message);
+  });
+
+  it("Unverified accounts are blocked, hashed verification tokens redeem once, and reset tokens are accepted only in the POST body", async () => {
+    const email = `qa-verification-${RUN_ID}@qa-test.invalid`;
+    createdAccountEmails.add(email);
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const verificationHash = crypto.createHash("sha256").update(verificationToken).digest("hex");
+    const passwordHash = await bcrypt.hash(TEST_PASS, 10);
+    const account = await AccountModel.create({
+      name: "QA Verification",
+      email,
+      password: passwordHash,
+      mobile: "+971500000044",
+      usertype: "user",
+      isActive: true,
+      isVerified: false,
+      verificationToken: verificationHash,
+      verificationTokenExpiresAt: new Date(Date.now() + 60_000),
+    });
+
+    const blocked = await httpJson("/api/account/login", {
+      method: "POST",
+      body: { email, password: TEST_PASS },
+    });
+    assert.equal(blocked.status, 403);
+    assert.equal(blocked.json?.code, "EMAIL_NOT_VERIFIED");
+
+    const stored = await AccountModel.findById(account._id).select("+verificationToken").lean();
+    assert.notEqual(stored.verificationToken, verificationToken);
+    assert.equal(stored.verificationToken, verificationHash);
+
+    const verified = await httpJson(`/api/account/verify-email?token=${encodeURIComponent(verificationToken)}`);
+    assert.equal(verified.status, 200);
+    const replay = await httpJson(`/api/account/verify-email?token=${encodeURIComponent(verificationToken)}`);
+    assert.equal(replay.status, 400);
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+    await AccountModel.updateOne(
+      { _id: account._id },
+      { $set: { resetPasswordToken: resetHash, resetPasswordExpiresAt: new Date(Date.now() + 60_000) } },
+    );
+    const newPassword = `${TEST_PASS}-new`;
+    const reset = await httpJson("/api/account/reset-password", {
+      method: "POST",
+      body: { token: resetToken, newPassword },
+    });
+    assert.equal(reset.status, 200);
+
+    const oldLogin = await httpJson("/api/account/login", { method: "POST", body: { email, password: TEST_PASS } });
+    assert.equal(oldLogin.status, 401);
+    const newLogin = await httpJson("/api/account/login", { method: "POST", body: { email, password: newPassword } });
+    assert.equal(newLogin.status, 200);
+  });
+
+  it("Expired verification and reset tokens return explicit retryable states", async () => {
+    const email = `qa-expired-${RUN_ID}@qa-test.invalid`;
+    createdAccountEmails.add(email);
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    await AccountModel.create({
+      name: "QA Expired Tokens",
+      email,
+      password: await bcrypt.hash(TEST_PASS, 10),
+      mobile: "+971500000033",
+      usertype: "user",
+      isActive: true,
+      isVerified: false,
+      verificationToken: crypto.createHash("sha256").update(verificationToken).digest("hex"),
+      verificationTokenExpiresAt: new Date(Date.now() - 1_000),
+      resetPasswordToken: crypto.createHash("sha256").update(resetToken).digest("hex"),
+      resetPasswordExpiresAt: new Date(Date.now() - 1_000),
+    });
+
+    const verify = await httpJson(`/api/account/verify-email?token=${encodeURIComponent(verificationToken)}`);
+    assert.equal(verify.status, 410);
+    assert.equal(verify.json?.code, "EXPIRED_VERIFICATION_TOKEN");
+
+    const reset = await httpJson("/api/account/reset-password", {
+      method: "POST",
+      body: { token: resetToken, newPassword: `${TEST_PASS}-new` },
+    });
+    assert.equal(reset.status, 410);
+    assert.equal(reset.json?.code, "EXPIRED_RESET_TOKEN");
   });
 
   it("Unpublished draft posts are excluded from GET /api/post/getActivePosts", async () => {

@@ -4,7 +4,8 @@ const accountSchema = mongoose.Schema({
     name: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        maxlength: 120,
     },
     email: {
         type: String,
@@ -12,17 +13,20 @@ const accountSchema = mongoose.Schema({
         trim: true,
         unique: true,
         lowercase: true,
-        match: [/^\S+@\S+\.\S+$/, "Invalid email format"]
+        match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
+        maxlength: 254,
     },
     password: {
         type: String,
         required: true,
-        select: false
+        select: false,
+        maxlength: 72,
     },
     mobile: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        maxlength: 32,
     },
     usertype: {
         type: String,
@@ -38,18 +42,17 @@ const accountSchema = mongoose.Schema({
         default: null
     },
     activeToken: { type: String, default: null, select: false },
+    activeTokens: { type: [String], default: [], select: false },
+    failedLoginAttempts: { type: Number, default: 0, select: false },
+    lockUntil: { type: Date, default: null, select: false },
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpiresAt: Date,
     verificationToken: { type: String, select: false },
     verificationTokenExpiresAt: Date,
-    // isVerified: {
-    //     type: Boolean,
-    //     default: false
-    // },
-    // newAccount: {
-    //     type: Boolean,
-    //     default: true
-    // },
+    isVerified: {
+        type: Boolean,
+        default: false,
+    },
     isActive: {
         type: Boolean,
         default: true

@@ -1,6 +1,8 @@
+import { logError } from "../utils/logger.js";
 import mongoose from "mongoose";
 import QuoteModel from "../models/quotes.model.js"; // adjust path to your model file
 import { sendQuotationEmail } from "../middlewares/sendEmail.js";
+import { handlePublicSubmissionTrap } from "../utils/publicSubmission.js";
 
 const PROJECT_TYPES = [
   "Residential",
@@ -28,7 +30,7 @@ const handleError = (res, error, fallbackMessage) => {
       errors: formatValidationError(error),
     });
   }
-  console.error(`${fallbackMessage}:`, error);
+  logError(`${fallbackMessage}:`, error);
   return res.status(500).json({ success: false, message: fallbackMessage });
 };
 
@@ -49,6 +51,7 @@ const normalizeServices = (services) => {
 // POST /api/quotes  (public)
 export const createQuote = async (req, res) => {
   try {
+    if (handlePublicSubmissionTrap(req, res)) return;
     const {
       name,
       mobile,
@@ -76,13 +79,12 @@ export const createQuote = async (req, res) => {
     try {
       await sendQuotationEmail(quote);
     } catch (emailError) {
-      console.error("Failed to send enquiry email:", emailError.message);
+      logError("Failed to send enquiry email:", emailError);
     }
 
     return res.status(201).json({
       success: true,
       message: "Quote request submitted successfully",
-      data: quote,
     });
   } catch (error) {
     return handleError(res, error, "Failed to submit quote request");
@@ -100,7 +102,7 @@ export const getAllQuotes = async (req, res) => {
     );
     const { projectType, search, from, to } = req.query;
 
-    const filter = {};
+    const filter = { archivedAt: null };
 
     if (projectType) {
       if (!PROJECT_TYPES.includes(projectType)) {
@@ -202,7 +204,7 @@ export const deleteQuote = async (req, res) => {
 };
 
 // DELETE /api/quotes/old?days=90  (admin)
-// Removes quotes older than N days (default 90) - the "delete-old query" on createdAt
+// Archives quotes older than N days (default 90).
 export const deleteOldQuotes = async (req, res) => {
   try {
     const days = parseInt(req.query.days, 10) || 90;
@@ -213,12 +215,15 @@ export const deleteOldQuotes = async (req, res) => {
     }
 
     const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-    const result = await QuoteModel.deleteMany({ createdAt: { $lt: cutoff } });
+    const result = await QuoteModel.updateMany(
+      { createdAt: { $lt: cutoff }, archivedAt: null },
+      { $set: { archivedAt: new Date() } },
+    );
 
     return res.status(200).json({
       success: true,
-      message: `Deleted quote requests older than ${days} days`,
-      deletedCount: result.deletedCount,
+      message: `Archived quote requests older than ${days} days`,
+      archivedCount: result.modifiedCount,
     });
   } catch (error) {
     return handleError(res, error, "Failed to delete old quote requests");
@@ -226,18 +231,21 @@ export const deleteOldQuotes = async (req, res) => {
 };
 
 // DELETE /api/quotes/older-than-month  (admin)
-// Removes every quote created more than one calendar month ago
+// Archives every quote created more than one calendar month ago.
 export const deleteQuotesOlderThanOneMonth = async (req, res) => {
   try {
     const cutoff = new Date();
     cutoff.setMonth(cutoff.getMonth() - 1);
 
-    const result = await QuoteModel.deleteMany({ createdAt: { $lt: cutoff } });
+    const result = await QuoteModel.updateMany(
+      { createdAt: { $lt: cutoff }, archivedAt: null },
+      { $set: { archivedAt: new Date() } },
+    );
 
     return res.status(200).json({
       success: true,
-      message: "Deleted all quote requests older than one month",
-      deletedCount: result.deletedCount,
+      message: "Archived all quote requests older than one month",
+      archivedCount: result.modifiedCount,
     });
   } catch (error) {
     return handleError(

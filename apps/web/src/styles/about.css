@@ -4,13 +4,13 @@
 
 .aboutpg-page {
   --ink: #1b1a17;
-  --black: #fbfaf7;
-  --gray-50: #f4f1ea;
+  --black: var(--bg);
+  --gray-50: var(--surface-alt);
   --gray-100: rgba(27, 26, 23, 0.04);
-  --gray-200: #e6e1d6;
-  --gray-500: #6b665c;
-  --brass: #8a6a28;
-  --brass-deep: #6f541d;
+  --gray-200: var(--line);
+  --gray-500: var(--muted);
+  --brass: var(--accent);
+  --brass-deep: var(--accent-hover);
   --font-display: var(--font-sans);
   --font-body: var(--font-sans);
   --max-w: 1180px;

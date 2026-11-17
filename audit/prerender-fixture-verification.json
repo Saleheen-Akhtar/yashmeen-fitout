@@ -1,0 +1,35 @@
+{
+  "checks": [
+    [
+      "home",
+      true
+    ],
+    [
+      "about",
+      true
+    ],
+    [
+      "custom service",
+      true
+    ],
+    [
+      "project",
+      true
+    ],
+    [
+      "blog",
+      true
+    ],
+    [
+      "inactive excluded",
+      true
+    ],
+    [
+      "custom included",
+      true
+    ]
+  ],
+  "passed": true,
+  "pages": 25,
+  "sitemapUrls": 19
+}

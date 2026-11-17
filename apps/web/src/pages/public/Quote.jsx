@@ -1,22 +1,21 @@
 import "../../styles/quote.css";
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import {
   FiCheck, FiPhone, FiMail, FiMapPin, FiClock, FiArrowRight, FiArrowLeft,
   FiHome, FiBriefcase, FiCoffee, FiShoppingBag, FiMoreHorizontal,
 } from "react-icons/fi";
 import { quoteAPI } from "../../services/api";
-// TODO: adjust this path to where your hook lives
-import useWebDetails from "../../lib/cacheStore";
+import useWebsiteContent from "../../hooks/useWebsiteContent";
+import { trackEvent } from "../../lib/analytics";
 
-const HERO_BG = "/static/pages-bg.webp";
 
 // Shown until the API data arrives (and for any field the API doesn't return).
-// Working hours are not part of the web details API, so they stay fixed here.
+// Shared content supplies saved contact details and their initial defaults.
 const FALLBACK_CONTACT = {
   phone: "+971 54 386 2870",
   email: "info@yfbfitoutcontracting.com",
   address: "Bay Square, Building 12 - Office G01, Business Bay, Dubai - UAE",
-  hours: "Sat - Thu, 9:00 AM - 6:00 PM",
+  hours: "Monday to Friday, 8:30am - 6:00pm",
 };
 
 // Values must match the PROJECT_TYPES enum in the quote schema
@@ -26,19 +25,6 @@ const PROJECT_TYPES = [
   { label: "Hospitality", icon: FiCoffee },
   { label: "Retail", icon: FiShoppingBag },
   { label: "Other", icon: FiMoreHorizontal },
-];
-
-const SERVICES = [
-  "Turnkey fit-out",
-  "Customised joinery and furniture",
-  "Villa extension or renovation",
-  "Kitchen enhancement",
-  "Living and dining spaces",
-  "Swimming pool and landscape",
-  "Luxury bathroom",
-  "Exhibition stand or kiosk",
-  "MEP (Electrical, AC, Plumbing)",
-  "Home or office automation",
 ];
 
 const BUDGETS = ["Under AED 50,000", "AED 50,000 - 150,000", "AED 150,000 - 500,000", "AED 500,000+", "Not sure yet"];
@@ -58,24 +44,28 @@ const FIELD_STEP = {
 };
 
 const INITIAL = {
-  name: "", mobile: "", email: "",
+  name: "", mobile: "", email: "", website: "",
   projectType: "", services: [],
   location: "", budget: "", timeline: "", message: "",
 };
 
 export default function QuotePage() {
+  const { content } = useWebsiteContent();
+  const pageCopy = content.pageCopy.Quote;
+  const SERVICES = pageCopy.services;
+
   // Contact details come from the shared, cached web details
-  const details = useWebDetails();
+  const { content: details } = useWebsiteContent();
   const CONTACT = useMemo(() => {
     const a = details?.address;
     const apiAddress = a
-      ? [a.street, a.city, a.state, a.zipCode, a.country].filter(Boolean).join(", ")
+      ? [...new Set([a.street, a.city, a.state, a.zipCode, a.country].filter(Boolean))].join(", ")
       : "";
     return {
       phone: details?.mobile || FALLBACK_CONTACT.phone,
       email: details?.email || FALLBACK_CONTACT.email,
       address: apiAddress || FALLBACK_CONTACT.address,
-      hours: FALLBACK_CONTACT.hours,
+      hours: details?.workingHours || FALLBACK_CONTACT.hours,
     };
   }, [details]);
 
@@ -84,6 +74,11 @@ export default function QuotePage() {
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | sending | sent | error
   const [serverError, setServerError] = useState("");
+  const formStartedAtRef = useRef(0);
+
+  useEffect(() => {
+    formStartedAtRef.current = Date.now();
+  }, []);
 
   const set = (field) => (e) => {
     setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -144,12 +139,15 @@ export default function QuotePage() {
       budget: form.budget,
       timeline: form.timeline,
       message: form.message.trim(),
+      website: form.website,
+      formStartedAt: formStartedAtRef.current,
     };
 
     setStatus("sending");
     setServerError("");
     try {
       await quoteAPI.create(data);
+      trackEvent("generate_lead", { method: "quote_form" });
       setStatus("sent");
     } catch (err) {
       const res = err?.response?.data;
@@ -174,16 +172,17 @@ export default function QuotePage() {
     setErrors({});
     setServerError("");
     setStatus("idle");
+    formStartedAtRef.current = Date.now();
   };
 
   return (
-    <div className="enqpg-page">
+    <div className="enqpg-page">
 
-      <section className="enqpg-hero" style={{ backgroundImage: `url(${HERO_BG})` }}>
+      <section className="enqpg-hero" style={{ backgroundImage: `url(${pageCopy.heroImage})` }}>
         <div className="enqpg-wrap">
-          <div className="enqpg-kicker">Free consultation &amp; quotation</div>
-          <h1>Tell Us About Your Space</h1>
-          <p>Three short steps. Share your details and our team will respond with advice, a site visit and a clear quotation.</p>
+          <div className="enqpg-kicker">{pageCopy.free_consultation_quotation}</div>
+          <h1>{pageCopy.tell_us_about_your_space}</h1>
+          <p>{pageCopy.three_short_steps_share_your}</p>
         </div>
       </section>
 
@@ -191,31 +190,29 @@ export default function QuotePage() {
         <div className="enqpg-shell">
           {/* Side panel */}
           <aside className="enqpg-side">
-            <h2>Let&rsquo;s plan your project together.</h2>
-            <p className="enqpg-side-copy">
-              From a single room to a full turnkey fit-out, the more you tell us, the more accurate our first response will be.
-            </p>
+            <h2>{pageCopy.lets_plan_your_project_together}</h2>
+            <p className="enqpg-side-copy">{pageCopy.from_a_single_room_to}</p>
 
             <ul className="enqpg-contacts">
               <li className="enqpg-contact">
                 <span className="enqpg-contact-icon"><FiPhone size={17} /></span>
-                <div><small>Call us</small><a href={`tel:${CONTACT.phone.replace(/\s/g, "")}`}>{CONTACT.phone}</a></div>
+                <div><small>{pageCopy.call_us}</small><a href={`tel:${CONTACT.phone.replace(/\s/g, "")}`}>{CONTACT.phone}</a></div>
               </li>
               <li className="enqpg-contact">
                 <span className="enqpg-contact-icon"><FiMail size={17} /></span>
-                <div><small>Email us</small><a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></div>
+                <div><small>{pageCopy.email_us}</small><a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></div>
               </li>
               <li className="enqpg-contact">
                 <span className="enqpg-contact-icon"><FiMapPin size={17} /></span>
-                <div><small>Visit us</small>{CONTACT.address}</div>
+                <div><small>{pageCopy.visit_us}</small>{CONTACT.address}</div>
               </li>
               <li className="enqpg-contact">
                 <span className="enqpg-contact-icon"><FiClock size={17} /></span>
-                <div><small>Working hours</small>{CONTACT.hours}</div>
+                <div><small>{pageCopy.working_hours}</small>{CONTACT.hours}</div>
               </li>
             </ul>
 
-            <h3>What happens next</h3>
+            <h3>{pageCopy.what_happens_next}</h3>
             <ol className="enqpg-next">
               {NEXT.map((n) => <li key={n}>{n}</li>)}
             </ol>
@@ -226,12 +223,16 @@ export default function QuotePage() {
             {status === "sent" ? (
               <div className="enqpg-done" role="status">
                 <div className="enqpg-done-icon"><FiCheck size={36} strokeWidth={3} /></div>
-                <h3>Quote request sent</h3>
-                <p>Thank you. We&rsquo;ve received your details and will contact you within one working day.</p>
-                <button type="button" className="enqpg-btn primary" onClick={reset}>Send another request</button>
+                <h3>{pageCopy.quote_request_sent}</h3>
+                <p>{pageCopy.thank_you_weve_received_your}</p>
+                <button type="button" className="enqpg-btn primary" onClick={reset}>{pageCopy.send_another_request}</button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} noValidate>
+                <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
+                  <label htmlFor="quote-website">{pageCopy.website}</label>
+                  <input id="quote-website" name="website" type="text" tabIndex={-1} autoComplete="off" value={form.website} onChange={set("website")} />
+                </div>
                 <div className="enqpg-progress" aria-label={`Step ${step + 1} of ${STEPS.length}`}>
                   {STEPS.map((label, i) => (
                     <div key={label} style={{ display: "contents" }}>
@@ -248,21 +249,21 @@ export default function QuotePage() {
 
                 {step === 0 && (
                   <div className="enqpg-panel" key="s0">
-                    <h3 className="enqpg-title">Who are we speaking to?</h3>
-                    <p className="enqpg-sub">We&rsquo;ll use these details only to reply to your request.</p>
+                    <h3 className="enqpg-title">{pageCopy.who_are_we_speaking_to}</h3>
+                    <p className="enqpg-sub">{pageCopy.well_use_these_details_only}</p>
                     <div className="enqpg-grid">
                       <div className={`enqpg-field ${errors.name ? "enqpg-bad" : ""}`}>
-                        <label className="enqpg-label" htmlFor="enq-name">Full name *</label>
+                        <label className="enqpg-label" htmlFor="enq-name">{pageCopy.full_name_}</label>
                         <input id="enq-name" className="enqpg-input" autoComplete="name" value={form.name} onChange={set("name")} />
                         {errors.name && <span className="enqpg-err">{errors.name}</span>}
                       </div>
                       <div className={`enqpg-field ${errors.mobile ? "enqpg-bad" : ""}`}>
-                        <label className="enqpg-label" htmlFor="enq-mobile">Mobile *</label>
+                        <label className="enqpg-label" htmlFor="enq-mobile">{pageCopy.mobile_}</label>
                         <input id="enq-mobile" className="enqpg-input" type="tel" autoComplete="tel" placeholder="+971" value={form.mobile} onChange={set("mobile")} />
                         {errors.mobile && <span className="enqpg-err">{errors.mobile}</span>}
                       </div>
                       <div className={`enqpg-field enqpg-full ${errors.email ? "enqpg-bad" : ""}`}>
-                        <label className="enqpg-label" htmlFor="enq-email">Email *</label>
+                        <label className="enqpg-label" htmlFor="enq-email">{pageCopy.email_}</label>
                         <input id="enq-email" className="enqpg-input" type="email" autoComplete="email" value={form.email} onChange={set("email")} />
                         {errors.email && <span className="enqpg-err">{errors.email}</span>}
                       </div>
@@ -272,11 +273,11 @@ export default function QuotePage() {
 
                 {step === 1 && (
                   <div className="enqpg-panel" key="s1">
-                    <h3 className="enqpg-title">What are we building?</h3>
-                    <p className="enqpg-sub">Pick the project type and everything you need help with.</p>
+                    <h3 className="enqpg-title">{pageCopy.what_are_we_building}</h3>
+                    <p className="enqpg-sub">{pageCopy.pick_the_project_type_and}</p>
                     <div className="enqpg-grid">
                       <fieldset className={`enqpg-field enqpg-full ${errors.projectType ? "enqpg-bad" : ""}`}>
-                        <legend className="enqpg-label" style={{ marginBottom: 10 }}>Project type *</legend>
+                        <legend className="enqpg-label" style={{ marginBottom: 10 }}>{pageCopy.project_type_}</legend>
                         <div className="enqpg-types">
                           {PROJECT_TYPES.map(({ label, icon: Icon }) => (
                             <label key={label} className="enqpg-type">
@@ -290,8 +291,7 @@ export default function QuotePage() {
                       </fieldset>
 
                       <fieldset className={`enqpg-field enqpg-full ${errors.services ? "enqpg-bad" : ""}`}>
-                        <legend className="enqpg-label" style={{ marginBottom: 10 }}>
-                          Services needed * <span className="enqpg-opt">(select all that apply)</span>
+                        <legend className="enqpg-label" style={{ marginBottom: 10 }}>{pageCopy.services_needed_}<span className="enqpg-opt">{pageCopy.select_all_that_apply}</span>
                         </legend>
                         <div className="enqpg-chips">
                           {SERVICES.map((s) => (
@@ -309,29 +309,29 @@ export default function QuotePage() {
 
                 {step === 2 && (
                   <div className="enqpg-panel" key="s2">
-                    <h3 className="enqpg-title">A few final details</h3>
-                    <p className="enqpg-sub">Optional details help us prepare a more accurate first response.</p>
+                    <h3 className="enqpg-title">{pageCopy.a_few_final_details}</h3>
+                    <p className="enqpg-sub">{pageCopy.optional_details_help_us_prepare}</p>
                     <div className="enqpg-grid">
                       <div className="enqpg-field enqpg-full">
-                        <label className="enqpg-label" htmlFor="enq-loc">Project location <span className="enqpg-opt">(optional)</span></label>
+                        <label className="enqpg-label" htmlFor="enq-loc">{pageCopy.project_location}<span className="enqpg-opt">{pageCopy.optional}</span></label>
                         <input id="enq-loc" className="enqpg-input" placeholder="e.g. Dubai Hills, Abu Dhabi" value={form.location} onChange={set("location")} />
                       </div>
                       <div className="enqpg-field">
-                        <label className="enqpg-label" htmlFor="enq-budget">Estimated budget <span className="enqpg-opt">(optional)</span></label>
+                        <label className="enqpg-label" htmlFor="enq-budget">{pageCopy.estimated_budget}<span className="enqpg-opt">{pageCopy.optional_2}</span></label>
                         <select id="enq-budget" className="enqpg-input" value={form.budget} onChange={set("budget")}>
-                          <option value="">Select a range</option>
+                          <option value="">{pageCopy.select_a_range}</option>
                           {BUDGETS.map((b) => <option key={b}>{b}</option>)}
                         </select>
                       </div>
                       <div className="enqpg-field">
-                        <label className="enqpg-label" htmlFor="enq-time">Preferred start <span className="enqpg-opt">(optional)</span></label>
+                        <label className="enqpg-label" htmlFor="enq-time">{pageCopy.preferred_start}<span className="enqpg-opt">{pageCopy.optional_3}</span></label>
                         <select id="enq-time" className="enqpg-input" value={form.timeline} onChange={set("timeline")}>
-                          <option value="">Select a timeframe</option>
+                          <option value="">{pageCopy.select_a_timeframe}</option>
                           {TIMELINES.map((t) => <option key={t}>{t}</option>)}
                         </select>
                       </div>
                       <div className={`enqpg-field enqpg-full ${errors.message ? "enqpg-bad" : ""}`}>
-                        <label className="enqpg-label" htmlFor="enq-msg">About your project *</label>
+                        <label className="enqpg-label" htmlFor="enq-msg">{pageCopy.about_your_project_}</label>
                         <textarea id="enq-msg" className="enqpg-input" placeholder="Size of the space, style you like, current stage of the project…"
                           value={form.message} onChange={set("message")} />
                         {errors.message && <span className="enqpg-err">{errors.message}</span>}
@@ -343,12 +343,11 @@ export default function QuotePage() {
                 {status === "error" && <div className="enqpg-banner" role="alert">{serverError}</div>}
 
                 <div className="enqpg-actions">
-                  <p className="enqpg-privacy">Step {step + 1} of {STEPS.length}. Your details are used only to respond to this request.</p>
+                  <p className="enqpg-privacy">{pageCopy.step}{step + 1} of {STEPS.length}{pageCopy._your_details_are_used}</p>
                   <div className="enqpg-btns">
                     {step > 0 && (
                       <button type="button" className="enqpg-btn ghost" onClick={goBack} disabled={status === "sending"}>
-                        <FiArrowLeft size={16} /> Back
-                      </button>
+                        <FiArrowLeft size={16} />{pageCopy.back}</button>
                     )}
                     <button type="submit" className="enqpg-btn primary" disabled={status === "sending"}>
                       {status === "sending" ? "Sending…" : step < STEPS.length - 1 ? "Continue" : "Send"}

@@ -1,0 +1,11 @@
+{
+  "workingDirectoryIsRepoRoot": true,
+  "transporterAtModuleImport": {
+    "smtpHostPresent": false,
+    "smtpUserPresent": false,
+    "smtpPasswordPresent": false,
+    "port": 587
+  },
+  "configurationCheckAfterApiEnvLoad": true,
+  "emailsSent": 0
+}

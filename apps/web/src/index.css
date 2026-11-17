@@ -12,69 +12,27 @@
   --color-foreground: var(--ink);
   --color-muted: var(--surface-alt);
   --color-muted-foreground: var(--muted);
-  --color-accent: #c5a059;
+  --color-accent: var(--accent);
   --color-border: var(--line);
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-serif: 'Cormorant Garamond', Georgia, serif;
 }
 
 :root {
-  /* Surfaces */
-  --bg: #fcfcfc;
-  --surface: #ffffff;
-  --surface-alt: #f1f0ee;
-  --line: rgba(8, 8, 7, 0.12);
-  --line-strong: rgba(8, 8, 7, 0.22);
-  --border: var(--line);
-
-  /* Typography Colors */
-  --ink: #080807;
-  --ink-soft: #30302e;
-  --muted: #545454;
-  --muted-light: #8a8a86;
-
-  /* Accents */
-  --accent: #080807;
-  --accent-hover: #1f1f1d;
-  --accent-red: #d30000;
-  --menu-bg: #080807;
-  --menu-text: #ffffff;
-
-  /* Type System */
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  /* Legacy component aliases resolve to the shared tokens. */
   --serif: var(--font-serif);
-
-  /* 12-Column Architectural Grid */
-  --site-margin: 2rem;
-  --column-count: 12;
-  --column-gap: 1rem;
-  --max-width: 1440px;
-
-  /* Section Rhythm */
-  --section-pad-y: clamp(5rem, 8vw, 9.5rem);
-
-  /* Radii & Motion */
-  --radius-sm: 2px;
-  --radius: 4px;
-  --radius-lg: 8px;
-  --radius-pill: 9999px;
-  --shadow-sm: 0 1px 3px rgba(8, 8, 7, 0.05);
-  --shadow-md: 0 8px 24px -6px rgba(8, 8, 7, 0.08);
-  --shadow-lg: 0 20px 48px -12px rgba(8, 8, 7, 0.14);
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-
-  /* Compatibility aliases */
+  --ease: var(--ease-secondary);
+  --ease-out: var(--ease-secondary);
+  --ease-in-out: var(--ease-primary);
+  --menu-bg: var(--surface-dark);
+  --menu-text: var(--ink-on-dark);
   --paper: var(--bg);
   --stone: var(--surface-alt);
   --stone-deep: var(--line);
-  --brass: var(--ink);
-  --brass-light: #2c2b27;
-  --brass-dim: var(--ink-soft);
-  --brass-deep: var(--ink);
+  --brass: var(--accent);
+  --brass-light: var(--accent);
+  --brass-dim: var(--accent-hover);
+  --brass-deep: var(--accent-hover);
   --ink-soft-legacy: var(--ink-soft);
   --line-legacy: var(--line);
   --shadow: var(--shadow-md);
@@ -131,6 +89,8 @@
   #main :where(section, article, aside, form, figure) {
     min-width: 0;
   }
+
+  #main { padding-top: var(--header-height); }
 
   input,
   select,
@@ -219,6 +179,7 @@
 
 @media (max-width: 768px) {
   :root {
+    --header-height: 64px;
     --site-margin: 1.25rem;
     --column-gap: 0.75rem;
   }

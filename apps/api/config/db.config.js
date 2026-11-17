@@ -1,4 +1,5 @@
-import dotenv from "dotenv";
+import { logError, logInfo } from "../utils/logger.js";
+import "./env.js";
 import mongoose from "mongoose";
 import dns from "node:dns";
 
@@ -8,8 +9,6 @@ if (!process.env.VERCEL) {
     } catch {}
 }
 
-dotenv.config();
-
 const connectDB = async () => {
     if (mongoose.connection.readyState === 1) {
         return mongoose.connection;
@@ -17,7 +16,7 @@ const connectDB = async () => {
 
     if (!process.env.MONGO_URI) {
         const err = new Error("MONGO_URI environment variable is not configured");
-        console.error("❌ MongoDB connection error:", err.message);
+        logError("MongoDB connection error:", err);
         if (!process.env.VERCEL) {
             process.exit(1);
         }
@@ -43,12 +42,12 @@ const connectDB = async () => {
 
         globalThis.__yashmeenMongoPromise = connectWithRetry()
             .then((conn) => {
-                console.log("✅ MongoDB connected");
+                logInfo("MongoDB connected");
                 return conn;
             })
             .catch((err) => {
                 globalThis.__yashmeenMongoPromise = null;
-                console.error("❌ MongoDB connection error:", err.message);
+                logError("MongoDB connection error:", err);
                 if (!process.env.VERCEL) {
                     process.exit(1);
                 }

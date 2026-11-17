@@ -1,0 +1,32 @@
+{
+  "/reset-password?token=audit-invalid-token": {
+    "h1": "Page Not Found",
+    "title": "Page Not Found | Yashmeen Fit-Out Dubai"
+  },
+  "/verify-email?token=audit-invalid-token": {
+    "h1": "Page Not Found",
+    "title": "Page Not Found | Yashmeen Fit-Out Dubai"
+  },
+  "quote": {
+    "hours": [],
+    "contactLinks": [
+      "tel:+971543862870",
+      "mailto:info@yfbfitoutcontracting.com"
+    ]
+  },
+  "testimonial": {
+    "height": 309,
+    "scrollHeight": 311,
+    "clipPath": "none",
+    "color": "rgb(245, 242, 235)",
+    "parentOverflow": "visible"
+  },
+  "tokens": {
+    "accent": "#080807",
+    "base": "0.9375rem"
+  },
+  "unsanitizedBlogHtml": {
+    "executed": true,
+    "h1": "Audit HTML fixture"
+  }
+}

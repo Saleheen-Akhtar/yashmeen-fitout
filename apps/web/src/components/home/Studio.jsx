@@ -1,19 +1,22 @@
+import { mediaFallback } from "../../lib/media";
 import { Fragment } from "react";
 import { Link } from "react-router-dom";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
 
 export default function Studio() {
   const { content } = useWebsiteContent();
+  const pageCopy = content.pageCopy.Studio;
+
   const studio = content?.studio || {};
   const activeServices = (content?.services || []).filter((s) => s.active !== false);
-  const rawHeadline = studio.headline || "DESIGN TO\nDELIVERY";
+  const rawHeadline = studio.headline;
   const headlineLines = String(rawHeadline).split(/\r?\n/);
 
   return (
     <section className="studio-manifesto-section wrap" id="manifesto" aria-label="Studio Manifesto">
       {/* Eyebrow & Monumental Display Title */}
       <div className="studio-headline-block">
-        <span className="eyebrow">{studio.eyebrow || "(ONE TEAM. EVERY STAGE.)"}</span>
+        <span className="eyebrow">{studio.eyebrow}</span>
         <h2 className="u-text-display" key={rawHeadline}>
           {headlineLines.map((line, i) => (
             <Fragment key={i}>
@@ -27,9 +30,9 @@ export default function Studio() {
       {/* Centered Inset Photograph with Generous Whitespace */}
       <div className="studio-inset-image-wrap">
         <div className="studio-inset-image-inner">
-          <img
-            src="/static/studio.jpg"
-            alt="Bespoke architectural joinery bench in Al Quoz, Dubai"
+          <img onError={mediaFallback}
+            src={pageCopy.image}
+            alt={pageCopy.image_description}
             loading="lazy"
           />
         </div>
@@ -39,20 +42,18 @@ export default function Studio() {
       <div className="studio-narrative-grid">
         <div>
           <p>
-            {studio.paragraph1 ||
-              "Yashmeen Future Building brings Dubai fit-out delivery together under one team. Design, spatial engineering, bespoke joinery, architectural glazing, and authority approvals move together under one accountable team, from the first brief to site handover."}
+            {studio.paragraph1}
           </p>
         </div>
 
         <div>
           <p>
-            {studio.paragraph2 ||
-              "In our 35,000 sq. ft. Al Quoz atelier, craftspeople fabricate custom millwork, curved timber, metalwork and acoustic panels. Our MEP and site teams carry those details into the finished space, keeping the approved design and the built result connected."}
+            {studio.paragraph2}
           </p>
 
           <div style={{ marginTop: "2rem" }}>
             <Link to="/about" className="btn-pill btn-pill-dark">
-              <span>LEARN MORE ABOUT OUR STUDIO</span>
+              <span>{pageCopy.learn_more_about_our_studio}</span>
               <span className="g-circle" aria-hidden="true" />
             </Link>
           </div>
@@ -79,10 +80,9 @@ export default function Studio() {
               gap: "12px",
             }}
           >
-            <span className="eyebrow">(CORE DISCIPLINES & SERVICES)</span>
+            <span className="eyebrow">{pageCopy.core_disciplines_services}</span>
             <span style={{ fontSize: "0.75rem", color: "var(--muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-              ({String(activeServices.length).padStart(2, "0")} Disciplines)
-            </span>
+              ({String(activeServices.length).padStart(2, "0")}{pageCopy.disciplines}</span>
           </div>
 
           <div
@@ -110,7 +110,7 @@ export default function Studio() {
                 <div>
                   <span
                     style={{
-                      fontSize: "0.7rem",
+                      fontSize: "0.75rem",
                       letterSpacing: "0.1em",
                       color: "var(--muted)",
                       display: "block",
@@ -129,7 +129,7 @@ export default function Studio() {
                 <span
                   style={{
                     marginTop: "1rem",
-                    fontSize: "0.72rem",
+                    fontSize: "0.75rem",
                     fontWeight: 600,
                     letterSpacing: "0.08em",
                     textTransform: "uppercase",
@@ -137,9 +137,7 @@ export default function Studio() {
                     alignItems: "center",
                     gap: "6px",
                   }}
-                >
-                  EXPLORE SERVICE ↗
-                </span>
+                >{pageCopy.explore_service_}</span>
               </Link>
             ))}
           </div>

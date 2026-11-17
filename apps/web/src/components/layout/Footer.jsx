@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import InteractiveBrandLettering from "./InteractiveBrandLettering";
+import MotionToggle from "./MotionToggle";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
 import { getDubaiAtelierStatus } from "../../lib/helpers";
 import "../../styles/shell.css";
@@ -13,10 +14,11 @@ const NAV_LINKS = [
   { label: "Gallery", href: "/photo-gallery" },
   { label: "Contact", href: "/contact" },
 ];
+const INITIAL_ATELIER_STATUS = { dubaiTime: "Dubai time", isOpen: false };
 
 export default function Footer() {
   const { content } = useWebsiteContent();
-  const [atelierStatus, setAtelierStatus] = useState(() => getDubaiAtelierStatus());
+  const [atelierStatus, setAtelierStatus] = useState(INITIAL_ATELIER_STATUS);
 
   const addr = content?.address || {};
   const formattedAddress =
@@ -26,21 +28,17 @@ export default function Footer() {
   const mobile = content?.mobile || "+971 54 386 2870";
   const workingHours = content?.workingHours || "Monday to Friday, 8:30am - 6:00pm";
 
-  const socialLinks =
-    Array.isArray(content?.socialLinks) && content.socialLinks.length > 0
-      ? content.socialLinks
-      : [
-          { platform: "Instagram", url: "https://www.instagram.com/yashmeenfuture" },
-          { platform: "Facebook", url: "https://www.facebook.com/profile.php?id=61595342604561" },
-          { platform: "YouTube", url: "https://www.youtube.com/@YashmeenFuture" },
-        ];
+  const socialLinks = content.socialLinks;
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setAtelierStatus(getDubaiAtelierStatus());
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    const update = () => setAtelierStatus(getDubaiAtelierStatus(new Date(), content.openingHours));
+    const raf = window.requestAnimationFrame(update);
+    const interval = setInterval(update, 30000);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      clearInterval(interval);
+    };
+  }, [content.openingHours]);
 
   const openEnquiryModal = (e) => {
     e.preventDefault();
@@ -68,13 +66,7 @@ export default function Footer() {
           <div>
             <div className="footer-col-title">(ACCREDITATIONS)</div>
             <div className="footer-text-block">
-              <p style={{ marginBottom: 10 }}>Dubai Municipality Approved Contractor</p>
-              <p style={{ marginBottom: 10 }}>Dubai Civil Defence (DCD) Certified</p>
-              <p style={{ marginBottom: 10 }}>Tecom, DCCA &amp; DDA Approved Fit-Out</p>
-              <p style={{ marginBottom: 10 }}>
-                Developer Fit-Out Submissions (Nakheel &amp; Emaar Developments)
-              </p>
-              <p>ISO 9001:2015 Quality Management Certified</p>
+{content.certifications.map((text, index) => <p key={index} style={{ marginBottom: index < content.certifications.length - 1 ? 10 : 0 }}>{text}</p>)}
             </div>
           </div>
 
@@ -99,8 +91,7 @@ export default function Footer() {
           <div>
             <div className="footer-col-title">(OUR ATELIER)</div>
             <p className="footer-text-block" style={{ marginBottom: 20 }}>
-              Operating an in-house 35,000 sq.ft Al Quoz manufacturing facility. One accountable
-              contractor delivering turnkey architectural fit-out across Dubai and the UAE.
+              {content.footer.atelierCopy}
             </p>
             <button
               type="button"
@@ -108,18 +99,18 @@ export default function Footer() {
               className="btn-pill btn-pill-dark"
               style={{ padding: "0 20px" }}
             >
-              <span>Tell us about your project</span>
+              <span>{content.footer.ctaText}</span>
               <span className="g-circle" aria-hidden="true" />
             </button>
           </div>
         </div>
 
         {/* Interactive Brand Monument */}
-        <InteractiveBrandLettering word="YASHMEEN" color="#080807" haloColor="#fcfcfc" />
+        <InteractiveBrandLettering word={content.footer.lettering} color="#080807" haloColor="#fcfcfc" />
 
         {/* Footer Bottom Bar */}
         <div className="footer-bottom-bar">
-          <div>© 2026 YASHMEEN FUTURE BUILDING &amp; FIT-OUT CONTRACTING L.L.C</div>
+          <div>{content.footer.copyright}</div>
 
           <div className="footer-telemetry-clock">
             <span
@@ -133,9 +124,17 @@ export default function Footer() {
           </div>
 
           <div style={{ display: "flex", gap: 20 }}>
+            <MotionToggle />
             <Link to="/privacy-policy" style={{ color: "var(--muted)" }}>
               Privacy Policy
             </Link>
+            <button
+              type="button"
+              className="footer-cookie-preferences"
+              onClick={() => window.dispatchEvent(new CustomEvent("open-cookie-preferences"))}
+            >
+              Cookie Preferences
+            </button>
             {socialLinks.map((soc, i) => (
               <a
                 key={i}

@@ -1,0 +1,39 @@
+{
+  "webDetails": {
+    "mobile": "+971 54 386 2870",
+    "email": "info@yfbfitoutcontracting.com",
+    "address": {"street":"Fixture street", "city":"Dubai", "country":"UAE"},
+    "hero": {"title":"A fixture headline"},
+    "pageCopy": {"About":{"interiors_built_around_how_you":"A fixture studio"}, "BlogPage":{"from_the_journal":"Fixture articles"}},
+    "services": [
+      {"slug":"architecture","route":"/services/architecture","active":true},
+      {"slug":"interior-design","route":"/services/interior-design","active":false},
+      {"slug":"construction","route":"/services/construction","active":true},
+      {"slug":"office-renovation","route":"/services/office-renovation","active":true},
+      {"id":"fixture-service","slug":"custom-joinery","route":"/services/custom-joinery","title":"Fixture Custom Joinery","shortDesc":"Made to measure fixture joinery","description":"A fixture service for deterministic prerender validation.","image":"/static/studio.jpg","active":true}
+    ]
+  },
+  "projects": [
+    {
+      "_id": "65f000000000000000000001",
+      "title": "Crawler Test Workplace",
+      "description": "A complete Dubai workplace fit-out with custom joinery and coordinated MEP delivery.",
+      "location": "Dubai",
+      "sector": "Commercial",
+      "images": ["https://res.cloudinary.com/demo/image/upload/v1/yashmeen/projects/crawler-test.jpg"],
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-02-01T00:00:00.000Z"
+    }
+  ],
+  "posts": [
+    {
+      "_id": "65f000000000000000000002",
+      "title": "Crawler Test Fit-Out Guide",
+      "content": "<h2>Readable launch guidance</h2><p>Plan approvals, joinery and site delivery as one coordinated programme.</p>",
+      "file": "",
+      "status": true,
+      "createdAt": "2026-01-02T00:00:00.000Z",
+      "updatedAt": "2026-02-02T00:00:00.000Z"
+    }
+  ]
+}

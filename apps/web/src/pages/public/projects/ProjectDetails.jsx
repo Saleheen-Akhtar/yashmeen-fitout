@@ -6,39 +6,23 @@ import {
   FiMapPin,
   FiTarget,
   FiBriefcase,
-  FiArrowUpRight,
   FiChevronLeft,
   FiChevronRight,
   FiX,
 } from "react-icons/fi";
-import { projectAPI, itemPath } from "../../../services/api"; // adjust the path to your project
+import { projectAPI } from "../../../services/api";
+import { resolveMediaUrl, mediaFallback } from "../../../lib/media";
 import { subscribeCacheInvalidation } from "../../../lib/publicCache";
+import { getPrerenderProject } from "../../../lib/prerenderData";
+import { SITE_NAME, SITE_URL } from "../../../lib/seoConfig";
+import useDialogFocus from "../../../hooks/useDialogFocus";
 
-const FALLBACK_HERO = "/static/hero-bg.jpg";
-const FALLBACK_IMAGES = [
-  "/static/hero-aperture-v2.webp",
-  "/static/work-oh-office.jpg",
-  "/static/Office-fit-out.jpg",
-  "/static/joinery-bay.jpg",
-  "/static/hero-editorial.webp",
-  "/static/studio.jpg",
-];
-const handleProjectImgError = (idx) => (e) => {
-  if (!e.currentTarget.dataset.fallbackApplied) {
-    e.currentTarget.dataset.fallbackApplied = "1";
-    e.currentTarget.src = FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
-  }
-};
+const hideBrokenProjectImage = mediaFallback;
 
 /* ---------------- helpers: map whatever the API returns ---------------- */
 
 // Absolute / local static URLs are used as-is; stored paths are resolved via itemPath
-const photoUrl = (path = "") => {
-  if (!path) return "";
-  return /^(https?:|data:|blob:|\/static\/|\/images\/|\/uploads\/)/i.test(path)
-    ? path
-    : `${itemPath ?? ""}/${String(path).replace(/^\/+/, "")}`;
-};
+const photoUrl = resolveMediaUrl;
 
 // Works with `{ data: { data: {...} } }`, `{ data: {...} }` and `{ data: { project: {...} } }`
 const toProject = (res) => {
@@ -107,6 +91,8 @@ let lastServerVersion; // result of the most recent version request
 
 function readCache(id) {
   const key = String(id);
+  const prerendered = getPrerenderProject(key);
+  if (prerendered) return { project: prerendered, version: "prerender", savedAt: Date.now() };
   try {
     const raw = localStorage.getItem(CACHE_PREFIX + key);
     if (!raw) {
@@ -218,6 +204,8 @@ async function resolveProjectDetail(projectId, force = false) {
 }
 
 export default function ProjectDetailsPage() {
+
+
   const { projectId } = useParams();
   return <ProjectDetailsInner key={projectId} projectId={projectId} />;
 }
@@ -232,6 +220,8 @@ function ProjectDetailsInner({ projectId }) {
   const [active, setActive] = useState(0);
   const [lightbox, setLightbox] = useState(null);
   const stripRef = useRef(null);
+  const lightboxRef = useRef(null);
+  useDialogFocus(lightbox !== null, lightboxRef);
 
   const startFetch = useCallback(
     (force = false) => {
@@ -321,14 +311,27 @@ function ProjectDetailsInner({ projectId }) {
       pick(project, ["description", "summary", "scope"]) ||
       `Architectural specifications and fit-out execution for ${projectTitle} in Dubai by Yashmeen Future Building.`;
     const heroImg = getImages(project)[0] || "/static/hero-editorial.webp";
+    const absoluteHeroImg = /^https?:\/\//i.test(heroImg)
+      ? heroImg
+      : `${SITE_URL}${heroImg.startsWith("/") ? "" : "/"}${heroImg}`;
+    const description = String(desc).replace(/\s+/g, " ").trim().slice(0, 160);
     window.dispatchEvent(
       new CustomEvent("seo-update", {
         detail: {
           pathname: location.pathname,
           title: `${projectTitle} | Yashmeen Fit-Out Dubai`,
-          description: String(desc).replace(/\s+/g, " ").trim().slice(0, 160),
+          description,
           image: heroImg,
           robots: "index, follow",
+          structuredData: {
+            "@context": "https://schema.org",
+            "@type": "CreativeWork",
+            name: projectTitle,
+            description,
+            image: [absoluteHeroImg],
+            url: `${SITE_URL}${location.pathname}`,
+            creator: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+          },
         },
       }),
     );
@@ -352,6 +355,7 @@ function ProjectDetailsInner({ projectId }) {
     ? [
         { icon: FiMaximize, label: "Size", value: pick(project, ["size", "area", "projectSize"]) },
         { icon: FiMapPin, label: "Location", value: pick(project, ["location", "city", "address"]) },
+        { icon: FiTarget, label: "Duration", value: pick(project, ["duration"]) },
         { icon: FiTarget, label: "Scope", value: pick(project, ["scope", "scopeOfWork", "scope_of_work"]) },
         {
           icon: FiBriefcase,
@@ -404,7 +408,8 @@ function ProjectDetailsInner({ projectId }) {
   }, [lightbox, closeBox, boxPrev, boxNext]);
 
   return (
-    <div className="page pd-page">
+    <div className="page pd-page">
+
 
       {loading ? (
         <div className="status">Loading project…</div>
@@ -431,12 +436,20 @@ function ProjectDetailsInner({ projectId }) {
           {/* HERO */}
           <section
             className="hero"
-            style={{ backgroundImage: `url('${images[0] || FALLBACK_HERO}')` }}
+            style={images[0] ? { backgroundImage: `url('${images[0]}')` } : undefined}
           >
             <div className="wrap">
               <h1 className="hero-title">{title}</h1>
             </div>
           </section>
+
+          {count === 0 && (
+            <section className="edge">
+              <div className="project-media-unavailable" role="status">
+                Project media is currently unavailable.
+              </div>
+            </section>
+          )}
 
           {/* MAIN IMAGE + THUMBNAIL STRIP */}
           {count > 0 && (
@@ -446,7 +459,7 @@ function ProjectDetailsInner({ projectId }) {
                   className="main-img"
                   src={images[active] ?? images[0]}
                   alt={`${title}, photo ${active + 1}`}
-                  onError={handleProjectImgError(active)}
+                  onError={hideBrokenProjectImage}
                 />
 
                 {count > 1 && (
@@ -462,7 +475,7 @@ function ProjectDetailsInner({ projectId }) {
                             aria-label={`Show photo ${i + 1}`}
                             onClick={() => setActive(i)}
                           >
-                            <img src={src} alt="" onError={handleProjectImgError(i)} />
+                            <img src={src} alt="" onError={hideBrokenProjectImage} />
                           </button>
                         ))}
                       </div>
@@ -505,7 +518,6 @@ function ProjectDetailsInner({ projectId }) {
                       </div>
                       <hr className="info-rule" />
                       <p className="info-value">{String(value)}</p>
-                      <span className="info-go" aria-hidden="true"><FiArrowUpRight size={16} /></span>
                     </div>
                   ))}
                 </div>
@@ -548,7 +560,7 @@ function ProjectDetailsInner({ projectId }) {
                       aria-label={`Open photo ${i + 1} full screen`}
                       onClick={() => setLightbox(i)}
                     >
-                      <img src={src} alt="" loading="lazy" onError={handleProjectImgError(i)} />
+                      <img src={src} alt="" loading="lazy" onError={hideBrokenProjectImage} />
                     </button>
                   ))}
                 </div>
@@ -558,7 +570,7 @@ function ProjectDetailsInner({ projectId }) {
 
           {/* LIGHTBOX */}
           {lightbox !== null && images[lightbox] && (
-            <div className="lightbox" role="dialog" aria-modal="true" aria-label={title} onClick={closeBox}>
+            <div ref={lightboxRef} className="lightbox" role="dialog" aria-modal="true" aria-label={title} onClick={closeBox}>
               <button type="button" className="lb-btn lb-close" aria-label="Close" autoFocus onClick={closeBox}>
                 <FiX size={22} />
               </button>
@@ -583,7 +595,7 @@ function ProjectDetailsInner({ projectId }) {
                 src={images[lightbox]}
                 alt={`${title}, photo ${lightbox + 1}`}
                 onClick={(e) => e.stopPropagation()}
-                onError={handleProjectImgError(lightbox)}
+                onError={hideBrokenProjectImage}
               />
               <div className="lb-count">{lightbox + 1} / {count}</div>
             </div>

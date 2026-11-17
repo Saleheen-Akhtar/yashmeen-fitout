@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-11-17T08:27:37.229Z",
+  "connected": true,
+  "missingProductionEnv": [
+    "CLOUDINARY_NAME",
+    "CLOUDINARY_API_KEY",
+    "CLOUDINARY_SECRET_KEY",
+    "UPSTASH_REDIS_REST_URL",
+    "UPSTASH_REDIS_REST_TOKEN",
+    "CLIENT_URL"
+  ],
+  "counts": {
+    "projects": 21,
+    "gallery": 71,
+    "posts": 1,
+    "vacancies": 0,
+    "banners": 0,
+    "popups": 0,
+    "legacyAccounts": 0
+  },
+  "postsNeedingSanitization": 0,
+  "publishedUnreadablePosts": 0,
+  "cmsStaticReferences": [
+    "hero-aperture-v2.webp",
+    "joinery-bay.jpg",
+    "Office-fit-out.jpg",
+    "studio.jpg"
+  ],
+  "snapshot": "apps/api/migration-output/cms-readonly-snapshot.json"
+}

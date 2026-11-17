@@ -15,6 +15,7 @@ import {
   getDubaiAtelierStatus,
 } from "../src/lib/helpers.js";
 import { getRouteSeo, normalizePathname } from "../src/lib/seoConfig.js";
+import { DEFAULT_WEBSITE_CONTENT, mergeWebsiteContent } from '../../../shared/siteContent.js';
 import {
   CACHE_KEYS,
   subscribeCacheInvalidation,
@@ -152,11 +153,11 @@ describe("Layer 2B: Storage resilience & environment config parity", () => {
   });
 
   it("useWebsiteContent.js merges partial remote payloads cleanly with defaults", () => {
-    const hookSrc = readFrontend("src/hooks/useWebsiteContent.js");
-    assert.ok(hookSrc.includes("DEFAULT_WEBSITE_CONTENT"));
-    assert.ok(hookSrc.includes("function mergeContent(remote)"));
-    assert.match(hookSrc, /Array\.isArray\(remote\.services\)\s*&&\s*remote\.services\.length\s*>\s*0/);
-    assert.match(hookSrc, /Array\.isArray\(remote\.processSteps\)\s*&&\s*remote\.processSteps\.length\s*>\s*0/);
+    const merged = mergeWebsiteContent({ hero: { title: 'A saved headline' }, services: [], processSteps: [] });
+    assert.equal(merged.hero.title, 'A saved headline');
+    assert.equal(merged.hero.intro, DEFAULT_WEBSITE_CONTENT.hero.intro);
+    assert.deepEqual(merged.services, []);
+    assert.deepEqual(merged.processSteps, []);
   });
 
   it("backend .env.example documents the exact environment variable names read by server code", () => {
@@ -310,7 +311,7 @@ describe("Layer 2C: Frontend <-> Backend schema & route contract parity", () => 
     const apiSrc = readFrontend("src/services/api.js");
     assert.ok(
       /getVersion\s*:/.test(apiSrc),
-      "services/api.js lacks getVersion endpoint wrappers expected by ProjectDetails/Career/cacheStore"
+      "services/api.js lacks getVersion endpoint wrappers expected by ProjectDetails/Career"
     );
   });
 });
@@ -441,14 +442,19 @@ describe("tidy + hardening regressions", () => {
     assert.ok(src.includes('inputMode="tel"'));
   });
 
-  it("StickyMobileBar provides direct Call and WhatsApp triggers with >=44px tap targets", () => {
+  it("Quick contact provides one accessible WhatsApp link with no bottom action bar", () => {
     const src = readFrontend("src/components/layout/StickyMobileBar.jsx");
     const layout = readFrontend("src/layouts/Layout.jsx");
     const shell = readFrontend("src/styles/shell.css");
-    assert.ok(src.includes("tel:+971543862870"));
-    assert.ok(src.includes("wa.me/971543862870"));
+    assert.ok(!src.includes("tel:"));
+    assert.ok(!src.includes("<button"));
+    assert.ok(src.includes('wa.me/${number}'));
+    assert.ok(src.includes('content.whatsapp || content.mobile'));
     assert.ok(layout.includes("<StickyMobileBar"));
-    assert.ok(shell.includes(".sticky-mobile-bar"));
+    assert.ok(src.includes("FaWhatsapp"));
+    assert.ok(src.includes('aria-label="Chat on WhatsApp with Yashmeen Atelier"'));
+    assert.ok(shell.includes(".floating-whatsapp"));
+    assert.ok(!shell.includes("padding-bottom: 64px"));
     assert.ok(shell.includes("min-height: 44px"));
   });
 
@@ -461,10 +467,8 @@ describe("tidy + hardening regressions", () => {
 
   it("Service pages are consolidated into data-driven templates with zero em-dashes", () => {
     const servicesData = readFrontend("src/pages/public/services/servicesData.js");
-    assert.ok(servicesData.includes("architecture:"));
-    assert.ok(servicesData.includes('"interior-design":'));
-    assert.ok(servicesData.includes("construction:"));
-    assert.ok(servicesData.includes('"office-renovation":'));
+    assert.deepEqual(DEFAULT_WEBSITE_CONTENT.services.map(service => service.slug), ['architecture','interior-design','construction','office-renovation']);
+    assert.ok(DEFAULT_WEBSITE_CONTENT.services.every(service => service.disciplines.length && service.process.length && service.faqs.length));
     // Strict zero em-dash / en-dash rule
     assert.ok(!servicesData.includes("\u2014"), "servicesData contains illegal em-dash");
     assert.ok(!servicesData.includes("\u2013"), "servicesData contains illegal en-dash");
@@ -486,34 +490,38 @@ describe("tidy + hardening regressions", () => {
     assert.ok(pkg.scripts.build.includes("node scripts/prerender.mjs"));
   });
 
-  it("Motion system is modularized into lenis, magnetic, parallax, and reveal modules", () => {
+  it("Route motion keeps independent animations intact and resplits headings on resize", () => {
     const provider = readFrontend("src/motion/MotionProvider.jsx");
-    assert.ok(provider.includes('from "./lenis"'));
-    assert.ok(provider.includes('from "./magnetic"'));
-    assert.ok(provider.includes('from "./parallax"'));
-    assert.ok(provider.includes('from "./reveal"'));
-    assert.ok(provider.split("\n").length < 300, "MotionProvider.jsx is still monolithic (>300 lines)");
-
-    const lenis = readFrontend("src/motion/lenis.js");
-    assert.ok(lenis.includes("export function initLenis"));
-
-    const magnetic = readFrontend("src/motion/magnetic.js");
-    assert.ok(magnetic.includes("export function initHeaderMagnetic"));
-
-    const parallax = readFrontend("src/motion/parallax.js");
-    assert.ok(parallax.includes("export function initApertureParallax"));
-
+    assert.ok(!provider.includes('ScrollTrigger.getAll()'), 'Do not kill another component\'s triggers');
+    assert.ok(!provider.includes('resetAnimatedProps'), 'Do not clear Hero-owned transforms on route cleanup');
+    assert.ok(provider.includes('context.revert()'));
+    assert.ok(provider.includes('data-motion-ready'), 'Wait for the lazy page to hydrate before splitting text');
     const reveal = readFrontend("src/motion/reveal.js");
-    assert.ok(reveal.includes("export function initSplitTextReveals"));
+    assert.ok(reveal.includes('autoSplit: true'));
+    assert.ok(reveal.includes('onSplit(split)'));
+    assert.ok(reveal.includes('.aperture-hero'), 'The Hero owns its own entrance');
+  });
+
+  it("Reduced motion keeps calm fades instead of forcing the homepage instantly static", () => {
+    const index = readFrontend("index.html");
+    const hero = readFrontend("src/components/home/Hero.jsx");
+    const home = readFrontend("src/styles/home.css");
+    const reveal = readFrontend("src/motion/reveal.js");
+
+    assert.ok(index.includes("reduced-motion"), "Initial motion state must distinguish reduced motion from no motion runtime");
+    assert.ok(hero.includes("if (reducedMotion)"));
+    assert.match(hero, /if \(reducedMotion\)[\s\S]*gsap\.from\(content,[\s\S]*opacity:\s*0/);
+    assert.ok(home.includes("html:not(.motion):not(.reduced-motion) .aperture-hero-photo img"));
+    assert.ok(!home.includes("html:not(.motion) .aperture-hero-photo img,"));
+    assert.match(reveal, /y:\s*reducedMotion\s*\?\s*0\s*:\s*24/);
+    assert.match(reveal, /duration:\s*reducedMotion\s*\?\s*0\.56\s*:\s*0\.85/);
   });
 
   it("Header renders an accessible Services dropdown listing all 4 core disciplines", () => {
     const header = readFrontend("src/components/layout/Header.jsx");
-    assert.ok(header.includes("SERVICES_MENU"));
-    assert.ok(header.includes("/services/architecture"));
-    assert.ok(header.includes("/services/interior-design"));
-    assert.ok(header.includes("/services/construction"));
-    assert.ok(header.includes("/services/office-renovation"));
+    assert.ok(header.includes('content.services.filter'));
+    assert.deepEqual(DEFAULT_WEBSITE_CONTENT.services.map(service => service.route), ['/services/architecture','/services/interior-design','/services/construction','/services/office-renovation']);
+    assert.ok(DEFAULT_WEBSITE_CONTENT.services.every(service => service.menuLabel));
     assert.ok(header.includes("nav-dropdown-wrapper"));
   });
 

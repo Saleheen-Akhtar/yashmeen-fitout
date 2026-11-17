@@ -1,0 +1,27 @@
+{
+  "projects": {
+    "records": 21,
+    "images": 189,
+    "missing": 179
+  },
+  "gallery": {
+    "records": 71,
+    "images": 71,
+    "missing": 71
+  },
+  "contact": {
+    "mobile": "+971543862870",
+    "email": "info@yfbfitoutcontracting.com",
+    "address": {
+      "street": "Municipality Building 2nd floor 204- Al Muraqqabat police station near Muraqqabad Metro station - Deira - Dubai United Arab Emirates",
+      "city": "Dubai ",
+      "state": "Dubai ",
+      "zipCode": "67 Dubai UAE",
+      "country": "United Arab Emirates"
+    }
+  },
+  "uploadPaths": {
+    "rootCommandUpload": "C:\\Users\\sahil\\Projects\\IT\\Dan\\uploads\\projects",
+    "servedUpload": "C:\\Users\\sahil\\Projects\\IT\\Dan\\apps\\api\\uploads\\projects"
+  }
+}

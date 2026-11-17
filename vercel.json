@@ -8,10 +8,12 @@
     "frontend": {
       "root": "apps/web",
       "framework": "vite",
+      "cleanUrls": true,
+      "trailingSlash": false,
       "rewrites": [
         {
-          "source": "/((?!assets/|static/|images/|robots\\.txt|sitemap\\.xml).*)",
-          "destination": "/index.html"
+          "source": "/((?!api/|uploads/|assets/|static/|images/|fonts/|.*\\.[^/]+$).*)",
+          "destination": "/"
         }
       ],
       "bindings": [

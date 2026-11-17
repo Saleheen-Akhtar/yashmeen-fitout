@@ -1,3 +1,4 @@
+import useWebsiteContent from "../../../hooks/useWebsiteContent";
 import "../../../styles/blog.css";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -8,9 +9,11 @@ import useLatestPosts from "../../../lib/cacheLatestBlog";
 // Details page route: /blob/details/:blogId (change here if the route is /blog/details)
 const BLOG_DETAILS_PATH = "/blog/details";
 const PAGE_SIZE = 9;
-const HERO_BG = "/static/pages-bg.webp";
 
 export default function BlogsPage() {
+  const { content } = useWebsiteContent();
+  const pageCopy = content.pageCopy.BlogPage;
+
   // null = all active posts (status === true), newest first, cached until data changes
   const { posts, loading, error } = useLatestPosts(null);
   const [visible, setVisible] = useState(PAGE_SIZE);
@@ -18,26 +21,24 @@ export default function BlogsPage() {
   const shown = posts.slice(0, visible);
 
   return (
-    <div className="bp-page">
+    <div className="bp-page">
 
-      <header className="bp-hero" style={{ backgroundImage: `url(${HERO_BG})` }}>
+
+      <header className="bp-hero" style={{ backgroundImage: `url(${pageCopy.heroImage})` }}>
         <div className="bp-wrap">
-          <h1>From the journal.</h1>
-          <p>
-            Ideas, guides and updates on fit-out, interior design and building
-            well in the UAE.
-          </p>
+          <h1>{pageCopy.from_the_journal}</h1>
+          <p>{pageCopy.ideas_guides_and_updates_on}</p>
         </div>
       </header>
 
       <div className="bp-section">
         <div className="bp-wrap">
           {loading ? (
-            <div className="bp-state">Loading articles…</div>
+            <div className="bp-state">{pageCopy.loading_articles}</div>
           ) : error ? (
             <div className="bp-state error">{error}</div>
           ) : posts.length === 0 ? (
-            <div className="bp-state">No articles published yet.</div>
+            <div className="bp-state">{pageCopy.no_articles_published_yet}</div>
           ) : (
             <>
               <div className="bp-grid">
@@ -48,9 +49,17 @@ export default function BlogsPage() {
                     .join(" · ");
                   return (
                     <article className="bp-card" key={post.id}>
-                      <Link to={href} className="bp-poster" aria-label={post.title}>
+                      <Link to={href} className={`bp-poster${post.image ? "" : " is-media-unavailable"}`} aria-label={post.title}>
                         {post.image && (
-                          <img src={post.image} alt={post.title} loading="lazy" />
+                          <img
+                            src={post.image}
+                            alt={post.title}
+                            loading="lazy"
+                            onError={(event) => {
+                              event.currentTarget.hidden = true;
+                              event.currentTarget.parentElement?.classList.add("is-media-unavailable");
+                            }}
+                          />
                         )}
                       </Link>
                       {meta && <div className="bp-meta">{meta}</div>}
@@ -58,8 +67,7 @@ export default function BlogsPage() {
                         <Link to={href}>{post.title}</Link>
                       </h2>
                       {post.excerpt && <p>{post.excerpt}</p>}
-                      <Link to={href} className="bp-rm">
-                        Read Article <FiArrowRight size={14} />
+                      <Link to={href} className="bp-rm">{pageCopy.read_article}<FiArrowRight size={14} />
                       </Link>
                     </article>
                   );
@@ -71,9 +79,7 @@ export default function BlogsPage() {
                   <button
                     type="button"
                     onClick={() => setVisible((v) => v + PAGE_SIZE)}
-                  >
-                    Load more articles
-                  </button>
+                  >{pageCopy.load_more_articles}</button>
                 </div>
               )}
             </>

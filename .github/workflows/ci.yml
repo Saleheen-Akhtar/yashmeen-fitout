@@ -19,10 +19,16 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-          cache-dependency-path: apps/web/package.json
+          cache-dependency-path: apps/web/package-lock.json
 
       - name: Install Frontend Dependencies
-        run: npm --prefix apps/web install
+        run: npm --prefix apps/web ci
+
+      - name: Lint Frontend
+        run: npm --prefix apps/web run lint
+
+      - name: Typecheck Frontend
+        run: npm --prefix apps/web run typecheck
 
       - name: Verify Design Locks (0 em-dashes, 2 font families)
         run: npm --prefix apps/web run check:locks
@@ -52,15 +58,19 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-          cache-dependency-path: apps/api/package.json
+          cache-dependency-path: apps/api/package-lock.json
 
       - name: Install Backend Dependencies
-        run: npm --prefix apps/api install
+        run: npm --prefix apps/api ci
 
-      - name: Run Backend Tests
-        run: npm --prefix apps/api test
+      - name: Run Backend Unit Tests
+        run: npm --prefix apps/api run test:unit
+
+      - name: Run Backend Integration Tests
+        run: npm --prefix apps/api run test:integration
         env:
-          MONGO_URI: mongodb://localhost:27017/yashmeen-test
+          TEST_MONGO_URI: mongodb://localhost:27017/yashmeen-test
           JWT_SECRET: ci-test-secret-key-1234567890
           ADMIN_KEY: test-admin-key
           PORT: 8000
+          RATE_LIMIT_BYPASS: 'true'

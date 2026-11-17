@@ -6,19 +6,13 @@ import "lenis/dist/lenis.css";
 export let lenisInstance = null;
 
 export function initLenis(reducedMotion) {
-  if (reducedMotion) {
-    lenisInstance = null;
-    if (window.__lenis) window.__lenis = null;
-    return { lenis: null, cleanup: () => {} };
-  }
-
   const lenis = new Lenis({
-    lerp: 0.055,
+    lerp: reducedMotion ? 0.14 : 0.055,
     orientation: "vertical",
     gestureOrientation: "vertical",
     smoothWheel: true,
-    wheelMultiplier: 0.92,
-    touchMultiplier: 1.2,
+    wheelMultiplier: reducedMotion ? 0.78 : 0.92,
+    touchMultiplier: reducedMotion ? 1 : 1.2,
     infinite: false,
     autoResize: true,
     respectReducedMotion: false,
@@ -52,7 +46,7 @@ export function initLenis(reducedMotion) {
     const target = document.querySelector(href);
     if (target) {
       e.preventDefault();
-      lenis.scrollTo(target, { offset: -80, duration: 1.2 });
+      lenis.scrollTo(target, { offset: -80, duration: reducedMotion ? 0.55 : 1.2 });
     }
   };
   document.addEventListener("click", handleAnchorClick);

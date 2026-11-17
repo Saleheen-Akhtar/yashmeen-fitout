@@ -1,0 +1,1983 @@
+{
+ "url": "http://127.0.0.1:3000",
+ "at": "2026-11-14T14:40:41.174Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 10,
+   "filled": [
+    1,
+    0.44,
+    0.4,
+    0.86,
+    0.41,
+    0.32,
+    0.54,
+    0.38,
+    0.43,
+    0.68
+   ],
+   "motion": {
+    "elements": 63,
+    "css": 1,
+    "transitions": 6,
+    "scripted": 56,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 8497,
+     "screens": 9.4,
+     "words": 765,
+     "img": 9,
+     "video": 0,
+     "canvas": 1,
+     "svg": 3,
+     "sections": 7,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 9,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "hero-aperture-v2.webp",
+      "studio.jpg",
+      "hero-aperture-v2.webp",
+      "work-oh-office.jpg",
+      "Office-fit-out.jpg",
+      "joinery-bay.jpg",
+      "hero-editorial.webp",
+      "studio.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "🖐"
+     ]
+    },
+    "hero": {
+     "text": "From brief to built.",
+     "words": 4,
+     "chars": 20,
+     "lines": 2,
+     "size": 161.3,
+     "vw": 11.2,
+     "font": "Plus Jakarta Sans",
+     "weight": 700,
+     "tracking": -0.04,
+     "leading": 0.94,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "center",
+     "position": "center",
+     "widthRatio": 0.76,
+     "top": 236,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "From brief to built.",
+     "words": 4,
+     "lines": 2,
+     "size": 161.3,
+     "font": "Plus Jakarta Sans"
+    },
+    "headings": [
+     {
+      "text": "From brief to built.",
+      "words": 4,
+      "chars": 20,
+      "lines": 2,
+      "size": 161.3,
+      "vw": 11.2,
+      "font": "Plus Jakarta Sans",
+      "weight": 700,
+      "tracking": -0.04,
+      "leading": 0.94,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.76,
+      "top": 236,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "DESIGN TO DELIVERY",
+      "words": 3,
+      "chars": 18,
+      "lines": 1,
+      "size": 108,
+      "vw": 7.5,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.95,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.96,
+      "top": 1099,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "(06)",
+      "words": 1,
+      "chars": 4,
+      "lines": 1,
+      "size": 86.4,
+      "vw": 6,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.04,
+      "leading": 0.9,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.11,
+      "top": 2669,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "SELECTED WORK",
+      "words": 2,
+      "chars": 13,
+      "lines": 1,
+      "size": 60.5,
+      "vw": 4.2,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.34,
+      "top": 2734,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "One team carries your project from the first brief to the final handover.",
+      "words": 13,
+      "chars": 73,
+      "lines": 3,
+      "size": 46.1,
+      "vw": 3.2,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.025,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.49,
+      "top": 4132,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "“",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 115.2,
+      "vw": 8,
+      "font": "Georgia",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 0.9,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.08,
+      "top": 5989,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "From the initial meeting I was impressed by the genuine enthusiasm and willingness to engage with the ideas in our brief. The team engendered total confidence. They cared about the project; throughout",
+      "words": 44,
+      "chars": 293,
+      "lines": 6,
+      "size": 37.4,
+      "vw": 2.6,
+      "font": "Plus Jakarta Sans",
+      "weight": 450,
+      "tracking": -0.025,
+      "leading": 1.32,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.64,
+      "top": 6012,
+      "tag": "blockquote",
+      "kind": "statement"
+     },
+     {
+      "text": "FROM BRIEF TO BUILT.",
+      "words": 4,
+      "chars": 20,
+      "lines": 2,
+      "size": 108,
+      "vw": 7.5,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.95,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.58,
+      "top": 6800,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 8,
+     "maxLines": 6,
+     "over2Lines": 1,
+     "statements": 1,
+     "centered": 2,
+     "medianWords": 3,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Plus Jakarta Sans",
+       "share": 1,
+       "mono": false
+      },
+      {
+       "family": "Georgia",
+       "share": 0,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      22,
+      26,
+      37,
+      46,
+      61,
+      86,
+      108,
+      115,
+      161
+     ],
+     "sizeCount": 19,
+     "notLoaded": [],
+     "body": {
+      "font": "Plus Jakarta Sans",
+      "size": 14,
+      "leading": 1.55,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 7.4
+     },
+     "measureChars": 71,
+     "max": {
+      "size": 161.3,
+      "vw": 11.2,
+      "font": "Plus Jakarta Sans",
+      "text": "From"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 24,
+     "microLabelShare": 0.119,
+     "microSamples": [
+      "DUBAI · DESIGN / ENGINEERING / FIT-OUT",
+      "Al Quoz atelier",
+      "(ONE TEAM. EVERY STAGE.)",
+      "(CORE DISCIPLINES & SERVICES)",
+      "(04 Disciplines)",
+      "(SPACES WE HAVE MADE)"
+     ],
+     "upperShare": 0.24,
+     "centerShare": 0.09,
+     "smallText": 22
+    },
+    "eyebrows": [
+     {
+      "text": "DUBAI · DESIGN / ENGINEERING / FIT-OUT",
+      "above": "From brief to built.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 11.8,
+      "top": 183
+     },
+     {
+      "text": "(ONE TEAM. EVERY STAGE.)",
+      "above": "DESIGN TO DELIVERY",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 1062
+     },
+     {
+      "text": "(SPACES WE HAVE MADE)",
+      "above": "SELECTED WORK",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 2697
+     },
+     {
+      "text": "CLIENT NOTE",
+      "above": "“",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10.2,
+      "top": 5914
+     },
+     {
+      "text": "(START YOUR COMMISSION)",
+      "above": "FROM BRIEF TO BUILT.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 6764
+     }
+    ],
+    "numbered": [
+     {
+      "text": "(06)",
+      "size": 86.4,
+      "top": 2669
+     },
+     {
+      "text": "01",
+      "size": 11,
+      "top": 3522
+     },
+     {
+      "text": "02",
+      "size": 11,
+      "top": 3538
+     },
+     {
+      "text": "03",
+      "size": 11,
+      "top": 3544
+     },
+     {
+      "text": "05",
+      "size": 11,
+      "top": 3542
+     },
+     {
+      "text": "06",
+      "size": 11,
+      "top": 3537
+     },
+     {
+      "text": "(01)",
+      "size": 13,
+      "top": 4957
+     },
+     {
+      "text": "(02)",
+      "size": 13,
+      "top": 5058
+     },
+     {
+      "text": "(03)",
+      "size": 13,
+      "top": 5160
+     },
+     {
+      "text": "(04)",
+      "size": 13,
+      "top": 5262
+     },
+     {
+      "text": "(05)",
+      "size": 13,
+      "top": 5364
+     },
+     {
+      "text": "(06)",
+      "size": 13,
+      "top": 5466
+     }
+    ],
+    "color": {
+     "bodyBg": "#fcfcfc",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 0.99
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#111111",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 0.07
+       }
+      },
+      {
+       "color": "#211c17",
+       "top": 0,
+       "hsl": {
+        "h": 30,
+        "s": 0.18,
+        "l": 0.11
+       }
+      },
+      {
+       "color": "#f1f0ee",
+       "top": 1288,
+       "hsl": {
+        "h": 40,
+        "s": 0.1,
+        "l": 0.94
+       }
+      },
+      {
+       "color": "#000000",
+       "top": 2906,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 0
+       }
+      },
+      {
+       "color": "#11110f",
+       "top": 5842,
+       "hsl": {
+        "h": 60,
+        "s": 0.06,
+        "l": 0.06
+       }
+      },
+      {
+       "color": "#fcfcfc",
+       "top": 7365,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 0.99
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#545454",
+       "share": 0.59
+      },
+      {
+       "color": "#080807",
+       "share": 0.16
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.1
+      },
+      {
+       "color": "#f5f2eb",
+       "share": 0.06
+      },
+      {
+       "color": "#f3ede8",
+       "share": 0.04
+      }
+     ],
+     "button": {
+      "bg": "#080807",
+      "hsl": {
+       "h": 60,
+       "s": 0.07,
+       "l": 0.03
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 14,
+     "inHero": 6,
+     "radius": "pill",
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 12,
+     "heroLabels": [
+      "SKIP TO CONTENT",
+      "START A PROJECT ↗",
+      "Decline",
+      "Accept"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 5,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "div.editorial-card → rgba(0, 0, 0, 0.85) 0px 24px 48px -12px",
+      "div.editorial-card → rgba(0, 0, 0, 0.85) 0px 24px 48px -12px",
+      "div.editorial-card → rgba(0, 0, 0, 0.85) 0px 24px 48px -12px",
+      "div.editorial-card → rgba(0, 0, 0, 0.85) 0px 24px 48px -12px"
+     ],
+     "gradients": 0,
+     "scrims": 10,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 19,
+     "hairlineSamples": [
+      "header.site-header.is-homepage 1440px",
+      "div#services-live 1376px",
+      "section#works.works-bento-section.wrap 1440px",
+      "div.works-bento-header 1376px",
+      "section#process.process-editorial-section.wrap 1440px"
+     ],
+     "outlinedBoxes": 5,
+     "dashed": 1,
+     "blurred": 2,
+     "roundedBoxes": 1,
+     "boxRadius": 8,
+     "squareMedia": 1,
+     "roundedMedia": 6,
+     "mediaRadius": 4,
+     "textShadow": 4,
+     "cardRows": [
+      {
+       "count": 4,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 2196
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 1
+     }
+    ],
+    "nav": {
+     "links": 8,
+     "fixed": true,
+     "height": 58,
+     "floatingPill": false,
+     "blur": true
+    },
+    "fontsLoaded": [
+     "plus jakarta sans"
+    ]
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 11,
+   "filled": [
+    1,
+    0.74,
+    0.48,
+    0.85,
+    0.74,
+    0.78,
+    0.74,
+    0.39,
+    0.54,
+    0.36,
+    0.68
+   ],
+   "motion": {
+    "elements": 56,
+    "css": 0,
+    "transitions": 2,
+    "scripted": 54,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 10654,
+     "screens": 10.4,
+     "words": 749,
+     "img": 9,
+     "video": 0,
+     "canvas": 1,
+     "svg": 3,
+     "sections": 7,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 9,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "hero-aperture-v2.webp",
+      "studio.jpg",
+      "hero-aperture-v2.webp",
+      "work-oh-office.jpg",
+      "Office-fit-out.jpg",
+      "joinery-bay.jpg",
+      "hero-editorial.webp",
+      "studio.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "🖐"
+     ]
+    },
+    "hero": {
+     "text": "From brief to built.",
+     "words": 4,
+     "chars": 20,
+     "lines": 2,
+     "size": 86,
+     "vw": 11.2,
+     "font": "Plus Jakarta Sans",
+     "weight": 700,
+     "tracking": -0.04,
+     "leading": 0.94,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "center",
+     "position": "center",
+     "widthRatio": 0.88,
+     "top": 326,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "From brief to built.",
+     "words": 4,
+     "lines": 2,
+     "size": 86,
+     "font": "Plus Jakarta Sans"
+    },
+    "headings": [
+     {
+      "text": "From brief to built.",
+      "words": 4,
+      "chars": 20,
+      "lines": 2,
+      "size": 86,
+      "vw": 11.2,
+      "font": "Plus Jakarta Sans",
+      "weight": 700,
+      "tracking": -0.04,
+      "leading": 0.94,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.88,
+      "top": 326,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "DESIGN TO DELIVERY",
+      "words": 3,
+      "chars": 18,
+      "lines": 1,
+      "size": 57.6,
+      "vw": 7.5,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.95,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.95,
+      "top": 1057,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "(06)",
+      "words": 1,
+      "chars": 4,
+      "lines": 1,
+      "size": 46.1,
+      "vw": 6,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.04,
+      "leading": 0.9,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.11,
+      "top": 2714,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "SELECTED WORK",
+      "words": 2,
+      "chars": 13,
+      "lines": 1,
+      "size": 35.2,
+      "vw": 4.6,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.37,
+      "top": 2761,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "One team carries your project from the first brief to the final handover.",
+      "words": 13,
+      "chars": 73,
+      "lines": 2,
+      "size": 28.8,
+      "vw": 3.8,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.025,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.95,
+      "top": 7913,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "“",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 64,
+      "vw": 8.3,
+      "font": "Georgia",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 0.9,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.08,
+      "top": 8550,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "FROM BRIEF TO BUILT.",
+      "words": 4,
+      "chars": 20,
+      "lines": 2,
+      "size": 57.6,
+      "vw": 7.5,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.95,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 9078,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 7,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 2,
+     "medianWords": 3,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Plus Jakarta Sans",
+       "share": 1,
+       "mono": false
+      },
+      {
+       "family": "Georgia",
+       "share": 0,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      22,
+      29,
+      35,
+      46,
+      58,
+      64,
+      86
+     ],
+     "sizeCount": 17,
+     "notLoaded": [],
+     "body": {
+      "font": "Plus Jakarta Sans",
+      "size": 14,
+      "leading": 1.55,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 7.4
+     },
+     "measureChars": 91,
+     "max": {
+      "size": 86,
+      "vw": 11.2,
+      "font": "Plus Jakarta Sans",
+      "text": "From"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 19,
+     "microLabelShare": 0.079,
+     "microSamples": [
+      "DUBAI · DESIGN / ENGINEERING / FIT-OUT",
+      "Al Quoz atelier",
+      "(ONE TEAM. EVERY STAGE.)",
+      "(CORE DISCIPLINES & SERVICES)",
+      "(04 Disciplines)",
+      "(SPACES WE HAVE MADE)"
+     ],
+     "upperShare": 0.29,
+     "centerShare": 0.1,
+     "smallText": 23
+    },
+    "eyebrows": [
+     {
+      "text": "DUBAI · DESIGN / ENGINEERING / FIT-OUT",
+      "above": "From brief to built.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10,
+      "top": 290
+     },
+     {
+      "text": "(ONE TEAM. EVERY STAGE.)",
+      "above": "DESIGN TO DELIVERY",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 1020
+     },
+     {
+      "text": "(SPACES WE HAVE MADE)",
+      "above": "SELECTED WORK",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 2724
+     },
+     {
+      "text": "CLIENT NOTE",
+      "above": "“",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10.2,
+      "top": 8494
+     },
+     {
+      "text": "(START YOUR COMMISSION)",
+      "above": "FROM BRIEF TO BUILT.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 9041
+     }
+    ],
+    "numbered": [
+     {
+      "text": "(06)",
+      "size": 46.1,
+      "top": 2714
+     },
+     {
+      "text": "(01)",
+      "size": 13,
+      "top": 7278
+     },
+     {
+      "text": "(02)",
+      "size": 13,
+      "top": 7358
+     },
+     {
+      "text": "(03)",
+      "size": 13,
+      "top": 7460
+     },
+     {
+      "text": "(04)",
+      "size": 13,
+      "top": 7562
+     },
+     {
+      "text": "(05)",
+      "size": 13,
+      "top": 7664
+     },
+     {
+      "text": "(06)",
+      "size": 13,
+      "top": 7766
+     }
+    ],
+    "color": {
+     "bodyBg": "#fcfcfc",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 0.99
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#111111",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 0.07
+       }
+      },
+      {
+       "color": "#211c17",
+       "top": 0,
+       "hsl": {
+        "h": 30,
+        "s": 0.18,
+        "l": 0.11
+       }
+      },
+      {
+       "color": "#f1f0ee",
+       "top": 1160,
+       "hsl": {
+        "h": 40,
+        "s": 0.1,
+        "l": 0.94
+       }
+      },
+      {
+       "color": "#11110f",
+       "top": 8456,
+       "hsl": {
+        "h": 60,
+        "s": 0.06,
+        "l": 0.06
+       }
+      },
+      {
+       "color": "#fcfcfc",
+       "top": 9458,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 0.99
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#545454",
+       "share": 0.63
+      },
+      {
+       "color": "#080807",
+       "share": 0.19
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.09
+      },
+      {
+       "color": "#f5f2eb",
+       "share": 0.06
+      },
+      {
+       "color": "#f5f2ea",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#080807",
+      "hsl": {
+       "h": 60,
+       "s": 0.07,
+       "l": 0.03
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 14,
+     "inHero": 6,
+     "radius": "pill",
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 12,
+     "heroLabels": [
+      "SKIP TO CONTENT",
+      "START A PROJECT ↗",
+      "Decline",
+      "Accept"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 1,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 19,
+     "hairlineSamples": [
+      "header.site-header.is-homepage 768px",
+      "div#services-live 728px",
+      "section#works.works-bento-section.wrap 768px",
+      "div.works-bento-header 728px",
+      "section#process.process-editorial-section.wrap 768px"
+     ],
+     "outlinedBoxes": 5,
+     "dashed": 1,
+     "blurred": 2,
+     "roundedBoxes": 1,
+     "boxRadius": 8,
+     "squareMedia": 1,
+     "roundedMedia": 9,
+     "mediaRadius": 4,
+     "textShadow": 4,
+     "cardRows": [
+      {
+       "count": 4,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 2159
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.9
+     }
+    ],
+    "nav": {
+     "links": 1,
+     "fixed": true,
+     "height": 58,
+     "floatingPill": false,
+     "blur": true
+    },
+    "fontsLoaded": [
+     "plus jakarta sans"
+    ]
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 12,
+   "filled": [
+    1,
+    0.72,
+    0.61,
+    0.72,
+    0.71,
+    0.74,
+    0.74,
+    0.5,
+    0.54,
+    0.54,
+    0.68,
+    0.31
+   ],
+   "motion": {
+    "elements": 61,
+    "css": 0,
+    "transitions": 2,
+    "scripted": 59,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 11350,
+     "screens": 13.4,
+     "words": 752,
+     "img": 9,
+     "video": 0,
+     "canvas": 1,
+     "svg": 3,
+     "sections": 7,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 9,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "hero-aperture-v2.webp",
+      "studio.jpg",
+      "hero-aperture-v2.webp",
+      "work-oh-office.jpg",
+      "Office-fit-out.jpg",
+      "joinery-bay.jpg",
+      "hero-editorial.webp",
+      "studio.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "🖐"
+     ]
+    },
+    "hero": {
+     "text": "From brief to built.",
+     "words": 4,
+     "chars": 20,
+     "lines": 2,
+     "size": 44.5,
+     "vw": 11.4,
+     "font": "Plus Jakarta Sans",
+     "weight": 700,
+     "tracking": -0.03,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "center",
+     "position": "center",
+     "widthRatio": 0.87,
+     "top": 308,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "From brief to built.",
+     "words": 4,
+     "lines": 2,
+     "size": 44.5,
+     "font": "Plus Jakarta Sans"
+    },
+    "headings": [
+     {
+      "text": "From brief to built.",
+      "words": 4,
+      "chars": 20,
+      "lines": 2,
+      "size": 44.5,
+      "vw": 11.4,
+      "font": "Plus Jakarta Sans",
+      "weight": 700,
+      "tracking": -0.03,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.87,
+      "top": 308,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "DESIGN TO DELIVERY",
+      "words": 3,
+      "chars": 18,
+      "lines": 2,
+      "size": 54.4,
+      "vw": 13.9,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.95,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 981,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "SELECTED WORK",
+      "words": 2,
+      "chars": 13,
+      "lines": 1,
+      "size": 35.2,
+      "vw": 9,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.73,
+      "top": 3262,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "(06)",
+      "words": 1,
+      "chars": 4,
+      "lines": 1,
+      "size": 35.1,
+      "vw": 9,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.04,
+      "leading": 0.9,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.16,
+      "top": 3376,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "One team carries your project from the first brief to the final handover.",
+      "words": 13,
+      "chars": 73,
+      "lines": 3,
+      "size": 28.8,
+      "vw": 7.4,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.025,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.9,
+      "top": 7646,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "“",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 64,
+      "vw": 16.4,
+      "font": "Georgia",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 0.7,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.79,
+      "top": 8412,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "FROM BRIEF TO BUILT.",
+      "words": 4,
+      "chars": 20,
+      "lines": 2,
+      "size": 54.4,
+      "vw": 13.9,
+      "font": "Plus Jakarta Sans",
+      "weight": 500,
+      "tracking": -0.035,
+      "leading": 0.95,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.79,
+      "top": 9159,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 7,
+     "maxLines": 3,
+     "over2Lines": 1,
+     "statements": 0,
+     "centered": 2,
+     "medianWords": 3,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Plus Jakarta Sans",
+       "share": 1,
+       "mono": false
+      },
+      {
+       "family": "Georgia",
+       "share": 0,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      22,
+      29,
+      35,
+      45,
+      54,
+      64
+     ],
+     "sizeCount": 17,
+     "notLoaded": [],
+     "body": {
+      "font": "Plus Jakarta Sans",
+      "size": 13.5,
+      "leading": 1.45,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": null
+     },
+     "measureChars": 44,
+     "max": {
+      "size": 64,
+      "vw": 16.4,
+      "font": "Georgia",
+      "text": "“"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 19,
+     "microLabelShare": 0.079,
+     "microSamples": [
+      "DUBAI · DESIGN / ENGINEERING / FIT-OUT",
+      "Al Quoz atelier",
+      "(ONE TEAM. EVERY STAGE.)",
+      "(CORE DISCIPLINES & SERVICES)",
+      "(04 Disciplines)",
+      "(SPACES WE HAVE MADE)"
+     ],
+     "upperShare": 0.29,
+     "centerShare": 0.1,
+     "smallText": 24
+    },
+    "eyebrows": [
+     {
+      "text": "DUBAI · DESIGN / ENGINEERING / FIT-OUT",
+      "above": "From brief to built.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 9,
+      "top": 265
+     },
+     {
+      "text": "(ONE TEAM. EVERY STAGE.)",
+      "above": "DESIGN TO DELIVERY",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 944
+     },
+     {
+      "text": "(SPACES WE HAVE MADE)",
+      "above": "SELECTED WORK",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 3225
+     },
+     {
+      "text": "CLIENT NOTE",
+      "above": "“",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 10.2,
+      "top": 8357
+     },
+     {
+      "text": "(START YOUR COMMISSION)",
+      "above": "FROM BRIEF TO BUILT.",
+      "upper": true,
+      "tracked": true,
+      "mono": false,
+      "pill": false,
+      "size": 13,
+      "top": 9122
+     }
+    ],
+    "numbered": [
+     {
+      "text": "(06)",
+      "size": 35.1,
+      "top": 3376
+     },
+     {
+      "text": "(01)",
+      "size": 13,
+      "top": 6830
+     },
+     {
+      "text": "(02)",
+      "size": 13,
+      "top": 6953
+     },
+     {
+      "text": "(03)",
+      "size": 13,
+      "top": 7075
+     },
+     {
+      "text": "(04)",
+      "size": 13,
+      "top": 7198
+     },
+     {
+      "text": "(05)",
+      "size": 13,
+      "top": 7321
+     },
+     {
+      "text": "(06)",
+      "size": 13,
+      "top": 7461
+     }
+    ],
+    "color": {
+     "bodyBg": "#fcfcfc",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 0.99
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#111111",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 0.07
+       }
+      },
+      {
+       "color": "#211c17",
+       "top": 0,
+       "hsl": {
+        "h": 30,
+        "s": 0.18,
+        "l": 0.11
+       }
+      },
+      {
+       "color": "#f1f0ee",
+       "top": 1132,
+       "hsl": {
+        "h": 40,
+        "s": 0.1,
+        "l": 0.94
+       }
+      },
+      {
+       "color": "#11110f",
+       "top": 8333,
+       "hsl": {
+        "h": 60,
+        "s": 0.06,
+        "l": 0.06
+       }
+      },
+      {
+       "color": "#fcfcfc",
+       "top": 9559,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 0.99
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#545454",
+       "share": 0.63
+      },
+      {
+       "color": "#080807",
+       "share": 0.2
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.1
+      },
+      {
+       "color": "#f5f2eb",
+       "share": 0.06
+      },
+      {
+       "color": "#f5f2ea",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#080807",
+      "hsl": {
+       "h": 60,
+       "s": 0.07,
+       "l": 0.03
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 17,
+     "inHero": 9,
+     "radius": "pill",
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 12,
+     "heroLabels": [
+      "SKIP TO CONTENT",
+      "START A PROJECT ↗",
+      "Call",
+      "WhatsApp",
+      "Enquire"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 2,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 20,
+     "hairlineSamples": [
+      "header.site-header.is-homepage 390px",
+      "div#services-live 350px",
+      "section#works.works-bento-section.wrap 390px",
+      "div.works-bento-header 350px",
+      "section#process.process-editorial-section.wrap 390px"
+     ],
+     "outlinedBoxes": 5,
+     "dashed": 1,
+     "blurred": 3,
+     "roundedBoxes": 1,
+     "boxRadius": 8,
+     "squareMedia": 1,
+     "roundedMedia": 9,
+     "mediaRadius": 4,
+     "textShadow": 4,
+     "cardRows": [
+      {
+       "count": 4,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 2252
+      }
+     ]
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 1
+     }
+    ],
+    "nav": {
+     "links": 1,
+     "fixed": true,
+     "height": 58,
+     "floatingPill": false,
+     "blur": true
+    },
+    "fontsLoaded": [
+     "plus jakarta sans"
+    ]
+   },
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "headline-lines",
+   "width": 1440,
+   "message": "2 headline(s) wrap past two lines at 1440px: \"One team carries your project from the first bri\" → 3 lines (13 words, 46.1px); \"From the initial meeting I was impressed by the \" → 6 lines (44 words, 37.4px, a paragraph set above 36px)",
+   "fix": "Cut words first (a headline is a title, not a sentence). Then give it a wider measure. Lower the size only as a last resort and never below the scale you chose. A real statement paragraph belongs in a <p> or <blockquote> at 36px or less."
+  },
+  {
+   "level": "FAIL",
+   "id": "eyebrow",
+   "width": 1440,
+   "message": "5 eyebrow/kicker label(s) above headings: \"DUBAI · DESIGN / ENGINEERING / FIT-OUT\" above \"From brief to built.\"; \"(ONE TEAM. EVERY STAGE.)\" above \"DESIGN TO DELIVERY\"; \"(SPACES WE HAVE MADE)\" above \"SELECTED WORK\"; \"CLIENT NOTE\" above \"“\"; \"(START YOUR COMMISSION)\" above \"FROM BRIEF TO BUILT.\"",
+   "fix": "Delete them. If the label carried real information, fold it into the headline or the supporting sentence.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "numbering",
+   "width": 1440,
+   "message": "Decorative index numbers: \"(06)\", \"01\", \"02\", \"03\", \"05\", \"06\"",
+   "fix": "Remove them. If order truly matters, write it into the words (\"First, …\") or use a real <ol>.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "micro-label",
+   "width": 1440,
+   "message": "24 tiny uppercase letter-spaced labels (e.g. \"DUBAI · DESIGN / ENGINEERING / FIT-OUT\", \"Al Quoz atelier\", \"(ONE TEAM. EVERY STAGE.)\", \"(CORE DISCIPLINES & SERVICES)\").",
+   "fix": "Use sentence-case text at a readable size, or delete the label.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "emoji",
+   "width": 1440,
+   "message": "Emoji in the page: 🖐",
+   "fix": "Remove. Use words or real imagery.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "shadow",
+   "width": 1440,
+   "message": "5 box-shadow(s) on elements at rest: div.editorial-card → rgba(0, 0, 0, 0.85) 0px 24px 48px -12px | div.editorial-card → rgba(0, 0, 0, 0.85) 0px 24px 48px -12px | div.editorial-card → rgba(0, 0, 0, 0.85) 0px 24px 48px -12px",
+   "fix": "Remove. Separate surfaces with a tone step or space. Shadows are for things that really float (menus, dialogs, sticky bars)."
+  },
+  {
+   "level": "FAIL",
+   "id": "text-shadow",
+   "width": 1440,
+   "message": "4 text-shadow(s).",
+   "fix": "Remove; fix legibility with a scrim or a different crop.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "hairline",
+   "width": 1440,
+   "message": "19 thin rule(s)/divider line(s): header.site-header.is-homepage 1440px | div#services-live 1376px | section#works.works-bento-section.wrap 1440px | div.works-bento-header 1376px",
+   "fix": "Delete. Separate with space, a tone change, or scale. Lines are only for real tables and form fields.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "outlined-box",
+   "width": 1440,
+   "message": "5 boxes drawn with a 1px outline.",
+   "fix": "Define a surface by its fill (one tone step from the page) or leave the content unboxed.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "dashed",
+   "width": 1440,
+   "message": "1 dashed/dotted border(s).",
+   "fix": "Remove unless it is a real drop zone.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "glass",
+   "width": 1440,
+   "message": "2 backdrop-blur surfaces.",
+   "fix": "One blurred sticky bar at most; glass cards are a tell.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "palette-cream",
+   "width": 1440,
+   "message": "Yellow-cream background (text #f5f2eb, text #f3ede8).",
+   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "size-count",
+   "width": 1440,
+   "message": "19 different font sizes (9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 26, 37, 46, 61, 86, 108, 115, 161).",
+   "fix": "A page needs about five: display, heading, lead, body, small.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "body-size",
+   "width": 1440,
+   "message": "Body text is 14px (the size most of the running text is set in).",
+   "fix": "Body copy 16–20px. Map small sizes from blueprints onto your body step.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "no-footage",
+   "width": 1440,
+   "message": "No video anywhere on the page.",
+   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
+  },
+  {
+   "level": "FAIL",
+   "id": "small-text",
+   "width": 1440,
+   "message": "22 text blocks under 13px.",
+   "fix": "Nothing meant to be read goes below 13px.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "covered-text",
+   "width": 1440,
+   "message": "Large text lies under another element at some scroll position: \"(06)\" (screen 3, 100% hidden); \"Luxury Interior Make Over\" (screen 4, 25% hidden); \"TV Wall Decoration & Design\" (screen 4, 50% hidden); \"Fluted WPC Wall Panel Unit\" (screen 4, 50% hidden)",
+   "fix": "Nothing may sit on top of a headline or statement. Move the picture, shorten the pinned run, or raise the text above it (z-index) and give it a ground.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "measure",
+   "width": 768,
+   "message": "Longest paragraph runs about 91 characters per line.",
+   "fix": "Cap paragraphs at 45–75 characters (max-width: 60ch)."
+  },
+  {
+   "level": "FAIL",
+   "id": "headline-lines",
+   "width": 390,
+   "message": "1 headline(s) wrap past two lines at 390px: \"One team carries your project from the first bri\" → 3 lines (13 words, 28.8px)",
+   "fix": "Cut words first (a headline is a title, not a sentence). Then give it a wider measure. Lower the size only as a last resort and never below the scale you chose. A real statement paragraph belongs in a <p> or <blockquote> at 24px or less."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "C:\\Users\\sahil\\Projects\\IT\\Dan\\.taste-skill\\inspect\\desktop-fold.jpg",
+   "pages": [
+    "C:\\Users\\sahil\\Projects\\IT\\Dan\\.taste-skill\\inspect\\desktop-page-01.jpg",
+    "C:\\Users\\sahil\\Projects\\IT\\Dan\\.taste-skill\\inspect\\desktop-page-02.jpg",
+    "C:\\Users\\sahil\\Projects\\IT\\Dan\\.taste-skill\\inspect\\desktop-page-03.jpg"
+   ]
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "C:\\Users\\sahil\\Projects\\IT\\Dan\\.taste-skill\\inspect\\tablet-fold.jpg",
+   "pages": [
+    "C:\\Users\\sahil\\Projects\\IT\\Dan\\.taste-skill\\inspect\\tablet-page-01.jpg",
+    "C:\\Users\\sahil\\Projects\\IT\\Dan\\.taste-skill\\inspect\\tablet-page-02.jpg"
+   ]
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "C:\\Users\\sahil\\Projects\\IT\\Dan\\.taste-skill\\inspect\\mobile-fold.jpg",
+   "pages": [
+    "C:\\Users\\sahil\\Projects\\IT\\Dan\\.taste-skill\\inspect\\mobile-page-01.jpg",
+    "C:\\Users\\sahil\\Projects\\IT\\Dan\\.taste-skill\\inspect\\mobile-page-02.jpg"
+   ]
+  }
+ ]
+}

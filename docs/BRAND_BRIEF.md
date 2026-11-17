@@ -2,6 +2,8 @@
 
 Comprehensive brand identity, positioning, design tokens, and voice architecture for **Yashmeen Future Building & Fit-Out Contracting Co. L.L.C**.
 
+Historical planning reference: use `../AGENT.md` and the active CSS tokens for current implementation/design decisions. Office details, certifications, delivery guarantees, project claims and image rights in this draft still require authoritative business confirmation.
+
 ---
 
 ## 1. Brand Essence & Company Profile

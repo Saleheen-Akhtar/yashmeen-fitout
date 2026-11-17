@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const base='http://127.0.0.1:8000/api';
+const pj=await(await fetch(base+'/project/getAll')).json();
+const gj=await(await fetch(base+'/gallery/getAll')).json();
+const details=await(await fetch(base+'/webDetails/details')).json();
+const check=value=>{ if(/^https?:/i.test(value))return {external:true};const clean=value.replace(/^\/?uploads\//,'').replace(/^\/+/, '');return {exists:fs.existsSync(path.resolve('apps/api/uploads',clean))}; };
+const projects=(pj.data||[]).flatMap(p=>(p.images||[]).map(check));
+const gallery=(gj.data||[]).map(g=>check(g.photo||''));
+const summary={projects:{records:pj.data.length,images:projects.length,missing:projects.filter(x=>x.exists===false).length},gallery:{records:gj.data.length,images:gallery.length,missing:gallery.filter(x=>x.exists===false).length},contact:{mobile:details.data?.mobile,email:details.data?.email,address:details.data?.address},uploadPaths:{rootCommandUpload:path.resolve('uploads/projects'),servedUpload:path.resolve('apps/api/uploads/projects')}};
+fs.writeFileSync('audit/content-audit.json',JSON.stringify(summary,null,2));
+console.log(JSON.stringify(summary,null,2));

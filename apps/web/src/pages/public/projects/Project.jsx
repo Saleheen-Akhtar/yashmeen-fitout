@@ -1,23 +1,17 @@
+import useWebsiteContent from "../../../hooks/useWebsiteContent";
 import "../../../styles/projects.css";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { FiMaximize2 } from "react-icons/fi";
-import { categoryAPI, projectAPI, itemPath } from "../../../services/api"; // adjust the path to your project
+import { categoryAPI, projectAPI } from "../../../services/api";
+import { resolveMediaUrl, mediaFallback } from "../../../lib/media";
+import { categoryLabel as formatCategory } from "../../../lib/mediaLabels";
 import { subscribeCacheInvalidation } from "../../../lib/publicCache";
+import { getPrerenderData } from "../../../lib/prerenderData";
 
-const GALLERY_HERO_BG_IMAGE = "/static/hero-bg.jpg";
 
 // If your backend paginates (e.g. default 10 per page), ask for more here.
 // Remove or rename the keys if your API uses different query params.
-const FALLBACK_PROJECT_IMAGES = [
-  "/static/work-oh-office.jpg",
-  "/static/work-myrtle.jpg",
-  "/static/work-clifton.jpg",
-  "/static/work-runic.jpg",
-  "/static/work-stanley.jpg",
-  "/static/work-samford.jpg",
-];
-
 const FETCH_PARAMS = { limit: 1000, page: 1 };
 
 // Works with both `{ data: { data: [...] } }` and `{ data: [...] }` responses
@@ -48,7 +42,7 @@ const getCategoryId = (item) => {
 
 // Category display name: categoryName / name / title
 const getCategoryName = (c) =>
-  c?.categoryName ?? c?.category_name ?? c?.name ?? c?.title ?? "";
+  formatCategory(c?.categoryName ?? c?.category_name ?? c?.name ?? c?.title ?? "");
 
 // The photo field may be called photo / image / images / img ... (string or array)
 const getPhotoPath = (g) => {
@@ -60,12 +54,7 @@ const getPhotoPath = (g) => {
 };
 
 // Absolute / local static URLs are used as-is; stored paths are resolved via itemPath
-const photoUrl = (path = "") => {
-  if (!path) return "";
-  return /^(https?:|data:|blob:|\/static\/|\/images\/|\/uploads\/)/i.test(path)
-    ? path
-    : `${itemPath ?? ""}/${String(path).replace(/^\/+/, "")}`;
-};
+const photoUrl = resolveMediaUrl;
 
 // Only an explicit "off" hides a record; a missing/odd status value does not
 const isOff = (status) =>
@@ -89,10 +78,9 @@ const isOff = (status) =>
    6. An empty result is NEVER cached, so one bad response cannot leave the
       page blank until the version changes.
 ----------------------------------------------- */
-const CACHE_KEY = "photogallery:data:v5";
+const CACHE_KEY = "projects:data:v6";
 const OLD_CACHE_KEYS = [
   "photogallery:data:v1",
-  "photogallery:data:v2",
   "photogallery:data:v3",
   "photogallery:data:v4",
 ];
@@ -111,6 +99,22 @@ try {
 }
 
 function readCache() {
+  const prerenderedProjects = getPrerenderData().projects;
+  if (Array.isArray(prerenderedProjects)) {
+    const categories = [...new Map(
+      prerenderedProjects
+        .map((project) => project.categoryId)
+        .filter((category) => category && typeof category === "object")
+        .map((category) => [String(category._id), category]),
+    ).values()];
+    const photos = prerenderedProjects.map((project) => ({
+      id: String(getId(project)),
+      title: project.title ?? project.name ?? "",
+      categoryId: String(getCategoryId(project) ?? ""),
+      src: getPhotoPath(project) ? photoUrl(getPhotoPath(project)) : "",
+    }));
+    return { categories, photos, version: "prerender", savedAt: Date.now() };
+  }
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) {
@@ -250,6 +254,9 @@ async function resolveProjectsData(force = false) {
 }
 
 export default function PhotoGallery() {
+  const { content } = useWebsiteContent();
+  const pageCopy = content.pageCopy.Project;
+
   const cached = readCache();
 
   const [categories, setCategories] = useState(cached?.categories ?? []);
@@ -343,20 +350,19 @@ export default function PhotoGallery() {
         background: bg,
         color: ink,
         minHeight: "100vh",
-        fontFamily: "'Manrope', sans-serif",
+        fontFamily: "var(--font-sans)",
       }}
-    >
+    >
+
 
       {/* HERO BAND */}
       <section
         className="photogal-hero-section"
-        style={{ backgroundImage: `url(${GALLERY_HERO_BG_IMAGE})` }}
+        style={{ backgroundImage: `url(${pageCopy.heroImage})` }}
       >
         <div className="photogal-hero-dark-overlay" />
         <div className="photogal-hero-inner-container">
-          <h1 className="photogal-hero-heading">
-            Project Gallery - Yashmeen Future Building & Fit-Out Company
-          </h1>
+          <h1 className="photogal-hero-heading">{pageCopy.our_projects}</h1>
         </div>
       </section>
 
@@ -364,7 +370,7 @@ export default function PhotoGallery() {
       <section className="photogal-gallery-section">
         <div className="photogal-blueprint-grid" />
 
-        <div
+        <div className="project-gallery-content"
           style={{
             position: "relative",
             zIndex: 1,
@@ -374,7 +380,7 @@ export default function PhotoGallery() {
           }}
         >
           {/* Filters */}
-          <div
+          <div className="project-gallery-filters"
             style={{
               display: "flex",
               flexWrap: "wrap",
@@ -383,6 +389,12 @@ export default function PhotoGallery() {
               alignItems: "center",
             }}
           >
+            <label className="project-category-select">
+              <span>{pageCopy.project_category}</span>
+              <select value={filter} onChange={(event) => setFilter(event.target.value)}>
+                {filters.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+              </select>
+            </label>
             {filters.map((f) => (
               <button
                 key={f.id}
@@ -395,7 +407,7 @@ export default function PhotoGallery() {
                   border: `1px solid ${filter === f.id ? brass : line}`,
                   background: filter === f.id ? brass : "transparent",
                   color: filter === f.id ? "#ffffff" : inkDim,
-                  fontFamily: "'Manrope', sans-serif",
+                  fontFamily: "var(--font-sans)",
                   fontWeight: 600,
                   fontSize: 12.5,
                   letterSpacing: "0.04em",
@@ -418,20 +430,17 @@ export default function PhotoGallery() {
                   letterSpacing: "0.04em",
                 }}
               >
-                {filteredPhotos.length} photos
-              </span>
+                {filteredPhotos.length}{pageCopy.projects}</span>
             )}
           </div>
 
           {/* PHOTO MASONRY */}
           {loading ? (
-            <div style={messageStyle}>Loading gallery…</div>
+            <div style={messageStyle}>{pageCopy.loading_gallery}</div>
           ) : error ? (
             <div style={{ ...messageStyle, color: "#DC2626" }}>{error}</div>
           ) : filteredPhotos.length === 0 ? (
-            <div style={messageStyle}>
-              No photos in this category yet.
-              {diag && (
+            <div style={messageStyle}>{pageCopy.no_projects_in_this_category}{diag && (
                 <div style={{ marginTop: 12, fontSize: 12, opacity: 0.8 }}>
                   {diag}
                 </div>
@@ -457,16 +466,17 @@ export default function PhotoGallery() {
                     border: `1px solid ${line}`,
                   }}
                 >
-                  <img
-                    src={p.src || FALLBACK_PROJECT_IMAGES[i % FALLBACK_PROJECT_IMAGES.length]}
-                    alt={p.title}
-                    loading="lazy"
-                    style={imgStyle}
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = FALLBACK_PROJECT_IMAGES[i % FALLBACK_PROJECT_IMAGES.length];
-                    }}
-                  />
+                  {p.src ? (
+                    <img
+                      src={p.src}
+                      alt={p.title}
+                      loading="lazy"
+                      style={imgStyle}
+                      onError={mediaFallback}
+                    />
+                  ) : (
+                    <div className="project-media-unavailable">{pageCopy.project_media_unavailable}</div>
+                  )}
                   <div
                     style={{
                       position: "absolute",
@@ -501,6 +511,7 @@ export default function PhotoGallery() {
                   </span>
                   <div style={metaStyle}>
                     <h2
+                      className="no-split"
                       style={{
                         margin: 0,
                         fontFamily: "var(--font-serif)",
@@ -546,8 +557,6 @@ const imgStyle = {
   minHeight: 220,
   objectFit: "cover",
   display: "block",
-  filter:
-    "grayscale(45%) sepia(12%) saturate(115%) brightness(0.75) contrast(1.05)",
 };
 
 const cornerStyle = { position: "absolute", width: 16, height: 16 };
@@ -556,7 +565,8 @@ const tagStyle = {
   position: "absolute",
   top: 14,
   left: 14,
-  fontSize: 10,
+  fontSize: 12,
+  maxWidth: "calc(100% - 28px)",
   letterSpacing: "0.16em",
   textTransform: "uppercase",
   fontWeight: 700,

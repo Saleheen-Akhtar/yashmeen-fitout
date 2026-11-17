@@ -20,8 +20,10 @@
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      var storedConsent = null;
+      try { storedConsent = localStorage.getItem('yashmeen_consent'); } catch (e) {}
       gtag('consent', 'default', {
-        'analytics_storage': 'denied',
+        'analytics_storage': storedConsent === 'granted' ? 'granted' : 'denied',
         'ad_storage': 'denied',
         'ad_user_data': 'denied',
         'ad_personalization': 'denied'
@@ -31,7 +33,15 @@
     </script>
     <link rel="preload" href="/fonts/PlusJakartaSans-Variable.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/fonts/CormorantGaramond-Regular.woff2" as="font" type="font/woff2" crossorigin>
-    <script>document.documentElement.classList.add('motion');</script>
+    <script>
+      (function () {
+        var motionSetting = 'system';
+        try { motionSetting = localStorage.getItem('yashmeen:motion') || 'system'; } catch (e) {}
+        var reducedMotion = motionSetting === 'reduced' ||
+          (motionSetting !== 'full' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        document.documentElement.classList.add(reducedMotion ? 'reduced-motion' : 'motion');
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

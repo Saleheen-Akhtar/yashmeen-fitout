@@ -3,13 +3,13 @@
    ========================================================================== */
 .faq-page-root{
           --faq-ink:#1b1a17;
-          --faq-black:#fbfaf7;
-          --faq-gray-50:#f4f1ea;
+          --faq-black:var(--bg);
+          --faq-gray-50:var(--surface-alt);
           --faq-gray-100:rgba(27,26,23,0.04);
-          --faq-gray-200:#e6e1d6;
-          --faq-gray-500:#6b665c;
-          --faq-brass:#8a6a28;
-          --faq-brass-deep:#6f541d;
+          --faq-gray-200:var(--line);
+          --faq-gray-500:var(--muted);
+          --faq-brass:var(--accent);
+          --faq-brass-deep:var(--accent-hover);
           --faq-font-display:var(--font-sans);
           --faq-font-body:var(--font-sans);
           --faq-max-w:1180px;

@@ -1,3 +1,4 @@
+import { logError } from "../utils/logger.js";
 import mongoose from "mongoose";
 import VideosModel from "../models/video.model.js"; // adjust path as needed
 import CategoryModel from "../models/category.model.js";
@@ -53,7 +54,7 @@ export const createVideo = async (req, res) => {
     if (error.name === "ValidationError") {
       return res.status(400).json({ success: false, message: error.message });
     }
-    console.error("Failed to create video:", error);
+    logError("Failed to create video:", error);
     return res
       .status(500)
       .json({
@@ -75,7 +76,7 @@ export const getVideosVersion = async (req, res) => {
     const cMs = cLatest?.updatedAt ? new Date(cLatest.updatedAt).getTime() : 0;
     return res.status(200).json({ success: true, version: `${vCount}:${vMs}:${cCount}:${cMs}` });
   } catch (error) {
-    console.error("Failed to fetch video version:", error);
+    logError("Failed to fetch video version:", error);
     return res.status(500).json({ success: false, message: "Failed to fetch video version" });
   }
 };
@@ -98,7 +99,7 @@ export const getAllVideos = async (req, res) => {
     const videos = await VideosModel.find(filter).populate("categoryId");
     return res.status(200).json({ success: true, data: videos });
   } catch (error) {
-    console.error("Failed to fetch videos:", error);
+    logError("Failed to fetch videos:", error);
     return res
       .status(500)
       .json({
@@ -126,7 +127,7 @@ export const getVideoById = async (req, res) => {
 
     return res.status(200).json({ success: true, data: video });
   } catch (error) {
-    console.error("Failed to fetch video:", error);
+    logError("Failed to fetch video:", error);
     return res
       .status(500)
       .json({
@@ -205,7 +206,7 @@ export const updateVideo = async (req, res) => {
     if (error.name === "ValidationError") {
       return res.status(400).json({ success: false, message: error.message });
     }
-    console.error("Failed to update video:", error);
+    logError("Failed to update video:", error);
     return res
       .status(500)
       .json({
@@ -235,7 +236,7 @@ export const deleteVideo = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Video deleted successfully" });
   } catch (error) {
-    console.error("Failed to delete video:", error);
+    logError("Failed to delete video:", error);
     return res
       .status(500)
       .json({
@@ -268,7 +269,7 @@ export const updateVideoStatus = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Video status updated", data: video });
   } catch (error) {
-    console.error("Failed to update video status:", error);
+    logError("Failed to update video status:", error);
     return res
       .status(500)
       .json({

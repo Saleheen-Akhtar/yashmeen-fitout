@@ -25,12 +25,12 @@
   /* Accents: Architectural Brass & Bronze */
   --accent: #8a6a28;
   --accent-hover: #6f541d;
-  --accent-gold: #c5a059;
+  --accent-gold: var(--accent);
   --accent-red: #d30000;
   --danger: #b42318;
   --success: #12b76a;
 
-  /* Sanctioned Dark Surface Tokens (MenuOverlay, Hero Scrims, 3D Carousel) */
+  /* Sanctioned Dark Surface Tokens (MenuOverlay and Hero Scrims) */
   --surface-dark: #0e0d0b;
   --surface-dark-elevated: #171512;
   --surface-dark-card: #1c1a16;
@@ -46,9 +46,9 @@
 
   /* Type Scale */
   --text-xs: 0.75rem;    /* 12px */
-  --text-sm: 0.8125rem;  /* 13px */
-  --text-base: 0.9375rem;/* 15px */
-  --text-md: 1.0625rem;  /* 17px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;    /* 16px */
+  --text-md: 1.125rem;  /* 18px */
   --text-lg: 1.25rem;    /* 20px */
   --text-xl: 1.5rem;     /* 24px */
   --text-2xl: 1.875rem;  /* 30px */
@@ -101,6 +101,7 @@
   --z-drawer: 80;
   --z-modal: 100;
   --z-toast: 110;
+  --header-height: 84px;
 
   /* Breakpoint Variables */
   --bp-md: 768px;

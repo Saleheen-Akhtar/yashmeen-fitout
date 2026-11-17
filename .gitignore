@@ -44,3 +44,5 @@ pnpm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
+apps/api/migration-output/
+.audit-recovery/

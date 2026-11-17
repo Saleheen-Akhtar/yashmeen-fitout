@@ -1,0 +1,105 @@
+TASTESKILL · LINT   99 file(s)
+
+FAIL
+  [eyebrow] Eyebrow / kicker label above a heading.  (51×)
+      apps/web/src/components/home/CTA.jsx:9  className="eyebrow
+      apps/web/src/components/home/Hero.jsx:171  className="aperture-kicker
+      apps/web/src/components/home/Process.jsx:17  className="eyebrow
+      apps/web/src/components/home/Studio.jsx:16  className="eyebrow
+      apps/web/src/components/home/Studio.jsx:82  className="eyebrow
+      apps/web/src/components/home/Testimonial.jsx:43  className="eyebrow
+      … 45 more
+  [emoji] Emoji used as UI.  (4×)
+      apps/web/src/components/layout/InteractiveBrandLettering.jsx:1170  🖐
+      apps/web/src/components/layout/QuestionnaireModal.jsx:399  ✓
+      apps/web/src/components/layout/QuestionnaireModal.jsx:446  ✓
+      apps/web/src/components/layout/QuestionnaireModal.jsx:475  ✓
+  [gradient] Gradient fill. Use a flat colour or a real image (a neutral scrim over a photo is the one exception).  (52×)
+      apps/web/src/components/ui/spatial-gallery-3d.tsx:1653  radial-gradient(
+      apps/web/src/components/ui/spatial-gallery-3d.tsx:1660  bg-gradient-
+      apps/web/src/components/ui/spatial-gallery-3d.tsx:1767  bg-gradient-
+      apps/web/src/pages/admin/Dashboard.jsx:1014  linear-gradient(
+      apps/web/src/pages/auth/ForgotPassword.jsx:308  linear-gradient(
+      apps/web/src/pages/auth/ForgotPassword.jsx:331  linear-gradient(
+      … 46 more
+  [hairline] Thin rule / divider line. Separate with space, tone or scale; lines belong to real tables and form fields.  (53×)
+      apps/web/src/components/ui/spatial-gallery-3d.tsx:1838  w-px
+      apps/web/src/index.css:280  border-bottom: 1px
+      apps/web/src/index.css:283  border-top: 1px
+      apps/web/src/index.css:482  border-bottom: 1px
+      apps/web/src/pages/public/projects/ProjectDetails.jsx:506  <hr
+      apps/web/src/styles/about.css:224  border-top: 1px
+      … 47 more
+  [shadow] Shadow. Elements at rest carry none; only real overlays (menu, dialog, sticky bar) may.  (65×)
+      apps/web/src/pages/public/media/PhotoGallery.jsx:442  shadow-[0_28px_80px_rgba(23,22,19,0.13)]
+      apps/web/src/pages/public/media/VideoGallery.jsx:568  shadow
+      apps/web/src/styles/admin-architectural.css:85  box-shadow:
+      apps/web/src/styles/admin-architectural.css:91  box-shadow:
+      apps/web/src/styles/admin-architectural.css:101  box-shadow:
+      apps/web/src/styles/admin-architectural.css:116  box-shadow:
+      … 59 more
+  [numbering] Decorative index numbering (01 / 02 / 03).  (4×)
+      apps/web/src/pages/public/WhyUs.jsx:58  "01"
+      apps/web/src/pages/public/WhyUs.jsx:63  "02"
+      apps/web/src/pages/public/WhyUs.jsx:68  "03"
+      apps/web/src/pages/public/WhyUs.jsx:73  "04"
+  [mono] Monospace type. Only literal code may be monospace.  (3×)
+      apps/web/src/styles/home.css:170  font-family: 'Roboto Mono', monospace
+      apps/web/src/styles/home.css:270  font-family: 'Roboto Mono', monospace
+      apps/web/src/styles/home.css:388  font-family: 'Roboto Mono', monospace
+
+WARN
+  [numbering] Zero-padding in script. Fine for a clock, a date or a price; if it builds 01 / 02 / 03 labels, remove it.  (12×)
+      apps/web/src/components/home/EditorialCarousel3D.jsx:661  padStart(2, "0")
+      apps/web/src/components/home/Process.jsx:30  padStart(2, "0")
+      apps/web/src/components/home/Studio.jsx:84  padStart(2, "0")
+      apps/web/src/components/home/Studio.jsx:120  padStart(2, "0")
+      apps/web/src/components/home/Testimonial.jsx:18  padStart(2, "0")
+      apps/web/src/components/home/Works.jsx:65  padStart(2, "0")
+      … 6 more
+  [copy] Stock marketing phrase. Say the specific thing the product does.  (4×)
+      apps/web/src/components/ui/spatial-gallery-3d.tsx:1656  SEAMLESS
+      apps/web/src/components/ui/spatial-gallery-3d.tsx:1763  SEAMLESS
+      apps/web/src/pages/public/About.jsx:137  not just for the spaces we build, but
+      apps/web/src/pages/public/services/servicesData.js:158  seamless
+  [outlined-box] A 1px outlined box. Prefer a filled surface or no box.  (89×)
+      apps/web/src/index.css:351  border: 1px solid
+      apps/web/src/index.css:369  border: 1px solid
+      apps/web/src/index.css:379  border: 1px solid
+      apps/web/src/index.css:390  border: 1px solid
+      apps/web/src/index.css:420  border: 1px solid
+      apps/web/src/index.css:442  border: 1px solid
+      … 83 more
+  [glass] Backdrop blur. One sticky bar at most; glass cards are a tell.  (39×)
+      apps/web/src/pages/public/media/PhotoGallery.jsx:354  backdrop-blur
+      apps/web/src/styles/about.css:326  backdrop-filter:
+      apps/web/src/styles/admin-architectural.css:63  backdrop-filter:
+      apps/web/src/styles/admin-architectural.css:64  backdrop-filter:
+      apps/web/src/styles/admin-architectural.css:81  backdrop-filter:
+      apps/web/src/styles/admin-architectural.css:82  backdrop-filter:
+      … 33 more
+  [h-screen] 100vh jumps on mobile. Use 100svh / 100dvh.  (12×)
+      apps/web/src/styles/about.css:18  height: 100vh
+      apps/web/src/styles/admin-architectural.css:44  height: 100vh
+      apps/web/src/styles/career.css:16  height:100vh
+      apps/web/src/styles/contact.css:20  height:100vh
+      apps/web/src/styles/faq.css:19  height:100vh
+      apps/web/src/styles/founders.css:21  height:100vh
+      … 6 more
+  [default-font] A default typeface. Use the faces named by the drawn direction.  (5×)
+      apps/web/src/styles/admin-architectural.css:38  font-family: 'Plus Jakarta Sans
+      apps/web/src/styles/fonts.css:8  font-family: 'Plus Jakarta Sans
+      apps/web/src/styles/home.css:170  font-family: 'Roboto
+      apps/web/src/styles/home.css:270  font-family: 'Roboto
+      apps/web/src/styles/home.css:388  font-family: 'Roboto
+  [transition-all] transition: all. Name the properties (transform, opacity).  (33×)
+      apps/web/src/styles/admin-architectural.css:126  transition: all
+      apps/web/src/styles/admin-architectural.css:163  transition: all
+      apps/web/src/styles/admin-architectural.css:190  transition: all
+      apps/web/src/styles/admin-architectural.css:213  transition: all
+      apps/web/src/styles/admin-architectural.css:265  transition: all
+      apps/web/src/styles/admin-architectural.css:452  transition: all
+      … 27 more
+
+RESULT: 232 FAIL, 194 WARN — fix the FAILs before rendering.
+Interface fragments marked data-ui keep their own borders and shadows. Any other line that must keep a flagged pattern for a real reason can carry the comment taste-skill-ignore.

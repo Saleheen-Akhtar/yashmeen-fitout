@@ -1,5 +1,12 @@
 'use client';
 
+import type { SpatialGalleryItem, SpatialGallery3DProps, HelixSlot, MeshEntry, Canvas2DPlateEntry, Canvas2DHitPlate } from "./spatial-gallery/types";
+export type { SpatialGalleryItem, SpatialFilterOption } from "./spatial-gallery/types";
+import { VERTEX_SHADER, FRAGMENT_SHADER, mod, wrapSigned, clamp, getTextureDimensions, detectWebGLSupport, hitTestCanvas2D, createCurvedPlateGeometry } from "./spatial-gallery/geometry";
+import { createHelixLayout } from "./spatial-gallery/layout";
+import { createGalleryRenderer } from "./spatial-gallery/renderer";
+import GalleryHeader from "./spatial-gallery/GalleryHeader";
+
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import {
@@ -13,230 +20,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-export interface SpatialGalleryItem {
-  id: string;
-  title: string;
-  category: string;
-  src: string;
-  fallbackSrc: string;
-  index: number;
-}
-
-export interface SpatialFilterOption {
-  id: string;
-  label: string;
-}
-
-interface SpatialGallery3DProps {
-  items: SpatialGalleryItem[];
-  filters: SpatialFilterOption[];
-  activeFilter: string;
-  onFilterChange: (filterId: string) => void;
-  loading?: boolean;
-  error?: string;
-  onSelectItem: (item: SpatialGalleryItem) => void;
-  isLightboxOpen?: boolean;
-  onScrollToFooter?: () => void;
-}
-
-interface HelixSlot {
-  slotKey: string;
-  item: SpatialGalleryItem;
-  width: number;
-  height: number;
-  baseTheta: number;
-  baseY: number;
-}
-
-interface MeshEntry {
-  mesh: THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>;
-  material: THREE.ShaderMaterial;
-  slot: HelixSlot;
-  planeAspect: number;
-  hoverLift: number;
-  loadMix: number;
-  hasTexture: boolean;
-}
-
-interface Canvas2DPlateEntry {
-  slot: HelixSlot;
-  planeAspect: number;
-  image: HTMLImageElement | null;
-  hoverLift: number;
-  loadMix: number;
-}
-
-interface ProjectedStripPoint {
-  sxTop: number;
-  syTop: number;
-  sxBot: number;
-  syBot: number;
-}
-
-interface Canvas2DHitPlate {
-  slot: HelixSlot;
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-  pts: ProjectedStripPoint[];
-}
-
-const DESKTOP_PLATE_SIZES: [number, number][] = [
-  [1.92, 1.36], // architectural landscape
-  [1.38, 1.58], // editorial portrait
-  [1.56, 1.52], // museum square
-  [2.04, 1.30], // wide panoramic
-  [1.44, 1.62], // tall print
-];
-
-const MOBILE_PLATE_SIZES: [number, number][] = [
-  [1.58, 1.16],
-  [1.16, 1.38],
-  [1.30, 1.30],
-  [1.66, 1.10],
-  [1.22, 1.42],
-];
-
-const VERTEX_SHADER = `
-  uniform float uHover;
-  uniform float uBend;
-  uniform float uScalePulse;
-  varying vec2 vUv;
-  varying float vCurvatureEdge;
-
-  void main() {
-    vUv = uv;
-    vec3 pos = position;
-    // Slight sculptural outward swell when hovered + delicate inertia flex
-    pos.z += uHover * 0.24;
-    pos.xy *= (1.0 + uHover * 0.045) * uScalePulse;
-    pos.z += sin(uv.x * 3.14159265) * uBend * (uv.y - 0.5) * 0.16;
-    vCurvatureEdge = abs(uv.x - 0.5) * 2.0;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-  }
-`;
-
-const FRAGMENT_SHADER = `
-  uniform sampler2D uMap;
-  uniform float uHasMap;
-  uniform float uLoadMix;
-  uniform vec2 uUvScale;
-  uniform float uOpacity;
-  uniform float uHover;
-  uniform vec3 uFogColor;
-  uniform float uFogAmount;
-  varying vec2 vUv;
-  varying float vCurvatureEdge;
-
-  void main() {
-    vec2 centeredUv = (vUv - 0.5) * uUvScale + 0.5;
-    vec3 stonePlaceholder = vec3(0.902, 0.886, 0.855);
-
-    vec3 photoRgb = stonePlaceholder;
-    if (uHasMap > 0.5) {
-      vec4 texel = texture2D(uMap, clamp(centeredUv, 0.002, 0.998));
-      photoRgb = mix(stonePlaceholder, texel.rgb, uLoadMix);
-    }
-
-    // Subtle hover radiance boost & soft warm architectural atmosphere
-    photoRgb *= mix(1.0, 1.06, uHover);
-    vec3 finalRgb = mix(photoRgb, uFogColor, clamp(uFogAmount, 0.0, 1.0));
-
-    // Crisp anti-aliased frameless edge (zero border lines)
-    float edgeX = smoothstep(0.0, 0.004, vUv.x) * smoothstep(1.0, 0.996, vUv.x);
-    float edgeY = smoothstep(0.0, 0.004, vUv.y) * smoothstep(1.0, 0.996, vUv.y);
-    float alpha = uOpacity * edgeX * edgeY;
-
-    if (alpha < 0.008) discard;
-    gl_FragColor = vec4(finalRgb, alpha);
-  }
-`;
-
-function mod(n: number, span: number) {
-  return ((n % span) + span) % span;
-}
-
-function wrapSigned(val: number, span: number) {
-  return mod(val + span / 2, span) - span / 2;
-}
-
-function clamp(v: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, v));
-}
-
-function getTextureDimensions(
-  tex: THREE.Texture | undefined,
-): { width: number; height: number } | null {
-  const img = tex?.image as { width?: number; height?: number } | undefined;
-  if (!img || typeof img.width !== 'number' || typeof img.height !== 'number' || img.width <= 0) {
-    return null;
-  }
-  return { width: img.width, height: img.height };
-}
-
-function detectWebGLSupport(): boolean {
-  if (typeof document === 'undefined') return false;
-  try {
-    const probe = document.createElement('canvas');
-    const gl =
-      probe.getContext('webgl2') ||
-      probe.getContext('webgl') ||
-      probe.getContext('experimental-webgl');
-    return !!gl;
-  } catch {
-    return false;
-  }
-}
-
-function hitTestCanvas2D(
-  plates: Canvas2DHitPlate[],
-  localX: number,
-  localY: number,
-): HelixSlot | null {
-  for (let i = plates.length - 1; i >= 0; i--) {
-    const p = plates[i];
-    if (localX < p.minX || localX > p.maxX || localY < p.minY || localY > p.maxY) {
-      continue;
-    }
-    const pts = p.pts;
-    for (let s = 0; s < pts.length - 1; s++) {
-      const a = pts[s];
-      const b = pts[s + 1];
-      const xLeft = Math.min(a.sxTop, a.sxBot);
-      const xRight = Math.max(b.sxTop, b.sxBot);
-      if (localX >= xLeft && localX <= xRight) {
-        const span = Math.max(0.001, xRight - xLeft);
-        const t = clamp((localX - xLeft) / span, 0, 1);
-        const topY = a.syTop + (b.syTop - a.syTop) * t;
-        const botY = a.syBot + (b.syBot - a.syBot) * t;
-        if (localY >= Math.min(topY, botY) && localY <= Math.max(topY, botY)) {
-          return p.slot;
-        }
-      }
-    }
-  }
-  return null;
-}
-
-function createCurvedPlateGeometry(width: number, height: number, radius: number) {
-  const geom = new THREE.PlaneGeometry(width, height, 24, 12);
-  const posAttr = geom.attributes.position;
-  for (let i = 0; i < posAttr.count; i++) {
-    const lx = posAttr.getX(i);
-    const phi = lx / radius;
-    const cx = Math.sin(phi) * radius;
-    const cz = (Math.cos(phi) - 1.0) * radius;
-    posAttr.setX(i, cx);
-    posAttr.setZ(i, cz);
-  }
-  posAttr.needsUpdate = true;
-  geom.computeVertexNormals();
-  geom.computeBoundingBox();
-  geom.computeBoundingSphere();
-  return geom;
-}
+import useReducedMotionPreference from '@/hooks/useReducedMotionPreference';
 
 export function SpatialGallery3D({
   items,
@@ -257,7 +41,7 @@ export function SpatialGallery3D({
   const [hoveredItem, setHoveredItem] = useState<SpatialGalleryItem | null>(null);
   const [focusItem, setFocusItem] = useState<SpatialGalleryItem | null>(null);
   const [filterTransitioning, setFilterTransitioning] = useState(false);
-  const [reducedMotion] = useState<boolean>(false);
+  const reducedMotion = useReducedMotionPreference();
 
   const [viewportWidth, setViewportWidth] = useState<number>(() =>
     typeof window !== 'undefined' ? window.innerWidth : 1440,
@@ -270,67 +54,7 @@ export function SpatialGallery3D({
   }, []);
 
   // Helix architectural parameters adapting seamlessly between desktop & mobile
-  const helixLayout = useMemo(() => {
-    const isMobile = viewportWidth < 640;
-    const isTablet = viewportWidth >= 640 && viewportWidth < 1024;
-
-    const radius = isMobile ? 4.75 : isTablet ? 5.65 : 6.2;
-    const cols = isMobile ? 14 : isTablet ? 15 : 16;
-    const ringPitch = isMobile ? 1.66 : 1.88;
-    const defaultCamDist = isMobile ? 11.8 : isTablet ? 11.5 : 11.4;
-    const minCamDist = isMobile ? 8.0 : 8.4;
-    const maxCamDist = isMobile ? 16.0 : 16.0;
-
-    if (items.length === 0) {
-      return {
-        slots: [] as HelixSlot[],
-        radius,
-        cols,
-        ringPitch,
-        spanY: ringPitch * 4,
-        defaultCamDist,
-        minCamDist,
-        maxCamDist,
-      };
-    }
-
-    // Pad evenly to integer rings so vertical wraps & columns remain flush at all category sizes
-    const turns = Math.max(3, Math.ceil(items.length / cols));
-    const poolCount = turns * cols;
-    const totalHeight = turns * ringPitch;
-    const angleStep = (Math.PI * 2) / cols;
-    const yStep = ringPitch / cols;
-    const sizePalette = isMobile ? MOBILE_PLATE_SIZES : DESKTOP_PLATE_SIZES;
-
-    const slots: HelixSlot[] = Array.from({ length: poolCount }, (_, i) => {
-      const item = items[i % items.length];
-      const [width, height] = sizePalette[(i * 3 + Math.floor(i / cols)) % sizePalette.length];
-
-      // Ascending spiral ribbon anchored cleanly at slot 0 center with zero seam
-      const baseTheta = i * angleStep;
-      const baseY = i * yStep;
-
-      return {
-        slotKey: `${item.id}-${i}`,
-        item,
-        width,
-        height,
-        baseTheta,
-        baseY,
-      };
-    });
-
-    return {
-      slots,
-      radius,
-      cols,
-      ringPitch,
-      spanY: totalHeight,
-      defaultCamDist,
-      minCamDist,
-      maxCamDist,
-    };
-  }, [items, viewportWidth]);
+  const helixLayout = useMemo(() => createHelixLayout(items, viewportWidth), [items, viewportWidth]);
 
   // Camera state: infinite theta (horizontal 360 spin), infinite Y (helix travel), zoom radius Z
   const camRef = useRef({
@@ -553,370 +277,7 @@ export function SpatialGallery3D({
     }
   }, [stepFrame]);
 
-  renderScene.current = (isMoving: boolean, allowStateSync = true) => {
-    const c = camRef.current;
-    const L = layoutRef.current;
-    const halfSpanY = Math.max(2.5, L.spanY / 2);
-    const fadeEdgeY = halfSpanY * 0.62;
-    const velocityBend = clamp((c.tTheta - c.theta) * 5.0 + (c.ty - c.y) * 0.45, -1.4, 1.4);
-    const horizonCos = clamp(L.radius / Math.max(L.radius + 1.4, c.dist) - 0.08, 0.28, 0.54);
-
-    // GPU WebGL Shader Cylinder Renderer
-    const glCtx = threeRef.current;
-    if (glCtx) {
-      const { renderer, scene, camera, raycaster, meshes } = glCtx;
-      camera.position.set(c.tiltY * 0.45, 0.22 - c.tiltX * 0.35, c.dist);
-      camera.lookAt(c.tiltY * 0.12, 0.16, 0);
-
-      let centerBestScore = -Infinity;
-      let centerBestItem: SpatialGalleryItem | null = null;
-
-      for (let i = 0; i < meshes.length; i++) {
-        const entry = meshes[i];
-        const { mesh, material, slot } = entry;
-
-        const relTheta = wrapSigned(slot.baseTheta + c.theta, Math.PI * 2);
-        const relY = wrapSigned(slot.baseY - c.y, L.spanY);
-
-        const cosTheta = Math.cos(relTheta);
-        const absTheta = Math.abs(relTheta);
-
-        const sideFade = clamp((cosTheta - horizonCos) / 0.36, 0, 1);
-        const vertFade =
-          Math.abs(relY) > fadeEdgeY
-            ? clamp((halfSpanY - Math.abs(relY)) / (halfSpanY - fadeEdgeY), 0, 1)
-            : 1;
-        const alpha = sideFade * vertFade;
-
-        if (alpha < 0.012) {
-          mesh.visible = false;
-          continue;
-        }
-
-        mesh.visible = true;
-        mesh.position.set(
-          Math.sin(relTheta) * L.radius,
-          relY,
-          Math.cos(relTheta) * L.radius,
-        );
-        mesh.rotation.y = relTheta;
-
-        const focusScore = cosTheta * 2.0 - Math.abs(relY) * 0.55 - absTheta * 0.7;
-        if (alpha > 0.7 && focusScore > centerBestScore) {
-          centerBestScore = focusScore;
-          centerBestItem = slot.item;
-        }
-
-        if (entry.hasTexture && entry.loadMix < 1) {
-          entry.loadMix = Math.min(1, entry.loadMix + (isMoving ? 0.14 : 0.25));
-        }
-
-        const targetHover = hoveredIdRef.current === slot.slotKey ? 1 : 0;
-        entry.hoverLift += (targetHover - entry.hoverLift) * 0.16;
-
-        const fogAmount = clamp(
-          (1.0 - cosTheta) * 0.92 + (Math.abs(relY) / (halfSpanY * 1.45)) * 0.35,
-          0,
-          0.82,
-        );
-
-        material.uniforms.uOpacity.value = alpha;
-        material.uniforms.uHover.value = entry.hoverLift;
-        material.uniforms.uBend.value = velocityBend;
-        material.uniforms.uLoadMix.value = entry.loadMix;
-        material.uniforms.uFogAmount.value = fogAmount;
-      }
-
-      if (allowStateSync) {
-        if (centerBestItem && focusIdRef.current !== centerBestItem.id) {
-          focusIdRef.current = centerBestItem.id;
-          setFocusItem(centerBestItem);
-        } else if (!centerBestItem && focusIdRef.current !== null) {
-          focusIdRef.current = null;
-          setFocusItem(null);
-        }
-
-        if (
-          hoverDirtyRef.current &&
-          pointerActiveHoverRef.current &&
-          !dragRef.current.active &&
-          !isLightboxOpenRef.current
-        ) {
-          hoverDirtyRef.current = false;
-          raycaster.setFromCamera(pointerNdcRef.current, camera);
-          const visibleObjects = meshes.filter((m) => m.mesh.visible).map((m) => m.mesh);
-          const hits = raycaster.intersectObjects(visibleObjects, false);
-
-          if (hits.length > 0) {
-            const hitMesh = hits[0].object;
-            const found = meshes.find((m) => m.mesh === hitMesh);
-            if (found && hoveredIdRef.current !== found.slot.slotKey) {
-              hoveredIdRef.current = found.slot.slotKey;
-              setHoveredItem(found.slot.item);
-              if (stageRef.current) stageRef.current.style.cursor = 'pointer';
-            }
-          } else if (hoveredIdRef.current !== null) {
-            hoveredIdRef.current = null;
-            setHoveredItem(null);
-            if (stageRef.current) stageRef.current.style.cursor = '';
-          }
-        }
-      }
-
-      renderer.render(scene, camera);
-      return;
-    }
-
-    // 3D Perspective-Projected Canvas2D Curved Cylinder Engine (universal non-WebGL fallback)
-    const d2Ctx = twoDRef.current;
-    if (!d2Ctx) return;
-
-    const { ctx, scratchCanvas, scratchCtx, dpr, camera, width, height, plates, vTmp } = d2Ctx;
-    ctx.clearRect(0, 0, width, height);
-
-    camera.position.set(c.tiltY * 0.45, 0.22 - c.tiltX * 0.35, c.dist);
-    camera.lookAt(c.tiltY * 0.12, 0.16, 0);
-    camera.updateMatrixWorld();
-
-    let centerBestScore = -Infinity;
-    let centerBestItem: SpatialGalleryItem | null = null;
-
-    const visibleList: Array<{
-      entry: Canvas2DPlateEntry;
-      relTheta: number;
-      relY: number;
-      cosTheta: number;
-      alpha: number;
-      fogAmount: number;
-    }> = [];
-
-    for (let i = 0; i < plates.length; i++) {
-      const entry = plates[i];
-      const relTheta = wrapSigned(entry.slot.baseTheta + c.theta, Math.PI * 2);
-      const relY = wrapSigned(entry.slot.baseY - c.y, L.spanY);
-      const cosTheta = Math.cos(relTheta);
-      const absTheta = Math.abs(relTheta);
-
-      const sideFade = clamp((cosTheta - horizonCos) / 0.36, 0, 1);
-      const vertFade =
-        Math.abs(relY) > fadeEdgeY
-          ? clamp((halfSpanY - Math.abs(relY)) / (halfSpanY - fadeEdgeY), 0, 1)
-          : 1;
-      const alpha = sideFade * vertFade;
-
-      if (alpha < 0.012) continue;
-
-      const focusScore = cosTheta * 2.0 - Math.abs(relY) * 0.55 - absTheta * 0.7;
-      if (alpha > 0.7 && focusScore > centerBestScore) {
-        centerBestScore = focusScore;
-        centerBestItem = entry.slot.item;
-      }
-
-      if (entry.image && entry.loadMix < 1) {
-        entry.loadMix = Math.min(1, entry.loadMix + (isMoving ? 0.14 : 0.25));
-      }
-
-      const targetHover = hoveredIdRef.current === entry.slot.slotKey ? 1 : 0;
-      entry.hoverLift += (targetHover - entry.hoverLift) * 0.16;
-
-      const fogAmount =
-        clamp(
-          (1.0 - cosTheta) * 0.92 + (Math.abs(relY) / (halfSpanY * 1.45)) * 0.35,
-          0,
-          0.82,
-        ) *
-        (1 - entry.hoverLift * 0.65);
-
-      visibleList.push({ entry, relTheta, relY, cosTheta, alpha, fogAmount });
-    }
-
-    // Painter's back-to-front draw order along cylinder depth + hover lift
-    visibleList.sort((a, b) => a.cosTheta + a.entry.hoverLift * 0.12 - (b.cosTheta + b.entry.hoverLift * 0.12));
-
-    const SEGMENTS = 16;
-    const hitPlates: Canvas2DHitPlate[] = [];
-
-    for (let i = 0; i < visibleList.length; i++) {
-      const { entry, relTheta, relY, alpha, fogAmount } = visibleList[i];
-      const { slot, image, hoverLift, loadMix, planeAspect } = entry;
-
-      const hoverScale = 1 + hoverLift * 0.045;
-      const halfH = (slot.height * 0.5) * hoverScale;
-      const pts: ProjectedStripPoint[] = new Array(SEGMENTS + 1);
-
-      let minX = Infinity;
-      let maxX = -Infinity;
-      let minY = Infinity;
-      let maxY = -Infinity;
-      let valid = true;
-
-      for (let s = 0; s <= SEGMENTS; s++) {
-        const u = s / SEGMENTS;
-        const lx = (u - 0.5) * slot.width * hoverScale;
-        const phi = lx / L.radius;
-        const theta = relTheta + phi;
-        const r = L.radius + hoverLift * 0.24 + Math.sin(u * Math.PI) * velocityBend * 0.035;
-        const wx = Math.sin(theta) * r;
-        const wz = Math.cos(theta) * r;
-
-        vTmp.set(wx, relY + halfH, wz).project(camera);
-        if (vTmp.z >= 1) {
-          valid = false;
-          break;
-        }
-        const sxTop = (vTmp.x * 0.5 + 0.5) * width;
-        const syTop = (-vTmp.y * 0.5 + 0.5) * height;
-
-        vTmp.set(wx, relY - halfH, wz).project(camera);
-        if (vTmp.z >= 1) {
-          valid = false;
-          break;
-        }
-        const sxBot = (vTmp.x * 0.5 + 0.5) * width;
-        const syBot = (-vTmp.y * 0.5 + 0.5) * height;
-
-        pts[s] = { sxTop, syTop, sxBot, syBot };
-        minX = Math.min(minX, sxTop, sxBot);
-        maxX = Math.max(maxX, sxTop, sxBot);
-        minY = Math.min(minY, syTop, syBot);
-        maxY = Math.max(maxY, syTop, syBot);
-      }
-
-      if (!valid || maxX < -40 || minX > width + 40 || maxY < -40 || minY > height + 40) {
-        continue;
-      }
-      if (pts[SEGMENTS].sxTop <= pts[0].sxTop + 1.5) continue;
-
-      const boxMinX = Math.floor(minX) - 1;
-      const boxMinY = Math.floor(minY) - 1;
-      const boxW = Math.max(2, Math.ceil(maxX) - boxMinX + 1);
-      const boxH = Math.max(2, Math.ceil(maxY) - boxMinY + 1);
-      const devW = Math.max(2, Math.ceil(boxW * dpr));
-      const devH = Math.max(2, Math.ceil(boxH * dpr));
-
-      if (scratchCanvas.width < devW || scratchCanvas.height < devH) {
-        scratchCanvas.width = Math.max(scratchCanvas.width, devW);
-        scratchCanvas.height = Math.max(scratchCanvas.height, devH);
-      }
-
-      scratchCtx.setTransform(1, 0, 0, 1, 0, 0);
-      scratchCtx.clearRect(0, 0, devW, devH);
-      scratchCtx.setTransform(dpr, 0, 0, dpr, -boxMinX * dpr, -boxMinY * dpr);
-
-      scratchCtx.save();
-      scratchCtx.beginPath();
-      scratchCtx.moveTo(pts[0].sxTop, pts[0].syTop);
-      for (let s = 1; s <= SEGMENTS; s++) scratchCtx.lineTo(pts[s].sxTop, pts[s].syTop);
-      for (let s = SEGMENTS; s >= 0; s--) scratchCtx.lineTo(pts[s].sxBot, pts[s].syBot);
-      scratchCtx.closePath();
-      scratchCtx.clip();
-
-      if (image && image.complete && image.naturalWidth > 0 && loadMix > 0.01) {
-        const iw = image.naturalWidth;
-        const ih = image.naturalHeight;
-        const imgAspect = iw / Math.max(1, ih);
-        let cropX = 0;
-        let cropY = 0;
-        let cropW = iw;
-        let cropH = ih;
-
-        if (imgAspect > planeAspect) {
-          cropW = ih * planeAspect;
-          cropX = (iw - cropW) * 0.5;
-        } else {
-          cropH = iw / planeAspect;
-          cropY = (ih - cropH) * 0.5;
-        }
-
-        // Compose photo strips at full opacity inside offscreen scratch plate -> zero vertical seams at any DPR
-        scratchCtx.globalAlpha = 1;
-        const srcSliceW = cropW / SEGMENTS;
-
-        for (let k = 0; k < SEGMENTS; k++) {
-          const p0 = pts[k];
-          const p1 = pts[k + 1];
-          const x0 = Math.min(p0.sxTop, p0.sxBot);
-          const x1 = Math.max(p1.sxTop, p1.sxBot);
-          const sw = x1 - x0;
-          if (sw <= 0.1) continue;
-
-          const topY = Math.min(p0.syTop, p1.syTop) - 1;
-          const botY = Math.max(p0.syBot, p1.syBot) + 1;
-
-          scratchCtx.drawImage(
-            image,
-            cropX + k * srcSliceW,
-            cropY,
-            srcSliceW + 0.6,
-            cropH,
-            x0 - 0.3,
-            topY,
-            sw + 0.85,
-            botY - topY,
-          );
-        }
-
-        if (loadMix < 0.995) {
-          scratchCtx.globalAlpha = 1 - loadMix;
-          scratchCtx.fillStyle = '#e6e2da';
-          scratchCtx.fillRect(boxMinX, boxMinY, boxW, boxH);
-        }
-      } else {
-        scratchCtx.globalAlpha = 1;
-        scratchCtx.fillStyle = '#e6e2da';
-        scratchCtx.fillRect(boxMinX, boxMinY, boxW, boxH);
-      }
-
-      if (fogAmount > 0.01) {
-        scratchCtx.globalAlpha = fogAmount;
-        scratchCtx.fillStyle = '#f5f3ef';
-        scratchCtx.fillRect(boxMinX, boxMinY, boxW, boxH);
-      }
-
-      scratchCtx.restore();
-
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.drawImage(scratchCanvas, 0, 0, devW, devH, boxMinX, boxMinY, devW / dpr, devH / dpr);
-      ctx.restore();
-
-      hitPlates.push({ slot, minX, maxX, minY, maxY, pts });
-    }
-
-    d2Ctx.hitPlates = hitPlates;
-
-    if (allowStateSync) {
-      if (centerBestItem && focusIdRef.current !== centerBestItem.id) {
-        focusIdRef.current = centerBestItem.id;
-        setFocusItem(centerBestItem);
-      } else if (!centerBestItem && focusIdRef.current !== null) {
-        focusIdRef.current = null;
-        setFocusItem(null);
-      }
-
-      if (
-        hoverDirtyRef.current &&
-        pointerActiveHoverRef.current &&
-        !dragRef.current.active &&
-        !isLightboxOpenRef.current
-      ) {
-        hoverDirtyRef.current = false;
-        const px = (pointerNdcRef.current.x * 0.5 + 0.5) * width;
-        const py = (-pointerNdcRef.current.y * 0.5 + 0.5) * height;
-        const hitSlot = hitTestCanvas2D(hitPlates, px, py);
-
-        if (hitSlot && hoveredIdRef.current !== hitSlot.slotKey) {
-          hoveredIdRef.current = hitSlot.slotKey;
-          setHoveredItem(hitSlot.item);
-          if (stageRef.current) stageRef.current.style.cursor = 'pointer';
-        } else if (!hitSlot && hoveredIdRef.current !== null) {
-          hoveredIdRef.current = null;
-          setHoveredItem(null);
-          if (stageRef.current) stageRef.current.style.cursor = '';
-        }
-      }
-    }
-  };
+  renderScene.current = createGalleryRenderer({ camRef, layoutRef, threeRef, hoveredIdRef, focusIdRef, setFocusItem, hoverDirtyRef, pointerActiveHoverRef, dragRef, isLightboxOpenRef, pointerNdcRef, setHoveredItem, stageRef, twoDRef });
 
   // Initialize GPU WebGL renderer cleanly; transparently fall back to 3D Canvas2D when WebGL is disabled
   useEffect(() => {
@@ -946,7 +307,7 @@ export function SpatialGallery3D({
     if (glRenderer) {
       glRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       glRenderer.outputColorSpace = THREE.SRGBColorSpace;
-      glRenderer.setClearColor(0xf5f3ef, 0);
+      glRenderer.setClearColor(0xfbfaf7, 0);
       glRenderer.setSize(w, h, false);
       glRenderer.domElement.style.width = '100%';
       glRenderer.domElement.style.height = '100%';
@@ -1091,7 +452,7 @@ export function SpatialGallery3D({
       glCtx.meshes = [];
 
       const geomCache = new Map<string, THREE.BufferGeometry>();
-      const fogColor = new THREE.Color(0xf5f3ef);
+      const fogColor = new THREE.Color(0xfbfaf7);
 
       const entries: MeshEntry[] = helixLayout.slots.map((slot) => {
         const sizeKey = `${slot.width}x${slot.height}x${helixLayout.radius}`;
@@ -1626,6 +987,7 @@ export function SpatialGallery3D({
   return (
     <section
       ref={stageRef}
+      data-nomotion
       data-lenis-prevent
       aria-label="360 Curved Museum Exhibition"
       onPointerDown={handlePointerDown}
@@ -1645,7 +1007,7 @@ export function SpatialGallery3D({
           resetCamera();
         }
       }}
-      className="relative h-[100dvh] min-h-[600px] w-full select-none overflow-hidden bg-[#f5f3ef] text-[#171613] touch-none cursor-grab active:cursor-grabbing"
+      className="relative h-[calc(100dvh-var(--header-height))] min-h-[600px] w-full select-none overflow-hidden bg-[var(--bg)] text-[var(--ink)] touch-none cursor-grab active:cursor-grabbing"
     >
       {/* Warm Radial Architectural Lighting Pool */}
       <div
@@ -1654,60 +1016,7 @@ export function SpatialGallery3D({
       />
 
       {/* SEAMLESS BORDERLESS EDITORIAL TOP VEIL & CATEGORY FILTERS */}
-      <header
-        data-hud-control="true"
-        onPointerDown={(e) => e.stopPropagation()}
-        className="pointer-events-none relative z-30 w-full bg-gradient-to-b from-[#f5f3ef] from-64% via-[#f5f3ef]/96 via-84% to-transparent"
-      >
-        <div className="mx-auto max-w-[1440px] px-5 pt-24 pb-10 sm:px-10 sm:pt-28 sm:pb-12">
-          <div className="pointer-events-auto flex flex-col gap-2">
-            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <h1 className="no-split font-serif text-2xl font-normal tracking-[-0.02em] text-[#171613] sm:text-4xl">
-                Gallery <span className="italic text-[#5c5850]">in Infinite Space</span>
-              </h1>
-              {!loading && !error && (
-                <span className="text-[11px] font-medium tracking-[0.14em] text-[#8e6b37] uppercase">
-                  {items.length} Works
-                </span>
-              )}
-            </div>
-
-            <nav
-              data-filter-strip="true"
-              role="tablist"
-              aria-label="Filter 360 gallery by category"
-              className="no-scrollbar flex touch-pan-x flex-nowrap items-center gap-x-5 gap-y-1.5 overflow-x-auto py-1 md:flex-wrap"
-            >
-              {filters.map((f) => {
-                const active = activeFilter === f.id;
-                return (
-                  <button
-                    key={f.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={active}
-                    onClick={() => handleFilterClick(f.id)}
-                    className={cn(
-                      'relative shrink-0 pb-1 text-[10.5px] tracking-[0.11em] uppercase transition-colors sm:text-[11px]',
-                      active
-                        ? 'font-semibold text-[#171613]'
-                        : 'font-medium text-[#171613]/45 hover:text-[#171613]',
-                    )}
-                  >
-                    {f.label}
-                    {active && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute right-0 bottom-0 left-0 h-[1.5px] bg-[#b18a4f]"
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
-      </header>
+      <GalleryHeader items={items} filters={filters} activeFilter={activeFilter} loading={loading} error={error} handleFilterClick={handleFilterClick} />
 
       {/* WEBGL 360° CURVED ARCHITECTURAL HELIX CANVAS */}
       <div
@@ -1721,7 +1030,7 @@ export function SpatialGallery3D({
       {/* Status Overlay for Loading / Error / Empty / WebGL Fallback */}
       {loading && (
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
-          <span className="text-xs font-medium tracking-[0.18em] text-[#5c5850] uppercase">
+          <span className="text-xs font-medium tracking-[0.18em] text-[var(--muted)] uppercase">
             Curating 360° Exhibition...
           </span>
         </div>
@@ -1735,7 +1044,7 @@ export function SpatialGallery3D({
 
       {!loading && !error && rendererUnavailable && (
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-6 text-center">
-          <span className="text-sm text-[#5c5850]">
+          <span className="text-sm text-[var(--muted)]">
             3D canvas rendering is unavailable in this browser context.
           </span>
         </div>
@@ -1743,45 +1052,48 @@ export function SpatialGallery3D({
 
       {!loading && !error && !rendererUnavailable && helixLayout.slots.length === 0 && (
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-6">
-          <span className="text-sm text-[#5c5850]">
+          <span className="text-sm text-[var(--muted)]">
             No photos in this category yet.
           </span>
         </div>
       )}
 
       {/* Keyboard / Screen-reader accessible fallback index button */}
-      {validFocusItem && (
+      {items.map((item) => (
         <button
+          key={item.id}
           type="button"
+          data-hud-control="true"
+          onPointerDown={(event) => event.stopPropagation()}
           className="sr-only focus:not-sr-only focus:fixed focus:bottom-20 focus:left-6 focus:z-40 focus:bg-[#171613] focus:px-3 focus:py-1.5 focus:text-xs focus:text-[#f5f3ef]"
-          onClick={() => onSelectItem(validFocusItem)}
+          onClick={(event) => { event.stopPropagation(); onSelectItem(item); }}
         >
-          Open {validFocusItem.title}
+          Open {item.title}
         </button>
-      )}
+      ))}
 
       {/* SEAMLESS BOTTOM WHISPER CAPTION & FRAMELESS NAVIGATION CONTROLS */}
       <div
         data-hud-control="true"
         onPointerDown={(e) => e.stopPropagation()}
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-30 w-full bg-gradient-to-t from-[#f5f3ef] from-42% via-[#f5f3ef]/92 via-78% to-transparent pt-14 pb-5 sm:pb-6"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-30 w-full bg-gradient-to-t from-[var(--bg)] from-42% via-[var(--bg)]/92 via-78% to-transparent pt-14 pb-5 sm:pb-6"
       >
         {/* Whisper Focal Title above Navigation Strip */}
         {activeCaption && !loading && !error && (
           <div className="mb-2 flex items-baseline justify-center gap-3 px-6 text-center transition-opacity duration-200">
-            <span className="max-w-[65vw] truncate font-serif text-lg text-[#171613] sm:text-xl">
+            <span className="max-w-[65vw] truncate font-serif text-lg text-[var(--ink)] sm:text-xl">
               {activeCaption.title}
             </span>
-            <span className="hidden text-[10px] font-medium tracking-[0.14em] text-[#8e6b37] uppercase sm:inline">
+            <span className="hidden text-[12px] font-medium tracking-[0.14em] text-[var(--accent)] uppercase sm:inline">
               {activeCaption.category}
             </span>
           </div>
         )}
 
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-2 px-4 sm:gap-4 sm:px-10">
+        <div className="mx-auto flex max-w-[1440px] flex-col items-center justify-between gap-2 px-4 sm:flex-row sm:flex-wrap sm:gap-4 sm:px-10 md:flex-nowrap">
           <span
             className={cn(
-              'hidden text-[11px] font-medium tracking-[0.12em] text-[#171613]/60 uppercase transition-opacity duration-500 md:inline',
+              'hidden text-[12px] font-medium tracking-[0.12em] text-[var(--ink)]/60 uppercase transition-opacity duration-500 md:inline',
               hasInteracted ? 'opacity-50' : 'opacity-100',
             )}
           >
@@ -1789,7 +1101,7 @@ export function SpatialGallery3D({
           </span>
 
           {/* Pure Frameless 360° & Helix Controls (Zero Border / Zero Capsule) */}
-          <div className="pointer-events-auto flex items-center gap-0.5">
+          <div className="pointer-events-auto grid grid-cols-4 items-center gap-1 sm:flex sm:gap-0.5">
             <button
               type="button"
               aria-label="Spin 360 left"
@@ -1797,7 +1109,7 @@ export function SpatialGallery3D({
               onPointerUp={stopHold}
               onPointerLeave={stopHold}
               onPointerCancel={stopHold}
-              className="flex h-7 w-7 items-center justify-center text-[#171613]/75 transition hover:text-[#171613] active:scale-90 sm:h-8 sm:w-8"
+              className="flex h-11 w-11 items-center justify-center text-[var(--ink)]/75 transition hover:text-[var(--ink)] active:scale-90 "
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -1808,7 +1120,7 @@ export function SpatialGallery3D({
               onPointerUp={stopHold}
               onPointerLeave={stopHold}
               onPointerCancel={stopHold}
-              className="flex h-7 w-7 items-center justify-center text-[#171613]/75 transition hover:text-[#171613] active:scale-90 sm:h-8 sm:w-8"
+              className="flex h-11 w-11 items-center justify-center text-[var(--ink)]/75 transition hover:text-[var(--ink)] active:scale-90 "
             >
               <ChevronUp className="h-4 w-4" />
             </button>
@@ -1819,7 +1131,7 @@ export function SpatialGallery3D({
               onPointerUp={stopHold}
               onPointerLeave={stopHold}
               onPointerCancel={stopHold}
-              className="flex h-7 w-7 items-center justify-center text-[#171613]/75 transition hover:text-[#171613] active:scale-90 sm:h-8 sm:w-8"
+              className="flex h-11 w-11 items-center justify-center text-[var(--ink)]/75 transition hover:text-[var(--ink)] active:scale-90 "
             >
               <ChevronDown className="h-4 w-4" />
             </button>
@@ -1830,12 +1142,12 @@ export function SpatialGallery3D({
               onPointerUp={stopHold}
               onPointerLeave={stopHold}
               onPointerCancel={stopHold}
-              className="flex h-7 w-7 items-center justify-center text-[#171613]/75 transition hover:text-[#171613] active:scale-90 sm:h-8 sm:w-8"
+              className="flex h-11 w-11 items-center justify-center text-[var(--ink)]/75 transition hover:text-[var(--ink)] active:scale-90 "
             >
               <ChevronRight className="h-4 w-4" />
             </button>
 
-            <span className="mx-1 h-3.5 w-px bg-black/15 sm:mx-1.5" aria-hidden="true" />
+            <span className="hidden mx-1 h-3.5 w-px bg-black/15 sm:block sm:mx-1.5" aria-hidden="true" />
 
             <button
               type="button"
@@ -1844,7 +1156,7 @@ export function SpatialGallery3D({
               onPointerUp={stopHold}
               onPointerLeave={stopHold}
               onPointerCancel={stopHold}
-              className="flex h-7 w-7 items-center justify-center text-[#171613]/75 transition hover:text-[#171613] active:scale-90 sm:h-8 sm:w-8"
+              className="flex h-11 w-11 items-center justify-center text-[var(--ink)]/75 transition hover:text-[var(--ink)] active:scale-90 "
             >
               <Minus className="h-3.5 w-3.5" />
             </button>
@@ -1852,7 +1164,7 @@ export function SpatialGallery3D({
               type="button"
               onClick={resetCamera}
               aria-label="Recenter camera"
-              className="flex h-7 w-7 items-center justify-center text-[#171613]/75 transition hover:text-[#171613] active:scale-90 sm:h-8 sm:w-8"
+              className="flex h-11 w-11 items-center justify-center text-[var(--ink)]/75 transition hover:text-[var(--ink)] active:scale-90 "
             >
               <RotateCcw className="h-3.5 w-3.5" />
             </button>
@@ -1863,7 +1175,7 @@ export function SpatialGallery3D({
               onPointerUp={stopHold}
               onPointerLeave={stopHold}
               onPointerCancel={stopHold}
-              className="flex h-7 w-7 items-center justify-center text-[#171613]/75 transition hover:text-[#171613] active:scale-90 sm:h-8 sm:w-8"
+              className="flex h-11 w-11 items-center justify-center text-[var(--ink)]/75 transition hover:text-[var(--ink)] active:scale-90 "
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
@@ -1872,10 +1184,10 @@ export function SpatialGallery3D({
           <button
             type="button"
             onClick={onScrollToFooter}
-            className="pointer-events-auto inline-flex shrink-0 items-center gap-1 text-[10px] font-medium tracking-[0.11em] text-[#171613]/75 uppercase transition hover:text-[#171613] sm:gap-1.5 sm:text-[11px] sm:tracking-[0.12em]"
+            className="pointer-events-auto inline-flex min-h-11 shrink-0 items-center gap-1 text-[12px] font-medium tracking-[0.11em] text-[var(--ink)]/75 uppercase transition hover:text-[var(--ink)] sm:gap-1.5 sm:text-[12px] sm:tracking-[0.12em]"
           >
             Footer
-            <ArrowDown className="h-3.5 w-3.5 text-[#b18a4f]" />
+            <ArrowDown className="h-3.5 w-3.5 text-[var(--accent)]" />
           </button>
         </div>
       </div>

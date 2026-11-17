@@ -3,15 +3,15 @@
    ========================================================================== */
 .enqpg-page{
           --ink:#1b1a17;
-          --black:#fbfaf7;
-          --g50:#f4f1ea;
+          --black:var(--bg);
+          --g50:var(--surface-alt);
           --g100:rgba(27,26,23,0.04);
-          --g200:#e6e1d6;
-          --g500:#6b665c;
-          --brass:#8a6a28;
-          --brass-deep:#6f541d;
-          --brass-soft:#6f541d; --err:#B3261E;
-          font-family:var(--font-serif); color:var(--ink); background:var(--g50); min-height:100vh; width:100%;
+          --g200:var(--line);
+          --g500:var(--muted);
+          --brass:var(--accent);
+          --brass-deep:var(--accent-hover);
+          --brass-soft:var(--accent-hover); --err:#B3261E;
+          font-family:var(--font-sans); color:var(--ink); background:var(--g50); min-height:100vh; width:100%;
         }
         .enqpg-page *{ box-sizing:border-box; }
         .enqpg-page a{ color:inherit; text-decoration:none; }
@@ -40,7 +40,7 @@
 
         .enqpg-side{
           position:relative; padding:36px 28px; color:var(--ink); background:var(--g50);
-          
+
         }
         @media(min-width:768px){ .enqpg-side{ padding:48px 44px; } }
         .enqpg-side h2{ margin:0; font-size:26px; font-weight:700; line-height:1.25; }
@@ -51,7 +51,7 @@
         .enqpg-contact{ display:flex; gap:14px; align-items:flex-start; font-size:14px; line-height:1.55; color:var(--g500); }
         .enqpg-contact-icon{ flex-shrink:0; width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center;
           background:#ffffff; border:1px solid var(--g200); color:var(--brass-soft); }
-        .enqpg-contact small{ display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--g500); margin-bottom:2px; }
+        .enqpg-contact small{ display:block; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--g500); margin-bottom:2px; }
         .enqpg-contact a:hover{ color:var(--brass-soft); }
 
         .enqpg-next{ list-style:none; margin:0; padding:0; display:grid; gap:14px; counter-reset:n; }
@@ -59,7 +59,7 @@
         .enqpg-next li::before{ content:counter(n); position:absolute; left:0; top:-2px; width:26px; height:26px; border-radius:50%;
           background:var(--brass); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
 
-        .enqpg-main{ padding:120px 22px 28px; }
+        .enqpg-main{ padding:32px 22px 28px; }
         @media(min-width:768px){ .enqpg-main{ padding:48px 52px 44px; } }
 
         .enqpg-progress{ display:flex; align-items:center; gap:10px; margin-bottom:34px; }
@@ -76,7 +76,7 @@
         .enqpg-pline i{ display:block; height:100%; width:0; background:var(--brass); transition:width .35s; }
         .enqpg-pline.full i{ width:100%; }
 
-        .enqpg-panel{ animation:enqpgIn .35s ease; padding-top: 40px }
+        .enqpg-panel{ animation:enqpgIn .35s ease; padding-top: 8px }
         @keyframes enqpgIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
         .enqpg-title{ margin:0; font-size:22px; font-weight:700; }
         .enqpg-sub{ margin:6px 0 0; font-size:14px; color:var(--g500); line-height:1.6; }
@@ -105,7 +105,7 @@
           padding:18px 8px; font-size:13px; font-weight:600; border:1.5px solid var(--g200); border-radius:12px; background:#fff; transition:all .15s;
         }
         .enqpg-type input:hover + span{ border-color:var(--brass); }
-        .enqpg-type input:checked + span{ background:var(--black); border-color:var(--black); color:var(--ink); }
+        .enqpg-type input:checked + span{ background:var(--surface-alt); border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); color:var(--ink); }
         .enqpg-type input:checked + span svg{ color:var(--brass-soft); }
         .enqpg-type svg{ color:var(--brass-deep); transition:color .15s; }
 
@@ -141,3 +141,8 @@
         .enqpg-done h3{ margin:28px 0 0; font-size:26px; font-weight:700; }
         .enqpg-done p{ margin:12px auto 0; max-width:400px; font-size:14.5px; line-height:1.75; color:var(--g500); }
         .enqpg-done .enqpg-btn{ margin-top:28px; }
+
+.enqpg-kicker { color: var(--accent-on-dark); }
+.enqpg-shell > * { min-width: 0; }
+.enqpg-contact { overflow-wrap: anywhere; }
+@media (max-width: 979px) { .enqpg-main { grid-row: 1; } .enqpg-side { grid-row: 2; } }

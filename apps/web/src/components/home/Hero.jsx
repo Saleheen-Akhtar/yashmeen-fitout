@@ -1,13 +1,17 @@
 import { Fragment, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
+import useReducedMotionPreference from "../../hooks/useReducedMotionPreference";
 
 export default function Hero() {
   const { content } = useWebsiteContent();
+  const pageCopy = content.pageCopy.Hero;
+
   const hero = content?.hero || {};
   const rawTitle = hero.title || "From brief\nto built.";
   const titleLines = String(rawTitle).split(/\r?\n/);
   const stageRef = useRef(null);
+  const reducedMotion = useReducedMotionPreference();
 
   const titleTokens = [];
   let globalWordIdx = 0;
@@ -32,6 +36,32 @@ export default function Hero() {
   useLayoutEffect(() => {
     const stage = stageRef.current;
     if (!stage || typeof window === "undefined") return undefined;
+
+    if (reducedMotion) {
+      const calmContext = gsap.context(() => {
+        const photo = stage.querySelector(".aperture-hero-photo img");
+        const content = stage.querySelectorAll(".aperture-word, .aperture-kicker, .aperture-intro, .aperture-actions, .aperture-project-link, .aperture-proof");
+
+        if (photo) {
+          gsap.from(photo, {
+            opacity: 0.84,
+            duration: 0.7,
+            ease: "power2.out",
+            clearProps: "opacity",
+          });
+        }
+
+        gsap.from(content, {
+          opacity: 0,
+          duration: 0.56,
+          stagger: 0.045,
+          ease: "power2.out",
+          clearProps: "opacity",
+        });
+      }, stageRef);
+
+      return () => calmContext.revert();
+    }
 
     let ctx = null;
 
@@ -145,15 +175,15 @@ export default function Hero() {
         ctx = null;
       }
     };
-  }, []);
+  }, [reducedMotion, rawTitle]);
 
   return (
     <section className="aperture-hero" aria-labelledby="aperture-hero-title">
       <div className="aperture-hero-stage" data-parallax-layers ref={stageRef}>
         <div className="aperture-hero-photo" aria-hidden="true">
           <img
-            src="/static/hero-aperture-v2.webp"
-            alt=""
+            src={pageCopy.image}
+            alt={pageCopy.image_alt_1}
             fetchPriority="high"
             decoding="async"
             onError={(e) => {
@@ -168,7 +198,7 @@ export default function Hero() {
         <div className="aperture-copy">
           <div className="aperture-copy-parallax" data-parallax-layer="4">
             <div className="aperture-copy-inner">
-              <p className="aperture-kicker">{hero.kicker || "DUBAI · DESIGN / ENGINEERING / FIT-OUT"}</p>
+              <p className="aperture-kicker">{hero.kicker}</p>
               <h1 id="aperture-hero-title" className="no-split">
                 {titleTokens.map((token) => {
                   if (token.type === "space") return <Fragment key={token.key}>{" "}</Fragment>;
@@ -181,26 +211,25 @@ export default function Hero() {
                 })}
               </h1>
               <p className="aperture-intro">
-                {hero.intro || "One team shapes the space, makes the details and delivers the finished interior."}
+                {hero.intro}
               </p>
               <div className="aperture-actions">
                 <button type="button" className="aperture-cta" onClick={openEnquiry}>
-                  {hero.ctaText || "START A PROJECT"} <span aria-hidden="true">↗</span>
+                  {hero.ctaText} <span aria-hidden="true">↗</span>
                 </button>
               </div>
             </div>
           </div>
         </div>
         <p className="aperture-proof">
-          <strong>{hero.proofMetric || "35,000 sq. ft."}</strong>
-          <span>{hero.proofLabel || "Al Quoz atelier"}</span>
+          <strong>{hero.proofMetric}</strong>
+          <span>{hero.proofLabel}</span>
         </p>
         <a
           className="aperture-project-link"
           href="#manifesto"
           aria-label="Scroll to explore studio manifesto"
-        >
-          SCROLL TO EXPLORE <span aria-hidden="true">↓</span>
+        >{pageCopy.scroll_to_explore}<span aria-hidden="true">↓</span>
         </a>
       </div>
     </section>

@@ -1,0 +1,575 @@
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "6ae711474b8ab8482d43b459",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Luxury Kitchen Design",
+      "size": "250",
+      "location": "Business bay Dubai",
+      "scope": "Design & Build",
+      "sector": "Excutive Tower C 3601",
+      "description": "Luxury isn’t just a aesthetic—it’s a feeling. 🌿🕊️\r\n​Watch how we turned raw structural lines into a seamless blend of comfort, high technology, and master craftsmanship.\r\n​✨ Custom millwork\r\n✨ Smart home integration\r\n✨ Handpicked artisanal finishes\r\n​Tell us in the comments: What’s your favorite detail",
+      "images": [
+        "/projects/1793528135282-802437924.jpg",
+        "/projects/1793528135286-655870736.jpg",
+        "/projects/1793528135287-310261982.jpg",
+        "/projects/1793528135288-368673887.jpg",
+        "/projects/1793528135289-705716091.jpg",
+        "/projects/1793528135290-85466861.jpg",
+        "/projects/1793528135291-396848174.jpg"
+      ],
+      "createdAt": "2026-11-01T10:15:35.293Z",
+      "updatedAt": "2026-11-01T10:15:35.293Z"
+    },
+    {
+      "_id": "6ae710b74b8ab8482d43b458",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Luxury Interior Make Over",
+      "size": "2500",
+      "location": "Acacia Tower A",
+      "scope": "Design & Build",
+      "sector": "Appartment",
+      "description": "Luxury isn’t just a aesthetic—it’s a feeling. 🌿🕊️\r\n​Watch how we turned raw structural lines into a seamless blend of comfort, high technology, and master craftsmanship.\r\n​✨ Custom millwork\r\n✨ Smart home integration\r\n✨ Handpicked artisanal finishes\r\n​Tell us in the comments: What’s your favorite detail",
+      "images": [
+        "/projects/1793527991393-811030210.jpg",
+        "/projects/1793527991530-815657167.jpg",
+        "/projects/1793527991530-55168279.jpg",
+        "/projects/1793527991531-264169051.jpg",
+        "/projects/1793527991531-438809304.jpg",
+        "/projects/1793527991531-645477127.jpg",
+        "/projects/1793527991532-584557802.jpg",
+        "/projects/1793527991532-316764877.jpg",
+        "/projects/1793527991532-87176898.jpg",
+        "/projects/1793527991532-918654641.jpg"
+      ],
+      "createdAt": "2026-11-01T10:13:11.968Z",
+      "updatedAt": "2026-11-01T10:13:11.968Z"
+    },
+    {
+      "_id": "6ae6e023b3f8d3621ab1f375",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "TV Wall Decoration & Design",
+      "size": "700",
+      "location": "UAE",
+      "scope": "Design & Build",
+      "sector": "Appartment & Villa",
+      "description": "Transform Your Living Space: TV Wall Design & Renovation\r\nYour TV feature wall is the central focal point of your living room. We specialize in transforming ordinary walls into modern, elegant, and functional entertainment units.\r\nWith a full portfolio of ready-to-implement design concepts and in-stock materials, we bring your vision to life seamlessly and efficiently.",
+      "images": [
+        "/projects/1793515555940-731720324.jpg",
+        "/projects/1793515555941-519416178.jpg",
+        "/projects/1793515555941-325386098.jpg",
+        "/projects/1793515555941-724844269.jpg",
+        "/projects/1793515555942-766692779.jpg",
+        "/projects/1793515555942-554956192.jpg",
+        "/projects/1793515555943-613194208.jpg",
+        "/projects/1793515555943-458170105.jpg",
+        "/projects/1793515555943-570473967.jpg",
+        "/projects/1793515555944-652977616.jpg"
+      ],
+      "createdAt": "2026-11-01T06:45:55.945Z",
+      "updatedAt": "2026-11-01T06:45:55.945Z"
+    },
+    {
+      "_id": "6ae6decdb3f8d3621ab1f374",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Bathroom Design & Layout Available let's Build",
+      "size": "500",
+      "location": "UAE",
+      "scope": "Design & Build",
+      "sector": "Bathroom Renovation",
+      "description": "Complete Luxury Bathroom Renovation & Remodeling\r\nWe bring your vision to life! If you already have your preferred bathroom layout and design ready, our expert team is here to execute it with absolute precision and flawless finish. From complete demolition and structural waterproofing to high-end tiling, bespoke vanity installation, and concealed plumbing/electrical setups, we ensure every detail matches your design specification.\r\n2. Detailed Scope of Work (Service Breakdown)\r\n(Agar design approval ke baad detailed work scope bhejni ho)\r\n1. Demolition & Site Preparation\r\nSafe demolition of existing wall & floor tiles, ceiling, and sanitary fixtures.\r\nComplete site cleanup and ethical disposal of debris/wastage.\r\n2. Waterproofing & Sub-floor Preparation\r\nFloor screeding and wall leveling with heavy-duty plaster mesh.\r\nApplication of premium-grade waterproofing systems (e.g., Mapei system) with a 48-hour leak-testing period prior to tile laying.\r\n3. Precision Tiling & Masonry\r\nAlignment and installation of client-selected wall and floor tiles using high-bond adhesives and epoxy grout.\r\nClean corner edging, tile clips, and integrated floor drain trap installations.\r\n4. Custom Vanity & Countertop Installation\r\nCustom fabrication and installation of waterproof MDF vanities (floating/wall-mounted with soft-close drawers).\r\nMarble or stone countertop integration with precision basin cutouts and bottle trap plumbing.\r\n5. Plumbing, Electrical & Sanitary Fixtures\r\nComplete renewal of water supply (PPR piping) and drainage lines.\r\nConcealed WC frame installation, wall-hung toilet setup, shattaf, and premium shower mixers.\r\nPoint-to-point concealed electrical wiring for LED corner profiles, recessed ceiling lights, and illuminated vanity mirrors.\r\n6. Custom Glass & Recessed Niche Design\r\nCustom built-in wall niches (in shower & WC areas) built as per approved design dimensions.\r\n10mm tempered glass shower partition with stainless steel (Grade 314) hardware and silicone sealing.\r\n7. Moisture-Resistant Gypsum Ceiling\r\nInstallation of 12mm moisture-resistant green gypsum false ceiling with shadow angles.\r\nSmooth 2-coat stucco jointing, primer, and premium paint finish.",
+      "images": [
+        "/projects/1793515213497-695861263.jpg",
+        "/projects/1793515213498-771856377.jpg",
+        "/projects/1793515213498-801803676.jpg",
+        "/projects/1793515213498-176938551.jpg",
+        "/projects/1793515213499-380562723.jpg",
+        "/projects/1793515213499-379519126.jpg",
+        "/projects/1793515213499-846912723.jpg",
+        "/projects/1793515213499-266222714.jpg",
+        "/projects/1793515213500-774169368.jpg",
+        "/projects/1793515213501-540766839.jpg"
+      ],
+      "createdAt": "2026-11-01T06:40:13.502Z",
+      "updatedAt": "2026-11-01T06:40:13.502Z"
+    },
+    {
+      "_id": "6ae6dd22b3f8d3621ab1f373",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Fluted WPC Wall Panel Unit",
+      "size": "350",
+      "location": "Dubai Gold Souq",
+      "scope": "Design & Build",
+      "sector": "Luxury Watche Shop",
+      "description": "Bring timeless European elegance into your space with our premium wood and WPC fluted pannel and custom gypsum decor. Whether you prefer a classic palace vibe or a clean, modern minimalist look, we craft stunning wall panels and ceiling designs that redefine luxury. ✨🏡",
+      "images": [
+        "/projects/1793514786110-862014392.jpg",
+        "/projects/1793514786110-390045997.jpg",
+        "/projects/1793514786111-759498297.jpg",
+        "/projects/1793514786111-571310306.jpg",
+        "/projects/1793514786112-873396106.jpg",
+        "/projects/1793514786112-128730944.jpg",
+        "/projects/1793514786112-45397277.jpg",
+        "/projects/1793514786113-946440679.jpg",
+        "/projects/1793514786113-607586668.jpg",
+        "/projects/1793514786114-940948796.jpg"
+      ],
+      "createdAt": "2026-11-01T06:33:06.114Z",
+      "updatedAt": "2026-11-01T06:33:06.114Z"
+    },
+    {
+      "_id": "6ae6db03b3f8d3621ab1f372",
+      "categoryId": {
+        "_id": "6acea8d2f6c4f9d2c6531bf4",
+        "categoryName": "DECOR GYPSUM SPECIALIST",
+        "status": true
+      },
+      "title": "Gypsum decoration & French Mould",
+      "size": "3,000",
+      "location": "Al Quoz Office",
+      "scope": "Design & Build",
+      "sector": "Warehouse Office",
+      "description": "Bring timeless European elegance into your space with our premium French moulding and custom gypsum decor. Whether you prefer a classic palace vibe or a clean, modern minimalist look, we craft stunning wall panels and ceiling designs that redefine luxury. ✨🏡",
+      "images": [
+        "/projects/1793514350281-291931991.jpg",
+        "/projects/1793514350281-499326269.jpg",
+        "/projects/1793514350281-403090992.jpg",
+        "/projects/1793514350380-210818669.jpg",
+        "/projects/1793514350418-282747877.jpg",
+        "/projects/1793514350446-277406481.jpg"
+      ],
+      "createdAt": "2026-11-01T06:24:03.672Z",
+      "updatedAt": "2026-11-01T06:25:51.396Z",
+      "videoUrl": ""
+    },
+    {
+      "_id": "6ae6d9f6b3f8d3621ab1f371",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Kitchen Remodeling & Design Available",
+      "size": "500",
+      "location": "UAE",
+      "scope": "Kitchen Design & Build",
+      "sector": "Appartment & Villa",
+      "description": "A well-designed kitchen isn't just about looks—it’s about functionality, smart storage, and a warm vibe where memories are made. From sleek modular layouts to modern aesthetics, we’ve crafted this space to be both beautiful and practical.\r\nWhat is your favorite feature in a dream kitchen? Tell us in the comments below! 👇\r\n#KitchenDesign #ModularKitchen #InteriorDesign #HomeDecor #ModernKitchen #DreamKitchen #HomeSweetHome",
+      "images": [
+        "/projects/1793513974126-279341460.jpg",
+        "/projects/1793513974127-896784211.jpg",
+        "/projects/1793513974127-507191555.jpg",
+        "/projects/1793513974127-175732646.jpg",
+        "/projects/1793513974127-343484876.jpg",
+        "/projects/1793513974127-469387175.jpg",
+        "/projects/1793513974127-387441075.jpg",
+        "/projects/1793513974128-251657409.jpg",
+        "/projects/1793513974128-295287539.jpg",
+        "/projects/1793513974128-850778201.jpg"
+      ],
+      "createdAt": "2026-11-01T06:19:34.129Z",
+      "updatedAt": "2026-11-01T06:19:34.129Z"
+    },
+    {
+      "_id": "6ae6d8bdb3f8d3621ab1f370",
+      "categoryId": {
+        "_id": "6acea9def6c4f9d2c6531bf8",
+        "categoryName": "Electrical Mentainance",
+        "status": true
+      },
+      "title": "Garden Street Light Avilable",
+      "size": "0.000",
+      "location": "UAE",
+      "scope": "Design & Build",
+      "sector": "Garden",
+      "description": "Darkness takes over Garden Street every evening, making it unsafe for pedestrians, senior citizens, and children. The lack of street lighting has also become a major concern for vehicle movement and local security.\r\nWe request the local authorities and municipal corporation to take immediate action and install street lights on Garden Street as soon as possible. Safety should be a priority! 🙏\r\n#GardenStreet #PublicSafety #MunicipalCorporation #StreetLights #LocalIssues",
+      "images": [
+        "/projects/1793513661390-67293860.jpg",
+        "/projects/1793513661390-738700092.jpg",
+        "/projects/1793513661390-994496742.jpg",
+        "/projects/1793513661390-207810576.jpg",
+        "/projects/1793513661391-615435164.jpg",
+        "/projects/1793513661392-828870474.jpg",
+        "/projects/1793513661392-569437009.jpg"
+      ],
+      "createdAt": "2026-11-01T06:14:21.393Z",
+      "updatedAt": "2026-11-01T06:14:21.393Z"
+    },
+    {
+      "_id": "6ae5f5c7b3f8d3621ab1f354",
+      "categoryId": {
+        "_id": "6acea8d2f6c4f9d2c6531bf4",
+        "categoryName": "DECOR GYPSUM SPECIALIST",
+        "status": true
+      },
+      "title": "Gypsum ceiling",
+      "size": "30000",
+      "location": "Creek Tower",
+      "scope": "Design & Build",
+      "sector": "Apartment",
+      "description": "We breathe new life into your property with end-to-end renovation solutions tailored to your taste and lifestyle.\r\n​Architectural & Interior Design: Innovative space planning, 3D visualizations, and modern layouts.\r\n​Structural Modifications: Expanding rooms, adding extensions, and optimizing spatial flow.\r\n​MEP Works (Mechanical, Electrical, & Plumbing): Upgrading wiring, smart home automation, energy-efficient HVAC, and modern plumbing.\r\n​Flooring, Tiling & Painting: Premium marble installation, wooden flooring, custom wall finishes, and luxury painting.\r\n​Landscaping & Outdoor Living: Designing stunning gardens, swimming pools, pergolas, and outdoor majlis areas.",
+      "images": [
+        "/projects/1793455555117-889128288.jpg",
+        "/projects/1793455555120-48166556.jpg",
+        "/projects/1793455555298-33658374.jpg",
+        "/projects/1793455555828-965366835.jpg",
+        "/projects/1793455556464-581082156.jpg",
+        "/projects/1793455557114-569403642.jpg",
+        "/projects/1793455557804-738616791.heif",
+        "/projects/1793455558514-117096328.jpg",
+        "/projects/1793455558906-27159530.heic"
+      ],
+      "createdAt": "2026-10-31T14:05:59.182Z",
+      "updatedAt": "2026-10-31T14:05:59.182Z"
+    },
+    {
+      "_id": "6ae5f436b3f8d3621ab1f353",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Apartment Renovation Italy Client",
+      "size": "1800",
+      "location": "Matrix Tower Sports City",
+      "scope": "Design & Build",
+      "sector": "Apartment",
+      "description": "We breathe new life into your property with end-to-end renovation solutions tailored to your taste and lifestyle.\r\n​Architectural & Interior Design: Innovative space planning, 3D visualizations, and modern layouts.\r\n​Structural Modifications: Expanding rooms, adding extensions, and optimizing spatial flow.\r\n​MEP Works (Mechanical, Electrical, & Plumbing): Upgrading wiring, smart home automation, energy-efficient HVAC, and modern plumbing.\r\n​Flooring, Tiling & Painting: Premium marble installation, wooden flooring, custom wall finishes, and luxury painting.\r\n​Landscaping & Outdoor Living: Designing stunning gardens, swimming pools, pergolas, and outdoor majlis areas.",
+      "images": [
+        "/projects/1793455158987-16545995.jpg",
+        "/projects/1793455158987-916112993.jpg",
+        "/projects/1793455158988-285463888.jpg",
+        "/projects/1793455158988-330388780.jpg",
+        "/projects/1793455158988-393086251.jpg",
+        "/projects/1793455158988-729390328.jpg",
+        "/projects/1793455158988-446442088.jpg",
+        "/projects/1793455158988-453896610.jpg",
+        "/projects/1793455158988-983636021.jpg",
+        "/projects/1793455158989-701808958.jpg"
+      ],
+      "createdAt": "2026-10-31T13:59:18.99Z",
+      "updatedAt": "2026-10-31T14:00:25.838Z",
+      "videoUrl": ""
+    },
+    {
+      "_id": "6ae5d9fdb3f8d3621ab1f352",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Luxury Interior Make Over",
+      "size": "3000",
+      "location": "Pearl jhumera Dubai",
+      "scope": "Design & Build",
+      "sector": "Villa",
+      "description": "We breathe new life into your property with end-to-end renovation solutions tailored to your taste and lifestyle.\r\n​Architectural & Interior Design: Innovative space planning, 3D visualizations, and modern layouts.\r\n​Structural Modifications: Expanding rooms, adding extensions, and optimizing spatial flow.\r\n​MEP Works (Mechanical, Electrical, & Plumbing): Upgrading wiring, smart home automation, energy-efficient HVAC, and modern plumbing.\r\n​Flooring, Tiling & Painting: Premium marble installation, wooden flooring, custom wall finishes, and luxury painting.\r\n​Landscaping & Outdoor Living: Designing stunning gardens, swimming pools, pergolas, and outdoor majlis areas.",
+      "images": [
+        "/projects/1793448445215-515652801.jpg",
+        "/projects/1793448445215-443810548.jpg",
+        "/projects/1793448445215-579987452.jpg",
+        "/projects/1793448445216-240056139.jpg",
+        "/projects/1793448445216-962264344.jpg",
+        "/projects/1793448445217-477118813.jpg",
+        "/projects/1793448445217-60573401.jpg",
+        "/projects/1793448445218-996473735.jpg",
+        "/projects/1793448445218-151573758.jpg"
+      ],
+      "createdAt": "2026-10-31T12:07:25.22Z",
+      "updatedAt": "2026-10-31T12:07:25.22Z"
+    },
+    {
+      "_id": "6ae5d99fb3f8d3621ab1f351",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Complete Renovation in Villa",
+      "size": "5,000",
+      "location": "Khorfakan",
+      "scope": "Design and build",
+      "sector": "Villa",
+      "description": "We breathe new life into your property with end-to-end renovation solutions tailored to your taste and lifestyle.\r\nArchitectural & Interior Design: Innovative space planning, 3D visualizations, and modern layouts.\r\nStructural Modifications: Expanding rooms, adding extensions, and optimizing spatial flow.\r\nMEP Works (Mechanical, Electrical, & Plumbing): Upgrading wiring, smart home automation, energy-efficient HVAC, and modern plumbing.\r\nFlooring, Tiling & Painting: Premium marble installation, wooden flooring, custom wall finishes, and luxury painting.\r\nLandscaping & Outdoor Living: Designing stunning gardens, swimming pools, pergolas, and outdoor majlis areas.",
+      "images": [
+        "/projects/1793448351300-842956056.jpg",
+        "/projects/1793448351300-219727866.jpg",
+        "/projects/1793448351301-717478197.jpg",
+        "/projects/1793448351301-19787972.jpg",
+        "/projects/1793448351302-790502366.jpg",
+        "/projects/1793448351303-788576606.jpg",
+        "/projects/1793448351303-43625120.jpg",
+        "/projects/1793448351303-886936323.jpg",
+        "/projects/1793448351304-949624670.jpg",
+        "/projects/1793448351304-260466853.jpg"
+      ],
+      "createdAt": "2026-10-31T12:05:51.306Z",
+      "updatedAt": "2026-10-31T12:05:51.306Z"
+    },
+    {
+      "_id": "6ae599afb3f8d3621ab1f350",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Complete Apartment fit Out",
+      "size": "2000",
+      "location": "Silicon Oasis Sapphire 1 505",
+      "scope": "Design & Build",
+      "sector": "Apartment",
+      "description": "We just renovated our apartment and the final result is honestly beyond what we imagined! Breathing fresh life into this space felt like a long project, but seeing it all come together makes every bit of the dust and effort completely worth it. Can't wait to host and make new memories here!",
+      "images": [
+        "/projects/1793431983533-995292021.jpg",
+        "/projects/1793431983533-338231877.jpg",
+        "/projects/1793431983534-246688794.jpg",
+        "/projects/1793431983534-11430194.jpg",
+        "/projects/1793431983534-994935127.jpg",
+        "/projects/1793431983534-334706147.jpg",
+        "/projects/1793431983534-136301105.jpg",
+        "/projects/1793431983535-123861600.jpg"
+      ],
+      "createdAt": "2026-10-31T07:33:03.536Z",
+      "updatedAt": "2026-10-31T07:33:03.536Z"
+    },
+    {
+      "_id": "6ae598ccb3f8d3621ab1f34f",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Modern Apartment Renovation",
+      "size": "45000",
+      "location": "Pearl Jhumera C20",
+      "scope": "Design & Build",
+      "sector": "Villa",
+      "description": "We just renovated our apartment and the final result is honestly beyond what we imagined! Breathing fresh life into this space felt like a long project, but seeing it all come together makes every bit of the dust and effort completely worth it. Can't wait to host and make new memories here!",
+      "images": [
+        "/projects/1793431756086-108800381.jpg",
+        "/projects/1793431756086-878481017.jpg",
+        "/projects/1793431756086-694311177.jpg",
+        "/projects/1793431756087-779525589.jpg",
+        "/projects/1793431756087-460634353.jpg",
+        "/projects/1793431756087-381783703.jpg",
+        "/projects/1793431756088-481740765.jpg",
+        "/projects/1793431756088-724088626.jpg",
+        "/projects/1793431756088-414246518.jpg",
+        "/projects/1793431756089-34635646.jpg"
+      ],
+      "createdAt": "2026-10-31T07:29:16.089Z",
+      "updatedAt": "2026-10-31T07:29:16.089Z"
+    },
+    {
+      "_id": "6ae5982fb3f8d3621ab1f34e",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Luxury Interior Make Over",
+      "size": "3500",
+      "location": "Burj Vista Tower 1",
+      "scope": "Design & Build",
+      "sector": "Apartment",
+      "description": "",
+      "images": [
+        "/projects/1793431599551-248157439.jpg",
+        "/projects/1793431599551-428645361.jpg",
+        "/projects/1793431599551-214836883.jpg",
+        "/projects/1793431599552-331262596.jpg",
+        "/projects/1793431599552-981380772.jpg",
+        "/projects/1793431599552-741044649.jpg",
+        "/projects/1793431599552-98204657.jpg"
+      ],
+      "createdAt": "2026-10-31T07:26:39.553Z",
+      "updatedAt": "2026-10-31T07:26:39.553Z"
+    },
+    {
+      "_id": "6ae597bfb3f8d3621ab1f34d",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Luxury Interior Make Over",
+      "size": "1500",
+      "location": "Al Furjan B Block G01",
+      "scope": "Design & Build",
+      "sector": "Appartment",
+      "description": "We just renovated our apartment and the final result is honestly beyond what we imagined! Breathing fresh life into this space felt like a long project, but seeing it all come together makes every bit of the dust and effort completely worth it. Can't wait to host and make new memories here!",
+      "images": [
+        "/projects/1793431487516-851573484.jpg",
+        "/projects/1793431487516-579423306.jpg",
+        "/projects/1793431487516-746789568.jpg",
+        "/projects/1793431487517-936369153.jpg",
+        "/projects/1793431487517-354248052.jpg",
+        "/projects/1793431487517-16102993.jpg",
+        "/projects/1793431487518-323431378.jpg",
+        "/projects/1793431487518-892778599.jpg",
+        "/projects/1793431487518-646785984.jpg",
+        "/projects/1793431487518-707321747.jpg"
+      ],
+      "createdAt": "2026-10-31T07:24:47.519Z",
+      "updatedAt": "2026-10-31T07:24:47.519Z"
+    },
+    {
+      "_id": "6ae5972ab3f8d3621ab1f34c",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Luxury Interior Make Over",
+      "size": "2500",
+      "location": "Acacia Tower B Dubai Hill",
+      "scope": "Design & Build",
+      "sector": "Apartment",
+      "description": "We just renovated our apartment and the final result is honestly beyond what we imagined! Breathing fresh life into this space felt like a long project, but seeing it all come together makes every bit of the dust and effort completely worth it. \r\nCan't wait to host and make new memories here!",
+      "images": [
+        "/projects/1793431338778-872088560.jpg",
+        "/projects/1793431338778-876079245.jpg",
+        "/projects/1793431338778-647825075.jpg",
+        "/projects/1793431338779-744071720.jpg",
+        "/projects/1793431338779-39554485.jpg",
+        "/projects/1793431338779-73471862.jpg",
+        "/projects/1793431338779-211812876.jpg",
+        "/projects/1793431338779-298099567.jpg",
+        "/projects/1793431338779-709047414.jpg"
+      ],
+      "createdAt": "2026-10-31T07:22:18.781Z",
+      "updatedAt": "2026-10-31T07:22:18.781Z"
+    },
+    {
+      "_id": "6ae57d57b3f8d3621ab1f34b",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Luxury Interior Makeover",
+      "size": "3000",
+      "location": "Pearl jhumera",
+      "scope": "DESIGN & BUILD",
+      "sector": "Residential",
+      "description": "We are thrilled to announce the completion of our apartment renovation. Every room has been thoughtfully updated with modern finishes optimized layouts, and enhanced lighting to create a refined comfortable living environment tailored for contemporary urban living.",
+      "images": [
+        "/projects/1793424727228-861417918.jpg",
+        "/projects/1793424727228-539982591.jpg",
+        "/projects/1793424727228-158598601.jpg",
+        "/projects/1793424727229-249330713.jpg",
+        "/projects/1793424727229-336672217.jpg",
+        "/projects/1793424727229-131600533.jpg",
+        "/projects/1793424727229-428389323.jpg",
+        "/projects/1793424727229-569990738.jpg",
+        "/projects/1793424727229-687127510.jpg",
+        "/projects/1793424727230-385025187.jpg"
+      ],
+      "createdAt": "2026-10-31T05:32:07.231Z",
+      "updatedAt": "2026-10-31T05:32:07.231Z"
+    },
+    {
+      "_id": "6ae57c2ab3f8d3621ab1f34a",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Complete Apartment Fit-Out",
+      "size": "350",
+      "location": "Palm jhumera",
+      "scope": "Joinery Decor Electrical Painting",
+      "sector": "Renovation",
+      "description": "We just renovated our apartment and the final result is honestly beyond what we imagined! Breathing fresh life into this space felt like a long project, but seeing it all come together makes every bit of the dust and effort completely worth it. \r\nCan't wait to host and make new memories here.",
+      "images": [
+        "/projects/1793424425143-642924438.jpg",
+        "/projects/1793424425495-30675132.jpg",
+        "/projects/1793424425495-331951495.jpg",
+        "/projects/1793424425495-227191855.jpg",
+        "/projects/1793424425495-500881783.jpg",
+        "/projects/1793424425495-938848411.jpg",
+        "/projects/1793424425556-66486642.jpg"
+      ],
+      "createdAt": "2026-10-31T05:27:06.36Z",
+      "updatedAt": "2026-10-31T05:28:34.553Z",
+      "videoUrl": ""
+    },
+    {
+      "_id": "6ae4e13ab3f8d3621ab1f33a",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Design",
+      "size": "0.000",
+      "location": "UAE",
+      "scope": "Design",
+      "sector": "Home Renovation",
+      "description": "We have a dedicated and experienced team along with creative design capabilities to bring your vision to life. Whether you need innovative branding, UI/UX design, or comprehensive project execution, our professionals are equipped to deliver high-quality results tailored to your goals",
+      "images": [
+        "/projects/1793384762814-284918945.jpg",
+        "/projects/1793384762815-119377023.jpg",
+        "/projects/1793384762816-477792522.jpg",
+        "/projects/1793384762816-994689298.jpg",
+        "/projects/1793384762817-465782279.jpg",
+        "/projects/1793384762817-261670088.jpg",
+        "/projects/1793384762817-33336191.jpg",
+        "/projects/1793384762817-601736285.jpg",
+        "/projects/1793384762818-583592180.jpg",
+        "/projects/1793384762818-678718643.jpg"
+      ],
+      "createdAt": "2026-10-30T18:26:02.827Z",
+      "updatedAt": "2026-10-30T18:26:02.827Z"
+    },
+    {
+      "_id": "6ac6892541ea373e8d5c4bc5",
+      "categoryId": {
+        "_id": "6ac6844a41ea373e8d5c4bc3",
+        "categoryName": "MEP Infrastructure/External Electrical Works",
+        "status": true
+      },
+      "title": "DEWA ELECTRICAL PROJECT",
+      "size": "3000 mtr",
+      "location": "Dubai Silicon Oasis",
+      "scope": "Main Line Cabel Pulling in Microsoft Data Center",
+      "sector": "Silicon Central",
+      "description": "Site Preparation & Safety Setup:\r\n​Setting up safety barricades, warning signs, and site safety controls prior to excavation.\r\n\r\n​Review and verification of NOCs and existing underground utility drawings.\r\n\r\n​Trench Excavation & Route Preparation:\r\n​Manual and mechanical excavation of cable trenches as per DEWA approved depth, width, and route drawings.\r\n​Shoring and dewatering (if required based on site ground conditions).\r\n\r\n​Sand Bedding & Ducting:\r\n​Supply and laying of a 100mm sweet sand bedding at the bottom of the trench prior to cable placement.\r\n​Installation of high-density polyethylene (HDPE) / UPVC heavy-duty ducts/conduits at road crossings and concrete entries.\r\n\r\n​Cable Pulling & Laying:\r\n​Transportation, handling, and mounting of cable drums on jack stands.\r\n\r\n​Pulling and laying of Low Voltage (LV) / Medium Voltage (MV) armored power cables using cable rollers, pulling winches, and tension-monitoring mechanisms to prevent cable jacket damage.\r\n\r\n​Cable Protection & Backfilling:\r\n​Application of a top cover of 100mm sweet sand directly over the laid cables.\r\n\r\n​Installation of concrete cable protection tiles/covers along the cable route.\r\n\r\n​Laying of high-visibility yellow electrical warning tape above the sand bed layer.\r\n​Layer-by-layer backfilling using approved soil material followed by proper compaction.\r\n\r\n​Testing & Handover:\r\n​Pre-laying and post-laying insulation resistance (Megger) testing and continuity checks.\r\n\r\n​Preparation and submission of As-Built drawings and route markers for final authority/consultant approval.",
+      "images": [
+        "/projects/1791396130297-261889036.jpg",
+        "/projects/1791396130515-671426344.jpg",
+        "/projects/1791396132026-32828555.jpg",
+        "/projects/1791396132026-545423646.jpg",
+        "/projects/1791396132036-84872673.jpg",
+        "/projects/1791396132077-707034966.jpg",
+        "/projects/1791396132077-233587218.jpg",
+        "/projects/1791396132077-444828868.jpg",
+        "/projects/1791396132156-794202984.jpg",
+        "/projects/1791396132218-106189088.jpg"
+      ],
+      "createdAt": "2026-10-07T18:02:13.052Z",
+      "updatedAt": "2026-10-07T18:02:13.052Z"
+    }
+  ]
+}

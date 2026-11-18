@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 // TODO: adjust this path to where your API module lives
 import { postAPI, itemPath } from "../services/api";
 import { subscribeCacheInvalidation } from "./publicCache";
+import { getPrerenderData } from "./prerenderData";
 
 /* ---------------- helpers ---------------- */
 
@@ -19,10 +20,9 @@ const fileUrl = (path = "") =>
     : `${itemPath}/${String(path).replace(/^\/+/, "")}`;
 
 const stripHtml = (html = "") =>
-  new DOMParser()
-    .parseFromString(String(html), "text/html")
-    .body.textContent.replace(/\s+/g, " ")
-    .trim();
+  typeof DOMParser !== "undefined"
+    ? new DOMParser().parseFromString(String(html), "text/html").body.textContent.replace(/\s+/g, " ").trim()
+    : String(html).replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 
 const truncate = (text, n = 130) =>
   text.length > n ? `${text.slice(0, n).trimEnd()}…` : text;
@@ -62,6 +62,11 @@ let versionInflight = null; // de-dupes simultaneous version checks
 
 function readCache(limit) {
   const key = cacheKey(limit);
+  const prerendered = getPrerenderData().posts;
+  if (Array.isArray(prerendered)) {
+    const posts = prerendered.slice(0, limit ?? undefined).map(buildCard);
+    return { posts, version: "prerender", savedAt: Date.now() };
+  }
   try {
     const raw = localStorage.getItem(key);
     if (!raw) {

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
 import { getDubaiAtelierStatus } from "../../lib/helpers";
+import MotionToggle from "./MotionToggle";
 
 const MENU_ITEMS = [
   { label: "Home", href: "/" },
@@ -14,10 +15,12 @@ const MENU_ITEMS = [
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const INITIAL_ATELIER_STATUS = { dubaiTime: "Dubai time", isOpen: false };
 
 export default function MenuOverlay({ open, onClose }) {
+  const { pathname } = useLocation();
   const { content } = useWebsiteContent();
-  const [status, setStatus] = useState(() => getDubaiAtelierStatus());
+  const [status, setStatus] = useState(INITIAL_ATELIER_STATUS);
   const curtainRef = useRef(null);
   const closeBtnRef = useRef(null);
 
@@ -26,20 +29,17 @@ export default function MenuOverlay({ open, onClose }) {
   const cityCountry = [addr.city || "Dubai", addr.country || "UAE"].filter(Boolean).join(", ");
   const email = content?.email || "info@yfbfitoutcontracting.com";
   const mobile = content?.mobile || "+971 54 386 2870";
-  const socialLinks =
-    Array.isArray(content?.socialLinks) && content.socialLinks.length > 0
-      ? content.socialLinks
-      : [
-          { platform: "Instagram", url: "https://www.instagram.com/yashmeenfuture" },
-          { platform: "Facebook", url: "https://www.facebook.com/profile.php?id=61595342604561" },
-          { platform: "YouTube", url: "https://www.youtube.com/@YashmeenFuture" },
-        ];
+  const socialLinks = content.socialLinks;
 
   useEffect(() => {
-    const update = () => setStatus(getDubaiAtelierStatus());
+    const update = () => setStatus(getDubaiAtelierStatus(new Date(), content.openingHours));
+    const raf = window.requestAnimationFrame(update);
     const interval = setInterval(update, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      clearInterval(interval);
+    };
+  }, [content.openingHours]);
 
   useEffect(() => {
     if (!open) {
@@ -111,7 +111,7 @@ export default function MenuOverlay({ open, onClose }) {
         <Link to="/" className="menu-curtain-brand" onClick={() => onClose(false)}>
           YASHMEEN
         </Link>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="menu-curtain-actions">
           <button
             type="button"
             className="menu-curtain-close"
@@ -140,6 +140,7 @@ export default function MenuOverlay({ open, onClose }) {
               <Link
                 to={item.href}
                 className="menu-curtain-link"
+                aria-current={pathname === item.href || (item.href === "/services" && pathname.startsWith("/services/")) || (item.href === "/projects" && pathname.startsWith("/project/")) ? "page" : undefined}
                 onClick={() => onClose(false)}
                 style={{
                   transitionDelay: open ? `${0.2 + idx * 0.06}s` : "0s",
@@ -180,6 +181,7 @@ export default function MenuOverlay({ open, onClose }) {
 
         <div>
           <div className="menu-curtain-title">INDEX</div>
+          <MotionToggle />
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
             {socialLinks.map((soc, i) => (
               <a

@@ -1,11 +1,14 @@
+import { logError } from "../utils/logger.js";
 import mongoose from 'mongoose';
 import EnquiryModel from '../models/enquiry.model.js';
 import { sendEnquiryEmail } from '../middlewares/sendEmail.js';
+import { handlePublicSubmissionTrap } from '../utils/publicSubmission.js';
 
 const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
 
 export const createEnquiry = async (req, res) => {
     try {
+        if (handlePublicSubmissionTrap(req, res)) return;
         const { name, mobile, email, services, message } = req.body;
 
         if (typeof name !== "string" || !name.trim()) {
@@ -36,25 +39,35 @@ export const createEnquiry = async (req, res) => {
         try {
             await sendEnquiryEmail(enquiry);
         } catch (emailError) {
-            console.error("Failed to send enquiry email:", emailError.message);
+            logError("Failed to send enquiry email:", emailError);
         }
 
-        return res.status(201).json({ success: true, message: "Enquiry submitted successfully", data: enquiry });
+        return res.status(201).json({ success: true, message: "Enquiry submitted successfully" });
     } catch (error) {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        console.error("Failed to submit enquiry:", error);
+        logError("Failed to submit enquiry:", error);
         return res.status(500).json({ success: false, message: "Failed to submit enquiry" });
     }
 };
 
 export const getAllEnquiries = async (req, res) => {
     try {
-        const enquiries = await EnquiryModel.find().sort({ createdAt: -1 });
-        return res.status(200).json({ success: true, data: enquiries });
+        const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1);
+        const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 25, 1), 100);
+        const filter = { archivedAt: null };
+        const [enquiries, total] = await Promise.all([
+            EnquiryModel.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+            EnquiryModel.countDocuments(filter),
+        ]);
+        return res.status(200).json({
+            success: true,
+            data: enquiries,
+            pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
+        });
     } catch (error) {
-        console.error("Failed to fetch enquiries:", error);
+        logError("Failed to fetch enquiries:", error);
         return res.status(500).json({ success: false, message: "Failed to fetch enquiries" });
     }
 };
@@ -64,15 +77,18 @@ export const deleteOldEnquiries = async (req, res) => {
     const cutoff = new Date();
     cutoff.setMonth(cutoff.getMonth() - 1);
 
-    const result = await EnquiryModel.deleteMany({ createdAt: { $lt: cutoff } });
+    const result = await EnquiryModel.updateMany(
+      { createdAt: { $lt: cutoff }, archivedAt: null },
+      { $set: { archivedAt: new Date() } },
+    );
 
     res.status(200).json({
-      message: `Deleted ${result.deletedCount} enquiries older than one month.`,
-      deletedCount: result.deletedCount,
+      message: `Archived ${result.modifiedCount} enquiries older than one month.`,
+      archivedCount: result.modifiedCount,
       cutoffDate: cutoff,
     });
   } catch (err) {
-    console.error("Failed to delete old enquiries:", err);
+    logError("Failed to delete old enquiries:", err);
     res.status(500).json({ message: "Could not delete old enquiries." });
   }
 };

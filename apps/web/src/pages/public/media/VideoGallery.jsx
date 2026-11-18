@@ -1,3 +1,4 @@
+import useWebsiteContent from "../../../hooks/useWebsiteContent";
 import "../../../styles/video-gallery.css";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { FiX } from "react-icons/fi";
@@ -5,7 +6,6 @@ import { BsPlayFill } from "react-icons/bs";
 import { categoryAPI, videoAPI, itemPath } from "../../../services/api"; // adjust the path to your project
 import { subscribeCacheInvalidation } from "../../../lib/publicCache";
 
-const VIDEO_HERO_BG_IMAGE = "/static/hero-bg.jpg";
 
 // Works with both `{ data: { data: [...] } }` and `{ data: [...] }` responses
 const toList = (res) => {
@@ -140,7 +140,7 @@ async function resolveVideoGalleryData(force = false) {
       const upToDate = versionKnown
         ? c.version === serverVersion // server says nothing changed
         : Date.now() - c.savedAt < CACHE_TTL; // no version endpoint -> use timer
-      if (upToDate) return { skipped: true, hasCache: true };
+      if (upToDate) return { data: c, hasCache: true };
     }
 
     const data = await fetchVideoGalleryData(serverVersion);
@@ -152,7 +152,11 @@ async function resolveVideoGalleryData(force = false) {
 }
 
 export default function VideoGallery() {
-  const cached = readCache();
+  const { content } = useWebsiteContent();
+  const pageCopy = content.pageCopy.VideoGallery;
+
+
+  const cached = null; // Persisted data is applied after the server markup hydrates.
 
   const [categories, setCategories] = useState(cached?.categories ?? []);
   const [videos, setVideos] = useState(cached?.videos ?? []);
@@ -165,7 +169,7 @@ export default function VideoGallery() {
     let cancelled = false;
     resolveVideoGalleryData(force)
       .then((res) => {
-        if (cancelled || res.skipped) return;
+        if (cancelled) return;
         setCategories(res.data.categories);
         setVideos(res.data.videos);
         setError("");
@@ -262,23 +266,18 @@ export default function VideoGallery() {
         minHeight: "100vh",
         fontFamily: "var(--font-sans)",
       }}
-    >
+    >
+
 
       {/* HERO BAND */}
       <section
         className="vidgal-hero-section"
-        style={{ backgroundImage: `url(${VIDEO_HERO_BG_IMAGE})` }}
+        style={{ backgroundImage: `url(${pageCopy.heroImage})` }}
       >
         <div className="vidgal-hero-dark-overlay" />
         <div className="vidgal-hero-inner-container">
-          <h1 className="vidgal-hero-heading">
-            Watch the spaces come together.
-          </h1>
-          <p className="vidgal-hero-copy">
-            A running record of walkthroughs and fit-out films from sites across
-            the portfolio - filter by sector to see how each space was built,
-            room by room.
-          </p>
+          <h1 className="vidgal-hero-heading">{pageCopy["watch_the_spaces_come_together"]}</h1>
+          <p className="vidgal-hero-copy">{pageCopy["a_running_record_of_walkthroughs"]}</p>
         </div>
       </section>
 
@@ -343,18 +342,17 @@ export default function VideoGallery() {
                   letterSpacing: "0.04em",
                 }}
               >
-                {filtered.length} films
-              </span>
+                {filtered.length}{pageCopy["films"]}</span>
             )}
           </div>
 
           {/* Grid */}
           {loading ? (
-            <div style={messageStyle}>Loading videos…</div>
+            <div style={messageStyle}>{pageCopy["loading_videos"]}</div>
           ) : error ? (
             <div style={{ ...messageStyle, color: "#DC2626" }}>{error}</div>
           ) : filtered.length === 0 ? (
-            <div style={messageStyle}>No films in this category yet.</div>
+            <div style={messageStyle}>{pageCopy["no_films_in_this_category"]}</div>
           ) : (
             <div className="vidgal-card-grid">
               {filtered.map((v, i) => (

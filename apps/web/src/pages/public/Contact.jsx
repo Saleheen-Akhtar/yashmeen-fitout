@@ -1,14 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FiPhone, FiMail, FiMapPin, FiArrowRight } from "react-icons/fi";
 import { enquiryAPI } from "../../services/api";
 import { SERVICES } from "../../lib/static";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
+import { trackEvent } from "../../lib/analytics";
 import "../../styles/contact.css";
 
-const MAP_EMBED_SRC =
-  "https://maps.google.com/maps?q=Bay%20Square%2C%20Building%2012%20-%20Office%20G01%2C%20Marasi%20Dr%20-%20Business%20Bay%2C%20Bay%20Square%20-%20Dubai%20-%20UAE&t=&z=16&ie=UTF8&iwloc=&output=embed";
-
-const HERO_BG_IMAGE = "/static/hero-bg.jpg";
 
 const INITIAL_FORM = {
   name: "",
@@ -16,10 +13,13 @@ const INITIAL_FORM = {
   mobile: "",
   services: "",
   message: "",
+  website: "",
 };
 
 export default function ContactPage() {
   const { content } = useWebsiteContent();
+  const pageCopy = content.pageCopy.Contact;
+
   const addr = content?.address || {};
   const liveAddress = [addr.street, addr.city, addr.country].filter(Boolean).join(", ") || "Bay Square, Building 12 - Office G01, Marasi Dr - Business Bay, Bay Square - Dubai - UAE";
   const liveBlocks = [
@@ -32,6 +32,11 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const formStartedAtRef = useRef(0);
+
+  useEffect(() => {
+    formStartedAtRef.current = Date.now();
+  }, []);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -49,6 +54,8 @@ export default function ContactPage() {
       mobile: formData.mobile.trim(),
       services: formData.services,
       message: formData.message.trim(),
+      website: formData.website,
+      formStartedAt: formStartedAtRef.current,
     };
 
     const digits = payload.mobile.replace(/\D/g, "");
@@ -61,8 +68,10 @@ export default function ContactPage() {
     try {
       const { data: res } = await enquiryAPI.create(payload);
       setSuccessMsg(res?.message || "");
+      trackEvent("generate_lead", { method: "contact_form" });
       setSubmitted(true);
       setFormData(INITIAL_FORM);
+      formStartedAtRef.current = Date.now();
     } catch (err) {
       setError(
         err?.response?.data?.message ||
@@ -75,18 +84,16 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="contactpg-page">
+    <div className="contactpg-page">
 
       {/* HERO BAND */}
       <section
         className="contactpg-hero-section"
-        style={{ backgroundImage: `url(${HERO_BG_IMAGE})` }}
+        style={{ backgroundImage: `url(${pageCopy.heroImage})` }}
       >
         <div className="contactpg-hero-dark-overlay" />
         <div className="contactpg-hero-inner-container">
-          <h1 className="contactpg-hero-heading">
-            Contact Us - Yashmeen Future Building & Fit-Out Company
-          </h1>
+          <h1 className="contactpg-hero-heading">{pageCopy.contact_us}</h1>
         </div>
       </section>
 
@@ -103,7 +110,7 @@ export default function ContactPage() {
                   <p className="contactpg-info-label">{label}</p>
                   <div className="contactpg-info-lines">
                     {lines.map((l) => (
-                      <p key={l}>{l}</p>
+                      <p key={l}>{label === 'Call Us' ? <a href={`tel:${l.replace(/\s+/g, '')}`}>{l}</a> : label === 'Email Us' ? <a href={`mailto:${l}`}>{l}</a> : l}</p>
                     ))}
                   </div>
                 </div>
@@ -119,11 +126,12 @@ export default function ContactPage() {
           <div className="contactpg-map-frame">
             <iframe
               title="Studio location map"
-              src={MAP_EMBED_SRC}
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(liveAddress)}&z=16&output=embed`}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
+          <a className="contactpg-map-link" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(liveAddress)}`} target="_blank" rel="noreferrer">{pageCopy.open_location_in_google_maps}<FiArrowRight aria-hidden="true" /></a>
         </div>
       </section>
 
@@ -133,20 +141,16 @@ export default function ContactPage() {
           <div className="contactpg-message-grid">
             <div>
               <div className="contactpg-eyebrow">
-                <span className="contactpg-eyebrow-bar" />
-                Contact Us
-              </div>
-              <h2 className="contactpg-message-heading">
-                Happy to answer all your questions.
-              </h2>
+                <span className="contactpg-eyebrow-bar" />{pageCopy.contact_us_2}</div>
+              <h2 className="contactpg-message-heading">{pageCopy.happy_to_answer_all_your}</h2>
             </div>
 
             <div className="contactpg-form-card">
-              <h3 className="contactpg-form-card-title">Send a Message</h3>
+              <h3 className="contactpg-form-card-title">{pageCopy.send_a_message}</h3>
 
               {submitted ? (
                 <div className="contactpg-success-box">
-                  <p className="contactpg-success-title">Message received.</p>
+                  <p className="contactpg-success-title">{pageCopy.message_received}</p>
                   <p className="contactpg-success-copy">
                     {successMsg ||
                       "Thank you - a member of the studio will be in touch within one working day."}
@@ -163,19 +167,19 @@ export default function ContactPage() {
                       padding: 0,
                       textDecoration: "underline",
                     }}
-                  >
-                    Send another message
-                  </button>
+                  >{pageCopy.send_another_message}</button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="contactpg-form">
-                  {error && <div className="contactpg-error-box">{error}</div>}
+                  <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
+                    <label htmlFor="contact-website">{pageCopy.website}</label>
+                    <input id="contact-website" name="website" type="text" tabIndex={-1} autoComplete="off" value={formData.website} onChange={handleChange} />
+                  </div>
+                  {error && <div className="contactpg-error-box" role="alert">{error}</div>}
 
                   <div className="contactpg-form-row">
                     <div>
-                      <label htmlFor="contact-name" className="contactpg-sr-only">
-                        Your Name
-                      </label>
+                      <label htmlFor="contact-name" className="contactpg-field-label">{pageCopy.your_name}</label>
                       <input
                         id="contact-name"
                         required
@@ -189,9 +193,7 @@ export default function ContactPage() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="contact-email" className="contactpg-sr-only">
-                        Your Email
-                      </label>
+                      <label htmlFor="contact-email" className="contactpg-field-label">{pageCopy.your_email}</label>
                       <input
                         id="contact-email"
                         required
@@ -207,9 +209,7 @@ export default function ContactPage() {
                   </div>
                   <div className="contactpg-form-row">
                     <div>
-                      <label htmlFor="contact-mobile" className="contactpg-sr-only">
-                        Your Mobile
-                      </label>
+                      <label htmlFor="contact-mobile" className="contactpg-field-label">{pageCopy.your_mobile}</label>
                       <input
                         id="contact-mobile"
                         required
@@ -223,9 +223,7 @@ export default function ContactPage() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="contact-services" className="contactpg-sr-only">
-                        Select a Service
-                      </label>
+                      <label htmlFor="contact-services" className="contactpg-field-label">{pageCopy.select_a_service}</label>
                       <select
                         id="contact-services"
                         required
@@ -235,9 +233,7 @@ export default function ContactPage() {
                         onChange={handleChange}
                         disabled={loading}
                       >
-                        <option value="" disabled>
-                          Select a Service *
-                        </option>
+                        <option value="" disabled>{pageCopy.select_a_service_}</option>
                         {Array.from(new Set([...(content?.services || []).filter((s) => s.active !== false).map((s) => s.title), ...SERVICES])).map((service) => (
                           <option key={service} value={service}>
                             {service}
@@ -247,9 +243,7 @@ export default function ContactPage() {
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="contact-message" className="contactpg-sr-only">
-                      Message
-                    </label>
+                    <label htmlFor="contact-message" className="contactpg-field-label">{pageCopy.message}</label>
                     <textarea
                       id="contact-message"
                       name="message"

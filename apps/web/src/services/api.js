@@ -60,7 +60,8 @@ export const authAPI = {
   getProfile: () => api.get("/account/profile"),
   forgotPassword: (data) => api.post("/account/forgot-password", data),
   resetPassword: (data) => api.post("/account/reset-password", data),
-  resendVerification: (data) => api.post("/account/resend-verification", data),
+  verifyEmail: (token) => api.get("/account/verify-email", { params: { token } }),
+  resendVerification: (email) => api.post("/account/resend-verification", { email }),
 };
 
 export const bannerAPI = {
@@ -151,6 +152,7 @@ export const postAPI = {
 
 export const webDetailsAPI = {
   details: (data) => api.get("/webDetails/details", data),
+  adminDetails: () => api.get('/webDetails/admin-details'),
   update: (data) => api.put("/webDetails/update", data),
 };
 

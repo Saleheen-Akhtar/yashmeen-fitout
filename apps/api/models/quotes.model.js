@@ -8,11 +8,13 @@ const quoteSchema = mongoose.Schema(
             type: String,
             required: [true, "Name is required"],
             trim: true,
+            maxlength: 120,
         },
         mobile: {
             type: String,
             required: [true, "Mobile number is required"],
             trim: true,
+            maxlength: 32,
         },
         email: {
             type: String,
@@ -20,6 +22,7 @@ const quoteSchema = mongoose.Schema(
             trim: true,
             lowercase: true,
             match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
+            maxlength: 254,
         },
         projectType: {
             type: String,
@@ -41,29 +44,34 @@ const quoteSchema = mongoose.Schema(
             type: String,
             trim: true,
             default: "",
+            maxlength: 200,
         },
         budget: {
             type: String,
             trim: true,
             default: "",
+            maxlength: 120,
         },
         timeline: {
             type: String,
             trim: true,
             default: "",
+            maxlength: 120,
         },
         message: {
             type: String,
             required: [true, "Message is required"],
             trim: true,
             minlength: [10, "Message must be at least 10 characters"],
+            maxlength: [5000, "Message must be 5000 characters or less"],
         },
+        archivedAt: { type: Date, default: null },
     },
     { versionKey: false, timestamps: true }
 );
 
-// Fast "newest first" listing and the delete-old query on createdAt.
-quoteSchema.index({ createdAt: -1 });
+// Fast active listing and archive queries on createdAt.
+quoteSchema.index({ archivedAt: 1, createdAt: -1 });
 
 const QuoteModel = mongoose.model("quote", quoteSchema);
 

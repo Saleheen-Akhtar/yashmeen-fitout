@@ -1,3 +1,4 @@
+import { resolveMediaUrl, mediaFallback } from "../../lib/media";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
 
 export default function Process() {
@@ -14,11 +15,12 @@ export default function Process() {
         {/* Left Column: Tag, Photo & 6-Stage List */}
         <div className="process-left-col">
           <div>
-            <span className="eyebrow">(FROM FIRST MEETING TO HANDOVER)</span>
+            <span className="eyebrow">{content.process.eyebrow}</span>
             <div className="process-photo-wrap" style={{ marginTop: "1rem" }}>
               <img
-                src="/static/why-us.jpg"
-                alt="Architectural detailing and joinery assembly"
+                src={resolveMediaUrl(content.process.image)}
+                onError={mediaFallback}
+                alt={content.process.imageAlt}
                 loading="lazy"
               />
             </div>
@@ -40,17 +42,15 @@ export default function Process() {
         {/* Right Column: Statement, Lead & Action */}
         <div className="process-right-col">
           <h2 className="process-display-statement">
-            One team carries your project from the first brief to the final handover.
+            {content.process.headline}
           </h2>
 
           <div className="process-narrative-copy">
             <p style={{ marginBottom: "1.5rem" }}>
-              Interior design, engineering, approvals, fabrication and site delivery run as one connected
-              programme. You have a clear point of contact and a team responsible for the complete result.
+              {content.process.paragraph1}
             </p>
             <p>
-              Our Al Quoz atelier fabricates the details our site team installs, helping each material,
-              junction and finish stay true to the approved design.
+              {content.process.paragraph2}
             </p>
           </div>
 
@@ -59,7 +59,7 @@ export default function Process() {
             onClick={openEnquiry}
             className="btn-pill btn-pill-dark"
           >
-            <span>DISCUSS YOUR PROJECT</span>
+            <span>{content.process.ctaText}</span>
             <span className="g-circle" aria-hidden="true" />
           </button>
         </div>

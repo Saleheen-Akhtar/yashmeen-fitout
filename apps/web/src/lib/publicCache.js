@@ -1,6 +1,6 @@
 export const CACHE_KEYS = {
-  PROJECTS: "photogallery:data:v5",
-  GALLERY: "photogallery:data:v2",
+  PROJECTS: "projects:data:v6",
+  GALLERY: "gallery:photos:v3",
   PROJECT_DETAIL_PREFIX: "projectdetails:v1:",
   VACANCIES: "career:vacancies:v1",
   VIDEOS: "videogallery:data:v1",

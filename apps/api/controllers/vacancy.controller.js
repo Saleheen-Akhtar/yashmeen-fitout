@@ -1,3 +1,4 @@
+import { logError } from "../utils/logger.js";
 import mongoose from 'mongoose';
 import VacancyModel from '../models/vacancy.model.js';
 
@@ -46,7 +47,7 @@ export const createVacancy = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        console.error("Failed to create vacancy:", error);
+        logError("Failed to create vacancy:", error);
         return res.status(500).json({ success: false, message: "Failed to create vacancy" });
     }
 };
@@ -60,7 +61,7 @@ export const getVacanciesVersion = async (req, res) => {
         const ms = latest?.updatedAt ? new Date(latest.updatedAt).getTime() : 0;
         return res.status(200).json({ success: true, version: `${count}:${ms}` });
     } catch (error) {
-        console.error("Failed to fetch vacancy version:", error);
+        logError("Failed to fetch vacancy version:", error);
         return res.status(500).json({ success: false, message: "Failed to fetch vacancy version" });
     }
 };
@@ -74,7 +75,7 @@ export const getAllVacancies = async (req, res) => {
         const vacancies = await VacancyModel.find(filter).sort({ createdAt: -1 });
         return res.status(200).json({ success: true, data: vacancies });
     } catch (error) {
-        console.error("Failed to fetch vacancies:", error);
+        logError("Failed to fetch vacancies:", error);
         return res.status(500).json({ success: false, message: "Failed to fetch vacancies" });
     }
 };
@@ -89,7 +90,7 @@ export const getOpenVacancies = async (req, res) => {
         const vacancies = await VacancyModel.find(filter).sort({ createdAt: -1 });
         return res.status(200).json({ success: true, data: vacancies });
     } catch (error) {
-        console.error("Failed to fetch open vacancies:", error);
+        logError("Failed to fetch open vacancies:", error);
         return res.status(500).json({ success: false, message: "Failed to fetch vacancies" });
     }
 };
@@ -107,7 +108,7 @@ export const getVacancyById = async (req, res) => {
         }
         return res.status(200).json({ success: true, data: vacancy });
     } catch (error) {
-        console.error("Failed to fetch vacancy:", error);
+        logError("Failed to fetch vacancy:", error);
         return res.status(500).json({ success: false, message: "Failed to fetch vacancy" });
     }
 };
@@ -149,7 +150,7 @@ export const updateVacancy = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        console.error("Failed to update vacancy:", error);
+        logError("Failed to update vacancy:", error);
         return res.status(500).json({ success: false, message: "Failed to update vacancy" });
     }
 };
@@ -167,7 +168,7 @@ export const deleteVacancy = async (req, res) => {
         }
         return res.status(200).json({ success: true, message: "Vacancy deleted successfully" });
     } catch (error) {
-        console.error("Failed to delete vacancy:", error);
+        logError("Failed to delete vacancy:", error);
         return res.status(500).json({ success: false, message: "Failed to delete vacancy" });
     }
 };
@@ -191,7 +192,7 @@ export const updateVacancyStatus = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Vacancy status updated", data: vacancy });
     } catch (error) {
-        console.error("Failed to update vacancy status:", error);
+        logError("Failed to update vacancy status:", error);
         return res.status(500).json({ success: false, message: "Failed to update vacancy status" });
     }
 };

@@ -1,0 +1,15 @@
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Access-Control-Allow-Origin: *
+Age: 0
+Cache-Control: public, max-age=0, must-revalidate
+Content-Disposition: inline; filename="interior-design"
+Content-Length: 4235
+Content-Type: text/html; charset=utf-8
+Date: Sat, 14 Nov 2026 15:22:25 GMT
+Etag: "4e2052d3b07b6ce40e0b590f51d2813d"
+Last-Modified: Sat, 14 Nov 2026 15:22:25 GMT
+Server: Vercel
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+X-Vercel-Cache: MISS
+X-Vercel-Id: bom1::fsb9w-1794669745297-9eecb7aba2d3

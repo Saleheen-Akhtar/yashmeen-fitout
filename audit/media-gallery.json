@@ -1,0 +1,786 @@
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "6ae4e1b1b3f8d3621ab1f33b",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Bedroom Renovation",
+      "photo": "/gallery/1793384881224-4317907.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e1dcb3f8d3621ab1f33c",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Bathroom Renovation",
+      "photo": "/gallery/1793384924331-828604158.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e1fab3f8d3621ab1f33d",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Bathroom Renovation",
+      "photo": "/gallery/1793384954962-456527189.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e22eb3f8d3621ab1f33e",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Kitchen Renovation",
+      "photo": "/gallery/1793385006903-626318336.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e26bb3f8d3621ab1f33f",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Garden Layout Design",
+      "photo": "/gallery/1793385067197-632638628.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e2b1b3f8d3621ab1f340",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Vanity Replace",
+      "photo": "/gallery/1793385137229-974943992.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e2d7b3f8d3621ab1f341",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Wrapping",
+      "photo": "/gallery/1793385175281-585252023.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e2ebb3f8d3621ab1f342",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Wrapping",
+      "photo": "/gallery/1793385195201-464685929.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e344b3f8d3621ab1f343",
+      "categoryId": {
+        "_id": "6acea994f6c4f9d2c6531bf6",
+        "categoryName": "AC MENTAINANCE",
+        "status": true
+      },
+      "title": "FCU Mentainance",
+      "photo": "/gallery/1793385284720-3843294.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e3abb3f8d3621ab1f344",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Bedroom Renovation",
+      "photo": "/gallery/1793385387916-592124925.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e3cdb3f8d3621ab1f345",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Bedroom Renovation",
+      "photo": "/gallery/1793385421184-42995883.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e3eab3f8d3621ab1f346",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Bedroom Renovation",
+      "photo": "/gallery/1793385450024-65585917.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e41cb3f8d3621ab1f347",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Bedroom Renovation",
+      "photo": "/gallery/1793385500623-614614907.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae4e4d5b3f8d3621ab1f348",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Bathroom Renovation",
+      "photo": "/gallery/1793385685494-731408383.png",
+      "status": true
+    },
+    {
+      "_id": "6ae4e529b3f8d3621ab1f349",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Vanity Ready to Design",
+      "photo": "/gallery/1793385769357-44778130.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae5f9a7b3f8d3621ab1f355",
+      "categoryId": {
+        "_id": "6acea8f2f6c4f9d2c6531bf5",
+        "categoryName": "Plumber P.P.R-PVC- DRAINACH Specialist",
+        "status": true
+      },
+      "title": "Bathroom Renovation",
+      "photo": "/gallery/1793456551950-942961099.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae5fb83b3f8d3621ab1f356",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Pergola & Garden Kitchen",
+      "photo": "/gallery/1793457027458-939318383.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae5fbb1b3f8d3621ab1f357",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Mirror Clocetion",
+      "photo": "/gallery/1793457073436-541014855.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae5fbcab3f8d3621ab1f358",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Mirror Clocetion",
+      "photo": "/gallery/1793457098216-473691942.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae5fbdcb3f8d3621ab1f359",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Mirror Clocetion",
+      "photo": "/gallery/1793457116165-444195331.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae5fbf3b3f8d3621ab1f35a",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Mirror Clocetion",
+      "photo": "/gallery/1793457139626-900017492.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae5fc0bb3f8d3621ab1f35b",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Mirror Clocetion",
+      "photo": "/gallery/1793457163069-115367835.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae5fc1bb3f8d3621ab1f35c",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Mirror Clocetion",
+      "photo": "/gallery/1793457179339-933589945.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae6045cb3f8d3621ab1f35d",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Kitchen Remodeling",
+      "photo": "/gallery/1793459292048-985102541.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae64beab3f8d3621ab1f35e",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Pergola work",
+      "photo": "/gallery/1793477610466-931082485.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae64c00b3f8d3621ab1f35f",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Pergola",
+      "photo": "/gallery/1793477632066-36662830.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae64c12b3f8d3621ab1f360",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Pergola",
+      "photo": "/gallery/1793477650726-124727007.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae64c4db3f8d3621ab1f361",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "TV Unit Design",
+      "photo": "/gallery/1793477709575-591674865.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae64c6bb3f8d3621ab1f362",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "TV Unit Design",
+      "photo": "/gallery/1793477739481-324007732.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae64c8fb3f8d3621ab1f363",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "TV Unit Design",
+      "photo": "/gallery/1793477775721-798447375.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae64cacb3f8d3621ab1f364",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "TV Unit Design",
+      "photo": "/gallery/1793477804916-287121754.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae64cc8b3f8d3621ab1f365",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "TV Unit Design",
+      "photo": "/gallery/1793477832139-851523204.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae64d00b3f8d3621ab1f366",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "TV Unit Design",
+      "photo": "/gallery/1793477888786-297920926.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae67336b3f8d3621ab1f367",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Walking Wardrobe Area",
+      "photo": "/gallery/1793487670786-596252567.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae67370b3f8d3621ab1f368",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Bathroom Renovation",
+      "photo": "/gallery/1793487728154-206204519.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae67397b3f8d3621ab1f369",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Kids Room",
+      "photo": "/gallery/1793487767364-513425491.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae673bbb3f8d3621ab1f36a",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Makeup Counter",
+      "photo": "/gallery/1793487803190-335340367.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae673cfb3f8d3621ab1f36b",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Study table",
+      "photo": "/gallery/1793487823555-924710301.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae673efb3f8d3621ab1f36c",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Stair space",
+      "photo": "/gallery/1793487855232-796826654.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae67413b3f8d3621ab1f36d",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Makeup with wardrobe area",
+      "photo": "/gallery/1793487891992-487727446.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae6747db3f8d3621ab1f36e",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Layout Out TV Panel Unit",
+      "photo": "/gallery/1793487997357-948037895.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae674a7b3f8d3621ab1f36f",
+      "categoryId": {
+        "_id": "6acea9bff6c4f9d2c6531bf7",
+        "categoryName": "Joinery and Carpenter",
+        "status": true
+      },
+      "title": "Kitchen Remodeling",
+      "photo": "/gallery/1793488039264-174060182.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e16e7c4ed4f00f32652",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 8",
+      "photo": "/gallery/1793527318639-321685835.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e16e7c4ed4f00f3264c",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 2",
+      "photo": "/gallery/1793527318635-682642665.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e16e7c4ed4f00f3264e",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 4",
+      "photo": "/gallery/1793527318638-740892280.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e16e7c4ed4f00f3264f",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 5",
+      "photo": "/gallery/1793527318638-501401756.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e16e7c4ed4f00f32650",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 6",
+      "photo": "/gallery/1793527318638-675925918.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e16e7c4ed4f00f32653",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 9",
+      "photo": "/gallery/1793527318640-534701523.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e16e7c4ed4f00f32654",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 10",
+      "photo": "/gallery/1793527318641-957941197.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e16e7c4ed4f00f3264d",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 3",
+      "photo": "/gallery/1793527318637-956717092.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e16e7c4ed4f00f32651",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 7",
+      "photo": "/gallery/1793527318638-635997481.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e16e7c4ed4f00f3264b",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 1",
+      "photo": "/gallery/1793527318634-999972614.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e44e7c4ed4f00f32659",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 5",
+      "photo": "/gallery/1793527364745-251658335.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e44e7c4ed4f00f3265a",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 6",
+      "photo": "/gallery/1793527364746-637976320.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e44e7c4ed4f00f3265d",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 9",
+      "photo": "/gallery/1793527364747-815912307.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e44e7c4ed4f00f32656",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 2",
+      "photo": "/gallery/1793527364744-561930524.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e44e7c4ed4f00f32658",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 4",
+      "photo": "/gallery/1793527364745-629730083.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e44e7c4ed4f00f32657",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 3",
+      "photo": "/gallery/1793527364745-993293632.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e44e7c4ed4f00f3265b",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 7",
+      "photo": "/gallery/1793527364746-271067816.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e44e7c4ed4f00f3265c",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 8",
+      "photo": "/gallery/1793527364747-82267994.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e44e7c4ed4f00f32655",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 1",
+      "photo": "/gallery/1793527364744-597748386.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e44e7c4ed4f00f3265e",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Design & Build 10",
+      "photo": "/gallery/1793527364748-961001063.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e83e7c4ed4f00f32662",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Kids Room 4",
+      "photo": "/gallery/1793527427390-771882391.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e83e7c4ed4f00f32666",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Kids Room 8",
+      "photo": "/gallery/1793527427392-199803273.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e83e7c4ed4f00f3265f",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Kids Room 1",
+      "photo": "/gallery/1793527427387-662410922.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e83e7c4ed4f00f32660",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Kids Room 2",
+      "photo": "/gallery/1793527427388-560652353.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e83e7c4ed4f00f32661",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Kids Room 3",
+      "photo": "/gallery/1793527427389-524463013.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e83e7c4ed4f00f32665",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Kids Room 7",
+      "photo": "/gallery/1793527427391-812670226.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e83e7c4ed4f00f32667",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Kids Room 9",
+      "photo": "/gallery/1793527427392-430638021.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e83e7c4ed4f00f32663",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Kids Room 5",
+      "photo": "/gallery/1793527427390-562740544.jpg",
+      "status": true
+    },
+    {
+      "_id": "6ae70e83e7c4ed4f00f32664",
+      "categoryId": {
+        "_id": "6ac3a2ce8c65b464a151129b",
+        "categoryName": "Architecture",
+        "status": true
+      },
+      "title": "Kids Room 6",
+      "photo": "/gallery/1793527427390-712444292.jpg",
+      "status": true
+    }
+  ]
+}

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import useWebsiteContent from '../../hooks/useWebsiteContent';
 import {
   DEFAULT_OG_IMAGE,
-  HOME_JSON_LD,
   SITE_NAME,
   SITE_URL,
+  getRobotsDirective,
+  getRouteJsonLd,
   getRouteSeo,
   normalizePathname,
 } from "../../lib/seoConfig";
@@ -37,6 +39,7 @@ function toAbsoluteUrl(pathOrUrl) {
 }
 
 export default function SeoHead() {
+  const { content } = useWebsiteContent();
   const { pathname } = useLocation();
   const [override, setOverride] = useState(null);
 
@@ -53,6 +56,7 @@ export default function SeoHead() {
         description: detail.description,
         image: detail.image,
         robots: detail.robots,
+        structuredData: detail.structuredData,
       });
     };
     window.addEventListener("seo-update", onSeoUpdate);
@@ -61,13 +65,13 @@ export default function SeoHead() {
 
   useEffect(() => {
     const cleanPath = normalizePathname(pathname);
-    const baseSeo = getRouteSeo(cleanPath);
+    const baseSeo = getRouteSeo(cleanPath, content);
     const activeOverride =
       override && override.pathname === cleanPath ? override : null;
 
     const title = activeOverride?.title || baseSeo.title;
     const description = activeOverride?.description || baseSeo.description;
-    const robots = activeOverride?.robots || baseSeo.robots || "index, follow";
+    const robots = getRobotsDirective(activeOverride?.robots || baseSeo.robots);
     const canonicalUrl = `${SITE_URL}${baseSeo.canonicalPath === "/" ? "/" : baseSeo.canonicalPath}`;
     const imageUrl = toAbsoluteUrl(activeOverride?.image || baseSeo.image);
 
@@ -77,7 +81,7 @@ export default function SeoHead() {
     upsertLinkTag("canonical", canonicalUrl);
 
     upsertMetaTag("property", "og:type", "website");
-    upsertMetaTag("property", "og:site_name", SITE_NAME);
+    upsertMetaTag("property", "og:site_name", content.legalName || SITE_NAME);
     upsertMetaTag("property", "og:title", title);
     upsertMetaTag("property", "og:description", description);
     upsertMetaTag("property", "og:url", canonicalUrl);
@@ -88,20 +92,23 @@ export default function SeoHead() {
     upsertMetaTag("name", "twitter:description", description);
     upsertMetaTag("name", "twitter:image", imageUrl);
 
+    const structuredData = activeOverride && Object.hasOwn(activeOverride, "structuredData")
+      ? activeOverride.structuredData
+      : getRouteJsonLd(cleanPath, content);
     const ldId = "yashmeen-structured-data";
     let ldEl = document.getElementById(ldId);
-    if (cleanPath === "/") {
+    if (structuredData) {
       if (!ldEl) {
         ldEl = document.createElement("script");
         ldEl.id = ldId;
         ldEl.type = "application/ld+json";
         document.head.appendChild(ldEl);
       }
-      ldEl.textContent = JSON.stringify(HOME_JSON_LD);
+      ldEl.textContent = JSON.stringify(structuredData);
     } else if (ldEl) {
       ldEl.remove();
     }
-  }, [pathname, override]);
+  }, [pathname, override, content]);
 
   return null;
 }

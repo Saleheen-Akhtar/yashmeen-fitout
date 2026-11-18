@@ -5,13 +5,13 @@
 
         .contactpg-page{
           --contactpg-ink:#1b1a17;
-          --contactpg-black:#fbfaf7;
-          --contactpg-gray-50:#f4f1ea;
+          --contactpg-black:var(--bg);
+          --contactpg-gray-50:var(--surface-alt);
           --contactpg-gray-100:rgba(27,26,23,0.04);
-          --contactpg-gray-200:#e6e1d6;
-          --contactpg-gray-500:#6b665c;
-          --contactpg-brass:#8a6a28;
-          --contactpg-brass-deep:#6f541d;
+          --contactpg-gray-200:var(--line);
+          --contactpg-gray-500:var(--muted);
+          --contactpg-brass:var(--accent);
+          --contactpg-brass-deep:var(--accent-hover);
           --contactpg-font-display:var(--font-sans);
           --contactpg-font-serif:var(--font-sans);
           --contactpg-font-body:var(--font-sans);
@@ -327,4 +327,14 @@
           font-size:13.5px;
           color:#B23A2E;
         }
-      
+
+
+.contactpg-field-label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--ink); }
+.contactpg-map-link { display: inline-flex; align-items: center; gap: 12px; min-height: 48px; color: var(--accent); font-size: 14px; }
+.contactpg-info-lines { overflow-wrap: anywhere; }
+@media (max-width: 767px) {
+  .contactpg-page { display: flex; flex-direction: column; }
+  .contactpg-message-section { order: 1; padding: 40px 0; }
+  .contactpg-info-section { order: 2; }
+  .contactpg-map-section { order: 3; padding-bottom: 48px; }
+}

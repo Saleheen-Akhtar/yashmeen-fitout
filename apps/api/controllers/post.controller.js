@@ -1,75 +1,51 @@
-import path from "path";
-import { fileURLToPath } from "url";
+import { logError } from "../utils/logger.js";
 import mongoose from "mongoose";
 
 import { convertTitleUrl } from "../utils/control.js";
 import PostModel from "../models/post.model.js";
-import { deleteFile } from "../middlewares/postUpload.js";
 import { isAdminRequest } from "../middlewares/auth.js";
+import { deleteAsset, deleteAssets, mediaFolders, uploadBuffer } from "../services/media.service.js";
+import { blogTextContent, sanitizeBlogHtml } from "../utils/sanitizeBlogHtml.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const extractContentImages = (content = "") =>
+    [...String(content).matchAll(/<img[^>]+src=["']([^"']+)["']/g)]
+        .map((match) => match[1])
+        .filter((src) => /^https:\/\/res\.cloudinary\.com\//i.test(src));
 
-// Absolute path of the folder where post images live on disk.
-// IMPORTANT: the upload middleware must save into this same folder.
-const uploadsDir = path.resolve(__dirname, "..", "uploads", "posts");
-
-// Turn a stored value ("/posts/a.jpg", "posts/a.jpg" or "a.jpg") into a safe
-// absolute path inside uploadsDir, or null if it would escape that folder.
-const resolveUploadPath = (stored = "") => {
-    try {
-        const rel = decodeURIComponent(String(stored).split(/[?#]/)[0])
-            .replace(/^\/+/, "")
-            .replace(/^posts\//, "");
-        if (!rel) return null;
-        const full = path.resolve(uploadsDir, rel);
-        return full.startsWith(uploadsDir + path.sep) ? full : null;
-    } catch {
-        return null;
+const cleanPublishedContent = (content) => {
+    const sanitized = sanitizeBlogHtml(content);
+    if (!blogTextContent(sanitized)) {
+        const error = new Error("Readable article content is required.");
+        error.status = 400;
+        throw error;
     }
-};
-
-const removeUploadedFiles = (names = []) => {
-    names.filter(Boolean).forEach((name) => {
-        const full = resolveUploadPath(name);
-        if (full) deleteFile(full);
-    });
-};
-
-// Pull every filename referenced by an <img> tag that points at our own
-// /uploads/posts/ folder, so we can tell which files a post's content uses.
-const extractContentImages = (content = "") => {
-    if (!content) return [];
-    return [...content.matchAll(/<img[^>]+src=["']([^"']+)["']/g)]
-        .map((m) => m[1])
-        .filter((src) => src.includes("/uploads/posts/"))
-        .map((src) => src.split("/uploads/posts/").pop());
+    return sanitized;
 };
 
 export const createPost = async (req, res) => {
+    let uploadedAsset;
     try {
-        const { _id } = req?.account;
+        const { _id } = req.account;
         const { title, content } = req.body;
         if (typeof title !== "string" || !title.trim()) {
-            if (req.file) removeUploadedFiles([req.file.filename]);
             return res.status(400).json({ message: "Title is required." });
         }
-        const convertTitle = convertTitleUrl(title.trim());
-        const newPost = {
+        const sanitizedContent = cleanPublishedContent(content);
+        if (req.file) uploadedAsset = await uploadBuffer(req.file.buffer, { folder: mediaFolders.posts });
+        const post = await PostModel.create({
             title: title.trim(),
-            pageUrl: convertTitle,
-            content,
+            pageUrl: convertTitleUrl(title.trim()),
+            content: sanitizedContent,
             authorId: _id,
-            file: req.file ? `/posts/${req.file.filename}` : "",
-        };
-        const post = await PostModel.insertOne(newPost);
-        res.status(201).json({ status: "success", data: post });
-    } catch (err) {
-        console.error("Error creating post:", err);
-        // Roll back the featured image that multer already wrote to disk
-        if (req.file) {
-            removeUploadedFiles([req.file.filename]);
+            file: uploadedAsset?.url || "",
+        });
+        return res.status(201).json({ status: "success", data: post });
+    } catch (error) {
+        await deleteAsset(uploadedAsset);
+        if (error.status === 400 || error.name === "ValidationError") {
+            return res.status(400).json({ message: error.message });
         }
+        logError("Error creating post:", error);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
@@ -77,21 +53,20 @@ export const createPost = async (req, res) => {
 export const getPosts = async (req, res) => {
     try {
         const isAdmin = await isAdminRequest(req);
-        const filter = isAdmin ? {} : { status: true };
-        const post = await PostModel.find(filter).sort({ createdAt: -1 });
-        return res.status(200).json({ data: post });
-    } catch (err) {
-        console.error("Error fetching posts:", err);
+        const posts = await PostModel.find(isAdmin ? {} : { status: true }).sort({ createdAt: -1 });
+        return res.status(200).json({ data: posts });
+    } catch (error) {
+        logError("Error fetching posts:", error);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
 
-export const getActivePosts = async (req, res) => {
+export const getActivePosts = async (_req, res) => {
     try {
-        const post = await PostModel.find({ status: true }).sort({ createdAt: -1 });
-        return res.status(200).json({ data: post });
-    } catch (err) {
-        console.error("Error fetching active posts:", err);
+        const posts = await PostModel.find({ status: true }).sort({ createdAt: -1 });
+        return res.status(200).json({ data: posts });
+    } catch (error) {
+        logError("Error fetching active posts:", error);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
@@ -99,19 +74,14 @@ export const getActivePosts = async (req, res) => {
 export const getPostDetailsById = async (req, res) => {
     try {
         const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid post id." });
-        }
-        const post = await PostModel.findOne({ _id: id });
-        if (!post) {
-            return res.status(404).json({ message: "Post not found." });
-        }
-        if (!post.status && !(await isAdminRequest(req))) {
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid post id." });
+        const post = await PostModel.findById(id);
+        if (!post || (!post.status && !(await isAdminRequest(req)))) {
             return res.status(404).json({ message: "Post not found." });
         }
         return res.status(200).json({ data: post });
-    } catch (err) {
-        console.error("Error fetching post:", err);
+    } catch (error) {
+        logError("Error fetching post:", error);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
@@ -119,74 +89,59 @@ export const getPostDetailsById = async (req, res) => {
 export const getPostDetails = async (req, res) => {
     try {
         const { slug } = req.params;
-        if (typeof slug !== "string" || !slug.trim()) {
-            return res.status(400).json({ message: "Invalid post slug." });
-        }
+        if (typeof slug !== "string" || !slug.trim()) return res.status(400).json({ message: "Invalid post slug." });
         const post = await PostModel.findOne({ pageUrl: slug.trim() });
-        if (!post) {
-            return res.status(404).json({ message: "Post not found." });
-        }
-        if (!post.status && !(await isAdminRequest(req))) {
+        if (!post || (!post.status && !(await isAdminRequest(req)))) {
             return res.status(404).json({ message: "Post not found." });
         }
         return res.status(200).json({ data: post });
-    } catch (err) {
-        console.error("Error fetching post:", err);
+    } catch (error) {
+        logError("Error fetching post:", error);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
 
 export const updatePostById = async (req, res) => {
+    let uploadedAsset;
     try {
         const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            if (req.file) removeUploadedFiles([req.file.filename]);
-            return res.status(400).json({ message: "Invalid post id." });
-        }
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid post id." });
         const { title, content } = req.body;
-
         const post = await PostModel.findById(id);
-        if (!post) {
-            // Nothing to update -> discard the upload multer already saved
-            if (req.file) removeUploadedFiles([req.file.filename]);
-            return res.status(404).json({ message: "Post not found." });
-        }
+        if (!post) return res.status(404).json({ message: "Post not found." });
 
-        // Snapshot what's currently on disk for this post before we touch anything
         const oldFeaturedFile = post.file;
         const oldContentImages = extractContentImages(post.content);
+        let sanitizedContent;
 
-        post.title = title ? title : post.title;
-        post.pageUrl = title ? convertTitleUrl(title) : post.pageUrl;
-        post.content = content ? content : post.content;
-        // Same format as createPost ("/posts/<filename>")
-        post.file = req.file ? `/posts/${req.file.filename}` : post.file;
+        if (title !== undefined) {
+            if (typeof title !== "string" || !title.trim()) return res.status(400).json({ message: "Title is required." });
+            post.title = title.trim();
+            post.pageUrl = convertTitleUrl(title.trim());
+        }
+        if (content !== undefined) {
+            sanitizedContent = cleanPublishedContent(content);
+            post.content = sanitizedContent;
+        }
+        if (req.file) {
+            uploadedAsset = await uploadBuffer(req.file.buffer, { folder: mediaFolders.posts });
+            post.file = uploadedAsset.url;
+        }
 
         await post.save();
 
-        // Only remove old files once the save has actually succeeded
-
-        // Featured image was replaced -> drop the old one
-        if (req.file && oldFeaturedFile) {
-            removeUploadedFiles([oldFeaturedFile]);
+        if (req.file && oldFeaturedFile) await deleteAsset(oldFeaturedFile);
+        if (content !== undefined) {
+            const newContentImages = extractContentImages(sanitizedContent);
+            await deleteAssets(oldContentImages.filter((image) => !newContentImages.includes(image)));
         }
-
-        // Content was replaced -> drop embedded images no longer referenced
-        if (content) {
-            const newContentImages = extractContentImages(content);
-            const removedImages = oldContentImages.filter(
-                (img) => !newContentImages.includes(img)
-            );
-            removeUploadedFiles(removedImages);
-        }
-
-        return res.status(200).json({ message: "Post update successfully." });
+        return res.status(200).json({ message: "Post updated successfully." });
     } catch (error) {
-        console.error("Error updating Post:", error);
-        // Save failed -> roll back the new featured image multer already wrote
-        if (req.file) {
-            removeUploadedFiles([req.file.filename]);
+        await deleteAsset(uploadedAsset);
+        if (error.status === 400 || error.name === "ValidationError") {
+            return res.status(400).json({ message: error.message });
         }
+        logError("Error updating post:", error);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
@@ -194,44 +149,32 @@ export const updatePostById = async (req, res) => {
 export const updatePostStatus = async (req, res) => {
     try {
         const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid post id." });
-        }
-
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid post id." });
         const post = await PostModel.findById(id);
         if (!post) return res.status(404).json({ message: "Post not found." });
-
+        if (!post.status && !blogTextContent(post.content)) {
+            return res.status(400).json({ message: "Readable article content is required before publishing." });
+        }
         post.status = !post.status;
         await post.save();
         return res.status(200).json({ message: "Post status updated successfully." });
     } catch (error) {
-        console.error("Error updating Post status:", error);
+        logError("Error updating post status:", error);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
 
 export const deletePost = async (req, res) => {
     try {
-        // Works with either route style: /delete/:id or /delete/:postId
         const id = req.params.id ?? req.params.postId;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid post id." });
-        }
-
-        const isExist = await PostModel.findById(id);
-        if (!isExist) return res.status(404).json({ message: "Post not found" });
-
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid post id." });
+        const post = await PostModel.findById(id);
+        if (!post) return res.status(404).json({ message: "Post not found" });
         await PostModel.findByIdAndDelete(id);
-
-        // Only clean up files after the DB delete succeeds
-        removeUploadedFiles([
-            isExist.file,
-            ...extractContentImages(isExist.content),
-        ]);
-
-        res.status(200).json({ message: "Post deleted successfully" });
+        await deleteAssets([post.file, ...extractContentImages(post.content)]);
+        return res.status(200).json({ message: "Post deleted successfully" });
     } catch (error) {
-        console.error("Error deleting Post:", error);
+        logError("Error deleting post:", error);
         return res.status(500).json({ message: "Internal server error." });
     }
 };

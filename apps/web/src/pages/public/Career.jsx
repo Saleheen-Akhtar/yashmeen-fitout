@@ -1,3 +1,5 @@
+import { mediaFallback } from "../../lib/media";
+import useWebsiteContent from "../../hooks/useWebsiteContent";
 import "../../styles/career.css";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
@@ -13,10 +15,8 @@ import { vacancyAPI } from "../../services/api";
 import { subscribeCacheInvalidation } from "../../lib/publicCache";
 import Loading from "../../components/ui/Loading";
 
-const CAREER_HERO_BG_IMAGE = "/static/hero-bg.jpg";
 
 // Where candidates send their CV
-const APPLY_EMAIL = "info@yfbfitoutcontracting.com";
 
 /* ---------------- helpers: map whatever the API returns ---------------- */
 
@@ -151,7 +151,7 @@ async function resolveVacanciesData(force = false) {
   const hasData = !!c;
   try {
     if (!force && hasData && Date.now() - lastVersionCheck < VERSION_CHECK_INTERVAL) {
-      return { skipped: true, hasData };
+      return { list: c.vacancies, hasData };
     }
 
     const serverVersion = await fetchServerVersion();
@@ -162,7 +162,7 @@ async function resolveVacanciesData(force = false) {
       const upToDate = versionKnown
         ? c.version === serverVersion
         : Date.now() - c.savedAt < CACHE_TTL;
-      if (upToDate) return { skipped: true, hasData };
+      if (upToDate) return { list: c.vacancies, hasData };
     }
 
     const list = await fetchVacancies(serverVersion);
@@ -174,7 +174,10 @@ async function resolveVacanciesData(force = false) {
 }
 
 export default function Career() {
-  const cached = readCache();
+  const { content } = useWebsiteContent();
+  const pageCopy = content.pageCopy.Career;
+
+  const cached = null; // Match the server; adopt persisted data after hydration.
 
   const [vacancies, setVacancies] = useState(cached?.vacancies ?? []);
   const [pageLoading, setPageLoading] = useState(!cached); // no spinner if cache exists
@@ -188,7 +191,7 @@ export default function Career() {
     let cancelled = false;
     resolveVacanciesData(force)
       .then((res) => {
-        if (cancelled || res.skipped) return;
+        if (cancelled) return;
         setVacancies(res.list);
         setError("");
       })
@@ -268,21 +271,20 @@ export default function Career() {
 
   const applyRole = applyId?.positionName || "[Role Title]";
   const applySubject = `Application for ${applyRole} - [Your Name]`;
-  const applyMailto = `mailto:${APPLY_EMAIL}?subject=${encodeURIComponent(applySubject)}`;
-
-  if (pageLoading) return <Loading />;
+  const applyMailto = `mailto:${content.email}?subject=${encodeURIComponent(applySubject)}`;
 
   return (
-    <div className="careerpg-page">
+    <div className="careerpg-page">
+
 
       {/* HERO BAND */}
       <section
         className="careerpg-hero-section"
-        style={{ backgroundImage: `url(${CAREER_HERO_BG_IMAGE})` }}
+        style={{ backgroundImage: `url(${pageCopy.heroImage})` }}
       >
         <div className="careerpg-hero-dark-overlay" />
         <div className="careerpg-hero-inner-container">
-          <h1 className="careerpg-hero-heading">Shape Your Career</h1>
+          <h1 className="careerpg-hero-heading">{pageCopy.shape_your_career}</h1>
         </div>
       </section>
 
@@ -290,36 +292,29 @@ export default function Career() {
       <section className="careerpg-openings-section">
         <div className="careerpg-wrap">
           <div className="careerpg-eyebrow">
-            <span className="careerpg-eyebrow-bar" />
-            Careers
-          </div>
-          <h2 className="careerpg-openings-heading">Current Openings</h2>
+            <span className="careerpg-eyebrow-bar" />{pageCopy.careers}</div>
+          <h2 className="careerpg-openings-heading">{pageCopy.current_openings}</h2>
           {vacancyData.length > 0 && (
             <p className="careerpg-openings-count">
-              {vacancyData.length} open{" "}
+              {vacancyData.length}{pageCopy.open}{" "}
               {vacancyData.length === 1 ? "position" : "positions"}
             </p>
           )}
 
-          {error && vacancyData.length === 0 ? (
+          {pageLoading ? <Loading /> : error && vacancyData.length === 0 ? (
             <div className="careerpg-empty-box">
-              <h3 className="careerpg-empty-title">Something went wrong</h3>
+              <h3 className="careerpg-empty-title">{pageCopy.something_went_wrong}</h3>
               <p className="careerpg-empty-copy careerpg-error-copy">{error}</p>
             </div>
           ) : vacancyData.length === 0 ? (
             <div className="careerpg-empty-box">
-              <img
+              <img onError={mediaFallback}
                 className="careerpg-empty-image"
-                src="/static/no-jobs.svg"
-                alt="No Jobs"
+                src={pageCopy.image}
+                alt={pageCopy.image_description}
               />
-              <h3 className="careerpg-empty-title">
-                No current openings that suit you?
-              </h3>
-              <p className="careerpg-empty-copy">
-                Stay ahead! Create a job alert and get notified as soon as we
-                post relevant roles.
-              </p>
+              <h3 className="careerpg-empty-title">{pageCopy.no_current_openings_that_suit}</h3>
+              <p className="careerpg-empty-copy">{pageCopy.stay_ahead_create_a_job}</p>
             </div>
           ) : (
             <div className="careerpg-job-list">
@@ -345,26 +340,25 @@ export default function Career() {
                       <li className="careerpg-job-meta-item">
                         <FiUsers size={15} />
                         <span>
-                          <strong>Positions:</strong> {job.numberOfPositions}
+                          <strong>{pageCopy.positions}</strong> {job.numberOfPositions}
                         </span>
                       </li>
                       <li className="careerpg-job-meta-item">
                         <FiBriefcase size={15} />
                         <span>
-                          <strong>Experience:</strong> {job.experience} years
-                        </span>
+                          <strong>{pageCopy.experience}</strong> {job.experience}{pageCopy.years}</span>
                       </li>
                       <li className="careerpg-job-meta-item">
                         <FiMapPin size={15} />
                         <span>
-                          <strong>Location:</strong> {job.location}
+                          <strong>{pageCopy.location}</strong> {job.location}
                         </span>
                       </li>
                       {closing && (
                         <li className="careerpg-job-meta-item">
                           <FiClock size={15} />
                           <span>
-                            <strong>Apply by:</strong> {closing}
+                            <strong>{pageCopy.apply_by}</strong> {closing}
                           </span>
                         </li>
                       )}
@@ -372,9 +366,7 @@ export default function Career() {
 
                     {isOpen && (
                       <div className="careerpg-job-about">
-                        <p className="careerpg-job-about-title">
-                          About Position
-                        </p>
+                        <p className="careerpg-job-about-title">{pageCopy.about_position}</p>
                         <p className="careerpg-job-about-copy">
                           {job.aboutPosition}
                         </p>
@@ -386,9 +378,7 @@ export default function Career() {
                         type="button"
                         className="careerpg-apply-btn"
                         onClick={() => handleApply(job)}
-                      >
-                        Apply
-                      </button>
+                      >{pageCopy.apply}</button>
                       <button
                         type="button"
                         className="careerpg-details-btn"
@@ -426,39 +416,28 @@ export default function Career() {
               <FiX size={20} />
             </button>
 
-            <h3 className="careerpg-modal-title" id="careerpg-apply-title">
-              How to Apply
-            </h3>
+            <h3 className="careerpg-modal-title" id="careerpg-apply-title">{pageCopy.how_to_apply}</h3>
             {applyId?.positionName && (
               <p className="careerpg-modal-role">{applyId.positionName}</p>
             )}
 
-            <p className="careerpg-modal-copy">
-              Interested candidates are invited to send their updated CV to{" "}
-              <a href={applyMailto}>{APPLY_EMAIL}</a>.
+            <p className="careerpg-modal-copy">{pageCopy.interested_candidates_are_invited_to}{" "}
+              <a href={applyMailto}>{content.email}</a>.
             </p>
 
-            <p className="careerpg-modal-copy">
-              Please use the following subject line when applying:
-            </p>
+            <p className="careerpg-modal-copy">{pageCopy.please_use_the_following_subject}</p>
             <p className="careerpg-modal-subject">{applySubject}</p>
 
-            <p className="careerpg-modal-copy">
-              Only shortlisted candidates will be contacted.
-            </p>
+            <p className="careerpg-modal-copy">{pageCopy.only_shortlisted_candidates_will_be}</p>
 
             <div className="careerpg-modal-actions">
               <a className="careerpg-mail-btn" href={applyMailto}>
-                <FiMail size={16} />
-                Email your CV
-              </a>
+                <FiMail size={16} />{pageCopy.email_your_cv}</a>
               <button
                 type="button"
                 className="careerpg-details-btn"
                 onClick={closeApply}
-              >
-                Close
-              </button>
+              >{pageCopy.close}</button>
             </div>
           </div>
         </div>

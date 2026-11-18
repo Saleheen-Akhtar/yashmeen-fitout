@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /api/
+
+Sitemap: https://yashmeen-fitout.vercel.app/sitemap.xml

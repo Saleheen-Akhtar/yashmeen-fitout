@@ -1,3 +1,4 @@
+import { logError } from "../utils/logger.js";
 import mongoose from 'mongoose';
 import CategoryModel from '../models/category.model.js';
 
@@ -22,7 +23,7 @@ export const createCategory = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        console.error("Failed to create category:", error);
+        logError("Failed to create category:", error);
         return res.status(500).json({ success: false, message: "Failed to create category" });
     }
 };
@@ -34,7 +35,7 @@ export const getAllCategories = async (req, res) => {
 
         return res.status(200).json({ success: true, data: categories });
     } catch (error) {
-        console.error("Failed to fetch categories:", error);
+        logError("Failed to fetch categories:", error);
         return res.status(500).json({ success: false, message: "Failed to fetch categories" });
     }
 };
@@ -53,7 +54,7 @@ export const getCategoryById = async (req, res) => {
 
         return res.status(200).json({ success: true, data: category });
     } catch (error) {
-        console.error("Failed to fetch category:", error);
+        logError("Failed to fetch category:", error);
         return res.status(500).json({ success: false, message: "Failed to fetch category" });
     }
 };
@@ -89,7 +90,7 @@ export const updateCategory = async (req, res) => {
         if (error.name === "ValidationError") {
             return res.status(400).json({ success: false, message: error.message });
         }
-        console.error("Failed to update category:", error);
+        logError("Failed to update category:", error);
         return res.status(500).json({ success: false, message: "Failed to update category" });
     }
 };
@@ -108,7 +109,7 @@ export const deleteCategory = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Category deleted successfully" });
     } catch (error) {
-        console.error("Failed to delete category:", error);
+        logError("Failed to delete category:", error);
         return res.status(500).json({ success: false, message: "Failed to delete category" });
     }
 };
@@ -130,7 +131,7 @@ export const updateCategoryStatus = async (req, res) => {
 
         return res.status(200).json({ success: true, message: "Category status updated", data: category });
     } catch (error) {
-        console.error("Failed to update category status:", error);
+        logError("Failed to update category status:", error);
         return res.status(500).json({ success: false, message: "Failed to update category status" });
     }
 };

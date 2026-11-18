@@ -1,0 +1,20 @@
+HTTP/1.1 200 OK
+Date: Sat, 14 Nov 2026 15:22:33 GMT
+Content-Type: text/plain; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+vary: *
+x-usage-tokens: 589
+x-ratelimit-limit: 20, 20;w=60
+x-ratelimit-remaining: 19
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=BWN%2BqnGInxgD4LSaTFby9BVUA%2FyLBqzIRx1UEAq82H0ffKEG8nOfZUpJPlQD89KV4UVbsAx9XT%2F6x8%2FpsPofoCCPilsOdmXiwS6umcrlCaRB1b3CdPTMFFN30Q%3D%3D"}]}
+x-decompressed-content-length: 2796
+Cache-Control: no-transform
+Server: cloudflare
+traceparent: 00-6f29e76c7f095a6513bebc4f04efd49d-e12be7a42d029900-00
+x-cloud-trace-context: 6f29e76c7f095a6513bebc4f04efd49d/16225316774848141568
+via: 1.1 google
+alt-svc: h3=":443"; ma=86400
+cf-cache-status: DYNAMIC
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+CF-RAY: a5a702fe0fb2471a-COK

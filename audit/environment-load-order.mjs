@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import nodemailer from '../apps/api/node_modules/nodemailer/lib/nodemailer.js';
+import dotenv from '../apps/api/node_modules/dotenv/lib/main.js';
+const keys=['SMTP_HOST','SMTP_PORT','SMTP_USER','SMTP_PASS','EMAIL_FROM'];
+for(const key of keys)delete process.env[key];
+const captures=[];
+nodemailer.createTransport=options=>{captures.push({smtpHostPresent:!!options.host,smtpUserPresent:!!options.auth?.user,smtpPasswordPresent:!!options.auth?.pass,port:options.port});return {sendMail:async()=>{throw new Error('Audit refuses to send email');}};};
+const mail=await import('../apps/api/middlewares/sendEmail.js');
+dotenv.config({path:'apps/api/.env',quiet:true});
+const result={workingDirectoryIsRepoRoot:true,transporterAtModuleImport:captures[0],configurationCheckAfterApiEnvLoad:mail.isEmailConfigured(),emailsSent:0};
+fs.writeFileSync('audit/environment-load-order.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));

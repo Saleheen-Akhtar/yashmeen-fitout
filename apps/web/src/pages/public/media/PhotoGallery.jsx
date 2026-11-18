@@ -1,18 +1,19 @@
+import useWebsiteContent from "../../../hooks/useWebsiteContent";
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { SpatialGallery3D } from "@/components/ui/spatial-gallery-3d";
-import { categoryAPI, galleryAPI, itemPath } from "../../../services/api";
+import { categoryAPI, galleryAPI } from "../../../services/api";
+import { resolveMediaUrl, mediaFallback } from "../../../lib/media";
+import "../../../styles/photo-gallery.css";
+import useDialogFocus from "../../../hooks/useDialogFocus";
 import { subscribeCacheInvalidation } from "../../../lib/publicCache";
 
-const FALLBACK_GALLERY_IMAGES = [
-  "/static/hero-bg.jpg",
-  "/static/hero-banner.jpg",
-  "/static/studio.jpg",
-  "/static/Office-fit-out.jpg",
-  "/static/Residential-Fit-Out.jpg",
-  "/static/joinery-bay.jpg",
-  "/static/design-desk.jpg",
-];
+const MEDIA_UNAVAILABLE_IMAGE = `data:image/svg+xml,${encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+    <rect width="1200" height="800" fill="#eae6de"/>
+    <text x="600" y="400" text-anchor="middle" dominant-baseline="middle" fill="#6b665c" font-family="Arial, sans-serif" font-size="30" letter-spacing="4">PROJECT MEDIA UNAVAILABLE</text>
+  </svg>
+`)}`;
 
 // Clean editorial display labels for legacy DB category strings while keeping IDs unchanged
 const CATEGORY_LABEL_OVERRIDES = {
@@ -60,16 +61,10 @@ const getCategoryId = (item) =>
     : item?.categoryId;
 
 // Absolute / static / upload URLs are preserved; relative DB paths resolve under itemPath (/uploads)
-const photoUrl = (path = "") => {
-  if (!path) return "";
-  if (/^(https?:|data:|blob:|\/static\/|\/images\/|\/uploads\/)/i.test(path)) {
-    return path;
-  }
-  return `${itemPath ?? "/uploads"}/${String(path).replace(/^\/+/, "")}`;
-};
+const photoUrl = resolveMediaUrl;
 
 /* ---------------- cache layer ---------------- */
-const CACHE_KEY = "photogallery:data:v2";
+const CACHE_KEY = "gallery:photos:v3";
 const CACHE_TTL = 10 * 60 * 1000;
 
 let memoryCache = null;
@@ -122,6 +117,8 @@ function clearGalleryCache() {
 }
 
 async function fetchGalleryData() {
+  const cached = readCache();
+  if (cached && Date.now() - cached.savedAt < CACHE_TTL) return cached;
   if (inflight) return inflight;
   inflight = (async () => {
     const [catRes, galRes] = await Promise.all([
@@ -152,15 +149,22 @@ async function fetchGalleryData() {
 }
 
 export default function PhotoGallery() {
-  const cached = readCache();
+  const { content } = useWebsiteContent();
+  const pageCopy = content.pageCopy.PhotoGallery;
+
+
+  const cached = null; // Keep the first client render identical to the server.
 
   const [categories, setCategories] = useState(cached?.categories ?? []);
   const [photos, setPhotos] = useState(cached?.photos ?? []);
   const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
+  const [viewMode, setViewMode] = useState("grid");
   const [photoLightbox, setPhotoLightbox] = useState(null);
   const touchStartXRef = useRef(null);
+  const lightboxRef = useRef(null);
+  useDialogFocus(photoLightbox !== null, lightboxRef);
 
   const startFetch = useCallback((c) => {
     let cancelled = false;
@@ -189,8 +193,7 @@ export default function PhotoGallery() {
 
   useEffect(() => {
     const c = readCache();
-    const fresh = c && Date.now() - c.savedAt < CACHE_TTL;
-    let cancel = fresh ? undefined : startFetch(c);
+    let cancel = startFetch(c);
 
     const handleSync = () => {
       clearGalleryCache();
@@ -239,15 +242,14 @@ export default function PhotoGallery() {
 
   const spatialItems = useMemo(
     () =>
-      filteredPhotoIdx.map((idx, pos) => {
+      filteredPhotoIdx.map((idx) => {
         const p = photos[idx];
         return {
           id: String(p.id),
           title: formatPhotoTitle(p.title),
           category: categoryLabel[p.categoryId] || "Gallery",
-          src: p.src,
-          fallbackSrc:
-            FALLBACK_GALLERY_IMAGES[pos % FALLBACK_GALLERY_IMAGES.length],
+          src: p.src || MEDIA_UNAVAILABLE_IMAGE,
+          fallbackSrc: MEDIA_UNAVAILABLE_IMAGE,
           index: idx,
         };
       }),
@@ -329,8 +331,38 @@ export default function PhotoGallery() {
       : 0;
 
   return (
-    <div className="w-full bg-[#f5f3ef] text-[#171613]">
-      {/* INTERACTIVE 360° CURVED WEBGL ARCHITECTURAL MUSEUM GALLERY */}
+    <div className="photo-gallery-page w-full bg-[var(--bg)] text-[var(--ink)]">
+      <div className="gallery-toolbar wrap">
+        <div>
+          <span className="eyebrow">{pageCopy["spaces_details"]}</span>
+          <h1 className="no-split">{pageCopy["photo_gallery"]}</h1>
+        </div>
+        <div className="works-view-switcher" aria-label="Gallery view">
+          <button type="button" className={`works-switch-btn ${viewMode === 'grid' ? 'active' : ''}`} aria-pressed={viewMode === 'grid'} onClick={() => setViewMode('grid')}>{pageCopy["grid"]}</button>
+          <button type="button" className={`works-switch-btn ${viewMode === 'spatial' ? 'active' : ''}`} aria-pressed={viewMode === 'spatial'} onClick={() => setViewMode('spatial')}>{pageCopy["3d_gallery"]}</button>
+        </div>
+      </div>
+      {viewMode === 'grid' ? (
+        <section className="gallery-grid-section wrap" aria-label="Project photographs">
+          <div className="gallery-filter-row">
+            <label className="gallery-category-label">{pageCopy["category"]}<select value={filter} onChange={(event) => setFilter(event.target.value)}>
+                {filters.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+              </select>
+            </label>
+            <span role="status">{spatialItems.length}{pageCopy["photos"]}</span>
+          </div>
+          {loading ? <p role="status">{pageCopy["loading_photographs"]}</p> : error ? <p role="alert">{error}</p> : spatialItems.length === 0 ? <p>{pageCopy["no_photos_in_this_category"]}</p> : (
+            <div className="gallery-photo-grid">
+              {spatialItems.map((item) => (
+                <button key={item.id} type="button" className="gallery-photo-card" aria-label={`Open ${item.title}`} onClick={() => setPhotoLightbox(item.index)}>
+                  <img src={item.src} alt={item.title} loading="lazy" onError={mediaFallback} />
+                  <span className="gallery-photo-caption"><strong>{item.title}</strong><span>{item.category}</span></span>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+      ) : (
       <SpatialGallery3D
         items={spatialItems}
         filters={filters}
@@ -342,16 +374,18 @@ export default function PhotoGallery() {
         isLightboxOpen={photoLightbox !== null}
         onScrollToFooter={scrollToFooter}
       />
+      )}
 
       {/* BORDERLESS ARCHITECTURAL LIMESTONE PHOTO VIEWER */}
       {activeLightboxPhoto && (
         <div
+          ref={lightboxRef}
           data-lenis-prevent
           role="dialog"
           aria-modal="true"
           aria-label={activeLightboxTitle}
           onClick={() => setPhotoLightbox(null)}
-          className="fixed inset-0 z-[99999] flex flex-col justify-between overflow-hidden bg-[#f5f3ef]/96 px-5 py-6 text-[#171613] backdrop-blur-xl sm:px-10 sm:py-8"
+          className="fixed inset-0 z-[99999] flex flex-col justify-between overflow-hidden bg-[var(--bg)]/96 px-5 py-6 text-[var(--ink)] backdrop-blur-xl sm:px-10 sm:py-8"
         >
           {/* Warm Gallery Ceiling Spotlight */}
           <div
@@ -365,10 +399,10 @@ export default function PhotoGallery() {
               onClick={(e) => e.stopPropagation()}
               className="min-w-0 max-w-[74vw] cursor-default sm:max-w-2xl"
             >
-              <div className="mb-1 text-[10.5px] font-medium tracking-[0.16em] text-[#8e6b37] uppercase">
+              <div className="mb-1 text-[12px] font-medium tracking-[0.16em] text-[var(--accent)] uppercase">
                 {activeLightboxCategory}
               </div>
-              <h2 className="no-split truncate font-serif text-2xl font-normal tracking-[-0.02em] text-[#171613] sm:text-3xl">
+              <h2 className="no-split truncate font-serif text-2xl font-normal tracking-[-0.02em] text-[var(--ink)] sm:text-3xl">
                 {activeLightboxTitle}
               </h2>
             </div>
@@ -380,10 +414,10 @@ export default function PhotoGallery() {
                 setPhotoLightbox(null);
               }}
               aria-label="Close lightbox"
-              className="group inline-flex shrink-0 items-center gap-1.5 py-1 text-[10.5px] font-medium tracking-[0.14em] text-[#171613]/65 uppercase transition hover:text-[#171613] sm:text-[11px]"
+              className="group inline-flex shrink-0 items-center gap-1.5 min-h-11 py-1 text-[12px] font-medium tracking-[0.14em] text-[var(--ink)]/65 uppercase transition hover:text-[var(--ink)] sm:text-[12px]"
             >
-              <span>Close</span>
-              <X className="h-4 w-4 text-[#b18a4f] transition-transform duration-200 group-hover:rotate-90" />
+              <span>{pageCopy["close"]}</span>
+              <X className="h-4 w-4 text-[var(--accent)] transition-transform duration-200 group-hover:rotate-90" />
             </button>
           </div>
 
@@ -397,7 +431,7 @@ export default function PhotoGallery() {
                   stepPhoto(-1);
                 }}
                 aria-label="Previous photo"
-                className="hidden h-12 w-12 items-center justify-center text-[#171613]/50 transition hover:text-[#171613] active:scale-90 md:absolute md:left-0 md:top-1/2 md:flex md:-translate-y-1/2"
+                className="hidden h-12 w-12 items-center justify-center text-[var(--ink)]/50 transition hover:text-[var(--ink)] active:scale-90 md:absolute md:left-0 md:top-1/2 md:flex md:-translate-y-1/2"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -425,19 +459,11 @@ export default function PhotoGallery() {
               <img
                 key={photoLightbox}
                 onClick={(e) => e.stopPropagation()}
-                src={
-                  activeLightboxPhoto.src ||
-                  FALLBACK_GALLERY_IMAGES[
-                    photoLightbox % FALLBACK_GALLERY_IMAGES.length
-                  ]
-                }
+                src={activeLightboxPhoto.src || MEDIA_UNAVAILABLE_IMAGE}
                 alt={activeLightboxTitle}
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src =
-                    FALLBACK_GALLERY_IMAGES[
-                      photoLightbox % FALLBACK_GALLERY_IMAGES.length
-                    ];
+                  e.currentTarget.src = MEDIA_UNAVAILABLE_IMAGE;
                 }}
                 className="block h-auto max-h-[64vh] w-auto max-w-full bg-[#eae6de] object-contain shadow-[0_28px_80px_rgba(23,22,19,0.13)] sm:max-h-[70vh]"
               />
@@ -451,7 +477,7 @@ export default function PhotoGallery() {
                   stepPhoto(1);
                 }}
                 aria-label="Next photo"
-                className="hidden h-12 w-12 items-center justify-center text-[#171613]/50 transition hover:text-[#171613] active:scale-90 md:absolute md:right-0 md:top-1/2 md:flex md:-translate-y-1/2"
+                className="hidden h-12 w-12 items-center justify-center text-[var(--ink)]/50 transition hover:text-[var(--ink)] active:scale-90 md:absolute md:right-0 md:top-1/2 md:flex md:-translate-y-1/2"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -460,7 +486,7 @@ export default function PhotoGallery() {
 
           {/* Bottom Whisper Index & Navigation */}
           <div className="relative z-10 mx-auto flex w-full max-w-[1440px] items-center justify-center sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-            <span className="hidden text-left text-[10.5px] font-medium tracking-[0.12em] text-[#171613]/45 uppercase sm:block">
+            <span className="hidden text-left text-[12px] font-medium tracking-[0.12em] text-[var(--ink)]/45 uppercase sm:block">
               {hasMultipleLightboxPhotos ? "← → navigate · Esc close" : "Esc to close"}
             </span>
 
@@ -473,13 +499,13 @@ export default function PhotoGallery() {
                   type="button"
                   onClick={() => stepPhoto(-1)}
                   aria-label="Previous photo (bottom control)"
-                  className="flex h-8 w-8 items-center justify-center text-[#171613]/65 transition hover:text-[#171613] active:scale-90 md:hidden"
+                  className="flex h-11 w-11 items-center justify-center text-[var(--ink)]/65 transition hover:text-[var(--ink)] active:scale-90 md:hidden"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
               )}
 
-              <span className="text-[11px] font-medium tracking-[0.18em] text-[#8e6b37] tabular-nums uppercase">
+              <span className="text-[12px] font-medium tracking-[0.18em] text-[var(--accent)] tabular-nums uppercase">
                 {String(activeLightboxPos + 1).padStart(2, "0")} /{" "}
                 {String(filteredPhotoIdx.length).padStart(2, "0")}
               </span>
@@ -489,16 +515,14 @@ export default function PhotoGallery() {
                   type="button"
                   onClick={() => stepPhoto(1)}
                   aria-label="Next photo (bottom control)"
-                  className="flex h-8 w-8 items-center justify-center text-[#171613]/65 transition hover:text-[#171613] active:scale-90 md:hidden"
+                  className="flex h-11 w-11 items-center justify-center text-[var(--ink)]/65 transition hover:text-[var(--ink)] active:scale-90 md:hidden"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
               )}
             </div>
 
-            <span className="hidden text-right text-[10.5px] font-medium tracking-[0.12em] text-[#171613]/45 uppercase sm:block">
-              Click outside to close
-            </span>
+            <span className="hidden text-right text-[12px] font-medium tracking-[0.12em] text-[var(--ink)]/45 uppercase sm:block">{pageCopy["click_outside_to_close"]}</span>
           </div>
         </div>
       )}

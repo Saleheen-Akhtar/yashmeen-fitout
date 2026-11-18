@@ -5,8 +5,8 @@
 
 /* --- Blog Listing Page --- */
 .bp-page{
-          --ink:#17140f; --ink-soft:#6b6255; --paper:#faf7f0; --line:#e4dfd2;
-          --brass:#a9832e; --brass-deep:#8a6a28; --err:#b3261e;
+          --ink:#17140f; --ink-soft:#6b6255; --paper:var(--bg); --line:#e4dfd2;
+          --brass:var(--accent); --brass-deep:var(--accent); --err:#b3261e;
           background:var(--paper); color:var(--ink); min-height:60vh; font-family:var(--font-sans);
         }
         .bp-page *{ box-sizing:border-box; }
@@ -54,7 +54,7 @@
           background:linear-gradient(180deg,rgba(23,20,15,0) 65%,rgba(23,20,15,.55) 100%);
         }
         .bp-meta{
-          margin-top:18px; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+          margin-top:18px; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
           color:var(--brass-deep); font-weight:700;
         }
         .bp-card h2{
@@ -87,8 +87,8 @@
 
 /* --- Blog Detail Page --- */
 .bd-page{
-          --ink:#17140f; --ink-soft:#4f483c; --paper:#faf7f0; --line:#e4dfd2;
-          --brass:#b9905a; --brass-deep:#8a6a28; --err:#b3261e;
+          --ink:#17140f; --ink-soft:#4f483c; --paper:var(--bg); --line:#e4dfd2;
+          --brass:#b9905a; --brass-deep:var(--accent); --err:#b3261e;
           background:var(--paper); color:var(--ink); min-height:60vh;
           font-family:var(--font-sans);
         }
@@ -160,3 +160,28 @@
         .bd-state{ padding:120px 24px; text-align:center; font-size:15px; color:var(--ink-soft); }
         .bd-state.error{ color:var(--err); }
         .bd-state a{ display:inline-block; margin-top:18px; color:var(--ink); font-weight:700; text-decoration:underline; }
+.bp-poster.is-media-unavailable,
+.bd-hero.is-media-unavailable {
+  background: var(--surface-alt);
+}
+
+.bp-poster.is-media-unavailable::after,
+.blog-media-unavailable {
+  content: "Article cover unavailable";
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font: 600 12px/1.4 var(--font-sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bp-poster.is-media-unavailable::after {
+  position: absolute;
+  inset: 0;
+}
+
+.blog-media-unavailable {
+  position: absolute;
+  inset: 0;
+}

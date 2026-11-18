@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { FiCheck, FiArrowRight, FiPlus, FiMinus, FiArrowUpRight, FiLayers } from "react-icons/fi";
 import useWebsiteContent from "../../../hooks/useWebsiteContent";
-import { SERVICES_DATA } from "./servicesData";
+import { SERVICES_DATA, SERVICE_ICONS } from "./servicesData";
+import NotFound from "../NotFound";
 import "../../../styles/services.css";
+import { resolveMediaUrl, mediaFallback } from "../../../lib/media";
 
 export default function ServiceDetail({ serviceKey }) {
   const { slug } = useParams();
@@ -11,36 +13,37 @@ export default function ServiceDetail({ serviceKey }) {
   const [openFaq, setOpenFaq] = useState(0);
 
   const { content } = useWebsiteContent();
-  const fallbackService = SERVICES_DATA[activeKey] || SERVICES_DATA["architecture"];
+  const pageCopy = content.pageCopy.ServiceDetail;
+
+
+  const fallbackService = SERVICES_DATA[activeKey];
 
   // Check if CMS/backend content overrides or provides custom service info
   const cmsServices = Array.isArray(content?.services) ? content.services : [];
   const cmsService = cmsServices.find(
-    (s) => s.slug === activeKey || s.slug === fallbackService.slug
+    (s) => s.slug === activeKey || s.slug === fallbackService?.slug
   );
 
-  const title = cmsService?.title || fallbackService.title;
-  const kicker = fallbackService.kicker || "YASHMEEN FIT-OUT & INTERIORS";
-  const heroHeading = fallbackService.heroTitle || `${title} - Yashmeen Future Building Dubai`;
-  const heroBg = cmsService?.image || fallbackService.heroBgImage;
-  const introImg = fallbackService.introImage || cmsService?.image || "/static/studio.jpg";
-  const introTitle = cmsService?.shortDesc || fallbackService.introTitle;
-  const introCopy = cmsService?.description || fallbackService.introCopy;
-  const introPoints = Array.isArray(cmsService?.highlights) && cmsService.highlights.length > 0
+  if (!cmsService || cmsService.active === false) return <NotFound />;
+  const service = { ...fallbackService, ...cmsService };
+
+  const title = cmsService?.title || service.title;
+  const kicker = service.kicker || "YASHMEEN FIT-OUT & INTERIORS";
+  const heroHeading = title;
+  const heroBg = resolveMediaUrl(cmsService?.image || service.image);
+  const introImg = resolveMediaUrl(service.introImage || cmsService?.image || "/static/studio.jpg");
+  const introTitle = cmsService?.shortDesc || service.shortDesc;
+  const introCopy = cmsService?.description || service.description;
+  const introPoints = Array.isArray(cmsService?.highlights)
     ? cmsService.highlights
-    : fallbackService.introPoints;
+    : service.highlights || [];
 
-  const stats = fallbackService.stats || [
-    { value: "150+", label: "Projects Completed" },
-    { value: "10+", label: "Years of Experience" },
-    { value: "50+", label: "Skilled Professionals" },
-    { value: "100%", label: "In-House Delivery" },
-  ];
+  const stats = service.stats || [];
 
-  const disciplines = fallbackService.disciplines || [];
-  const process = fallbackService.process || [];
-  const projects = fallbackService.projects || [];
-  const faqs = fallbackService.faqs || [];
+  const disciplines = service.disciplines || [];
+  const process = service.process || [];
+  const projects = service.projects || [];
+  const faqs = service.faqs || [];
 
   const openEnquiry = () => {
     window.dispatchEvent(new CustomEvent("open-questionnaire"));
@@ -83,7 +86,7 @@ export default function ServiceDetail({ serviceKey }) {
               </ul>
               <div style={{ marginTop: "32px", display: "flex", gap: "14px", flexWrap: "wrap" }}>
                 <button type="button" onClick={openEnquiry} className="btn-pill btn-pill-dark">
-                  <span>REQUEST CONSULTATION</span>
+                  <span>{pageCopy.request_consultation}</span>
                   <span className="g-circle" aria-hidden="true" />
                 </button>
                 <Link
@@ -102,7 +105,7 @@ export default function ServiceDetail({ serviceKey }) {
                     textDecoration: "none",
                   }}
                 >
-                  <span>VIEW COMPLETED WORKS</span>
+                  <span>{pageCopy.view_completed_works}</span>
                   <FiArrowUpRight size={14} />
                 </Link>
               </div>
@@ -110,6 +113,7 @@ export default function ServiceDetail({ serviceKey }) {
             <div className="srv-intro-image-frame">
               <img
                 src={introImg}
+                onError={mediaFallback}
                 alt={title}
                 className="srv-intro-image"
                 loading="lazy"
@@ -138,18 +142,12 @@ export default function ServiceDetail({ serviceKey }) {
         <section className="srv-section srv-services-section">
           <div className="srv-wrap">
             <div className="srv-eyebrow">
-              <span className="srv-eyebrow-bar" />
-              CAPABILITIES & SCOPE
-            </div>
-            <h2 className="srv-section-heading">Integrated Disciplines Under One Roof</h2>
-            <p className="srv-section-intro">
-              Operating our own 35,000 sq.ft manufacturing facility in Al Quoz eliminates
-              subcontractor markups, prevents schedule delays, and maintains absolute control over
-              fit-out quality.
-            </p>
+              <span className="srv-eyebrow-bar" />{pageCopy.capabilities_scope}</div>
+            <h2 className="srv-section-heading">{pageCopy.integrated_disciplines_under_one_roof}</h2>
+            <p className="srv-section-intro">{pageCopy.operating_our_own_35000_sqft}</p>
             <div className="srv-service-grid">
               {disciplines.map((d, idx) => {
-                const IconComp = d.icon || FiLayers;
+                const IconComp = SERVICE_ICONS[d.icon] || FiLayers;
                 return (
                   <div key={idx} className="srv-service-card">
                     <div className="srv-service-icon">
@@ -170,14 +168,9 @@ export default function ServiceDetail({ serviceKey }) {
         <section className="srv-section srv-process-section">
           <div className="srv-wrap">
             <div className="srv-eyebrow">
-              <span className="srv-eyebrow-bar" />
-              METHODOLOGY
-            </div>
-            <h2 className="srv-section-heading">How We Deliver From Brief to Handover</h2>
-            <p className="srv-section-intro">
-              A transparent, milestone-driven execution framework engineered to prevent budget creep
-              and ensure smooth authority approvals.
-            </p>
+              <span className="srv-eyebrow-bar" />{pageCopy.methodology}</div>
+            <h2 className="srv-section-heading">{pageCopy.how_we_deliver_from_brief}</h2>
+            <p className="srv-section-intro">{pageCopy.a_transparent_milestonedriven_execution_framework}</p>
             <div className="srv-process-grid">
               {process.map((step, idx) => (
                 <div key={idx} className="srv-process-step">
@@ -194,23 +187,18 @@ export default function ServiceDetail({ serviceKey }) {
       )}
 
       {/* 6. VIDEO SHOWCASE */}
-      {fallbackService.videoUrl && (
+      {service.videoUrl && (
         <section className="srv-section" style={{ background: "#ffffff" }}>
           <div className="srv-wrap">
             <div className="srv-video-header">
               <div className="srv-eyebrow">
-                <span className="srv-eyebrow-bar" />
-                STUDIO & SITE TOURS
-              </div>
-              <h2 className="srv-section-heading">Watch Our Workshop & Site Craft in Motion</h2>
-              <p className="srv-section-intro">
-                Take a direct look inside our Dubai operations, bespoke fabrication bays, and
-                turnkey fit-out sites across the UAE.
-              </p>
+                <span className="srv-eyebrow-bar" />{pageCopy.studio_site_tours}</div>
+              <h2 className="srv-section-heading">{pageCopy.watch_our_workshop_site_craft}</h2>
+              <p className="srv-section-intro">{pageCopy.take_a_direct_look_inside}</p>
             </div>
             <div className="srv-video-frame">
               <iframe
-                src={fallbackService.videoUrl}
+                src={service.videoUrl}
                 title={`${title} Video Showcase`}
                 className="srv-video-iframe"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -228,10 +216,8 @@ export default function ServiceDetail({ serviceKey }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
               <div>
                 <div className="srv-eyebrow">
-                  <span className="srv-eyebrow-bar" />
-                  REPRESENTATIVE WORKS
-                </div>
-                <h2 className="srv-section-heading">Selected Delivered Projects</h2>
+                  <span className="srv-eyebrow-bar" />{pageCopy.representative_works}</div>
+                <h2 className="srv-section-heading">{pageCopy.selected_delivered_projects}</h2>
               </div>
               <Link
                 to="/projects"
@@ -246,15 +232,16 @@ export default function ServiceDetail({ serviceKey }) {
                   color: "var(--srv-brass-deep)",
                 }}
               >
-                <span>EXPLORE ALL PROJECTS</span>
+                <span>{pageCopy.explore_all_projects}</span>
                 <FiArrowRight size={14} />
               </Link>
             </div>
             <div className="srv-project-grid">
               {projects.map((p, idx) => (
-                <div key={idx} className="srv-project-card">
+                <Link to={p.href || "/projects"} key={idx} className="srv-project-card">
                   <img
-                    src={p.img}
+                    src={resolveMediaUrl(p.img)}
+                    onError={mediaFallback}
                     alt={p.title}
                     className="srv-project-image"
                     loading="lazy"
@@ -264,7 +251,7 @@ export default function ServiceDetail({ serviceKey }) {
                     <span className="srv-project-tag">{p.tag}</span>
                     <h3 className="srv-project-title">{p.title}</h3>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -276,10 +263,8 @@ export default function ServiceDetail({ serviceKey }) {
         <section className="srv-section srv-faq-section">
           <div className="srv-wrap">
             <div className="srv-eyebrow">
-              <span className="srv-eyebrow-bar" />
-              COMMON QUESTIONS
-            </div>
-            <h2 className="srv-section-heading">Frequently Asked Questions</h2>
+              <span className="srv-eyebrow-bar" />{pageCopy.common_questions}</div>
+            <h2 className="srv-section-heading">{pageCopy.frequently_asked_questions}</h2>
             <div className="srv-faq-list">
               {faqs.map((faq, idx) => {
                 const isOpen = openFaq === idx;
@@ -310,11 +295,8 @@ export default function ServiceDetail({ serviceKey }) {
         <div className="srv-wrap">
           <div className="srv-cta-box">
             <div>
-              <h3 className="srv-cta-heading">Ready to discuss your upcoming project?</h3>
-              <p className="srv-cta-copy">
-                Speak directly with our architectural directors and engineers. We provide
-                transparent scoping, realistic timelines, and comprehensive quotations.
-              </p>
+              <h3 className="srv-cta-heading">{pageCopy.ready_to_discuss_your_upcoming}</h3>
+              <p className="srv-cta-copy">{pageCopy.speak_directly_with_our_architectural}</p>
             </div>
             <div className="srv-cta-buttons">
               <button
@@ -322,11 +304,11 @@ export default function ServiceDetail({ serviceKey }) {
                 onClick={openEnquiry}
                 className="btn-pill btn-pill-dark"
               >
-                <span>REQUEST QUOTATION</span>
+                <span>{pageCopy.request_quotation}</span>
                 <span className="g-circle" aria-hidden="true" />
               </button>
               <Link to="/contact" className="srv-cta-link">
-                <span className="srv-cta-link-label">CONTACT STUDIO</span>
+                <span className="srv-cta-link-label">{pageCopy.contact_studio}</span>
                 <span className="srv-cta-link-icon">
                   <FiArrowRight size={16} />
                 </span>

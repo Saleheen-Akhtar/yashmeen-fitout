@@ -1,8 +1,6 @@
+import { mediaFallback } from "../../lib/media";
+import useWebsiteContent from "../../hooks/useWebsiteContent";
 import "../../styles/founders.css";
-const FOUNDER = {
-  name: "Mohammad Danish Adnan",
-  title: "Founder & Managing Director",
-};
 
 function QuoteMark() {
   return (
@@ -31,18 +29,19 @@ function SignatureMark() {
 }
 
 export default function FoundersMessage() {
+  const { content } = useWebsiteContent();
+  const pageCopy = content.pageCopy.FoundersMessage;
+  const FOUNDER = pageCopy.founder;
+
   return (
-    <div className="page fm-page">
+    <div className="page fm-page">
+
 
       {/* HERO */}
       <section className="hero">
         <div className="wrap">
-          <h1 className="hero-title">A Message From Our Founder</h1>
-          <p className="hero-copy">
-            A few words from the team at Yashmeen Future Building & Fit-Out
-            Company on why we started, what we&rsquo;ve learned, and where
-            we&rsquo;re headed next.
-          </p>
+          <h1 className="hero-title">{pageCopy.a_message_from_our_founder}</h1>
+          <p className="hero-copy">{pageCopy.a_few_words_from_the}</p>
         </div>
       </section>
 
@@ -53,80 +52,37 @@ export default function FoundersMessage() {
             {/* Portrait */}
             <div className="portrait-col">
               <div className="portrait-frame">
-                <img src="/static/founder.jpg" alt={FOUNDER.name} />
+                <img onError={mediaFallback} src={pageCopy.image} alt={FOUNDER.name} />
               </div>
               <div className="founder-name">{FOUNDER.name}</div>
               <div className="founder-title">{FOUNDER.title}</div>
               <div className="portrait-divider" />
-              <p className="portrait-foot">
-                Mohammad Danish Adnan founded Yashmeen Future Building & Fit-Out Company after a
-                decade managing large-scale fit-out contracts across the Gulf,
-                with a simple goal: run projects the way he&rsquo;d want them
-                run if it were his own home.
-              </p>
+              <p className="portrait-foot">{pageCopy.mohammad_danish_adnan_founded_yashmeen}</p>
             </div>
 
             {/* Letter */}
             <div>
               <div className="eyebrow">
-                <span className="eyebrow-bar" />
-                Founder&rsquo;s Message
-              </div>
-              <h2 className="letter-heading">
-                Building spaces people actually love coming back to.
-              </h2>
+                <span className="eyebrow-bar" />{pageCopy.founders_message}</div>
+              <h2 className="letter-heading">{pageCopy.building_spaces_people_actually_love}</h2>
 
-              <p className="greeting">Dear Friends,</p>
+              <p className="greeting">{pageCopy.dear_friends}</p>
 
-              <p className="paragraph">
-                When I started this company, I had one frustration I wanted to
-                fix: too many fit-out projects in this region were being run as
-                a series of handoffs - design here, execution there,
-                accountability nowhere. I&rsquo;d seen good ideas get watered
-                down by the time they reached the site, and good clients left
-                chasing answers no one seemed to own.
-              </p>
+              <p className="paragraph">{pageCopy.when_i_started_this_company}</p>
 
-              <p className="paragraph">
-                So at Yashmeen Future Building & Fit-Out Company, we built the
-                opposite. One team, from first sketch to final handover.
-                Designers who talk to the people installing the ceiling. Site
-                managers who were in the room when the budget was set.
-                It&rsquo;s a simple idea, but it&rsquo;s the one thing
-                I&rsquo;ve refused to compromise on in fifteen years - because
-                it&rsquo;s the difference between a space that looks good in
-                renders and one that still works for you three years later.
-              </p>
+              <p className="paragraph">{pageCopy.so_at_yashmeen_future_building}</p>
 
               <div className="quote-box">
                 <QuoteMark />
-                <p className="quote-text">
-                  &ldquo;A good interior isn&rsquo;t the one that impresses on
-                  handover day - it&rsquo;s the one you stop noticing, because
-                  everything just works.&rdquo;
-                </p>
+                <p className="quote-text">{pageCopy.a_good_interior_isnt_the}</p>
               </div>
 
-              <p className="paragraph">
-                That philosophy is why we hold ourselves to ISO 9001, ISO 14001,
-                and ISO 45001 standards on every contract, not just the large
-                ones - and why our team still walks every site in Dubai and Abu
-                Dhabi personally before we call a project done. We&rsquo;ve
-                grown a lot since our first villa renovation, but the standard
-                hasn&rsquo;t moved.
-              </p>
+              <p className="paragraph">{pageCopy.that_philosophy_is_why_we}</p>
 
-              <p className="paragraph">
-                To every client who trusted us with their home, office, or
-                business - thank you. You&rsquo;re the reason this team gets to
-                keep doing the work we love. And if you&rsquo;re considering
-                Yashmeen Future Building & Fit-Out Company for your next
-                project, I promise you&rsquo;ll get the same standard we&rsquo;d
-                demand for our own space.
-              </p>
+              <p className="paragraph">{pageCopy.to_every_client_who_trusted}</p>
 
               <div className="sign-off">
-                <p className="sign-off-line">Warm regards,</p>
+                <p className="sign-off-line">{pageCopy.warm_regards}</p>
                 <SignatureMark />
                 <div className="sign-off-name">{FOUNDER.name}</div>
                 <div className="sign-off-title">{FOUNDER.title}</div>

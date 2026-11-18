@@ -1,7 +1,6 @@
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-export function initApertureParallax(ctx, apertureStage) {
+export function initApertureParallax(apertureStage) {
   if (!apertureStage || apertureStage.dataset.apertureInitialized) return false;
   apertureStage.dataset.apertureInitialized = "true";
 
@@ -59,7 +58,7 @@ export function initApertureParallax(ctx, apertureStage) {
   return true;
 }
 
-export function initEditorialHeroParallax(ctx) {
+export function initEditorialHeroParallax() {
   const heroStageImgs = document.querySelectorAll(
     ".hero-provocative-img, .hero-minimal-img, .hero-scrubber-img, .hero-fullbleed-img, .hero-stage-img, .hero-media-wrap img"
   );
@@ -163,7 +162,7 @@ export function initEditorialHeroParallax(ctx) {
   return true;
 }
 
-export function initDimensionalParallax(ctx) {
+export function initDimensionalParallax() {
   let didChange = false;
 
   // 1. Works Bento Grid Differential Column Float (Desktop 2-Column Only)

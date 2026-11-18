@@ -1,10 +1,16 @@
+import { DEFAULT_WEBSITE_CONTENT, mergeWebsiteContent } from '../../../../shared/siteContent.js';
+
 export const SITE_URL = (
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SITE_URL) ||
-  "https://yashmeen-fitout.vercel.app"
+  "https://www.yfbfitoutcontracting.com"
 ).replace(/\/+$/, "");
 
 export const SITE_NAME = "Yashmeen Future Building & Fit-Out Contracting LLC";
 export const DEFAULT_OG_IMAGE = "/static/hero-aperture-v2.webp";
+
+export function getRobotsDirective(robots = "index, follow", forceNoindex = import.meta.env?.VITE_NOINDEX === "true") {
+  return forceNoindex ? "noindex, nofollow" : robots || "index, follow";
+}
 
 export const ROUTE_SEO = {
   "/": {
@@ -138,6 +144,18 @@ export const ROUTE_SEO = {
     robots: "noindex, nofollow",
     image: "/static/logo.jpg",
   },
+  "/reset-password": {
+    title: "Choose New Password | Yashmeen Fit-Out",
+    description: "Complete a secure password reset for the Yashmeen management portal.",
+    robots: "noindex, nofollow",
+    image: "/static/logo.jpg",
+  },
+  "/verify-email": {
+    title: "Verify Email | Yashmeen Fit-Out",
+    description: "Verify an authorized Yashmeen management account.",
+    robots: "noindex, nofollow",
+    image: "/static/logo.jpg",
+  },
 };
 
 export function normalizePathname(pathname = "/") {
@@ -145,11 +163,15 @@ export function normalizePathname(pathname = "/") {
   return pathname.replace(/\/+$/, "") || "/";
 }
 
-export function getRouteSeo(pathname = "/") {
+export function getRouteSeo(pathname = "/", content) {
   const cleanPath = normalizePathname(pathname);
 
   if (ROUTE_SEO[cleanPath]) {
-    return { ...ROUTE_SEO[cleanPath], canonicalPath: cleanPath };
+    const key = cleanPath === '/' ? 'home' : cleanPath.slice(1).replaceAll('/', '_');
+    const saved = content?.seo?.[key];
+    const service = content?.services?.find(item => item.route === cleanPath);
+    const hiddenService = cleanPath.startsWith('/services/') && Array.isArray(content?.services) && (!service || service.active === false);
+    return { ...ROUTE_SEO[cleanPath], ...saved, ...(hiddenService ? { robots: 'noindex, follow' } : {}), canonicalPath: cleanPath };
   }
 
   if (cleanPath.startsWith("/project/details/")) {
@@ -175,13 +197,14 @@ export function getRouteSeo(pathname = "/") {
   }
 
   if (cleanPath.startsWith("/services/")) {
+    const service = content?.services?.find(item => item.route === cleanPath);
     const rawSlug = cleanPath.replace("/services/", "").replace(/-/g, " ");
     const formatted = rawSlug.replace(/\b\w/g, (c) => c.toUpperCase()) || "Service";
     return {
-      title: `${formatted} | Yashmeen Fit-Out Dubai`,
-      description: `${formatted} delivered turnkey across Dubai by Yashmeen Future Building & Fit-Out Contracting LLC.`,
-      robots: "index, follow",
-      image: DEFAULT_OG_IMAGE,
+      title: `${service?.title || formatted} | ${content?.brandName || 'Yashmeen Fit-Out Dubai'}`,
+      description: service?.shortDesc || `${formatted} delivered turnkey across Dubai by Yashmeen Future Building & Fit-Out Contracting LLC.`,
+      robots: service?.active === false ? 'noindex, follow' : "index, follow",
+      image: service?.image || DEFAULT_OG_IMAGE,
       canonicalPath: cleanPath,
     };
   }
@@ -206,31 +229,76 @@ export function getRouteSeo(pathname = "/") {
   };
 }
 
-export const HOME_JSON_LD = {
+export function getBusinessJsonLd(remote, origin = SITE_URL) {
+  const content = mergeWebsiteContent(remote);
+  return {
   "@context": "https://schema.org",
   "@type": "HomeAndConstructionBusiness",
-  name: SITE_NAME,
-  url: SITE_URL,
-  image: `${SITE_URL}${DEFAULT_OG_IMAGE}`,
-  telephone: "+971 54 386 2870",
-  email: "info@yfbfitoutcontracting.com",
+  name: content.legalName,
+  url: origin,
+  image: /^https?:/.test(content.seo.home.image) ? content.seo.home.image : `${origin}${content.seo.home.image}`,
+  telephone: content.mobile,
+  email: content.email,
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Bay Square, Building 12, Office G01, Business Bay",
-    addressLocality: "Dubai",
-    addressCountry: "AE",
+    streetAddress: content.address.street,
+    addressLocality: content.address.city,
+    addressRegion: content.address.state,
+    postalCode: content.address.zipCode,
+    addressCountry: content.address.country === 'UAE' ? 'AE' : content.address.country,
   },
-  openingHoursSpecification: [
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-      opens: "08:30",
-      closes: "18:00",
+  openingHoursSpecification: content.openingHours.map(period => ({ '@type': 'OpeningHoursSpecification', dayOfWeek: period.days, opens: period.opens, closes: period.closes })),
+  sameAs: content.socialLinks.map(link => link.url),
+  };
+}
+
+export const HOME_JSON_LD = getBusinessJsonLd(DEFAULT_WEBSITE_CONTENT);
+
+export function getRouteJsonLd(pathname = "/", remote, origin = SITE_URL) {
+  const content = mergeWebsiteContent(remote);
+  const cleanPath = normalizePathname(pathname);
+  if (cleanPath === "/") return getBusinessJsonLd(content, origin);
+
+  const seo = getRouteSeo(cleanPath, content);
+  if (/noindex/i.test(seo.robots || "") || cleanPath.startsWith("/dashboard")) {
+    return null;
+  }
+
+  const url = `${origin}${cleanPath}`;
+  const image = /^https?:/.test(seo.image || '') ? seo.image : `${origin}${seo.image?.startsWith("/") ? "" : "/"}${seo.image || DEFAULT_OG_IMAGE}`;
+  const base = {
+    "@context": "https://schema.org",
+    name: seo.title,
+    description: seo.description,
+    url,
+    primaryImageOfPage: image,
+    isPartOf: {
+      "@type": "WebSite",
+      name: content.legalName,
+      url: origin,
     },
-  ],
-  sameAs: [
-    "https://www.instagram.com/yashmeenfuture",
-    "https://www.facebook.com/profile.php?id=61595342604561",
-    "https://www.youtube.com/@YashmeenFuture",
-  ],
-};
+  };
+
+  if (cleanPath.startsWith("/services/")) {
+    return {
+      ...base,
+      "@type": "Service",
+      serviceType: seo.title.split("|")[0].trim(),
+      areaServed: [
+        { "@type": "City", name: "Dubai" },
+        { "@type": "Country", name: "United Arab Emirates" },
+      ],
+      provider: {
+        "@type": "HomeAndConstructionBusiness",
+        name: content.legalName,
+        url: origin,
+      },
+    };
+  }
+
+  const collectionRoutes = new Set(["/projects", "/blogs", "/photo-gallery", "/video-gallery"]);
+  return {
+    ...base,
+    "@type": collectionRoutes.has(cleanPath) ? "CollectionPage" : "WebPage",
+  };
+}

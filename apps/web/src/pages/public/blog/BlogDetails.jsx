@@ -4,10 +4,12 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { FiArrowLeft, FiCalendar, FiClock } from "react-icons/fi";
 // TODO: adjust this path to where your API module lives
 import { postAPI, itemPath } from "../../../services/api";
+import { sanitizeBlogHtml } from "../../../lib/sanitizeBlogHtml";
+import { getPrerenderPost } from "../../../lib/prerenderData";
+import { SITE_NAME, SITE_URL } from "../../../lib/seoConfig";
 
 // Route: /blog/details/:blogId  (the param name must be blogId)
 const BLOG_LIST_PATH = "/blogs";
-const FALLBACK_HERO = "/static/hero-bg.jpg";
 
 // Absolute / local static URLs are used as-is; stored paths are resolved via itemPath
 const fileUrl = (path = "") =>
@@ -16,10 +18,12 @@ const fileUrl = (path = "") =>
     : `${itemPath}/${String(path).replace(/^\/+/, "")}`;
 
 const textOf = (html = "") =>
-  new DOMParser()
-    .parseFromString(String(html), "text/html")
-    .body.textContent.replace(/\s+/g, " ")
-    .trim();
+  typeof DOMParser !== "undefined"
+    ? new DOMParser()
+        .parseFromString(String(html), "text/html")
+        .body.textContent.replace(/\s+/g, " ")
+        .trim()
+    : String(html).replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 
 // Drops the empty spacer paragraphs the editor leaves behind (<p>&nbsp;</p>)
 const cleanContent = (html = "") =>
@@ -44,14 +48,17 @@ const toPost = (res) => {
 };
 
 export default function BlogDetails() {
+
+
   const { blogId } = useParams();
   return <BlogDetailsInner key={blogId} blogId={blogId} />;
 }
 
 function BlogDetailsInner({ blogId }) {
   const location = useLocation();
-  const [post, setPost] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const prerenderedPost = getPrerenderPost(blogId);
+  const [post, setPost] = useState(prerenderedPost);
+  const [loading, setLoading] = useState(!prerenderedPost);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -94,8 +101,8 @@ function BlogDetailsInner({ blogId }) {
     return {
       date: formatDate(post.createdAt),
       readTime: words ? `${Math.max(1, Math.round(words / 200))} min read` : "",
-      hero: post.file ? fileUrl(post.file) : FALLBACK_HERO,
-      html: cleanContent(post.content),
+      hero: post.file ? fileUrl(post.file) : "",
+      html: sanitizeBlogHtml(cleanContent(post.content)),
     };
   }, [post]);
 
@@ -117,16 +124,32 @@ function BlogDetailsInner({ blogId }) {
     }
 
     const excerpt = textOf(post.content).slice(0, 160);
+    const description =
+      excerpt ||
+      `${post.title} - Architectural insights and interior fit-out execution guidance from Yashmeen Future Building.`;
+    const hero = meta?.hero || "/static/design-desk.jpg";
+    const absoluteHero = /^https?:\/\//i.test(hero)
+      ? hero
+      : `${SITE_URL}${hero.startsWith("/") ? "" : "/"}${hero}`;
     window.dispatchEvent(
       new CustomEvent("seo-update", {
         detail: {
           pathname: location.pathname,
           title: `${post.title} | Yashmeen Fit-Out Dubai`,
-          description:
-            excerpt ||
-            `${post.title} - Architectural insights and interior fit-out execution guidance from Yashmeen Future Building.`,
-          image: meta?.hero || FALLBACK_HERO,
+          description,
+          image: meta?.hero,
           robots: "index, follow",
+          structuredData: {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: post.title,
+            description,
+            image: absoluteHero,
+            datePublished: post.createdAt,
+            dateModified: post.updatedAt,
+            mainEntityOfPage: `${SITE_URL}${location.pathname}`,
+            publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+          },
         },
       }),
     );
@@ -139,7 +162,8 @@ function BlogDetailsInner({ blogId }) {
   }, []);
 
   return (
-    <div className="bd-page">
+    <div className="bd-page">
+
 
       {loading ? (
         <div className="bd-state">Loading article…</div>
@@ -156,9 +180,10 @@ function BlogDetailsInner({ blogId }) {
         meta && (
           <>
             <header
-              className="bd-hero"
-              style={{ backgroundImage: `url(${meta.hero})` }}
+              className={`bd-hero${meta.hero ? "" : " is-media-unavailable"}`}
+              style={meta.hero ? { backgroundImage: `url(${meta.hero})` } : undefined}
             >
+              {!meta.hero && <span className="blog-media-unavailable">Article cover unavailable</span>}
               <div className="bd-container">
                 <Link to={BLOG_LIST_PATH} className="bd-back">
                   <FiArrowLeft size={15} /> All articles

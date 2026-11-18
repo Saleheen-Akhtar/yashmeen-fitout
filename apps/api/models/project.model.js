@@ -14,6 +14,7 @@ const projectSchema = mongoose.Schema(
         },
         size: { type: String, trim: true },     // e.g. "15210 Sq. ft"
         location: { type: String, trim: true }, // e.g. "Abu Dhabi"
+        duration: { type: String, trim: true },
         scope: { type: String, trim: true },    // e.g. "Design and Built Project"
         sector: { type: String, trim: true },   // e.g. "Commercial"
         videoUrl: { type: String, trim: true },

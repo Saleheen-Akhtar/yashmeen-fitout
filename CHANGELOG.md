@@ -8,6 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Audit remediation, November 2026
+- Public route rendering now produces actual initial HTML with hydration data, route metadata and JSON-LD; CMS detail URLs are generated when a build API is configured.
+- Cloudinary memory uploads add signature validation, rollback and asset cleanup; account verification/reset routes, blog sanitization and Upstash limits are implemented. Migration scripts remain dry-run by default. The reviewed account-verification and blog-sanitization migrations were applied with backups on 17 November 2026; the Cloudinary media migration remains pending provider setup.
+- Consent restoration/preferences, shared website-content invalidation, lead protection, account hardening, service 404s and keyboard navigation received the P2 fixes. CI uses child lockfiles, lint, typecheck and isolated API integration tests.
+- The public UI uses the shared light tokens/header, a floating WhatsApp action, readable labels and coordinated cookie spacing. Reduced motion retains calm fades and smooth interactions.
+- P3 maintenance splits the dashboard into section components and shared helpers, removes obsolete cinematic/Glide/Atelier hero CSS, and removes unused API mail/Cloudinary compatibility files and frontend dependencies (`@gsap/react`, `framer-motion`, `jpeg-js`, `pngjs`).
+- Website content now uses shared typed defaults and dashboard editing for business/contact details, hours, public copy/images, services and their proof/details, certifications, testimonials, FAQs, process and SEO. Current defaults are preserved; removed lists stay removed, failed saves retain drafts, nested updates preserve siblings, and public API/cache output excludes private tasks and appointments. Project edits persist duration and video URL; floating WhatsApp and careers email use saved contact details.
+- Gallery geometry/layout/rendering and lettering physics/rendering/audio are separated from orchestration. Stable keyboard gallery buttons open their named photo; audio cleanup releases resources. API logging omits sensitive error objects, messages and stacks. Static asset reference review retains eight candidates pending current CMS verification.
+- Prerender resolves lazy content before producing completed page HTML inside main. Verification accepts edited headings and checks meaningful content. Clean route files and matching Vercel fallback rules preserve assets; sitemap generation includes custom active services and excludes inactive/removed services. Default and disposable CMS fixture builds pass; deployed serving behavior remains unverified.
+- `AGENTS.md` points to current `AGENT.md` guidance. README now describes the actual test/build boundaries and dynamic prerender count. Business claims and deployment outcomes remain separate sign-off items.
+
 ### Changed
 - **Structure tidy:** `pages/website` split into `pages/public/{projects,services,media,blog}`, `components/` grouped (`layout`, `home`, `seo`, `ui`, `experiments`), `libs` and cache helpers merged into `lib/`, `layouts/` and `routes/` split out of `pages/`. Root README added; brand brief moved to `docs/`. Dead demo routes (`/svg`, `/parallax-demo`) removed.
 - **Homepage Works:** no invented fallback projects (honest empty state); desktop opens on the 3D carousel, small screens on the bento grid.
@@ -25,8 +36,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Homepage v2: oversized hero with expanding image mask, service marquee, scroll-lit statement, hover-preview service list, pinned horizontal projects gallery, dark count-up numbers band, drawn-line process, footer wordmark.
 - New dependency: `lenis`.
 
-### Unused after redesign (safe to delete once confirmed)
-`About, Beforeafter, Blog, Certifications, Clients, FAQ, Factory, Offer, OfferModal, ProjectLanding, ScopeConfigurator, Services, Why` in `src/components`.
+### Historical redesign notes
+The earlier redesign notes below describe their original implementation date. Use the audit remediation entries and `AGENT.md` for current behavior; old component/dependency lists are not a deletion checklist.
 
 ---
 

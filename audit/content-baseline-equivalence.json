@@ -1,0 +1,97 @@
+[
+  {
+    "component": "About.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "BlogDetails.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "BlogPage.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "Career.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "Contact.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "CTA.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "FAQ.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "FoundersMessage.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "Hero.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "PhotoGallery.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "PrivacyPolicy.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "Project.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "ProjectDetails.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "Quote.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "ServiceDetail.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "Studio.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "VideoGallery.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "WhyUs.jsx",
+    "sameText": true,
+    "sameHtml": true
+  },
+  {
+    "component": "Works.jsx",
+    "sameText": true,
+    "sameHtml": true
+  }
+]

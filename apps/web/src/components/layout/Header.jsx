@@ -13,15 +13,9 @@ const NAV_LINKS = [
   { label: "Contact", href: "/contact" },
 ];
 
-const SERVICES_MENU = [
-  { label: "Architecture & Approvals", href: "/services/architecture" },
-  { label: "Interior Design & Fit-Out", href: "/services/interior-design" },
-  { label: "Construction & Civil Works", href: "/services/construction" },
-  { label: "Commercial Office Renovation", href: "/services/office-renovation" },
-];
-
 export default function Header() {
   const { content } = useWebsiteContent();
+  const servicesMenu = content.services.filter(service => service.active !== false).map(service => ({ label: service.menuLabel || service.title, href: service.route }));
   const { pathname } = useLocation();
   const [menuState, setMenuState] = useState({ open: false, path: pathname });
   const [questionnaireOpen, setQuestionnaireOpen] = useState(false);
@@ -30,6 +24,7 @@ export default function Header() {
   const [hidden, setHidden] = useState(false);
   const lastY = useRef(0);
   const lastFocusRef = useRef(null);
+  const servicesTriggerRef = useRef(null);
 
   const menuOpen = menuState.open && menuState.path === pathname;
 
@@ -100,13 +95,10 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const isHomePage = pathname === "/";
-  const isLightHeaderPage = pathname === "/photo-gallery" || pathname === "/gallery";
-
   return (
     <>
       <header
-        className={`site-header ${scrolled ? "is-scrolled" : ""} ${hidden ? "is-hidden" : ""} ${isHomePage ? "is-homepage" : ""} ${isHomePage && !scrolled ? "is-homepage-top" : ""} ${isLightHeaderPage ? "is-light-page" : ""}`}
+        className={`site-header ${scrolled ? "is-scrolled" : ""} ${hidden && !menuOpen && !questionnaireOpen ? "is-hidden" : ""}`}
       >
         <div className="site-header-inner">
           {/* Brand Left */}
@@ -121,35 +113,50 @@ export default function Header() {
 
           {/* Center Links with comma separation & Services dropdown */}
           <nav className="site-nav-center" aria-label="Primary Navigation">
-            {NAV_LINKS.map((item, idx) => {
+            {NAV_LINKS.filter(item => item.label !== 'Services' || servicesMenu.length).map((item, idx) => {
               const isServices = item.label === "Services";
               const isActive = isServices
                 ? pathname.startsWith("/services")
-                : pathname === item.href;
+                : pathname === item.href || (item.href === "/projects" && pathname.startsWith("/project/"));
 
               return (
-                <span key={item.href} style={{ display: "inline-flex", alignItems: "center" }}>
+                <span key={item.href} className="site-nav-item">
                   {isServices ? (
                     <div
                       className="nav-dropdown-wrapper"
                       onMouseEnter={() => setServicesOpen(true)}
                       onMouseLeave={() => setServicesOpen(false)}
+                      onFocusCapture={() => setServicesOpen(true)}
+                      onBlurCapture={(event) => {
+                        if (!event.currentTarget.contains(event.relatedTarget)) setServicesOpen(false);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Escape") {
+                          event.preventDefault();
+                          setServicesOpen(false);
+                          servicesTriggerRef.current?.focus();
+                        }
+                      }}
                     >
                       <Link
+                        ref={servicesTriggerRef}
                         to={item.href}
                         className={`site-nav-link ${isActive ? "active" : ""}`}
                         aria-expanded={servicesOpen}
                         aria-haspopup="true"
+                        aria-controls="services-navigation-menu"
+                        aria-current={isActive ? "page" : undefined}
                         onClick={() => setServicesOpen(false)}
                       >
                         {item.label}
                       </Link>
                       <div
+                        id="services-navigation-menu"
                         className={`nav-dropdown-menu ${servicesOpen ? "is-open" : ""}`}
                         role="menu"
                         aria-label="Services Submenu"
                       >
-                        {SERVICES_MENU.map((srv) => (
+                        {servicesMenu.map((srv) => (
                           <Link
                             key={srv.href}
                             to={srv.href}
@@ -166,6 +173,7 @@ export default function Header() {
                     <Link
                       to={item.href}
                       className={`site-nav-link ${isActive ? "active" : ""}`}
+                      aria-current={isActive ? "page" : undefined}
                     >
                       {item.label}
                     </Link>

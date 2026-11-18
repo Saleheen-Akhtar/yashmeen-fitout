@@ -1,0 +1,54 @@
+[
+  {
+    "route": "/project/details/6ae711474b8ab8482d43b459",
+    "status": 200,
+    "rawRootEmpty": true,
+    "rawTitle": "Yashmeen Future Building & Fit-Out Contracting LLC | Dubai",
+    "rawContainsNoscript": true,
+    "rendered": {
+      "title": "Luxury Kitchen Design | Yashmeen Fit-Out Dubai",
+      "main": "Luxury Kitchen Design\nSize\n\n250\n\nLocation\n\nBusiness bay Dubai\n\nScope\n\nDesign & Build\n\nSector\n\nExcutive Tower C 3601\n\nFull Project Showcase\n\nCLICK TO EXPLORE NOW",
+      "h1": [
+        "Luxury Kitchen Design"
+      ]
+    },
+    "network": [
+      {
+        "url": "https://yashmeen-fitout.vercel.app/api/webDetails/details",
+        "status": 200
+      },
+      {
+        "url": "https://yashmeen-fitout.vercel.app/api/project/version",
+        "status": 200
+      },
+      {
+        "url": "https://yashmeen-fitout.vercel.app/api/project/getById/6ae711474b8ab8482d43b459",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "/blog/details/6acfbe7941ea373e8d5c4bcb",
+    "status": 200,
+    "rawRootEmpty": true,
+    "rawTitle": "Yashmeen Future Building & Fit-Out Contracting LLC | Dubai",
+    "rawContainsNoscript": true,
+    "rendered": {
+      "title": "Our Blog | Yashmeen Fit-Out Dubai",
+      "main": "All articles\nOur Blog\nOctober 14, 2026\n1 min read\n\n<div id=\"soro-blog\"></div>\n<script src=\"https://app.trysoro.com/api/embed/69292795-5058-497f-be86-e63ba9f3c175\" defer></script>\n\nBACK TO ALL ARTICLES",
+      "h1": [
+        "Our Blog"
+      ]
+    },
+    "network": [
+      {
+        "url": "https://yashmeen-fitout.vercel.app/api/post/getBy/6acfbe7941ea373e8d5c4bcb",
+        "status": 200
+      },
+      {
+        "url": "https://yashmeen-fitout.vercel.app/api/webDetails/details",
+        "status": 200
+      }
+    ]
+  }
+]

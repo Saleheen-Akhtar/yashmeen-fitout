@@ -6,13 +6,13 @@
 
 .srv-page {
   --srv-ink: #1b1a17;
-  --srv-black: #fbfaf7;
-  --srv-gray-50: #f4f1ea;
+  --srv-black: var(--bg);
+  --srv-gray-50: var(--surface-alt);
   --srv-gray-100: rgba(27, 26, 23, 0.04);
-  --srv-gray-200: #e6e1d6;
-  --srv-gray-500: #6b665c;
-  --srv-brass: #8a6a28;
-  --srv-brass-deep: #6f541d;
+  --srv-gray-200: var(--line);
+  --srv-gray-500: var(--muted);
+  --srv-brass: var(--accent);
+  --srv-brass-deep: var(--accent-hover);
   --srv-font: var(--font-sans, system-ui, -apple-system, sans-serif);
   --srv-max-w: 1180px;
 
@@ -491,7 +491,7 @@
 }
 
 .srv-project-tag {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;

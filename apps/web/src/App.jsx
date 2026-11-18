@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import { PrivateRoute, AdminProtectedRoute } from "./routes/AuthRoute";
 import ScrollToTop from "./components/layout/ScrollToTop";
@@ -35,6 +35,8 @@ const NotFound = lazy(() => import("./pages/public/NotFound"));
 // Lazy Auth Pages
 const Login = lazy(() => import("./pages/auth/Login"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
+const VerifyEmail = lazy(() => import("./pages/auth/VerifyEmail"));
 
 // Lazy Admin Layout & Pages (Isolates CKEditor & Admin dashboard from visitor bundle)
 const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
@@ -52,9 +54,9 @@ const PostList = lazy(() => import("./pages/admin/PostList"));
 const PostCreate = lazy(() => import("./pages/admin/PostCreate"));
 const PostUpdate = lazy(() => import("./pages/admin/PostUpdate"));
 
-export default function App() {
+export function AppContent() {
   return (
-    <Router>
+    <>
       <Toaster richColors position="top-right" />
       <ScrollToTop />
       <SeoHead />
@@ -62,6 +64,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<AboutPage />} />
@@ -109,6 +113,14 @@ export default function App() {
           </Route>
         </Routes>
       </Suspense>
-    </Router>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }

@@ -3,13 +3,13 @@
    ========================================================================== */
 .careerpg-page{
           --careerpg-ink:#1b1a17;
-          --careerpg-black:#fbfaf7;
-          --careerpg-gray-50:#f4f1ea;
+          --careerpg-black:var(--bg);
+          --careerpg-gray-50:var(--surface-alt);
           --careerpg-gray-100:rgba(27,26,23,0.04);
-          --careerpg-gray-200:#e6e1d6;
-          --careerpg-gray-500:#6b665c;
-          --careerpg-brass:#8a6a28;
-          --careerpg-brass-deep:#6f541d;
+          --careerpg-gray-200:var(--line);
+          --careerpg-gray-500:var(--muted);
+          --careerpg-brass:var(--accent);
+          --careerpg-brass-deep:var(--accent-hover);
           --careerpg-font:var(--font-sans);
           --careerpg-max-w:1180px;
 

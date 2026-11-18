@@ -1,18 +1,26 @@
+import "../config/env.js";
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
 
-dotenv.config();
+let transporter;
+let transporterSignature = "";
 
-// Requires SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM in your .env file.
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: Number(process.env.SMTP_PORT) === 465,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const getTransporter = () => {
+  const signature = [
+    process.env.SMTP_HOST,
+    process.env.SMTP_PORT,
+    process.env.SMTP_USER,
+  ].join(":");
+  if (!transporter || signature !== transporterSignature) {
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: Number(process.env.SMTP_PORT) === 465,
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    });
+    transporterSignature = signature;
+  }
+  return transporter;
+};
 
 const escapeHtml = (value = "") =>
   String(value)
@@ -32,7 +40,7 @@ export const sendEmail = async (to, subject, html) => {
   if (!isEmailConfigured()) {
     throw new Error("EMAIL_NOT_CONFIGURED");
   }
-  await transporter.sendMail({
+  await getTransporter().sendMail({
     from: process.env.EMAIL_FROM || process.env.SMTP_USER,
     to,
     subject,

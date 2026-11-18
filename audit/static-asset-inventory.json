@@ -1,0 +1,300 @@
+{
+  "generatedAt": "2026-11-17T06:55:26.134Z",
+  "note": "Reference check includes a current read-only CMS snapshot.",
+  "counts": {
+    "referenced": 23,
+    "snapshot-reference": 0,
+    "unverified-candidate": 0
+  },
+  "assets": [
+    {
+      "path": "/static/about-us.webp",
+      "bytes": 121098,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/lib/seoConfig.js",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/design-desk.jpg",
+      "bytes": 62317,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/lib/seoConfig.js",
+        "apps/web/src/pages/public/blog/BlogDetails.jsx",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/founder.jpg",
+      "bytes": 151016,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/lib/seoConfig.js",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/hero-aperture-v2.webp",
+      "bytes": 264520,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/components/admin/dashboard/dashboardData.js",
+        "apps/web/src/lib/seoConfig.js",
+        "apps/web/src/pages/admin/BannerManager.jsx",
+        "apps/web/src/pages/admin/Dashboard.jsx",
+        "apps/web/src/pages/admin/GalleryManager.jsx",
+        "apps/web/src/pages/admin/PopupManager.jsx",
+        "apps/web/src/pages/admin/PostList.jsx",
+        "apps/web/src/pages/admin/ProjectManager.jsx",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/hero-bg.jpg",
+      "bytes": 213591,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/components/home/Hero.jsx",
+        "apps/web/src/lib/seoConfig.js",
+        "apps/web/src/pages/auth/ForgotPassword.jsx",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/hero-editorial.webp",
+      "bytes": 298016,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/components/admin/dashboard/dashboardData.js",
+        "apps/web/src/lib/seoConfig.js",
+        "apps/web/src/pages/public/projects/ProjectDetails.jsx",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/joinery-bay.jpg",
+      "bytes": 125306,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/components/admin/dashboard/dashboardData.js",
+        "apps/web/src/data/editorialItems.js",
+        "apps/web/src/lib/seoConfig.js",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/logo.jpg",
+      "bytes": 110634,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/lib/seoConfig.js",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/media-unavailable.svg",
+      "bytes": 486,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/components/home/EditorialCarousel3D.jsx",
+        "apps/web/src/components/home/Works.jsx",
+        "apps/web/src/lib/media.js"
+      ],
+      "snapshotReferences": []
+    },
+    {
+      "path": "/static/no-jobs.svg",
+      "bytes": 1424,
+      "status": "referenced",
+      "currentReferences": [
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/Office-fit-out.jpg",
+      "bytes": 116040,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/components/admin/dashboard/dashboardData.js",
+        "apps/web/src/lib/seoConfig.js",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/pages-bg.webp",
+      "bytes": 239504,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/styles/about.css",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/production-facility.jpg",
+      "bytes": 95705,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/lib/seoConfig.js",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/raw-space.jpg",
+      "bytes": 237670,
+      "status": "referenced",
+      "currentReferences": [
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/studio.jpg",
+      "bytes": 121098,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/components/admin/dashboard/dashboardData.js",
+        "apps/web/src/data/editorialItems.js",
+        "apps/web/src/lib/seoConfig.js",
+        "apps/web/src/pages/admin/Dashboard.jsx",
+        "apps/web/src/pages/public/services/ServiceDetail.jsx",
+        "shared/siteContent.js",
+        "apps/web/tests/fixtures/prerender-data.json"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/why-us-bg.jpg",
+      "bytes": 99554,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/styles/why-us.css"
+      ],
+      "snapshotReferences": []
+    },
+    {
+      "path": "/static/why-us.jpg",
+      "bytes": 126148,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/lib/seoConfig.js",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/work-clifton.jpg",
+      "bytes": 99554,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/data/editorialItems.js",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/work-myrtle.jpg",
+      "bytes": 126148,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/data/editorialItems.js",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/work-oh-office.jpg",
+      "bytes": 239504,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/components/admin/dashboard/dashboardData.js",
+        "apps/web/src/data/editorialItems.js",
+        "apps/web/src/lib/seoConfig.js",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/work-runic.jpg",
+      "bytes": 33370,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/data/editorialItems.js"
+      ],
+      "snapshotReferences": []
+    },
+    {
+      "path": "/static/work-samford.jpg",
+      "bytes": 94902,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/data/editorialItems.js",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    },
+    {
+      "path": "/static/work-stanley.jpg",
+      "bytes": 151016,
+      "status": "referenced",
+      "currentReferences": [
+        "apps/web/src/data/editorialItems.js",
+        "shared/siteContent.js"
+      ],
+      "snapshotReferences": [
+        "apps/api/migration-output/cms-readonly-snapshot.json"
+      ]
+    }
+  ]
+}

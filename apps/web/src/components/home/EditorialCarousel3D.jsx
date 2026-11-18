@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { DEFAULT_EDITORIAL_ITEMS } from "../../data/editorialItems";
+import useReducedMotionPreference from "../../hooks/useReducedMotionPreference";
 import "../../styles/editorial-carousel-3d.css";
 
 // Helper: positive modulo
@@ -10,7 +11,7 @@ function positiveModulo(n, m) {
 // Helper: compute responsive dimensions, perspective, and screen-space anchors
 function computeLayout(W, H, isMobile) {
   const C = isMobile
-    ? Math.min(W * 0.34, H * 0.56, 440)
+    ? Math.min(W * 0.68, H * 0.56, 440)
     : Math.min(W * 0.25, H * 0.56, 440);
   const cardHeight = (4 * C) / 3;
   const B = H / 2 + cardHeight / 2;
@@ -128,6 +129,7 @@ export default function EditorialCarousel3D({
   className = "",
   ariaLabel = "Editorial 3D Image Carousel",
 }) {
+  const reducedMotion = useReducedMotionPreference();
   const stageRef = useRef(null);
   const trackRef = useRef(null);
   const cardRefs = useRef([]);
@@ -237,12 +239,18 @@ export default function EditorialCarousel3D({
     let moving = false;
 
     if (reducedMotionRef.current) {
-      posRef.current = targetRef.current;
+      const desired = isDraggingRef.current ? dragPosRef.current : targetRef.current;
+      const diff = desired - posRef.current;
+      posRef.current += diff * (isDraggingRef.current ? 0.42 : 0.24);
       velocityRef.current = 0;
-      for (let i = 0; i < itemCount; i++) {
-        followersRef.current[i] = targetRef.current;
+      if (Math.abs(diff) < 0.001) {
+        posRef.current = desired;
+      } else {
+        moving = true;
       }
-      moving = false;
+      for (let i = 0; i < itemCount; i++) {
+        followersRef.current[i] = posRef.current;
+      }
     } else if (isDraggingRef.current) {
       // Gentle follow during drag
       const diff = dragPosRef.current - posRef.current;
@@ -460,7 +468,6 @@ export default function EditorialCarousel3D({
 
       if (reducedMotionRef.current || !layout) {
         targetRef.current = Math.round(dragPosRef.current);
-        posRef.current = targetRef.current;
         requestTick();
         return;
       }
@@ -507,9 +514,6 @@ export default function EditorialCarousel3D({
       const nearestLogical = posRef.current + o;
       targetRef.current = Math.round(nearestLogical);
 
-      if (reducedMotionRef.current) {
-        posRef.current = targetRef.current;
-      }
       requestTick();
     },
     [items, onCardClick, requestTick]
@@ -521,12 +525,10 @@ export default function EditorialCarousel3D({
       if (e.key === "ArrowRight") {
         e.preventDefault();
         targetRef.current = Math.round(posRef.current) + 1;
-        if (reducedMotionRef.current) posRef.current = targetRef.current;
         requestTick();
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         targetRef.current = Math.round(posRef.current) - 1;
-        if (reducedMotionRef.current) posRef.current = targetRef.current;
         requestTick();
       }
     },
@@ -546,7 +548,6 @@ export default function EditorialCarousel3D({
           lastWheelTimeRef.current = now;
           const step = e.deltaX > 0 ? 1 : -1;
           targetRef.current = Math.round(posRef.current) + step;
-          if (reducedMotionRef.current) posRef.current = targetRef.current;
           requestTick();
         }
       }
@@ -572,8 +573,7 @@ export default function EditorialCarousel3D({
     const handleWindowResize = () => updateLayout();
     window.addEventListener("resize", handleWindowResize);
 
-    // Motion runs unconditionally on all systems
-    reducedMotionRef.current = false;
+    reducedMotionRef.current = reducedMotion;
 
     // Page visibility listener
     const handleVisibility = () => {
@@ -620,7 +620,7 @@ export default function EditorialCarousel3D({
         rAFIdRef.current = null;
       }
     };
-  }, [updateLayout, requestTick]);
+  }, [updateLayout, requestTick, reducedMotion]);
 
   return (
     <div
@@ -681,9 +681,9 @@ export default function EditorialCarousel3D({
                     loading={idx < 3 ? "eager" : "lazy"}
                     draggable={false}
                     onError={(e) => {
-                      if (item.fallbackSrc && !e.currentTarget.dataset.fallbackApplied) {
+                      if (!e.currentTarget.dataset.fallbackApplied) {
                         e.currentTarget.dataset.fallbackApplied = "1";
-                        e.currentTarget.src = item.fallbackSrc;
+                        e.currentTarget.src = item.fallbackSrc || "/static/media-unavailable.svg";
                       }
                     }}
                   />

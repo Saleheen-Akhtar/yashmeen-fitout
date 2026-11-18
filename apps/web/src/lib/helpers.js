@@ -1,3 +1,4 @@
+import { DEFAULT_WEBSITE_CONTENT } from "../../../../shared/siteContent.js";
 // Format date
 export const formatDate = (date) => {
   return new Date(date).toLocaleDateString('en-IN', {
@@ -85,7 +86,7 @@ export const tokenExpired = (text) => {
 };
 
 // Mon-Fri 8:30am - 6:00pm Asia/Dubai (GST)
-export const getDubaiAtelierStatus = (now = new Date()) => {
+export const getDubaiAtelierStatus = (now = new Date(), schedule = DEFAULT_WEBSITE_CONTENT.openingHours) => {
   try {
     const timeStr = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Dubai",
@@ -96,7 +97,7 @@ export const getDubaiAtelierStatus = (now = new Date()) => {
 
     const parts = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Dubai",
-      weekday: "short",
+      weekday: "long",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
@@ -111,8 +112,13 @@ export const getDubaiAtelierStatus = (now = new Date()) => {
     const hourNum = Number.parseInt(map.hour ?? "0", 10) % 24;
     const minNum = Number.parseInt(map.minute ?? "0", 10);
     const totalMinutes = hourNum * 60 + minNum;
-    const isWeekday = ["Mon", "Tue", "Wed", "Thu", "Fri"].includes(weekday);
-    const isOpen = isWeekday && totalMinutes >= 510 && totalMinutes < 1080;
+    const asMinutes = time => { const [hour, minute] = time.split(":").map(Number); return hour * 60 + minute; };
+    const previousDay = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][(["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"].indexOf(weekday) + 6) % 7];
+    const isOpen = schedule.some(period => {
+      const start = asMinutes(period.opens), end = asMinutes(period.closes);
+      return end > start ? period.days.includes(weekday) && totalMinutes >= start && totalMinutes < end
+        : end < start && ((period.days.includes(weekday) && totalMinutes >= start) || (period.days.includes(previousDay) && totalMinutes < end));
+    });
 
     return { dubaiTime: timeStr, isOpen };
   } catch {

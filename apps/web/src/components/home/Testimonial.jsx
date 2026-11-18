@@ -1,18 +1,12 @@
+import useWebsiteContent from "../../hooks/useWebsiteContent";
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
-const testimonials = [
-  {
-    location: "EMIRATES HILLS · PRIVATE RESIDENCE",
-    quote:
-      "From the initial meeting I was impressed by the genuine enthusiasm and willingness to engage with the ideas in our brief. The team engendered total confidence. They cared about the project; throughout the design and construction process they listened and executed with extraordinary precision.",
-    attribution: "Homeowner, Emirates Hills Villa Commission",
-    href: "/projects",
-    linkLabel: "VIEW COMMISSION",
-  },
-];
+
 
 export default function Testimonial() {
+  const { content } = useWebsiteContent();
+  const testimonials = content.testimonials;
   const trackRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const countLabel = (value) => String(value + 1).padStart(2, "0");
@@ -34,6 +28,7 @@ export default function Testimonial() {
     setActiveIndex(Math.min(nextIndex, testimonials.length - 1));
   };
 
+  if (!testimonials.length) return null;
   return (
     <section
       className="testimonial-card-section wrap"

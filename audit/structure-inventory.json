@@ -1,0 +1,20 @@
+{
+  "files": 132,
+  "packages": {
+    "web": {
+      "declaredDependencies": 19,
+      "candidatesWithoutDirectSourceImports": [
+        "@gsap/react",
+        "framer-motion",
+        "tailwindcss"
+      ]
+    },
+    "api": {
+      "declaredDependencies": 14,
+      "candidatesWithoutDirectSourceImports": [
+        "body-parser"
+      ]
+    }
+  },
+  "sourceFilesWithoutInboundImport": []
+}

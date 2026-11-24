@@ -120,6 +120,37 @@ export default function ProjectEditorModal({
             </div>
 
             {["duration", "videoUrl"].map(key => <label key={key} className="cms-fields-field">{key === "duration" ? "Project duration" : "Project video URL"}<input type="text" value={projectForm[key] || ""} onChange={event => setProjectForm(previous => ({...previous,[key]:event.target.value}))} /></label>)}
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 14px",
+                borderRadius: "10px",
+                background: projectForm.isFeatured ? "rgba(186, 153, 94, 0.12)" : "rgba(0, 0, 0, 0.03)",
+                border: projectForm.isFeatured ? "1px solid rgba(186, 153, 94, 0.4)" : "1px solid rgba(0, 0, 0, 0.08)",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 600, fontSize: "13px", color: projectForm.isFeatured ? "#8b6f3c" : "#1a1a1a" }}>
+                  Feature on Homepage Showcase
+                </div>
+                <div style={{ fontSize: "11px", color: "#666", marginTop: "2px" }}>
+                  Pin this project to the 3D gallery and flagship curation on the home screen
+                </div>
+              </div>
+              <label style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", margin: 0 }}>
+                <input
+                  type="checkbox"
+                  checked={Boolean(projectForm.isFeatured)}
+                  onChange={(e) => setProjectForm((p) => ({ ...p, isFeatured: e.target.checked }))}
+                  style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "#ba995e" }}
+                />
+              </label>
+            </div>
+
             <div>
               <label>Architectural Description</label>
               <textarea

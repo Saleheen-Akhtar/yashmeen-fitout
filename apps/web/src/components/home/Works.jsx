@@ -20,34 +20,15 @@ const BENTO_CLASSES = [
 
 const resolveProjectImage = resolveMediaUrl;
 
-const FLAGSHIP_PROJECT_IDS = [
-  "6ae711474b8ab8482d43b459", // Executive Towers Kitchen Atelier, Business Bay
-  "6ae57c2ab3f8d3621ab1f34a", // Palm Jumeirah Penthouse Fit-Out
-  "6ae5982fb3f8d3621ab1f34e", // Burj Vista Downtown Residence
-  "6ae5972ab3f8d3621ab1f34c", // Dubai Hills Modern Residence
-  "6ae5d9fdb3f8d3621ab1f352", // Pearl Jumeirah Waterfront Villa
-  "6ae6dd22b3f8d3621ab1f373", // Gold Souq Luxury Watch Boutique
-];
-
 const mapProjects = (items = []) => {
   if (!Array.isArray(items) || items.length === 0) return [];
 
-  const byId = new Map(items.map((p) => [String(p._id || p.id), p]));
-  const ordered = [];
+  // Dynamically prioritize projects marked as isFeatured, then fill with latest projects
+  const featured = items.filter((p) => p && p.isFeatured === true);
+  const nonFeatured = items.filter((p) => p && !p.isFeatured);
+  const ordered = [...featured, ...nonFeatured].slice(0, 6);
 
-  FLAGSHIP_PROJECT_IDS.forEach((id) => {
-    if (byId.has(id)) {
-      ordered.push(byId.get(id));
-      byId.delete(id);
-    }
-  });
-
-  for (const remaining of byId.values()) {
-    if (ordered.length >= 6) break;
-    ordered.push(remaining);
-  }
-
-  return ordered.slice(0, 6).map((p, idx) => {
+  return ordered.map((p, idx) => {
     const catLabel = typeof p.categoryId === "object" && p.categoryId?.categoryName
       ? p.categoryId.categoryName
       : p.sector || "FIT-OUT";

@@ -66,6 +66,7 @@ export default function ProjectManager() {
   const [formSector, setFormSector] = useState("");
   const [formVideoUrl, setFormVideoUrl] = useState("");
   const [formDescription, setFormDescription] = useState("");
+  const [formIsFeatured, setFormIsFeatured] = useState(false);
   const [formImages, setFormImages] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
   const fileRef = useRef(null);
@@ -146,6 +147,7 @@ export default function ProjectManager() {
     setFormSector("");
     setFormVideoUrl("");
     setFormDescription("");
+    setFormIsFeatured(false);
     setFormImages([]);
     resetNewFiles();
     setFormError("");
@@ -162,6 +164,7 @@ export default function ProjectManager() {
     setFormSector(p.sector || "");
     setFormVideoUrl(p.videoUrl || "");
     setFormDescription(p.description || "");
+    setFormIsFeatured(Boolean(p.isFeatured));
     setFormImages(Array.isArray(p.images) ? p.images : []);
     resetNewFiles();
     setFormError("");
@@ -243,6 +246,7 @@ export default function ProjectManager() {
     payload.append("sector", sector);
     payload.append("videoUrl", videoUrl);
     payload.append("description", description);
+    payload.append("isFeatured", formIsFeatured);
     payload.append("existingImages", JSON.stringify(formImages));
     newFiles.forEach((f) => payload.append("images", f.file));
 
@@ -450,7 +454,25 @@ export default function ProjectManager() {
                               </div>
                             )}
                             <div style={{ minWidth: 0 }}>
-                              <div style={{ fontWeight: 600 }}>{p.title}</div>
+                              <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                                <span style={{ fontWeight: 600 }}>{p.title}</span>
+                                {p.isFeatured && (
+                                  <span
+                                    className="adm-chip"
+                                    style={{
+                                      background: "rgba(186, 153, 94, 0.15)",
+                                      color: "#8b6f3c",
+                                      border: "1px solid rgba(186, 153, 94, 0.35)",
+                                      fontSize: "10px",
+                                      padding: "1px 6px",
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.04em",
+                                    }}
+                                  >
+                                    Featured
+                                  </span>
+                                )}
+                              </div>
                               {p.description && (
                                 <div
                                   style={{
@@ -674,6 +696,36 @@ export default function ProjectManager() {
                   placeholder="https://youtube.com/watch?v=…"
                   style={{ width: "100%" }}
                 />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 14px",
+                  borderRadius: "10px",
+                  background: formIsFeatured ? "rgba(186, 153, 94, 0.12)" : "rgba(0, 0, 0, 0.03)",
+                  border: formIsFeatured ? "1px solid rgba(186, 153, 94, 0.4)" : "1px solid rgba(0, 0, 0, 0.08)",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: "13px", color: formIsFeatured ? "#8b6f3c" : "inherit" }}>
+                    Feature on Homepage Showcase
+                  </div>
+                  <div style={{ fontSize: "11px", color: "var(--crex-muted)", marginTop: "2px" }}>
+                    Pin this project to the 3D gallery and flagship curation on the home screen
+                  </div>
+                </div>
+                <label style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", margin: 0 }}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(formIsFeatured)}
+                    onChange={(e) => setFormIsFeatured(e.target.checked)}
+                    style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "#ba995e" }}
+                  />
+                </label>
               </div>
 
               <div>

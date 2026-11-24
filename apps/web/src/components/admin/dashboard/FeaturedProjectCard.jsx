@@ -82,31 +82,51 @@ export default function FeaturedProjectCard({
           </button>
         </div>
 
-        <button
-          type="button"
-          onClick={() =>
-            featuredProj._id
-              ? openEditProjectModal(featuredProj)
-              : openCreateProjectModal()
-          }
-          style={{
-            background: "rgba(255, 255, 255, 0.22)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255, 255, 255, 0.3)",
-            color: "#ffffff",
-            borderRadius: "9999px",
-            padding: "5px 12px",
-            fontSize: "11px",
-            fontWeight: 600,
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "5px",
-          }}
-        >
-          <FiEdit2 size={11} />
-          <span>Edit Live</span>
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {featuredProj.isFeatured && (
+            <span
+              style={{
+                background: "rgba(186, 153, 94, 0.45)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(216, 194, 157, 0.6)",
+                color: "#ffffff",
+                borderRadius: "9999px",
+                padding: "4px 10px",
+                fontSize: "10px",
+                fontWeight: 600,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+              }}
+            >
+              Featured
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() =>
+              featuredProj._id
+                ? openEditProjectModal(featuredProj)
+                : openCreateProjectModal()
+            }
+            style={{
+              background: "rgba(255, 255, 255, 0.22)",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.3)",
+              color: "#ffffff",
+              borderRadius: "9999px",
+              padding: "5px 12px",
+              fontSize: "11px",
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+          >
+            <FiEdit2 size={11} />
+            <span>Edit Live</span>
+          </button>
+        </div>
       </div>
 
       {/* Bottom Typography + Frosted Size Pill */}

@@ -94,9 +94,9 @@ function getCardState(o, layout) {
   // Stacking z-index: cards closer to center have higher priority
   const zIndex = Math.round(100 - a * 10);
 
-  // Text opacity: visible only near center, max(0, 1 - 1.8a)
-  const textOpacity = Math.max(0, 1 - 1.8 * a);
-  const textTranslateY = (1 - textOpacity) * 10;
+  // Text opacity: visible smoothly near center, max(0, 1 - 1.1a)
+  const textOpacity = Math.max(0, 1 - 1.1 * a);
+  const textTranslateY = (1 - textOpacity) * 8;
 
   // Hinge: bottom-inner corner
   // Right cards (o > 0): bottom-left (0% 100%)
@@ -710,6 +710,9 @@ export default function EditorialCarousel3D({
                         {item.category}
                       </span>
                       <h3 className="editorial-card-title">{item.title}</h3>
+                      <span className="editorial-card-action">
+                        Inspect Study &rarr;
+                      </span>
                     </div>
                     <span
                       className="editorial-card-number"

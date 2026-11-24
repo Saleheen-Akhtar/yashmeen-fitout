@@ -20,23 +20,51 @@ const BENTO_CLASSES = [
 
 const resolveProjectImage = resolveMediaUrl;
 
-const mapProjects = (items = []) => items.slice(0, 6).map((p, idx) => {
-  const catLabel = typeof p.categoryId === "object" && p.categoryId?.categoryName
-    ? p.categoryId.categoryName
-    : p.sector || "FIT-OUT";
-  const locLabel = p.location || "DUBAI";
-  const yearStr = p.createdAt ? String(new Date(p.createdAt).getFullYear()) : "2026";
-  return {
-    id: p._id,
-    num: `(${String(idx + 1).padStart(2, "0")})`,
-    name: p.title,
-    tag: `${catLabel.toUpperCase()} · ${locLabel.toUpperCase()}`,
-    year: yearStr,
-    img: resolveProjectImage(p.images?.[0]),
-    imgAlt: `${p.title} - ${locLabel}`,
-    className: BENTO_CLASSES[idx % BENTO_CLASSES.length],
-  };
-});
+const FLAGSHIP_PROJECT_IDS = [
+  "6ae711474b8ab8482d43b459", // Executive Towers Kitchen Atelier, Business Bay
+  "6ae57c2ab3f8d3621ab1f34a", // Palm Jumeirah Penthouse Fit-Out
+  "6ae5982fb3f8d3621ab1f34e", // Burj Vista Downtown Residence
+  "6ae5972ab3f8d3621ab1f34c", // Dubai Hills Modern Residence
+  "6ae5d9fdb3f8d3621ab1f352", // Pearl Jumeirah Waterfront Villa
+  "6ae6dd22b3f8d3621ab1f373", // Gold Souq Luxury Watch Boutique
+];
+
+const mapProjects = (items = []) => {
+  if (!Array.isArray(items) || items.length === 0) return [];
+
+  const byId = new Map(items.map((p) => [String(p._id || p.id), p]));
+  const ordered = [];
+
+  FLAGSHIP_PROJECT_IDS.forEach((id) => {
+    if (byId.has(id)) {
+      ordered.push(byId.get(id));
+      byId.delete(id);
+    }
+  });
+
+  for (const remaining of byId.values()) {
+    if (ordered.length >= 6) break;
+    ordered.push(remaining);
+  }
+
+  return ordered.slice(0, 6).map((p, idx) => {
+    const catLabel = typeof p.categoryId === "object" && p.categoryId?.categoryName
+      ? p.categoryId.categoryName
+      : p.sector || "FIT-OUT";
+    const locLabel = p.location || "DUBAI";
+    const yearStr = p.createdAt ? String(new Date(p.createdAt).getFullYear()) : "2026";
+    return {
+      id: p._id || p.id,
+      num: `(${String(idx + 1).padStart(2, "0")})`,
+      name: p.title,
+      tag: `${catLabel.toUpperCase()} · ${locLabel.toUpperCase()}`,
+      year: yearStr,
+      img: resolveProjectImage(p.images?.[0]),
+      imgAlt: `${p.title} - ${locLabel}`,
+      className: BENTO_CLASSES[idx % BENTO_CLASSES.length],
+    };
+  });
+};
 
 export default function Works() {
   const { content } = useWebsiteContent();
@@ -60,7 +88,7 @@ export default function Works() {
 
     const loadProjects = async () => {
       try {
-        const res = await projectAPI.getAll({ limit: 12 });
+        const res = await projectAPI.getAll({ limit: 50 });
         const items = res?.data?.data ?? [];
         if (!cancelled && Array.isArray(items) && items.length > 0) {
           setLiveProjects(mapProjects(items));

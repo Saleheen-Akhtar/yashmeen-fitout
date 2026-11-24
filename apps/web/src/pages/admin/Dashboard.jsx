@@ -11,7 +11,7 @@ import SiteSettingsModal from '../../components/admin/dashboard/SiteSettingsModa
 import CalendarEventModal from '../../components/admin/dashboard/CalendarEventModal';
 import PipelineItemModal from '../../components/admin/dashboard/PipelineItemModal';
 import { STAGES, getInitials, fetchDashboardBundle } from "../../components/admin/dashboard/dashboardData";
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { enquiryAPI, projectAPI, quoteAPI, webDetailsAPI } from "../../services/api";
 import {
@@ -147,7 +147,7 @@ export default function Dashboard() {
   const [addingTask, setAddingTask] = useState(false);
   const [inspectedItem, setInspectedItem] = useState(null);
 
-  const applyDashboardBundle = (bundle) => {
+  const applyDashboardBundle = useCallback((bundle) => {
     if (bundle.quotes !== null && (bundle.quotes.length > 0 || !location.search.includes("preview=dashboard"))) {
       setQuotes(bundle.quotes);
     }
@@ -160,7 +160,7 @@ export default function Dashboard() {
       setWebDetails(mergeWebsiteContent(bundle.webDetails));
       setSiteForm(mergeWebsiteContent(bundle.webDetails));
     }
-  };
+  }, [location.search]);
 
   const loadDashboardData = async () => {
     try {
@@ -207,7 +207,7 @@ export default function Dashboard() {
       cancelled = true;
       window.removeEventListener("open-cms-settings", onOpenSettings);
     };
-  }, []);
+  }, [applyDashboardBundle]);
 
   // Unified CRM pipeline. 100% real prospective client leads from Quotes and Contact inquiries.
   const allCRMItems = useMemo(() => {

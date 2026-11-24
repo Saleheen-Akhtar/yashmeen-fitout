@@ -14,7 +14,6 @@ import {
   FiLayers,
   FiCalendar,
   FiShield,
-  FiSliders,
   FiCheckCircle,
   FiTool,
   FiPhoneCall,
@@ -596,8 +595,7 @@ function ProjectDetailsInner({ projectId }) {
     }
   }, [allProjects.length]);
 
-  const images = project ? getImages(project) : [];
-  const thumbs = images;
+  const images = useMemo(() => (project ? getImages(project) : []), [project]);
   const title = project ? pick(project, ["title", "name", "projectName", "project_name"]) : "";
   const videoId = project
     ? getYouTubeId(pick(project, ["youtubeUrl", "youtube_url", "youtube", "videoUrl", "video_url", "video", "videoLink", "link"]))

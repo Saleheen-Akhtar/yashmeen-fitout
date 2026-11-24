@@ -1,329 +1,177 @@
-import { FiCalendar, FiX } from "react-icons/fi";
+import {
+  PiCalendarBlankLight,
+  PiCaretLeftLight,
+  PiCaretRightLight,
+  PiClockLight,
+  PiXLight,
+} from "react-icons/pi";
+import { FaWhatsapp } from "react-icons/fa";
+import { FiDownload, FiExternalLink } from "react-icons/fi";
+import {
+  getGoogleCalendarUrl,
+  downloadIcsFile,
+  getSiteVisitWhatsAppUrl,
+} from "../../../lib/calendarExport";
+
+const timeValue = (value = "") => {
+  const match = value.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+  if (!match) return 0;
+  let hour = Number(match[1]) % 12;
+  if (match[3].toLowerCase() === "pm") hour += 12;
+  return hour * 60 + Number(match[2]);
+};
 
 export default function CalendarCard({
-  setMonthOffset,
-  monthNames,
-  setCalendarModalOpen,
+  weekOffset,
+  setWeekOffset,
+  weekLabel,
+  openCalendarModal,
   weekColumns,
   calendarEvents,
   handleDeleteCalendarEvent,
 }) {
+  const dateIndex = new Map(weekColumns.map((column, index) => [column.isoDate, index]));
+  const visibleEvents = calendarEvents
+    .map((event) => ({
+      ...event,
+      resolvedDayIndex: event.date
+        ? dateIndex.get(event.date)
+        : weekOffset === 0
+          ? Number(event.dayIndex) || 0
+          : undefined,
+    }))
+    .filter((event) => event.resolvedDayIndex !== undefined)
+    .sort(
+      (a, b) =>
+        a.resolvedDayIndex - b.resolvedDayIndex ||
+        timeValue(a.timeSlot) - timeValue(b.timeSlot),
+    );
+
   return (
-    <div
-      className="crex-card crex-calendar-span"
-      style={{
-        padding: "20px 24px",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-      }}
-    >
-      {/* Calendar Header Strip (Prev Month | Active Month Year | Next Month + Schedule Pill) */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "10px",
-          marginBottom: "18px",
-          flexWrap: "wrap",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => setMonthOffset((m) => m - 1)}
-          className="crex-btn-ghost"
-          style={{ fontSize: "11.5px", padding: "5px 12px" }}
-        >
-          {monthNames.prev}
-        </button>
-
-        <div style={{ fontSize: "15.5px", fontWeight: 500, color: "var(--crex-ink)" }}>
-          {monthNames.curr}
+    <section className="schedule-card crex-calendar-span">
+      <header className="schedule-header">
+        <div>
+          <span className="workspace-kicker">Site schedule</span>
+          <h2>{weekLabel}</h2>
         </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div className="schedule-actions">
           <button
             type="button"
-            onClick={() => setMonthOffset((m) => m + 1)}
-            className="crex-btn-ghost"
-            style={{ fontSize: "11.5px", padding: "5px 12px" }}
+            className="schedule-nav"
+            onClick={() => setWeekOffset((value) => value - 1)}
+            aria-label="Previous week"
           >
-            {monthNames.next}
+            <PiCaretLeftLight size={17} />
           </button>
           <button
             type="button"
-            onClick={() => setCalendarModalOpen(true)}
-            className="crex-btn-dark"
-            style={{ fontSize: "11px", padding: "5px 12px" }}
-            title="Add site visit or consultation"
+            className="schedule-today"
+            onClick={() => setWeekOffset(0)}
+            disabled={weekOffset === 0}
           >
-            <FiCalendar size={12} />
-            <span>Schedule</span>
+            This week
+          </button>
+          <button
+            type="button"
+            className="schedule-nav"
+            onClick={() => setWeekOffset((value) => value + 1)}
+            aria-label="Next week"
+          >
+            <PiCaretRightLight size={17} />
+          </button>
+          <button type="button" className="adm-btn-primary" onClick={openCalendarModal}>
+            <PiCalendarBlankLight size={17} />
+            <span>Add visit</span>
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* 6-Day Column Grid with Time Axis (Desktop & Tablet) */}
-      <div className="crex-calendar-desktop" style={{ overflowX: "auto" }}>
-        <div style={{ minWidth: "520px" }}>
-          {/* Day Names Header */}
-          <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
-            <div style={{ width: "68px", flexShrink: 0 }} />
-            <div
-              style={{
-                flex: 1,
-                display: "grid",
-                gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
-                textAlign: "center",
-              }}
-            >
-              {weekColumns.map((col, idx) => {
-                const isWed = idx === 2;
-                return (
-                  <div key={col.name} style={{ paddingBottom: "4px" }}>
-                    <div
-                      style={{
-                        fontSize: "11.5px",
-                        color: isWed ? "var(--crex-ink)" : "var(--crex-muted-soft)",
-                        fontWeight: isWed ? 700 : 500,
-                      }}
-                    >
-                      {col.name}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "13px",
-                        fontWeight: isWed ? 700 : 500,
-                        color: isWed ? "var(--crex-ink)" : "var(--crex-muted)",
-                        marginTop: "2px",
-                      }}
-                    >
-                      {col.num}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Timeline Matrix Rows */}
-          <div style={{ position: "relative" }}>
-            {["9:00 am", "10:00 am", "11:00 am"].map((timeSlot) => {
-              const rowEvents = calendarEvents.filter((ev) => ev.timeSlot === timeSlot);
-              return (
-                <div
-                  key={timeSlot}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    minHeight: "54px",
-                  }}
-                >
-                  <span style={{ width: "68px", flexShrink: 0, fontSize: "11px", color: "var(--crex-muted-soft)", fontWeight: 500 }}>
-                    {timeSlot}
-                  </span>
-
-                  <div
-                    style={{
-                      flex: 1,
-                      display: "grid",
-                      gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
-                      minHeight: "54px",
-                      alignItems: "center",
-                      position: "relative",
-                    }}
-                  >
-                    {/* Grid Cells */}
-                    {weekColumns.map((_, dayIdx) => (
-                      <div
-                        key={dayIdx}
-                        style={{
-                          borderLeft: "1px dashed var(--crex-line)",
-                          height: "100%",
-                          minHeight: "54px",
-                        }}
-                      />
-                    ))}
-
-                    {/* Render Floating Event Pills aligned accurately to 1/6 day columns */}
-                    {rowEvents.map((ev) => {
-                      const colIdx = Math.min(Math.max(Number(ev.dayIndex) || 0, 0), 5);
-                      const rawLeft = (colIdx / 6) * 100;
-                      const widthPct = colIdx >= 4 ? 33.33 : 36;
-                      const leftPct = Math.min(rawLeft, 100 - widthPct);
-                      const isDark = ev.variant !== "light";
-                      return (
-                        <div
-                          key={ev.id}
-                          style={{
-                            position: "absolute",
-                            left: `${leftPct}%`,
-                            width: `${widthPct}%`,
-                            zIndex: 3,
-                            background: isDark ? "var(--crex-dark)" : "#ffffff",
-                            color: isDark ? "#ffffff" : "var(--crex-ink)",
-                            border: isDark ? "none" : "1px solid var(--crex-line-strong)",
-                            borderRadius: "14px",
-                            padding: "8px 12px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            gap: "8px",
-                            boxSizing: "border-box",
-                            boxShadow: isDark
-                              ? "0 8px 20px rgba(8,8,7,0.18)"
-                              : "0 4px 12px rgba(8,8,7,0.05)",
-                          }}
-                        >
-                          <div style={{ minWidth: 0 }}>
-                            <div
-                              style={{
-                                fontSize: "11.5px",
-                                fontWeight: 600,
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {ev.title}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: "10px",
-                                color: isDark ? "#b8b6af" : "var(--crex-muted)",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {ev.subtitle}
-                            </div>
-                          </div>
-
-                          <div style={{ display: "flex", alignItems: "center", gap: "4px", flexShrink: 0 }}>
-                            {/* Micro Team Avatar Monograms */}
-                            <div style={{ display: "flex", marginRight: "4px" }}>
-                              <span
-                                style={{
-                                  width: "20px",
-                                  height: "20px",
-                                  borderRadius: "50%",
-                                  background: "var(--crex-brass)",
-                                  color: "var(--crex-ink)",
-                                  fontSize: "9px",
-                                  fontWeight: 700,
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  border: isDark ? "1.5px solid #080807" : "1.5px solid #ffffff",
-                                }}
-                              >
-                                YA
-                              </span>
-                              <span
-                                style={{
-                                  width: "20px",
-                                  height: "20px",
-                                  borderRadius: "50%",
-                                  background: "#eae7df",
-                                  color: "var(--crex-ink)",
-                                  fontSize: "9px",
-                                  fontWeight: 700,
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  marginLeft: "-6px",
-                                  border: isDark ? "1.5px solid #080807" : "1.5px solid #ffffff",
-                                }}
-                              >
-                                PM
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteCalendarEvent(ev.id)}
-                              style={{
-                                background: "transparent",
-                                border: "none",
-                                color: isDark ? "#b8b6af" : "var(--crex-muted)",
-                                cursor: "pointer",
-                                padding: "2px",
-                              }}
-                              title="Remove event"
-                            >
-                              <FiX size={11} />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Stacked Agenda View (< 640px) */}
-      <div className="crex-agenda-mobile">
-        {calendarEvents.map((ev) => {
-          const colIdx = Math.min(Math.max(Number(ev.dayIndex) || 0, 0), 5);
-          const dayInfo = weekColumns[colIdx] || weekColumns[0];
-          const isDark = ev.variant !== "light";
+      <div className="schedule-week-strip" aria-label={weekLabel}>
+        {weekColumns.map((column, index) => {
+          const eventCount = visibleEvents.filter(
+            (event) => event.resolvedDayIndex === index,
+          ).length;
           return (
-            <div
-              key={ev.id}
-              style={{
-                background: isDark ? "var(--crex-dark)" : "#ffffff",
-                color: isDark ? "#ffffff" : "var(--crex-ink)",
-                border: isDark ? "none" : "1px solid var(--crex-line-strong)",
-                borderRadius: "14px",
-                padding: "12px 14px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "12px",
-              }}
-            >
-              <div style={{ minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: "10.5px",
-                    fontWeight: 600,
-                    color: isDark ? "var(--crex-brass)" : "var(--crex-brass-deep)",
-                    marginBottom: "2px",
-                  }}
-                >
-                  {dayInfo.name} {dayInfo.num} · {ev.timeSlot}
-                </div>
-                <div style={{ fontSize: "13px", fontWeight: 600 }}>{ev.title}</div>
-                {ev.subtitle && (
-                  <div style={{ fontSize: "11px", color: isDark ? "#b8b6af" : "var(--crex-muted)", marginTop: "2px" }}>
-                    {ev.subtitle}
-                  </div>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => handleDeleteCalendarEvent(ev.id)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: isDark ? "#b8b6af" : "var(--crex-muted)",
-                  cursor: "pointer",
-                  padding: "4px",
-                  flexShrink: 0,
-                }}
-                title="Remove event"
-              >
-                <FiX size={14} />
-              </button>
+            <div key={column.isoDate} className={`schedule-day ${column.isToday ? "is-today" : ""}`}>
+              <span>{column.name}</span>
+              <strong>{column.num}</strong>
+              <small>{eventCount || ""}</small>
             </div>
           );
         })}
       </div>
-    </div>
+
+      <div className="schedule-agenda">
+        {visibleEvents.length === 0 ? (
+          <div className="schedule-empty">
+            <PiCalendarBlankLight size={21} />
+            <div>
+              <strong>No visits scheduled</strong>
+              <span>Add a client meeting, site survey, or handover review.</span>
+            </div>
+          </div>
+        ) : (
+          visibleEvents.map((event) => {
+            const day = weekColumns[event.resolvedDayIndex] || weekColumns[0];
+            return (
+              <article key={event.id} className="schedule-event">
+                <div className="schedule-date-block">
+                  <span>{day?.name}</span>
+                  <strong>{day?.num}</strong>
+                </div>
+                <div className="schedule-event-copy">
+                  <h3>{event.title}</h3>
+                  <p>{event.subtitle || "Site and client coordination"}</p>
+                </div>
+                <span className="schedule-time">
+                  <PiClockLight size={15} />
+                  {event.timeSlot}
+                </span>
+                <div className="schedule-event-actions">
+                  <a
+                    href={getSiteVisitWhatsAppUrl(event, day)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="schedule-tool-btn schedule-tool-whatsapp"
+                    title="Send WhatsApp site visit reminder to client"
+                    aria-label="Send WhatsApp site visit reminder"
+                  >
+                    <FaWhatsapp size={14} />
+                  </a>
+                  <a
+                    href={getGoogleCalendarUrl(event, day)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="schedule-tool-btn"
+                    title="Add to Google Calendar"
+                    aria-label="Add to Google Calendar"
+                  >
+                    <FiExternalLink size={13} />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => downloadIcsFile(event, day)}
+                    className="schedule-tool-btn"
+                    title="Download .ics (Apple Calendar / Outlook)"
+                    aria-label="Download .ics calendar file"
+                  >
+                    <FiDownload size={13} />
+                  </button>
+                  <button
+                    type="button"
+                    className="schedule-remove"
+                    onClick={() => handleDeleteCalendarEvent(event.id)}
+                    title="Remove visit"
+                    aria-label={`Remove ${event.title}`}
+                  >
+                    <PiXLight size={15} />
+                  </button>
+                </div>
+              </article>
+            );
+          })
+        )}
+      </div>
+    </section>
   );
 }

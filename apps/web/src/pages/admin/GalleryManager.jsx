@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { galleryAPI, categoryAPI, itemPath } from "../../services/api";
 import { clearGalleryCache } from "../../lib/publicCache";
 import { FiEdit2, FiImage, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import AdminPager from "../../components/admin/AdminPager";
+import AdminMediaImage from "../../components/admin/AdminMediaImage";
 
 const MAX_FILE_MB = 5;
 const FALLBACK_IMG = "/static/hero-aperture-v2.webp";
+const PAGE_SIZE = 8;
 
 const invalidateSiteCaches = () => {
   clearGalleryCache();
@@ -44,7 +47,7 @@ const ToggleSwitch = ({ checked, onChange, disabled, label }) => (
       display: "inline-flex",
       alignItems: "center",
       justifyContent: checked ? "flex-end" : "flex-start",
-      background: checked ? "#080807" : "#d8d5ce",
+      background: checked ? "#1b1a17" : "#d8d5ce",
       cursor: disabled ? "not-allowed" : "pointer",
       opacity: disabled ? 0.6 : 1,
       transition: "background 0.2s ease",
@@ -56,7 +59,7 @@ const ToggleSwitch = ({ checked, onChange, disabled, label }) => (
         width: "18px",
         height: "18px",
         borderRadius: "50%",
-        background: checked ? "#c5a059" : "#ffffff",
+        background: checked ? "#8a6a28" : "#ffffff",
         boxShadow: "0 1px 2px rgba(8,8,7,0.28)",
       }}
     />
@@ -69,6 +72,7 @@ export default function GalleryManager() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [page, setPage] = useState(1);
   const [banner, setBanner] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -306,6 +310,12 @@ export default function GalleryManager() {
       categoryFilter === "all" || getCategoryId(i) === categoryFilter;
     return matchesSearch && matchesCategory;
   });
+  const totalPages = Math.max(Math.ceil(filtered.length / PAGE_SIZE), 1);
+  const safePage = Math.min(page, totalPages);
+  const pagedItems = filtered.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
 
   return (
     <div className="adm-page">
@@ -357,13 +367,19 @@ export default function GalleryManager() {
               type="text"
               placeholder="Search photos…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="adm-search-input"
             />
           </div>
           <select
             value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
+            onChange={(e) => {
+              setCategoryFilter(e.target.value);
+              setPage(1);
+            }}
             className="adm-filter-select"
             aria-label="Filter by category"
           >
@@ -386,6 +402,7 @@ export default function GalleryManager() {
                 : "No photos match your filters."}
             </div>
           ) : (
+            <>
             <div className="adm-table-wrap">
               <table>
                 <thead>
@@ -398,19 +415,16 @@ export default function GalleryManager() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((item) => {
+                  {pagedItems.map((item) => {
                     const src = resolveImage(item.photo);
                     return (
                       <tr key={item._id}>
                         <td>
                           {item.photo ? (
-                            <img
+                            <AdminMediaImage
                               src={src}
+                              fallbackSrc={FALLBACK_IMG}
                               alt={item.title}
-                              onError={(e) => {
-                                e.currentTarget.onerror = null;
-                                e.currentTarget.src = FALLBACK_IMG;
-                              }}
                               onClick={() => setPreviewSrc(src)}
                               style={{
                                 width: "68px",
@@ -492,6 +506,14 @@ export default function GalleryManager() {
                 </tbody>
               </table>
             </div>
+            <AdminPager
+              page={safePage}
+              pageSize={PAGE_SIZE}
+              totalItems={filtered.length}
+              onPageChange={setPage}
+              noun="photos"
+            />
+            </>
           )}
         </div>
       </div>
@@ -565,13 +587,10 @@ export default function GalleryManager() {
                 <label style={{ marginBottom: "6px" }}>Photo</label>
                 <label className="adm-dropzone" style={{ display: "flex" }}>
                   {formPreview ? (
-                    <img
+                    <AdminMediaImage
                       src={formPreview}
+                      fallbackSrc={FALLBACK_IMG}
                       alt="Preview"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = FALLBACK_IMG;
-                      }}
                       style={{
                         maxHeight: "170px",
                         maxWidth: "100%",
@@ -724,13 +743,10 @@ export default function GalleryManager() {
                 <FiX size={16} />
               </button>
             </div>
-            <img
+            <AdminMediaImage
               src={previewSrc}
+              fallbackSrc={FALLBACK_IMG}
               alt="Gallery preview"
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = FALLBACK_IMG;
-              }}
               style={{
                 width: "100%",
                 maxHeight: "70vh",

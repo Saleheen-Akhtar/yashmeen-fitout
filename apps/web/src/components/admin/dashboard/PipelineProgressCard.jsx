@@ -1,34 +1,40 @@
 import { FiArrowUpRight } from "react-icons/fi";
+import { STAGES } from "./dashboardData";
 
 export default function PipelineProgressCard({
   allCRMItems,
   setActiveTab,
   weeklyBars,
 }) {
+  const stageCounts = STAGES.map((stg) => ({
+    ...stg,
+    count: allCRMItems.filter((item) => item.stage === stg.id).length,
+  }));
+
   return (
     <div
-      className="crex-card"
+      className="crex-card crex-pipeline-span"
       style={{
-        padding: "20px 22px",
+        padding: "22px 24px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
         minHeight: "290px",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px" }}>
         <div>
-          <div style={{ fontSize: "17px", fontWeight: 500, color: "var(--crex-ink)" }}>
-            Progress
-          </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginTop: "8px" }}>
-            <span style={{ fontSize: "34px", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1 }}>
+          <span className="workspace-kicker" style={{ display: "block", marginBottom: "4px" }}>
+            Pipeline overview
+          </span>
+          <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
+            <span style={{ fontSize: "36px", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1 }}>
               {allCRMItems.length}
             </span>
-            <span style={{ fontSize: "11px", color: "var(--crex-muted)", lineHeight: 1.3 }}>
-              Active Deals
+            <span style={{ fontSize: "12px", color: "var(--crex-muted)", lineHeight: 1.3 }}>
+              Active fit-out records
               <br />
-              in pipeline
+              across all stages
             </span>
           </div>
         </div>
@@ -40,104 +46,141 @@ export default function PipelineProgressCard({
             document.getElementById("crm-cms-workspace")?.scrollIntoView({ behavior: "smooth" });
           }}
           className="crex-icon-circle"
-          title="Open Pipeline Kanban"
+          title="Open CRM Pipeline Kanban"
+          aria-label="Open CRM Pipeline Kanban"
         >
           <FiArrowUpRight size={15} />
         </button>
       </div>
 
-      {/* 7 Vertical Dotted Tracks with Obsidian & Champagne Brass Capsule Bars */}
+      {/* Stage distribution summary & 7-day velocity chart */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(7, 1fr)",
+          gridTemplateColumns: "1.2fr 0.9fr",
+          gap: "24px",
           alignItems: "end",
-          height: "145px",
-          gap: "8px",
-          marginTop: "12px",
-          paddingTop: "16px",
+          marginTop: "16px",
         }}
       >
-        {weeklyBars.map((bar, idx) => (
-          <div
-            key={idx}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              height: "100%",
-              justifyContent: "flex-end",
-              position: "relative",
-            }}
-            title={`${bar.day}: ${bar.label}`}
-          >
-            {/* Floating Brass Badge above Peak Bar */}
-            {bar.highlight && (
-              <div
+        {/* Left: Stage breakdown badges */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+            {stageCounts.map((stg) => (
+              <button
+                key={stg.id}
+                type="button"
+                className={stg.badgeClass}
                 style={{
-                  position: "absolute",
-                  top: "-6px",
-                  background: "var(--crex-brass)",
-                  color: "var(--crex-ink)",
-                  fontSize: "10px",
-                  fontWeight: 700,
-                  padding: "3px 8px",
-                  borderRadius: "9999px",
-                  whiteSpace: "nowrap",
-                  boxShadow: "0 2px 8px rgba(197, 160, 89, 0.34)",
-                  zIndex: 2,
+                  fontSize: "11px",
+                  padding: "4px 10px",
+                  cursor: "pointer",
+                  border: "none",
                 }}
+                onClick={() => {
+                  setActiveTab("kanban");
+                  document.getElementById("crm-cms-workspace")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                title={`Filter ${stg.name} in Kanban`}
               >
-                {bar.label}
-              </div>
-            )}
+                <span>{stg.name}:</span>
+                <strong style={{ marginLeft: "4px" }}>{stg.count}</strong>
+              </button>
+            ))}
+          </div>
+          <span style={{ fontSize: "11px", color: "var(--crex-muted)", marginTop: "4px" }}>
+            Real-time stage distribution across sales workflow
+          </span>
+        </div>
 
-            {/* Dotted Spine Behind Capsule */}
+        {/* Right: 7 Vertical Dotted Tracks with Obsidian & Champagne Brass Capsule Bars */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            alignItems: "end",
+            height: "120px",
+            gap: "8px",
+          }}
+        >
+          {weeklyBars.map((bar, idx) => (
             <div
+              key={idx}
               style={{
-                position: "relative",
-                width: "10px",
-                height: "102px",
                 display: "flex",
-                alignItems: "flex-end",
-                justifyContent: "center",
+                flexDirection: "column",
+                alignItems: "center",
+                height: "100%",
+                justifyContent: "flex-end",
+                position: "relative",
               }}
+              title={`${bar.day}: ${bar.label}`}
             >
-              <div
-                style={{
-                  position: "absolute",
-                  top: "8px",
-                  bottom: "8px",
-                  width: "2px",
-                  borderLeft: "2px dotted rgba(8, 8, 7, 0.14)",
-                }}
-              />
-              {/* Solid Pill Bar */}
+              {bar.highlight && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-6px",
+                    background: "var(--crex-brass)",
+                    color: "#ffffff",
+                    fontSize: "9.5px",
+                    fontWeight: 700,
+                    padding: "2px 7px",
+                    borderRadius: "9999px",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 2px 8px rgba(138, 106, 40, 0.25)",
+                    zIndex: 2,
+                  }}
+                >
+                  {bar.label}
+                </div>
+              )}
+
               <div
                 style={{
                   position: "relative",
                   width: "10px",
-                  height: `${bar.h}%`,
-                  borderRadius: "9999px",
-                  background: bar.highlight ? "var(--crex-brass)" : "var(--crex-dark)",
-                  transition: "height 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
-                  zIndex: 1,
+                  height: "85px",
+                  display: "flex",
+                  alignItems: "flex-end",
+                  justifyContent: "center",
                 }}
-              />
-            </div>
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "4px",
+                    bottom: "4px",
+                    width: "2px",
+                    borderLeft: "2px dotted rgba(8, 8, 7, 0.14)",
+                  }}
+                />
+                <div
+                  style={{
+                    position: "relative",
+                    width: "10px",
+                    height: `${bar.h}%`,
+                    borderRadius: "9999px",
+                    background: bar.highlight ? "var(--crex-brass)" : "var(--crex-dark)",
+                    transition: "height 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                    zIndex: 1,
+                  }}
+                />
+              </div>
 
-            <span
-              style={{
-                fontSize: "10.5px",
-                fontWeight: 600,
-                color: bar.highlight ? "var(--crex-ink)" : "var(--crex-muted-soft)",
-                marginTop: "8px",
-              }}
-            >
-              {bar.day}
-            </span>
-          </div>
-        ))}
+              <span
+                style={{
+                  fontSize: "10.5px",
+                  fontWeight: 600,
+                  color: bar.highlight ? "var(--crex-ink)" : "var(--crex-muted-soft)",
+                  marginTop: "6px",
+                }}
+              >
+                {bar.day}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

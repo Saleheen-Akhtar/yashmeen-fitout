@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { quoteAPI } from "../../services/api";
-import { FiEye, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import { FiArchive, FiEye, FiSearch, FiX } from "react-icons/fi";
 
 const PAGE_SIZE = 10;
 
@@ -118,21 +118,21 @@ export default function QuoteManager() {
     setDeleting(true);
     try {
       const { data: res } = await quoteAPI.deleteOlderThanMonth();
-      const count = res?.deletedCount ?? 0;
+      const count = res?.archivedCount ?? 0;
       setPage(1);
       await fetchQuotes({ silent: true, targetPage: 1 });
       setBanner({
         type: "success",
         text:
           count > 0
-            ? `Deleted ${count} quotation${count === 1 ? "" : "s"} older than one month.`
+            ? `Archived ${count} quotation${count === 1 ? "" : "s"} older than one month.`
             : "No quotations older than one month were found.",
       });
       setConfirmOpen(false);
     } catch (err) {
       setBanner({
         type: "error",
-        text: err?.response?.data?.message || "Failed to delete old quotations.",
+        text: err?.response?.data?.message || "Failed to archive old quotations.",
       });
       setConfirmOpen(false);
     } finally {
@@ -172,11 +172,11 @@ export default function QuoteManager() {
           </div>
           <button
             type="button"
-            className="adm-btn-danger-outline"
+            className="adm-btn-secondary"
             onClick={() => setConfirmOpen(true)}
           >
-            <FiTrash2 size={15} />
-            <span>Delete old quotations</span>
+            <FiArchive size={15} />
+            <span>Archive old</span>
           </button>
         </div>
 
@@ -429,7 +429,7 @@ export default function QuoteManager() {
         </div>
       )}
 
-      {/* Delete old confirm modal */}
+      {/* Archive old confirm modal */}
       {confirmOpen && (
         <div
           className="adm-overlay"
@@ -449,7 +449,7 @@ export default function QuoteManager() {
               }}
             >
               <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>
-                Delete old quotations
+                Archive old quotations
               </h3>
               <button
                 type="button"
@@ -461,8 +461,8 @@ export default function QuoteManager() {
               </button>
             </div>
             <p style={{ margin: 0, fontSize: "14px", color: "var(--crex-muted)", lineHeight: 1.55 }}>
-              This permanently deletes every quotation received more than one
-              month ago. This action cannot be undone.
+              Move quotations older than one month out of the active register.
+              Their records remain stored in the database.
             </p>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "22px" }}>
               <button
@@ -475,11 +475,11 @@ export default function QuoteManager() {
               </button>
               <button
                 type="button"
-                className="adm-btn-danger-solid"
+                className="adm-btn-primary"
                 onClick={handleDeleteOld}
                 disabled={deleting}
               >
-                {deleting ? "Deleting…" : "Delete"}
+                {deleting ? "Archiving..." : "Archive quotations"}
               </button>
             </div>
           </div>

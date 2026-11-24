@@ -537,6 +537,76 @@ describe("Layer 3B: Validation boundaries, ObjectIds, query sanitization & CRUD"
     });
     assert.equal(good.status, 201);
     assert.equal(good.json?.data, undefined);
+
+    const searchResult = await httpJson(
+      `/api/enquiry/getAll?page=1&limit=10&search=${encodeURIComponent(email)}`,
+      { headers: { Authorization: `Bearer ${adminToken}` } },
+    );
+    assert.equal(searchResult.status, 200);
+    assert.ok((searchResult.json?.data || []).some((item) => item.email === email));
+
+    const escapedSearch = await httpJson(
+      `/api/enquiry/getAll?search=${encodeURIComponent("[.*+?^")}`,
+      { headers: { Authorization: `Bearer ${adminToken}` } },
+    );
+    assert.equal(escapedSearch.status, 200);
+  });
+
+  it("Admin CRM stage updates persist for quote and enquiry records", async () => {
+    const quoteEmail = `qa-stage-quote-${RUN_ID}@qa-test.invalid`;
+    const enquiryEmail = `qa-stage-enquiry-${RUN_ID}@qa-test.invalid`;
+    createdQuoteEmails.add(quoteEmail);
+    createdEnquiryEmails.add(enquiryEmail);
+
+    const quote = await QuoteModel.create({
+      name: "QA Stage Quote",
+      mobile: "+971500000083",
+      email: quoteEmail,
+      projectType: "Commercial",
+      services: ["Office fit-out"],
+      message: "Quote stage persistence integration fixture.",
+    });
+    const enquiry = await EnquiryModel.create({
+      name: "QA Stage Enquiry",
+      mobile: "+971500000082",
+      email: enquiryEmail,
+      services: "Interior Fit-Out",
+      message: "Enquiry stage persistence integration fixture.",
+    });
+    assert.equal(quote.crmStage, "leads");
+    assert.equal(enquiry.crmStage, "leads");
+
+    const [quoteUpdate, enquiryUpdate] = await Promise.all([
+      httpJson(`/api/quote/stage/${quote._id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${adminToken}` },
+        body: { stage: "proposal" },
+      }),
+      httpJson(`/api/enquiry/stage/${enquiry._id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${adminToken}` },
+        body: { stage: "feasibility" },
+      }),
+    ]);
+
+    assert.equal(quoteUpdate.status, 200);
+    assert.equal(quoteUpdate.json?.data?.crmStage, "proposal");
+    assert.equal(enquiryUpdate.status, 200);
+    assert.equal(enquiryUpdate.json?.data?.crmStage, "feasibility");
+
+    const [storedQuote, storedEnquiry] = await Promise.all([
+      QuoteModel.findById(quote._id).lean(),
+      EnquiryModel.findById(enquiry._id).lean(),
+    ]);
+    assert.equal(storedQuote?.crmStage, "proposal");
+    assert.equal(storedEnquiry?.crmStage, "feasibility");
+
+    const invalid = await httpJson(`/api/quote/stage/${quote._id}`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: { stage: "won" },
+    });
+    assert.equal(invalid.status, 400);
   });
 
   it("Public lead forms reject instant submissions and silently discard honeypot submissions", async () => {
@@ -730,8 +800,10 @@ describe("Layer 4: Security, Auth, RBAC, Account Lifecycle & Injection Penetrati
     ["GET", "/api/vacancy/getAll"],
     ["POST", "/api/vacancy/create"],
     ["GET", "/api/enquiry/getAll"],
+    ["PATCH", "/api/enquiry/stage/000000000000000000000000"],
     ["DELETE", "/api/enquiry/delete/old"],
     ["GET", "/api/quote/getAll"],
+    ["PATCH", "/api/quote/stage/000000000000000000000000"],
     ["DELETE", "/api/quote/delete/older-than-month"],
     ["GET", "/api/popup/getAll"],
     ["POST", "/api/popup/create"],

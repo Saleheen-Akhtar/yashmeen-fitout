@@ -69,7 +69,7 @@ export default function StudioTimerCard({
             cy="80"
             r="64"
             fill="none"
-            stroke="#c5a059"
+            stroke="var(--crex-brass)"
             strokeWidth="10"
             strokeLinecap="round"
             strokeDasharray={`${progressFraction * 402} 402`}

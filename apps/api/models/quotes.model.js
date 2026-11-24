@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const PROJECT_TYPES = ["Residential", "Commercial", "Hospitality", "Retail", "Other"];
+const CRM_STAGES = ["leads", "feasibility", "proposal", "construction", "completed"];
 
 const quoteSchema = mongoose.Schema(
     {
@@ -64,6 +65,12 @@ const quoteSchema = mongoose.Schema(
             trim: true,
             minlength: [10, "Message must be at least 10 characters"],
             maxlength: [5000, "Message must be 5000 characters or less"],
+        },
+        crmStage: {
+            type: String,
+            enum: CRM_STAGES,
+            default: "leads",
+            index: true,
         },
         archivedAt: { type: Date, default: null },
     },

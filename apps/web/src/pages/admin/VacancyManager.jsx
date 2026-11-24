@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { vacancyAPI } from "../../services/api";
 import { clearVacancyCache } from "../../lib/publicCache";
 import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import AdminPager from "../../components/admin/AdminPager";
+
+const PAGE_SIZE = 8;
 
 const loadVacanciesData = async () => {
   const { data: res } = await vacancyAPI.getAll();
@@ -17,7 +20,7 @@ const STATUS_OPTIONS = [
 const statusTone = {
   open: { color: "#285234", bg: "#ecf2ed", border: "rgba(40, 82, 52, 0.25)" },
   closed: { color: "#b91c1c", bg: "#fef2f2", border: "rgba(185, 28, 28, 0.28)" },
-  filled: { color: "#6b501f", bg: "#f5efe2", border: "rgba(197, 160, 89, 0.42)" },
+  filled: { color: "#6e531e", bg: "#f3ead6", border: "rgba(138, 106, 40, 0.36)" },
 };
 
 const toDateInput = (value) => {
@@ -50,6 +53,7 @@ export default function VacancyManager() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
   const [banner, setBanner] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -253,6 +257,12 @@ export default function VacancyManager() {
     const matchesStatus = statusFilter === "all" || v.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+  const totalPages = Math.max(Math.ceil(filtered.length / PAGE_SIZE), 1);
+  const safePage = Math.min(page, totalPages);
+  const pagedVacancies = filtered.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
 
   return (
     <div className="adm-page">
@@ -304,13 +314,19 @@ export default function VacancyManager() {
               type="text"
               placeholder="Search by position or location…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="adm-search-input"
             />
           </div>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
             className="adm-filter-select"
             aria-label="Filter by status"
           >
@@ -333,6 +349,7 @@ export default function VacancyManager() {
                 : "No vacancies match your filters."}
             </div>
           ) : (
+            <>
             <div className="adm-table-wrap">
               <table>
                 <thead>
@@ -347,7 +364,7 @@ export default function VacancyManager() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((v) => {
+                  {pagedVacancies.map((v) => {
                     const tone = statusTone[v.status] || statusTone.open;
                     const expired = v.status === "open" && isPast(v.endDate);
                     return (
@@ -421,6 +438,14 @@ export default function VacancyManager() {
                 </tbody>
               </table>
             </div>
+            <AdminPager
+              page={safePage}
+              pageSize={PAGE_SIZE}
+              totalItems={filtered.length}
+              onPageChange={setPage}
+              noun="vacancies"
+            />
+            </>
           )}
         </div>
       </div>

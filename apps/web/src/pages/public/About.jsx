@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { mediaFallback } from "../../lib/media";
 import useWebsiteContent from "../../hooks/useWebsiteContent";
 import { FiCheck, FiTarget, FiEye } from "react-icons/fi";
@@ -15,6 +16,7 @@ export default function AboutPage() {
       {/* HERO */}
       <section className="hero">
         <div className="wrap">
+          <span className="eyebrow">{pageCopy.about_us}</span>
           <h1 className="hero-title">{pageCopy.interiors_built_around_how_you}</h1>
           <p className="hero-copy">{pageCopy.yashmeen_future_building_fitout_company}</p>
         </div>
@@ -29,21 +31,24 @@ export default function AboutPage() {
             </div>
 
             <div>
-              <div className="eyebrow">
-                <span className="eyebrow-bar" />{pageCopy.about_us}</div>
+              <span className="eyebrow">{pageCopy.about_us}</span>
               <h2 className="about-heading">{pageCopy.a_dubai_fitout_company_built}</h2>
               <p className="about-copy">{pageCopy.based_in_business_bay_dubai}</p>
               <p className="about-copy">{pageCopy.we_believe_good_interiors_are}</p>
 
               <div className="about-highlights">
                 <div className="about-highlight">
-                  <FiCheck size={16} />{pageCopy.iso_certified_delivery}</div>
+                  <FiCheck size={16} />{pageCopy.iso_certified_delivery}
+                </div>
                 <div className="about-highlight">
-                  <FiCheck size={16} />{pageCopy.inhouse_craftsmen}</div>
+                  <FiCheck size={16} />{pageCopy.inhouse_craftsmen}
+                </div>
                 <div className="about-highlight">
-                  <FiCheck size={16} />{pageCopy.ontime_handover}</div>
+                  <FiCheck size={16} />{pageCopy.ontime_handover}
+                </div>
                 <div className="about-highlight">
-                  <FiCheck size={16} />{pageCopy.transparent_pricing}</div>
+                  <FiCheck size={16} />{pageCopy.transparent_pricing}
+                </div>
               </div>
             </div>
           </div>
@@ -68,8 +73,7 @@ export default function AboutPage() {
       <section className="mv-section">
         <div className="wrap">
           <div className="mv-header">
-            <div className="eyebrow">
-              <span className="eyebrow-bar" />{pageCopy.what_drives_us}</div>
+            <span className="eyebrow">{pageCopy.what_drives_us}</span>
             <h2 className="mv-heading">{pageCopy.mission_vision}</h2>
           </div>
 
@@ -98,8 +102,7 @@ export default function AboutPage() {
         <div className="wrap">
           <div className="services-grid">
             <div>
-              <div className="eyebrow">
-                <span className="eyebrow-bar" />{pageCopy.what_we_offer}</div>
+              <span className="eyebrow">{pageCopy.what_we_offer}</span>
               <h2 className="services-heading">{pageCopy.turning_your_imagination_into_reality}</h2>
               <p className="services-copy">{pageCopy.looking_for_a_professional_interior}</p>
               <p className="services-copy">{pageCopy.we_are_happy_to_offer}</p>
@@ -114,6 +117,31 @@ export default function AboutPage() {
                   <span>{service}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CONSULTATION CTA BANNER */}
+      <section className="about-cta-section">
+        <div className="wrap">
+          <div className="about-cta-inner">
+            <span className="eyebrow">Start Your Project</span>
+            <h2 className="about-cta-title">Ready to bring your architectural vision to life?</h2>
+            <p className="about-cta-copy">
+              Visit our Business Bay design studio or Al Quoz atelier to discuss your residential or commercial fit-out requirements with our senior engineering team.
+            </p>
+            <div className="about-cta-actions">
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("open-questionnaire"))}
+                className="btn-pill btn-pill-dark"
+              >
+                Request a Consultation
+              </button>
+              <Link to="/projects" className="btn-pill btn-pill-outline-dark">
+                Browse Selected Works
+              </Link>
             </div>
           </div>
         </div>

@@ -1,20 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { FiArchive, FiEye, FiSearch, FiX } from "react-icons/fi";
+import AdminPager from "../../components/admin/AdminPager";
 import { enquiryAPI } from "../../services/api";
-import { FiEye, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
-const loadEnquiriesData = async () => {
-  const { data: res } = await enquiryAPI.getAll();
-  const list = res?.data ?? [];
-  return [...list].sort(
-    (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
-  );
+const PAGE_SIZE = 10;
+
+const loadEnquiriesData = async ({ targetPage, search }) => {
+  const { data: response } = await enquiryAPI.getAll({
+    page: targetPage,
+    limit: PAGE_SIZE,
+    search,
+  });
+
+  return {
+    enquiries: response?.data ?? [],
+    pagination: {
+      total: response?.pagination?.total ?? 0,
+      totalPages: Math.max(response?.pagination?.totalPages ?? 1, 1),
+    },
+  };
 };
 
 const formatDate = (value) => {
   if (!value) return "-";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "-";
-  return d.toLocaleDateString("en-GB", {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -23,9 +34,9 @@ const formatDate = (value) => {
 
 const formatDateTime = (value) => {
   if (!value) return "-";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "-";
-  return d.toLocaleString("en-GB", {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -38,21 +49,28 @@ export default function EnquiryManager() {
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [banner, setBanner] = useState(null); // { type, text }
-
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
+  const [banner, setBanner] = useState(null);
   const [selected, setSelected] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+  const previousSearchRef = useRef("");
 
-  const fetchEnquiries = async ({ silent = false } = {}) => {
+  const fetchEnquiries = async ({ silent = false, targetPage = page } = {}) => {
     if (!silent) setLoading(true);
     try {
-      const sorted = await loadEnquiriesData();
-      setEnquiries(sorted);
-    } catch (err) {
+      const data = await loadEnquiriesData({
+        targetPage,
+        search: debouncedSearch,
+      });
+      setEnquiries(data.enquiries);
+      setPagination(data.pagination);
+    } catch (error) {
       setBanner({
         type: "error",
-        text: err?.response?.data?.message || "Failed to load enquiries.",
+        text: error?.response?.data?.message || "Failed to load enquiries.",
       });
     } finally {
       if (!silent) setLoading(false);
@@ -60,61 +78,66 @@ export default function EnquiryManager() {
   };
 
   useEffect(() => {
+    const trimmed = search.trim();
+    if (trimmed === previousSearchRef.current) return undefined;
+    const timer = setTimeout(() => {
+      previousSearchRef.current = trimmed;
+      setLoading(true);
+      setDebouncedSearch(trimmed);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
     let cancelled = false;
-    loadEnquiriesData()
-      .then((sorted) => {
-        if (!cancelled) setEnquiries(sorted);
+    loadEnquiriesData({ targetPage: page, search: debouncedSearch })
+      .then((data) => {
+        if (cancelled) return;
+        setEnquiries(data.enquiries);
+        setPagination(data.pagination);
       })
-      .catch((err) => {
-        if (!cancelled) {
-          setBanner({
-            type: "error",
-            text: err?.response?.data?.message || "Failed to load enquiries.",
-          });
-        }
+      .catch((error) => {
+        if (cancelled) return;
+        setBanner({
+          type: "error",
+          text: error?.response?.data?.message || "Failed to load enquiries.",
+        });
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [page, debouncedSearch]);
 
-  const handleDeleteOld = async () => {
-    setDeleting(true);
+  const handleArchiveOld = async () => {
+    setArchiving(true);
     try {
-      const { data: res } = await enquiryAPI.deleteOld();
-      const count = res?.deletedCount ?? 0;
-      await fetchEnquiries({ silent: true });
+      const { data: response } = await enquiryAPI.deleteOld();
+      const count = response?.archivedCount ?? 0;
+      setPage(1);
+      await fetchEnquiries({ silent: true, targetPage: 1 });
       setBanner({
         type: "success",
         text:
           count > 0
-            ? `Deleted ${count} enquir${count === 1 ? "y" : "ies"} older than one month.`
+            ? `Archived ${count} enquir${count === 1 ? "y" : "ies"} older than one month.`
             : "No enquiries older than one month were found.",
       });
       setConfirmOpen(false);
-    } catch (err) {
+    } catch (error) {
       setBanner({
         type: "error",
-        text: err?.response?.data?.message || "Failed to delete old enquiries.",
+        text: error?.response?.data?.message || "Failed to archive old enquiries.",
       });
       setConfirmOpen(false);
     } finally {
-      setDeleting(false);
+      setArchiving(false);
     }
   };
-
-  const q = search.trim().toLowerCase();
-  const filtered = enquiries.filter(
-    (e) =>
-      !q ||
-      e.name?.toLowerCase().includes(q) ||
-      e.mobile?.toLowerCase().includes(q) ||
-      e.email?.toLowerCase().includes(q) ||
-      e.services?.toLowerCase().includes(q),
-  );
 
   return (
     <div className="adm-page">
@@ -123,16 +146,17 @@ export default function EnquiryManager() {
           <div>
             <h2 className="adm-title">Enquiries</h2>
             <p className="adm-subtitle">
-              View direct contact enquiries received from the live website.
+              Review direct contact enquiries received from the live website.
             </p>
+            <span className="adm-header-meta">{pagination.total} active enquiries</span>
           </div>
           <button
             type="button"
-            className="adm-btn-danger-outline"
+            className="adm-btn-secondary"
             onClick={() => setConfirmOpen(true)}
           >
-            <FiTrash2 size={15} />
-            <span>Delete old enquiries</span>
+            <FiArchive size={15} />
+            <span>Archive old</span>
           </button>
         </div>
 
@@ -141,15 +165,8 @@ export default function EnquiryManager() {
             <span>{banner.text}</span>
             <button
               type="button"
+              className="adm-banner-dismiss"
               onClick={() => setBanner(null)}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "inherit",
-                cursor: "pointer",
-                display: "flex",
-                padding: "4px",
-              }}
               aria-label="Dismiss"
             >
               <FiX size={16} />
@@ -163,55 +180,45 @@ export default function EnquiryManager() {
               <FiSearch size={15} />
             </span>
             <input
-              type="text"
-              placeholder="Search by name, mobile, email or service…"
+              type="search"
+              placeholder="Search by name, mobile, email or service"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(event) => setSearch(event.target.value)}
               className="adm-search-input"
             />
           </div>
         </div>
 
-        <div className="adm-card">
+        <div className="adm-card adm-card-flat">
           {loading ? (
-            <div className="adm-empty">Loading enquiries…</div>
-          ) : filtered.length === 0 ? (
+            <div className="adm-empty">Loading enquiries...</div>
+          ) : enquiries.length === 0 ? (
             <div className="adm-empty">
-              {enquiries.length === 0
-                ? "No enquiries yet."
-                : "No enquiries match your search."}
+              {debouncedSearch ? "No enquiries match your search." : "No enquiries yet."}
             </div>
           ) : (
-            <div className="adm-table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Mobile</th>
-                    <th>Email</th>
-                    <th>Service</th>
-                    <th>Received</th>
-                    <th style={{ textAlign: "right" }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((item) => (
-                    <tr key={item._id}>
-                      <td style={{ fontWeight: 600, minWidth: "150px" }}>{item.name}</td>
-                      <td style={{ whiteSpace: "nowrap" }}>{item.mobile || "-"}</td>
-                      <td>{item.email || "-"}</td>
-                      <td>
-                        {item.services ? (
-                          <span className="adm-chip">{item.services}</span>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-                      <td style={{ whiteSpace: "nowrap", color: "var(--crex-muted)" }}>
-                        {formatDate(item.createdAt)}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        <div style={{ display: "inline-flex", gap: "6px", justifyContent: "flex-end" }}>
+            <>
+              <div className="adm-table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Mobile</th>
+                      <th>Email</th>
+                      <th>Service</th>
+                      <th>Received</th>
+                      <th className="adm-align-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {enquiries.map((item) => (
+                      <tr key={item._id}>
+                        <td className="adm-cell-primary">{item.name}</td>
+                        <td className="adm-nowrap">{item.mobile || "-"}</td>
+                        <td>{item.email || "-"}</td>
+                        <td>{item.services ? <span className="adm-chip">{item.services}</span> : "-"}</td>
+                        <td className="adm-cell-muted adm-nowrap">{formatDate(item.createdAt)}</td>
+                        <td className="adm-align-right">
                           <button
                             type="button"
                             className="adm-icon-btn"
@@ -221,36 +228,35 @@ export default function EnquiryManager() {
                           >
                             <FiEye size={15} />
                           </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <AdminPager
+                page={page}
+                pageSize={PAGE_SIZE}
+                totalItems={pagination.total}
+                onPageChange={(nextPage) => {
+                  setLoading(true);
+                  setPage(nextPage);
+                }}
+                noun="enquiries"
+              />
+            </>
           )}
         </div>
       </div>
 
-      {/* Details modal */}
       {selected && (
         <div className="adm-overlay" onClick={() => setSelected(null)}>
-          <div
-            className="adm-modal"
-            style={{ maxWidth: "480px" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "18px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "19px", fontWeight: 600 }}>
-                Enquiry details
-              </h3>
+          <div className="adm-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="adm-modal-head">
+              <div>
+                <span className="workspace-kicker">Contact request</span>
+                <h3>Enquiry details</h3>
+              </div>
               <button
                 type="button"
                 className="adm-icon-btn"
@@ -261,63 +267,39 @@ export default function EnquiryManager() {
               </button>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div className="adm-detail-stack">
               <div>
-                <div style={labelStyle}>Name</div>
-                <div style={{ fontSize: "14.5px", fontWeight: 600 }}>{selected.name}</div>
+                <div className="adm-detail-label">Name</div>
+                <strong>{selected.name}</strong>
               </div>
               <div className="adm-grid-2">
                 <div>
-                  <div style={labelStyle}>Mobile</div>
-                  {selected.mobile ? (
-                    <a href={`tel:${selected.mobile}`} className="adm-link">
-                      {selected.mobile}
-                    </a>
-                  ) : (
-                    <span>-</span>
-                  )}
+                  <div className="adm-detail-label">Mobile</div>
+                  {selected.mobile ? <a href={`tel:${selected.mobile}`} className="adm-link">{selected.mobile}</a> : "-"}
                 </div>
                 <div>
-                  <div style={labelStyle}>Email</div>
-                  {selected.email ? (
-                    <a href={`mailto:${selected.email}`} className="adm-link">
-                      {selected.email}
-                    </a>
-                  ) : (
-                    <span>-</span>
-                  )}
+                  <div className="adm-detail-label">Email</div>
+                  {selected.email ? <a href={`mailto:${selected.email}`} className="adm-link">{selected.email}</a> : "-"}
                 </div>
               </div>
               <div>
-                <div style={labelStyle}>Service</div>
-                <div>
-                  {selected.services ? (
-                    <span className="adm-chip">{selected.services}</span>
-                  ) : (
-                    "-"
-                  )}
-                </div>
+                <div className="adm-detail-label">Service</div>
+                {selected.services ? <span className="adm-chip">{selected.services}</span> : "-"}
               </div>
               <div>
-                <div style={labelStyle}>Message</div>
-                <div className="adm-detail-box" style={{ fontSize: "13.5px", lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                <div className="adm-detail-label">Message</div>
+                <div className="adm-detail-box adm-message-box">
                   {selected.message?.trim() || "No message provided."}
                 </div>
               </div>
               <div>
-                <div style={labelStyle}>Received</div>
-                <div style={{ fontSize: "13px", color: "var(--crex-muted)" }}>
-                  {formatDateTime(selected.createdAt)}
-                </div>
+                <div className="adm-detail-label">Received</div>
+                <span className="adm-cell-muted">{formatDateTime(selected.createdAt)}</span>
               </div>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "22px" }}>
-              <button
-                type="button"
-                className="adm-btn-secondary"
-                onClick={() => setSelected(null)}
-              >
+            <div className="adm-modal-actions">
+              <button type="button" className="adm-btn-secondary" onClick={() => setSelected(null)}>
                 Close
               </button>
             </div>
@@ -325,57 +307,42 @@ export default function EnquiryManager() {
         </div>
       )}
 
-      {/* Delete old confirm modal */}
       {confirmOpen && (
-        <div
-          className="adm-overlay"
-          onClick={() => !deleting && setConfirmOpen(false)}
-        >
-          <div
-            className="adm-modal"
-            style={{ maxWidth: "410px" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "14px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 600 }}>
-                Delete old enquiries
-              </h3>
+        <div className="adm-overlay" onClick={() => !archiving && setConfirmOpen(false)}>
+          <div className="adm-modal adm-modal-compact" onClick={(event) => event.stopPropagation()}>
+            <div className="adm-modal-head">
+              <div>
+                <span className="workspace-kicker">Register maintenance</span>
+                <h3>Archive old enquiries</h3>
+              </div>
               <button
                 type="button"
                 className="adm-icon-btn"
-                onClick={() => !deleting && setConfirmOpen(false)}
+                onClick={() => !archiving && setConfirmOpen(false)}
                 aria-label="Close"
               >
                 <FiX size={16} />
               </button>
             </div>
-            <p style={{ margin: 0, fontSize: "14px", color: "var(--crex-muted)", lineHeight: 1.55 }}>
-              This permanently deletes every enquiry received more than one
-              month ago. This action cannot be undone.
+            <p className="adm-modal-copy">
+              Move enquiries older than one month out of the active register. Their records remain stored in the database.
             </p>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "22px" }}>
+            <div className="adm-modal-actions">
               <button
                 type="button"
                 className="adm-btn-secondary"
                 onClick={() => setConfirmOpen(false)}
-                disabled={deleting}
+                disabled={archiving}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="adm-btn-danger-solid"
-                onClick={handleDeleteOld}
-                disabled={deleting}
+                className="adm-btn-primary"
+                onClick={handleArchiveOld}
+                disabled={archiving}
               >
-                {deleting ? "Deleting…" : "Delete"}
+                {archiving ? "Archiving..." : "Archive enquiries"}
               </button>
             </div>
           </div>
@@ -384,12 +351,3 @@ export default function EnquiryManager() {
     </div>
   );
 }
-
-const labelStyle = {
-  fontSize: "11px",
-  fontWeight: 600,
-  textTransform: "uppercase",
-  letterSpacing: "0.05em",
-  color: "var(--crex-muted)",
-  marginBottom: "4px",
-};

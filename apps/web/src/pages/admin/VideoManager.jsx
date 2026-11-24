@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { videoAPI, categoryAPI } from "../../services/api";
 import { clearVideoGalleryCache } from "../../lib/publicCache";
 import { FiEdit2, FiPlay, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import AdminPager from "../../components/admin/AdminPager";
 
 const VIDEO_BASE = "";
+const PAGE_SIZE = 8;
 
 const loadVideosData = async () => {
   const { data: res } = await videoAPI.getAll();
@@ -46,7 +48,7 @@ const ToggleSwitch = ({ checked, onChange, disabled, label }) => (
       display: "inline-flex",
       alignItems: "center",
       justifyContent: checked ? "flex-end" : "flex-start",
-      background: checked ? "#080807" : "#d8d5ce",
+      background: checked ? "#1b1a17" : "#d8d5ce",
       cursor: disabled ? "not-allowed" : "pointer",
       opacity: disabled ? 0.6 : 1,
       transition: "background 0.2s ease",
@@ -58,7 +60,7 @@ const ToggleSwitch = ({ checked, onChange, disabled, label }) => (
         width: "18px",
         height: "18px",
         borderRadius: "50%",
-        background: checked ? "#c5a059" : "#ffffff",
+        background: checked ? "#8a6a28" : "#ffffff",
         boxShadow: "0 1px 2px rgba(8,8,7,0.28)",
       }}
     />
@@ -85,7 +87,7 @@ const VideoThumb = ({ path, title }) => {
         alignItems: "center",
         justifyContent: "center",
         background: "var(--crex-dark)",
-        color: "#c5a059",
+        color: "#8a6a28",
       }}
     >
       {ytId && !imgFailed ? (
@@ -108,6 +110,7 @@ export default function VideoManager() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [page, setPage] = useState(1);
   const [banner, setBanner] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -311,6 +314,12 @@ export default function VideoManager() {
       categoryFilter === "all" || getCategoryId(v) === categoryFilter;
     return matchesSearch && matchesCategory;
   });
+  const totalPages = Math.max(Math.ceil(filtered.length / PAGE_SIZE), 1);
+  const safePage = Math.min(page, totalPages);
+  const pagedVideos = filtered.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
 
   return (
     <div className="adm-page">
@@ -362,13 +371,19 @@ export default function VideoManager() {
               type="text"
               placeholder="Search videos…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="adm-search-input"
             />
           </div>
           <select
             value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
+            onChange={(e) => {
+              setCategoryFilter(e.target.value);
+              setPage(1);
+            }}
             className="adm-filter-select"
             aria-label="Filter by category"
           >
@@ -391,6 +406,7 @@ export default function VideoManager() {
                 : "No videos match your filters."}
             </div>
           ) : (
+            <>
             <div className="adm-table-wrap">
               <table>
                 <thead>
@@ -403,7 +419,7 @@ export default function VideoManager() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((video) => (
+                  {pagedVideos.map((video) => (
                     <tr key={video._id}>
                       <td>
                         <VideoThumb path={video.path} title={video.title} />
@@ -458,6 +474,14 @@ export default function VideoManager() {
                 </tbody>
               </table>
             </div>
+            <AdminPager
+              page={safePage}
+              pageSize={PAGE_SIZE}
+              totalItems={filtered.length}
+              onPageChange={setPage}
+              noun="videos"
+            />
+            </>
           )}
         </div>
       </div>

@@ -6,8 +6,10 @@ import { tokenExpired } from "../../lib/helpers";
 import { clearPostsCache } from "../../lib/publicCache";
 import { toast } from "sonner";
 import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import AdminPager from "../../components/admin/AdminPager";
 
 const FALLBACK_IMG = "/static/hero-aperture-v2.webp";
+const PAGE_SIZE = 8;
 
 const loadPostsData = async () => {
   const { data: res } = await postAPI.getAll();
@@ -24,6 +26,7 @@ export default function PostList() {
   const [postData, setPostData] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [togglingId, setTogglingId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -97,6 +100,12 @@ export default function PostList() {
   const filtered = postData.filter(
     (p) => !q || (p?.title || "").toLowerCase().includes(q),
   );
+  const totalPages = Math.max(Math.ceil(filtered.length / PAGE_SIZE), 1);
+  const safePage = Math.min(page, totalPages);
+  const pagedPosts = filtered.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
 
   return (
     <div className="adm-page">
@@ -127,7 +136,10 @@ export default function PostList() {
               type="text"
               placeholder="Search articles by title…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="adm-search-input"
             />
           </div>
@@ -141,6 +153,7 @@ export default function PostList() {
                 : "No posts match your search."}
             </div>
           ) : (
+            <>
             <div className="adm-table-wrap">
               <table>
                 <thead>
@@ -152,7 +165,7 @@ export default function PostList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((post) => {
+                  {pagedPosts.map((post) => {
                     const active = Boolean(post?.status);
                     const isBusy = togglingId === post?._id;
                     return (
@@ -201,7 +214,7 @@ export default function PostList() {
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: active ? "flex-end" : "flex-start",
-                                background: active ? "#080807" : "#d8d5ce",
+                                background: active ? "#1b1a17" : "#d8d5ce",
                                 cursor: isBusy ? "not-allowed" : "pointer",
                                 opacity: isBusy ? 0.6 : 1,
                                 transition: "background 0.2s ease",
@@ -213,7 +226,7 @@ export default function PostList() {
                                   width: "18px",
                                   height: "18px",
                                   borderRadius: "50%",
-                                  background: active ? "#c5a059" : "#ffffff",
+                                  background: active ? "#8a6a28" : "#ffffff",
                                   boxShadow: "0 1px 2px rgba(8,8,7,0.28)",
                                 }}
                               />
@@ -257,6 +270,14 @@ export default function PostList() {
                 </tbody>
               </table>
             </div>
+            <AdminPager
+              page={safePage}
+              pageSize={PAGE_SIZE}
+              totalItems={filtered.length}
+              onPageChange={setPage}
+              noun="posts"
+            />
+            </>
           )}
         </div>
       </div>

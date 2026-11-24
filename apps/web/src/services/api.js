@@ -108,13 +108,15 @@ export const projectAPI = {
 
 export const enquiryAPI = {
   create: (data) => api.post("/enquiry/create", data),
-  getAll: () => api.get("/enquiry/getAll"),
+  getAll: (params) => api.get("/enquiry/getAll", { params }),
+  stage: (id, stage) => api.patch(`/enquiry/stage/${id}`, { stage }),
   deleteOld: () => api.delete("/enquiry/delete/old"),
 };
 
 export const quoteAPI = {
   create: (data) => api.post("/quote/create", data),
   getAll: (params) => api.get("/quote/getAll", { params }),
+  stage: (id, stage) => api.patch(`/quote/stage/${id}`, { stage }),
   deleteOlderThanMonth: () => api.delete("/quote/delete/older-than-month"),
 };
 

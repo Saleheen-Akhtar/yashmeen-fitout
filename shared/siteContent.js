@@ -771,74 +771,80 @@ export const DEFAULT_WEBSITE_CONTENT = {
     {
       "id": "evt-1",
       "dayIndex": 1,
+      "date": "",
       "timeSlot": "9:00 am",
       "title": "Site Sync · Acacia Tower Fit-Out",
       "subtitle": "MEP & custom millwork check",
-      "variant": "dark"
+      "variant": "dark",
+      "phone": "",
+      "location": "Acacia Tower, Dubai"
     },
     {
       "id": "evt-2",
       "dayIndex": 3,
+      "date": "",
       "timeSlot": "10:00 am",
       "title": "Client Consultation",
       "subtitle": "Brief & material board review",
-      "variant": "light"
+      "variant": "light",
+      "phone": "",
+      "location": "Dubai, UAE"
     }
   ],
   "pageCopy": {
     "About": {
-      "interiors_built_around_how_you": "Interiors Built Around How You Live and Work",
-      "yashmeen_future_building_fitout_company": "Yashmeen Future Building & Fit-Out Company is a Dubai-based interior fit-out contractor turning residential, commercial, and hospitality spaces across the UAE into places people genuinely want to be in.",
+      "interiors_built_around_how_you": "Interiors Crafted From Brief to Built",
+      "yashmeen_future_building_fitout_company": "Yashmeen Future Building unites spatial design, atelier joinery, and turnkey fit-out execution under one accountable engineering team in Dubai.",
       "image": "/static/about-us.webp",
       "about_us": "About Us",
       "a_dubai_fitout_company_built": "A Dubai fit-out company built on craft, not shortcuts.",
-      "based_in_business_bay_dubai": "Based in Business Bay, Dubai, Yashmeen Future Building & Fit-Out Company has partnered with homeowners, developers, and businesses across Dubai and Abu Dhabi to deliver interior fit-outs that hold up long after the final walkthrough. From first sketch to final handover, our in-house team of designers, engineers, and craftsmen manage every stage under one roof.",
-      "we_believe_good_interiors_are": "We believe good interiors are equal parts imagination and precision - a balance we bring to every partition, finish, and fixture we install.",
-      "iso_certified_delivery": " ISO Certified Delivery",
-      "inhouse_craftsmen": " In-House Craftsmen",
-      "ontime_handover": " On-Time Handover",
-      "transparent_pricing": " Transparent Pricing",
+      "based_in_business_bay_dubai": "Based in Business Bay, Dubai, Yashmeen Future Building has partnered with homeowners, developers, and commercial enterprises across Dubai and Abu Dhabi to deliver interior fit-outs that hold up long after final handover. From initial spatial drafting to turnkey delivery, our in-house team of architects, engineers, and joinery craftsmen manage every milestone under one roof.",
+      "we_believe_good_interiors_are": "We believe exceptional interiors demand equal measures of architectural imagination and precision engineering - a standard we bring to every joinery interface, partition reveal, and custom finish we install.",
+      "iso_certified_delivery": "ISO 9001:2015 Certified Delivery",
+      "inhouse_craftsmen": "35,000 Sq. Ft. In-House Atelier",
+      "ontime_handover": "Turnkey Single-Source Delivery",
+      "transparent_pricing": "Zero-Snag Handover Standard",
       "what_drives_us": "What Drives Us",
       "mission_vision": "Mission & Vision",
       "our_mission": "Our Mission",
-      "to_deliver_turnkey_interior_fitouts": "To deliver turnkey interior fit-outs that combine internationally recognised quality standards with honest pricing and dependable timelines - so every client, regardless of project size, gets a space finished the way it was promised.",
+      "to_deliver_turnkey_interior_fitouts": "To deliver turnkey interior fit-outs that combine internationally recognized ISO quality standards with honest pricing and dependable timelines - so every client, regardless of project scale, receives a space executed to millimeter tolerances.",
       "our_vision": "Our Vision",
-      "to_be_the_uaes_most": "To be the UAE’s most trusted interior fit-out partner - known not just for the spaces we build, but for how consistently we deliver on what we say we’ll do.",
+      "to_be_the_uaes_most": "To be the UAE's most trusted architectural fit-out atelier - recognized not only for the caliber of spaces we build, but for how reliably we deliver on every commitment we make.",
       "what_we_offer": "What We Offer",
-      "turning_your_imagination_into_reality": "Turning your imagination into reality.",
-      "looking_for_a_professional_interior": "Looking for a professional interior fit-out contractor in Dubai that can transform your dream into reality? Yashmeen Future Building & Fit-Out Company is here to address your imaginations.",
-      "we_are_happy_to_offer": "We are happy to offer interior fit-out services to Dubai, Abu Dhabi, and the surrounding region as expert interior fit-out contractors in the UAE. Our expert team provides exceptional service and focuses on delivering excellent quality with long-term results. Partitions, ceilings, flooring, furnishings, and MEP are often installed as part of our turnkey interior fit-out contracts, which are completed in accordance with internationally recognized ISO systems: ISO 9001:2015, ISO 14001:2015, and ISO 45001:2015. Our staff can handle a wide range of projects of all sizes and specifications, and we can secure contracts for a variety of budgets by offering affordable costs and flexible payment plans. Whether you have an office, a retail store, a restaurant, a hotel, or a residence.",
+      "turning_your_imagination_into_reality": "Comprehensive Turnkey Fit-Out Capabilities",
+      "looking_for_a_professional_interior": "From prime residential villas in Emirates Hills to corporate headquarters in DIFC and boutique commercial spaces, we deliver end-to-end fit-out contracts with uncompromising attention to detail.",
+      "we_are_happy_to_offer": "Our multidisciplinary team coordinates authority approvals, architectural joinery, and MEP engineering under internationally recognized ISO standards: ISO 9001:2015, ISO 14001:2015, and ISO 45001:2015. With our dedicated Al Quoz fabrication atelier and seasoned site engineers, we ensure exact tolerances, transparent pricing, and punctual handovers across Dubai and the UAE.",
       "stats": [
         {
           "value": "150+",
-          "label": "Projects Completed"
+          "label": "Turnkey Interventions"
+        },
+        {
+          "value": "35,000",
+          "label": "Sq. Ft. Dedicated Atelier"
         },
         {
           "value": "12+",
-          "label": "Years of Experience"
+          "label": "Years in the UAE"
         },
         {
-          "value": "40+",
-          "label": "Team Members"
-        },
-        {
-          "value": "98%",
-          "label": "Client Satisfaction"
+          "value": "100%",
+          "label": "In-House Delivery"
         }
       ],
       "services": [
-        "Turnkey fit-out solutions of all ranges.",
-        "Customised joinery and furniture.",
-        "Villas extensions and renovations",
-        "Kitchen enhancements and refurbishments.",
-        "Living room and dining experiences.",
-        "Swimming pools and landscape design.",
-        "Luxury bathroom modifications.",
-        "Exhibition stand and Kiosks.",
-        "MEP Services; Electrical, AC and Plumbing.",
-        "Home & Office automations"
+        "Turnkey Architectural Fit-Out Solutions",
+        "Bespoke Atelier Joinery & Custom Millwork",
+        "Villa Extensions & Structural Renovations",
+        "High-Performance Commercial Office Fit-Out",
+        "Luxury Kitchen & Bath Environments",
+        "Architectural Lighting & Ceiling Systems",
+        "Custom Hospitality & Retail Interiors",
+        "Acoustic Partitions & Glazed Wall Systems",
+        "Integrated MEP Services: Electrical, HVAC & Plumbing",
+        "Smart Building & Lighting Automation"
       ],
-      "image_alt_1": ""
+      "image_alt_1": "Yashmeen Future Building architectural atelier in Dubai"
     },
     "WhyUs": {
       "about_us": "About Us",

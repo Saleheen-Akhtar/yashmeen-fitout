@@ -1,10 +1,14 @@
-import { FiX, FiMapPin, FiMail, FiPhone } from "react-icons/fi";
+import { FiX, FiMapPin, FiMail, FiPhone, FiCalendar } from "react-icons/fi";
+import { FaWhatsapp } from "react-icons/fa";
 import { STAGES } from './dashboardData';
+import { createWhatsAppUrl } from "../../../lib/calendarExport";
 
 export default function PipelineItemModal({
   inspectedItem,
   setInspectedItem,
   updateItemStage,
+  savingStageId,
+  onScheduleVisit,
 }) {
   return (
     inspectedItem && (
@@ -43,6 +47,12 @@ export default function PipelineItemModal({
                 <span style={{ fontSize: "12px", color: "var(--crex-muted)" }}>
                   {inspectedItem.subtitle} · {inspectedItem.location}
                 </span>
+                <div style={{ display: "flex", gap: "6px", alignItems: "center", marginTop: "6px" }}>
+                  <span className="card-source-pill">{inspectedItem.sourceName || "Lead"}</span>
+                  <span className={inspectedItem.stageBadgeStyle || "badge-amber"}>
+                    {inspectedItem.stageName || "New Lead"}
+                  </span>
+                </div>
               </div>
             </div>
             <button type="button" onClick={() => setInspectedItem(null)} className="crex-icon-circle">
@@ -59,9 +69,21 @@ export default function PipelineItemModal({
                   <button
                     key={stg.id}
                     type="button"
-                    onClick={() => {
-                      updateItemStage(inspectedItem.id, stg.id, inspectedItem.title);
-                      setInspectedItem((prev) => ({ ...prev, stage: stg.id }));
+                    disabled={Boolean(savingStageId)}
+                    onClick={async () => {
+                      const saved = await updateItemStage(inspectedItem.id, stg.id, inspectedItem.title);
+                      if (saved) {
+                        setInspectedItem((prev) =>
+                          prev?.id === inspectedItem.id
+                            ? {
+                                ...prev,
+                                stage: stg.id,
+                                stageName: stg.name,
+                                stageBadgeStyle: stg.badgeClass,
+                              }
+                            : prev
+                        );
+                      }
                     }}
                     style={{
                       background: current ? "var(--crex-dark)" : "var(--crex-limestone)",
@@ -71,7 +93,8 @@ export default function PipelineItemModal({
                       padding: "6px 12px",
                       fontSize: "11.5px",
                       fontWeight: 600,
-                      cursor: "pointer",
+                      cursor: savingStageId ? "wait" : "pointer",
+                      opacity: savingStageId && !current ? 0.6 : 1,
                     }}
                   >
                     {stg.name}
@@ -142,11 +165,65 @@ export default function PipelineItemModal({
                 </a>
               )}
               {inspectedItem.mobile && (
-                <a href={`tel:${inspectedItem.mobile}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--crex-ink)", fontSize: "13px", textDecoration: "none" }}>
-                  <FiPhone size={14} color="#8a8a86" />
-                  <span>{inspectedItem.mobile}</span>
-                </a>
+                <div style={{ display: "grid", gap: "8px", marginTop: "4px" }}>
+                  <a href={`tel:${inspectedItem.mobile}`} style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--crex-ink)", fontSize: "13px", textDecoration: "none" }}>
+                    <FiPhone size={14} color="#8a8a86" />
+                    <span>{inspectedItem.mobile}</span>
+                  </a>
+                  <a
+                    href={createWhatsAppUrl(
+                      inspectedItem.mobile,
+                      `Hello ${inspectedItem.title}, thank you for contacting Yashmeen Future Building & Fit-Out regarding your ${inspectedItem.subtitle || "fit-out"} brief. We would like to follow up on your project requirements.`
+                    )}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="adm-btn-primary"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      textDecoration: "none",
+                      width: "100%",
+                      padding: "9px 14px",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      background: "#128c7e",
+                      color: "#ffffff",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <FaWhatsapp size={15} />
+                    <span>Chat on WhatsApp</span>
+                  </a>
+                </div>
               )}
+            </div>
+          )}
+
+          {onScheduleVisit && (
+            <div style={{ marginBottom: "18px" }}>
+              <button
+                type="button"
+                onClick={() => onScheduleVisit(inspectedItem)}
+                className="crex-btn-ghost"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  width: "100%",
+                  padding: "9px 14px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                }}
+              >
+                <FiCalendar size={14} />
+                <span>Schedule Site Visit for this Client</span>
+              </button>
             </div>
           )}
 

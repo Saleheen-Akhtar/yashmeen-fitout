@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { itemPath, popupAPI } from "../../services/api";
 import { FiImage, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import AdminPager from "../../components/admin/AdminPager";
 
 const MAX_FILE_MB = 5;
 const FALLBACK_IMG = "/static/hero-aperture-v2.webp";
+const PAGE_SIZE = 8;
 
 const loadPopupsData = async () => {
   const { data: res } = await popupAPI.getAll();
@@ -33,7 +35,7 @@ const ToggleSwitch = ({ checked, onChange, disabled, label }) => (
       display: "inline-flex",
       alignItems: "center",
       justifyContent: checked ? "flex-end" : "flex-start",
-      background: checked ? "#080807" : "#d8d5ce",
+      background: checked ? "#1b1a17" : "#d8d5ce",
       cursor: disabled ? "not-allowed" : "pointer",
       opacity: disabled ? 0.6 : 1,
       transition: "background 0.2s ease",
@@ -45,7 +47,7 @@ const ToggleSwitch = ({ checked, onChange, disabled, label }) => (
         width: "18px",
         height: "18px",
         borderRadius: "50%",
-        background: checked ? "#c5a059" : "#ffffff",
+        background: checked ? "#8a6a28" : "#ffffff",
         boxShadow: "0 1px 2px rgba(8,8,7,0.28)",
       }}
     />
@@ -56,6 +58,7 @@ export default function PopupManager() {
   const [popups, setPopups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [banner, setBanner] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -231,6 +234,12 @@ export default function PopupManager() {
   const filtered = popups.filter((p) =>
     p.title?.toLowerCase().includes(search.trim().toLowerCase()),
   );
+  const totalPages = Math.max(Math.ceil(filtered.length / PAGE_SIZE), 1);
+  const safePage = Math.min(page, totalPages);
+  const pagedPopups = filtered.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
 
   return (
     <div className="adm-page">
@@ -282,7 +291,10 @@ export default function PopupManager() {
               type="text"
               placeholder="Search popups…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="adm-search-input"
             />
           </div>
@@ -298,6 +310,7 @@ export default function PopupManager() {
                 : "No popups match your search."}
             </div>
           ) : (
+            <>
             <div className="adm-table-wrap">
               <table>
                 <thead>
@@ -309,7 +322,7 @@ export default function PopupManager() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((popup) => {
+                  {pagedPopups.map((popup) => {
                     const src = resolveImage(popup.photo);
                     return (
                       <tr key={popup._id}>
@@ -391,6 +404,14 @@ export default function PopupManager() {
                 </tbody>
               </table>
             </div>
+            <AdminPager
+              page={safePage}
+              pageSize={PAGE_SIZE}
+              totalItems={filtered.length}
+              onPageChange={setPage}
+              noun="popups"
+            />
+            </>
           )}
         </div>
       </div>

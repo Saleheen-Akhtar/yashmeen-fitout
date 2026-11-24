@@ -1,7 +1,6 @@
 import DashboardHeader from '../../components/admin/dashboard/DashboardHeader';
 import FeaturedProjectCard from '../../components/admin/dashboard/FeaturedProjectCard';
 import PipelineProgressCard from '../../components/admin/dashboard/PipelineProgressCard';
-import StudioTimerCard from '../../components/admin/dashboard/StudioTimerCard';
 import TaskQueueCard from '../../components/admin/dashboard/TaskQueueCard';
 import WebsiteContentCard from '../../components/admin/dashboard/WebsiteContentCard';
 import CalendarCard from '../../components/admin/dashboard/CalendarCard';
@@ -14,7 +13,7 @@ import PipelineItemModal from '../../components/admin/dashboard/PipelineItemModa
 import { STAGES, getInitials, fetchDashboardBundle } from "../../components/admin/dashboard/dashboardData";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { projectAPI, webDetailsAPI } from "../../services/api";
+import { enquiryAPI, projectAPI, quoteAPI, webDetailsAPI } from "../../services/api";
 import {
   DEFAULT_WEBSITE_CONTENT,
   notifyWebsiteContentUpdated,
@@ -27,13 +26,58 @@ import { mergeWebsiteContent } from "../../../../../shared/siteContent.js";
 import { toast } from "sonner";
 import useCreateStore from "../../store";
 
+const toDateInputValue = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const PREVIEW_QUOTES = [
+  { _id: "prev_q1", name: "Sahil", email: "sahil@fitout.ae", mobile: "+971 50 123 4567", projectType: "Retail", services: ["Retail Fit-Out"], location: "Downtown Dubai", budget: "Custom Brief", createdAt: new Date().toISOString() },
+  { _id: "prev_q2", name: "Raqhib Husain", email: "hussain@fitout.ae", mobile: "+971 52 987 6543", projectType: "Interior", services: ["Interior Fit-Out"], location: "Dubai, UAE", budget: "Turnkey", createdAt: new Date().toISOString() },
+  { _id: "prev_q3", name: "Emaar Hospitality", email: "procurement@emaar.ae", mobile: "+971 55 456 7890", projectType: "Renovation", services: ["Luxury Suite Fit-Out"], location: "Dubai Marina", budget: "Commercial Brief", createdAt: new Date().toISOString() },
+  { _id: "prev_q4", name: "Dr. Tariq Al Mansoori", email: "tariq.mansoori@gmail.com", mobile: "+971 50 888 9999", projectType: "Residential", services: ["Villa Joinery", "Master Suite"], location: "Emirates Hills", budget: "High-End Brief", createdAt: new Date().toISOString() },
+];
+
+const PREVIEW_ENQUIRIES = [
+  {
+    _id: "prev_e1",
+    name: "Al Futtaim Group",
+    email: "facilities@alfuttaim.ae",
+    mobile: "+971 50 443 2190",
+    services: "Office Fit-Out & Turnkey MEP",
+    message: "Requesting site survey for 8,500 sq ft office in Festival City. Need design and build quotation.",
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    crmStage: "feasibility",
+  },
+  {
+    _id: "prev_e2",
+    name: "Dr. Mona Al Shamsi",
+    email: "mona.shamsi@gmail.com",
+    mobile: "+971 55 912 3456",
+    services: "Residential Architecture & Joinery",
+    message: "Luxury villa renovation in Palm Jumeirah Frond N. Need bespoke millwork and master suite architectural glazing.",
+    createdAt: new Date(Date.now() - 172800000).toISOString(),
+    crmStage: "proposal",
+  },
+];
+
 export default function Dashboard() {
   const { user } = useCreateStore();
   const location = useLocation();
 
   // Remote MongoDB State
-  const [quotes, setQuotes] = useState([]);
-  const [enquiries, setEnquiries] = useState([]);
+  const [quotes, setQuotes] = useState(() =>
+    import.meta.env.DEV && location.search.includes("preview=dashboard")
+      ? PREVIEW_QUOTES
+      : []
+  );
+  const [enquiries, setEnquiries] = useState(() =>
+    import.meta.env.DEV && location.search.includes("preview=dashboard")
+      ? PREVIEW_ENQUIRIES
+      : []
+  );
   const [projects, setProjects] = useState([]);
   const [categories, setCategories] = useState([]);
   const [webDetails, setWebDetails] = useState(DEFAULT_WEBSITE_CONTENT);
@@ -44,21 +88,13 @@ export default function Dashboard() {
   // Interactive Bento Widgets State
   const [featuredIndex, setFeaturedIndex] = useState(0);
   const [openAccordion, setOpenAccordion] = useState("services");
-  const [timerRunning, setTimerRunning] = useState(false);
-  const [timerSeconds, setTimerSeconds] = useState(155); // 02:35 display match
-  const [monthOffset, setMonthOffset] = useState(0);
+  const [weekOffset, setWeekOffset] = useState(0);
 
   // Lower Section Tab State
-  const [activeTab, setActiveTab] = useState("projects"); // 'projects' | 'services' | 'kanban' | 'leads'
+  const [activeTab, setActiveTab] = useState("leads");
   const [searchQuery, setSearchQuery] = useState("");
-  const [stageMap, setStageMap] = useState(() => {
-    try {
-      const saved = localStorage.getItem("yashmeen_crm_stages");
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
+  const [stageMap, setStageMap] = useState({});
+  const [savingStageId, setSavingStageId] = useState(null);
   const [draggedId, setDraggedId] = useState(null);
 
   // Modals & Drawers State
@@ -70,6 +106,8 @@ export default function Dashboard() {
     size: "",
     location: "Dubai, UAE",
     scope: "Turnkey Design & Fit-Out",
+    duration: "",
+    videoUrl: "",
     sector: "Commercial",
     description: "",
   });
@@ -82,11 +120,11 @@ export default function Dashboard() {
   const [serviceForm, setServiceForm] = useState({
     title: "",
     slug: "",
-    eyebrow: "",
+    eyebrow: "BESPOKE ARCHITECTURE",
     shortDesc: "",
     description: "",
     image: "/static/studio.jpg",
-    highlightsText: "",
+    highlightsText: "Concept Design\nAuthority Approvals\nTurnkey Fit-Out",
     active: true,
   });
 
@@ -100,6 +138,7 @@ export default function Dashboard() {
     title: "",
     subtitle: "",
     dayIndex: 2,
+    date: toDateInputValue(new Date()),
     timeSlot: "10:00 am",
     variant: "dark",
   });
@@ -109,8 +148,12 @@ export default function Dashboard() {
   const [inspectedItem, setInspectedItem] = useState(null);
 
   const applyDashboardBundle = (bundle) => {
-    if (bundle.quotes !== null) setQuotes(bundle.quotes);
-    if (bundle.enquiries !== null) setEnquiries(bundle.enquiries);
+    if (bundle.quotes !== null && (bundle.quotes.length > 0 || !location.search.includes("preview=dashboard"))) {
+      setQuotes(bundle.quotes);
+    }
+    if (bundle.enquiries !== null && (bundle.enquiries.length > 0 || !location.search.includes("preview=dashboard"))) {
+      setEnquiries(bundle.enquiries);
+    }
     if (bundle.projects !== null) setProjects(bundle.projects);
     if (bundle.categories !== null) setCategories(bundle.categories);
     if (bundle.webDetails) {
@@ -119,7 +162,6 @@ export default function Dashboard() {
     }
   };
 
-  // Load All Live MongoDB Data
   const loadDashboardData = async () => {
     try {
       const bundle = await fetchDashboardBundle();
@@ -167,31 +209,7 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Studio Session Stopwatch Effect
-  useEffect(() => {
-    if (!timerRunning) return;
-    const id = setInterval(() => {
-      setTimerSeconds((s) => s + 1);
-    }, 1000);
-    return () => clearInterval(id);
-  }, [timerRunning]);
-
-  const formattedTimer = useMemo(() => {
-    const mins = Math.floor(timerSeconds / 60);
-    const secs = timerSeconds % 60;
-    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  }, [timerSeconds]);
-
-  // Persist Kanban stage changes locally
-  useEffect(() => {
-    try {
-      localStorage.setItem("yashmeen_crm_stages", JSON.stringify(stageMap));
-    } catch {
-      /* ignore */
-    }
-  }, [stageMap]);
-
-  // Unified CRM Pipeline Items (Quotes + Enquiries + Recent Projects)
+  // Unified CRM pipeline. 100% real prospective client leads from Quotes and Contact inquiries.
   const allCRMItems = useMemo(() => {
     const list = [];
     quotes.forEach((q) => {
@@ -200,12 +218,15 @@ export default function Dashboard() {
       const subtitleText = q.projectType
         ? `${q.projectType}${servicesList.length ? ` · ${servicesList.slice(0, 2).join(", ")}` : " Fit-Out"}`
         : servicesList.join(", ") || "Turnkey Brief";
+      const currentStageId = stageMap[id] ?? q.crmStage ?? "leads";
+      const currentStage = STAGES.find((s) => s.id === currentStageId) || STAGES[0];
+
       list.push({
         id,
         rawId: q._id,
         type: "quote",
-        typeBadge: "Quote",
-        badgeStyle: "badge-amber",
+        sourceName: "Quote Request",
+        sourceBadge: "Quote",
         title: q.name || "Untitled Brief",
         subtitle: subtitleText,
         location: q.location || "Dubai, UAE",
@@ -216,19 +237,26 @@ export default function Dashboard() {
         mobile: q.mobile,
         message: q.message || q.notes || q.specifications || q.details,
         date: q.createdAt,
-        stage: stageMap[id] || "leads",
+        stage: currentStage.id,
+        stageName: currentStage.name,
+        stageBadgeStyle: currentStage.badgeClass,
+        typeBadge: currentStage.name,
+        badgeStyle: currentStage.badgeClass,
         initials: getInitials(q.name || "Q"),
       });
     });
 
     enquiries.forEach((e) => {
       const id = `enq_${e._id}`;
+      const currentStageId = stageMap[id] ?? e.crmStage ?? "leads";
+      const currentStage = STAGES.find((s) => s.id === currentStageId) || STAGES[0];
+
       list.push({
         id,
         rawId: e._id,
         type: "enquiry",
-        typeBadge: "Inquiry",
-        badgeStyle: "badge-lavender",
+        sourceName: "Contact Form",
+        sourceBadge: "Contact",
         title: e.name || "Client Inquiry",
         subtitle: e.services || "Interior & Fit-Out",
         location: "Dubai, UAE",
@@ -237,34 +265,17 @@ export default function Dashboard() {
         mobile: e.mobile,
         message: e.message,
         date: e.createdAt,
-        stage: stageMap[id] || "leads",
+        stage: currentStage.id,
+        stageName: currentStage.name,
+        stageBadgeStyle: currentStage.badgeClass,
+        typeBadge: currentStage.name,
+        badgeStyle: currentStage.badgeClass,
         initials: getInitials(e.name || "IN"),
       });
     });
 
-    projects.slice(0, 6).forEach((p, idx) => {
-      const id = `proj_${p._id}`;
-      const defaultStage = idx % 2 === 0 ? "construction" : "completed";
-      list.push({
-        id,
-        rawId: p._id,
-        type: "project",
-        typeBadge: "Live Work",
-        badgeStyle: "badge-sage",
-        title: p.title,
-        subtitle: p.sector || "Architectural Works",
-        location: p.location || "Dubai",
-        budget: p.size || "Atelier Delivery",
-        message: p.description,
-        image: p.images?.[0],
-        date: p.createdAt,
-        stage: stageMap[id] || defaultStage,
-        initials: getInitials(p.title),
-      });
-    });
-
     return list;
-  }, [quotes, enquiries, projects, stageMap]);
+  }, [quotes, enquiries, stageMap]);
 
   const filteredCRMItems = useMemo(() => {
     if (!searchQuery.trim()) return allCRMItems;
@@ -277,16 +288,10 @@ export default function Dashboard() {
     );
   }, [allCRMItems, searchQuery]);
 
-  // Derived Statistics & Progress Distributions
   const services = webDetails.services || DEFAULT_WEBSITE_CONTENT.services;
   const activeServicesCount = services.filter((s) => s.active !== false).length;
   const tasks = webDetails.crmTasks || [];
-
   const completedTasksCount = tasks.filter((t) => t.completed).length;
-  const syncScore = tasks.length
-    ? Math.round((completedTasksCount / tasks.length) * 100)
-    : 40;
-
   const calendarEvents = webDetails.calendarEvents || [];
 
   const featuredProj = projects[featuredIndex % Math.max(projects.length, 1)] || {
@@ -297,20 +302,6 @@ export default function Dashboard() {
     images: ["/static/hero-aperture-v2.webp"],
   };
 
-  // Horizontal Capsule Strip Percentages (derived dynamically from real database totals)
-  const totalEntities = Math.max(
-    quotes.length + enquiries.length + projects.length + activeServicesCount,
-    1
-  );
-  const leadsPct = Math.max(Math.round((enquiries.length / totalEntities) * 100), 12);
-  const quotesPct = Math.max(Math.round((quotes.length / totalEntities) * 100), 14);
-  const siteSyncPct = Math.max(
-    100 - leadsPct - quotesPct - 10,
-    Math.round(((projects.length + activeServicesCount) / totalEntities) * 100)
-  );
-  const outputPct = Math.max(100 - leadsPct - quotesPct - siteSyncPct, 10);
-
-  // Weekly Bar Chart Data (7 days aligned to real pipeline & project cadence)
   const weeklyBars = useMemo(() => {
     const base = [
       { day: "S", count: 2, h: 28, highlight: false, label: "2 leads" },
@@ -324,37 +315,42 @@ export default function Dashboard() {
     return base;
   }, [enquiries.length, quotes.length, projects.length, activeServicesCount]);
 
-  // Month Label & Days Calculation
-  const currentCalendarDate = useMemo(() => {
-    const d = new Date();
-    d.setMonth(d.getMonth() + monthOffset);
-    return d;
-  }, [monthOffset]);
-
-  const monthNames = useMemo(() => {
-    const fmt = new Intl.DateTimeFormat("en-US", { month: "long" });
-    const prevD = new Date(currentCalendarDate);
-    prevD.setMonth(prevD.getMonth() - 1);
-    const nextD = new Date(currentCalendarDate);
-    nextD.setMonth(nextD.getMonth() + 1);
-    return {
-      prev: fmt.format(prevD),
-      curr: `${fmt.format(currentCalendarDate)} ${currentCalendarDate.getFullYear()}`,
-      next: fmt.format(nextD),
-    };
-  }, [currentCalendarDate]);
-
   const weekColumns = useMemo(() => {
-    const start = new Date();
-    const day = start.getDay();
-    const diff = start.getDate() - day + (day === 0 ? -6 : 1) + monthOffset * 7;
-    const monday = new Date(start.setDate(diff));
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    const day = today.getDay();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1) + weekOffset * 7);
     return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((name, idx) => {
       const d = new Date(monday);
       d.setDate(monday.getDate() + idx);
-      return { name, num: d.getDate() };
+      return {
+        name,
+        num: d.getDate(),
+        month: d.toLocaleDateString("en-GB", { month: "short" }),
+        isoDate: toDateInputValue(d),
+        isToday: toDateInputValue(d) === toDateInputValue(today),
+      };
     });
-  }, [monthOffset]);
+  }, [weekOffset]);
+
+  const weekLabel = useMemo(() => {
+    const first = weekColumns[0];
+    const last = weekColumns[weekColumns.length - 1];
+    if (!first || !last) return "This week";
+    return `${first.num} ${first.month} - ${last.num} ${last.month}`;
+  }, [weekColumns]);
+
+  const openCalendarModal = () => {
+    const preferredIndex = weekColumns.findIndex((column) => column.isToday);
+    const dayIndex = preferredIndex >= 0 ? preferredIndex : 0;
+    setCalendarForm((current) => ({
+      ...current,
+      dayIndex,
+      date: weekColumns[dayIndex]?.isoDate || toDateInputValue(new Date()),
+    }));
+    setCalendarModalOpen(true);
+  };
 
   // Helper to save partial updates to WebDetails -> Live Website
   const saveWebDetailsPatch = async (patch, successMessage = "Published to live website") => {
@@ -376,7 +372,7 @@ export default function Dashboard() {
     }
   };
 
-  // Toggle Dark Queue Task Completion (persisted to MongoDB)
+  // Toggle Task Completion
   const handleToggleTask = async (taskId) => {
     const updatedTasks = tasks.map((t) =>
       t.id === taskId ? { ...t, completed: !t.completed } : t
@@ -402,7 +398,7 @@ export default function Dashboard() {
     await saveWebDetailsPatch({ crmTasks: updatedTasks }, "Task added to studio queue");
   };
 
-  // Project CRUD Handlers (Directly Reflected on Homepage Works.jsx & /projects)
+  // Project CRUD Handlers
   const openCreateProjectModal = () => {
     setEditingProject(null);
     setProjectForm({
@@ -411,6 +407,8 @@ export default function Dashboard() {
       size: "12,000 sq.ft",
       location: "Dubai, UAE",
       scope: "Turnkey Design & Fit-Out",
+      duration: "",
+      videoUrl: "",
       sector: "Residential",
       description: "",
     });
@@ -436,7 +434,6 @@ export default function Dashboard() {
     });
     setProjectFiles([]);
     setExistingImages(proj.images || []);
-    if (fileInputRef.current) fileInputRef.current.value = "";
     setProjectModalOpen(true);
   };
 
@@ -500,7 +497,7 @@ export default function Dashboard() {
     }
   };
 
-  // Service CRUD Handlers (Directly Reflected on Homepage, Services & Contact pages)
+  // Service CRUD Handlers
   const openCreateServiceModal = () => {
     setEditingServiceIdx(null);
     setServiceForm({
@@ -590,53 +587,135 @@ export default function Dashboard() {
   };
 
   // Calendar Event Handler
+  const cleanCalendarEvent = (evt) => ({
+    id: String(evt.id || `evt-${Date.now()}`),
+    dayIndex: Number(evt.dayIndex ?? 0),
+    date: String(evt.date || ""),
+    timeSlot: String(evt.timeSlot || "10:00 am"),
+    title: String(evt.title || "").trim(),
+    subtitle: String(evt.subtitle || "").trim(),
+    variant: String(evt.variant || "dark"),
+    phone: String(evt.phone || "").trim(),
+    location: String(evt.location || "").trim(),
+  });
+
   const handleAddCalendarEvent = async (e) => {
     e.preventDefault();
-    if (!calendarForm.title.trim()) return;
-    const newEvt = {
-      id: `evt-${Date.now()}`,
+    if (!calendarForm.title.trim() || !calendarForm.date) {
+      toast.error("Add a title and date for this visit.");
+      return;
+    }
+    const newEvt = cleanCalendarEvent({
       ...calendarForm,
-    };
-    const nextEvents = [...calendarEvents, newEvt];
-    await saveWebDetailsPatch({ calendarEvents: nextEvents }, "Schedule updated");
+      id: `evt-${Date.now()}`,
+    });
+    const nextEvents = calendarEvents.map(cleanCalendarEvent).concat(newEvt);
+    const saved = await saveWebDetailsPatch(
+      { calendarEvents: nextEvents },
+      "Schedule updated"
+    );
+    if (!saved) return;
     setCalendarModalOpen(false);
     setCalendarForm({
       title: "",
       subtitle: "",
       dayIndex: 2,
+      date: weekColumns[2]?.isoDate || toDateInputValue(new Date()),
       timeSlot: "10:00 am",
       variant: "dark",
+      phone: "",
+      location: "",
     });
   };
 
   const handleDeleteCalendarEvent = async (evtId) => {
-    const nextEvents = calendarEvents.filter((ev) => ev.id !== evtId);
+    const nextEvents = calendarEvents.filter((ev) => ev.id !== evtId).map(cleanCalendarEvent);
     await saveWebDetailsPatch({ calendarEvents: nextEvents }, "Schedule event removed");
   };
 
-  // Pipeline Drag & Drop
-  const updateItemStage = (id, stageId, label) => {
-    setStageMap((prev) => ({ ...prev, [id]: stageId }));
-    const stageName = STAGES.find((s) => s.id === stageId)?.name || stageId;
-    toast.success(`Moved "${label}" to ${stageName}`);
+  const scheduleVisitForClient = (client) => {
+    const preferredIndex = weekColumns.findIndex((column) => column.isToday);
+    const dayIndex = preferredIndex >= 0 ? preferredIndex : 0;
+    setCalendarForm({
+      title: `${client.title} · Site Visit`,
+      subtitle: `${client.subtitle || "Initial Fit-Out Survey"} · ${client.location || "Dubai"}`,
+      phone: client.mobile || "",
+      location: client.location || "Dubai, UAE",
+      dayIndex,
+      date: weekColumns[dayIndex]?.isoDate || toDateInputValue(new Date()),
+      timeSlot: "10:00 am",
+      variant: "dark",
+    });
+    setInspectedItem(null);
+    setCalendarModalOpen(true);
   };
 
-  // Progress Dial SVG Geometry
-  const dialTicks = Array.from({ length: 44 }, (_, i) => i);
-  const progressFraction = timerRunning ? Math.min(((timerSeconds % 360) / 360) * 0.75 + 0.2, 0.92) : 0.68;
+  // Pipeline Drag & Drop. Real-time stage update persisted to MongoDB.
+  const updateItemStage = async (id, stageId, label) => {
+    const item = allCRMItems.find((candidate) => candidate.id === id);
+    if (!item || item.stage === stageId || savingStageId) return item?.stage === stageId;
+
+    const previousStage = item.stage;
+    const stageObj = STAGES.find((stage) => stage.id === stageId);
+    const stageName = stageObj?.name || stageId;
+
+    setSavingStageId(id);
+    setStageMap((prev) => ({ ...prev, [id]: stageId }));
+
+    const isDevPreview = import.meta.env.DEV && location.search.includes("preview=dashboard");
+    if (item.type === "project" || isDevPreview) {
+      if (item.type === "quote") {
+        setQuotes((prev) =>
+          prev.map((q) => (q._id === item.rawId ? { ...q, crmStage: stageId } : q))
+        );
+      } else if (item.type === "enquiry") {
+        setEnquiries((prev) =>
+          prev.map((e) => (e._id === item.rawId ? { ...e, crmStage: stageId } : e))
+        );
+      }
+      setSavingStageId(null);
+      toast.success(`Moved "${label}" to ${stageName}`);
+      return true;
+    }
+
+    try {
+      const api = item.type === "quote" ? quoteAPI : enquiryAPI;
+      const response = await api.stage(item.rawId, stageId);
+      const savedItem = response?.data?.data;
+      const mergeSavedStage = (record) =>
+        record._id === item.rawId
+          ? { ...record, ...(savedItem || {}), crmStage: stageId }
+          : record;
+
+      if (item.type === "quote") {
+        setQuotes((prev) => prev.map(mergeSavedStage));
+      } else {
+        setEnquiries((prev) => prev.map(mergeSavedStage));
+      }
+
+      toast.success(`Moved "${label}" to ${stageName}`);
+      return true;
+    } catch (error) {
+      setStageMap((prev) => ({ ...prev, [id]: previousStage }));
+      toast.error(error?.response?.data?.message || "Could not save the CRM stage.");
+      return false;
+    } finally {
+      setSavingStageId(null);
+    }
+  };
 
   return (
-    <div className="crex-dash-wrap">
-      {/* =====================================================================
-          1. GREETING HEADER + CAPSULE PROGRESS STRIP + THIN ARCHITECTURAL STATS
-          ===================================================================== */}
+    <div
+      style={{
+        maxWidth: "1480px",
+        margin: "0 auto",
+        padding: "0 28px 60px",
+      }}
+    >
+      {/* 1. OPERATIONS HEADER & QUICK STATS */}
       <DashboardHeader
         user={user}
         loading={loading}
-        leadsPct={leadsPct}
-        quotesPct={quotesPct}
-        siteSyncPct={siteSyncPct}
-        outputPct={outputPct}
         setActiveTab={setActiveTab}
         projects={projects}
         activeServicesCount={activeServicesCount}
@@ -644,11 +723,9 @@ export default function Dashboard() {
         enquiries={enquiries}
       />
 
-      {/* =====================================================================
-          2. 4-COLUMN CREXTIO BENTO GRID
-          ===================================================================== */}
-      <section className="crex-bento-grid" style={{ marginBottom: "32px" }}>
-        {/* CARD 1: FEATURED WEBSITE PROJECT SHOWCASE (Portrait Photo Card) */}
+      {/* 2. ARCHITECTURAL BENTO GRID */}
+      <section className="crex-bento-grid" style={{ marginBottom: "28px" }}>
+        {/* CARD 1: FEATURED ATELIER SHOWCASE */}
         <FeaturedProjectCard
           featuredProj={featuredProj}
           setFeaturedIndex={setFeaturedIndex}
@@ -657,26 +734,15 @@ export default function Dashboard() {
           openCreateProjectModal={openCreateProjectModal}
         />
 
-        {/* CARD 2: PIPELINE VELOCITY BAR CHART ("Progress" Visual Match) */}
+        {/* CARD 2: PIPELINE VELOCITY OVERVIEW (Spans 2 columns) */}
         <PipelineProgressCard
           allCRMItems={allCRMItems}
           setActiveTab={setActiveTab}
           weeklyBars={weeklyBars}
         />
 
-        {/* CARD 3: TURNKEY STUDIO TRACKER DIAL */}
-        <StudioTimerCard
-          dialTicks={dialTicks}
-          progressFraction={progressFraction}
-          formattedTimer={formattedTimer}
-          setTimerRunning={setTimerRunning}
-          timerRunning={timerRunning}
-          setTimerSeconds={setTimerSeconds}
-        />
-
-        {/* COLUMN 4 RIGHT STACK (Spans 2 Rows): TOP WEBSITE SYNC + TALL OBSIDIAN TASK QUEUE */}
+        {/* COLUMN 4 RIGHT STACK: TASK QUEUE (Spans 2 Rows) */}
         <TaskQueueCard
-          syncScore={syncScore}
           activeServicesCount={activeServicesCount}
           setActiveTab={setActiveTab}
           projects={projects}
@@ -690,7 +756,7 @@ export default function Dashboard() {
           setAddingTask={setAddingTask}
         />
 
-        {/* CARD 5 (Bottom-Left): COLLAPSIBLE LIVE WEBSITE CMS ACCORDIONS */}
+        {/* CARD 5: LIVE WEBSITE CMS ACCORDIONS */}
         <WebsiteContentCard
           setOpenAccordion={setOpenAccordion}
           openAccordion={openAccordion}
@@ -707,20 +773,19 @@ export default function Dashboard() {
           saveWebDetailsPatch={saveWebDetailsPatch}
         />
 
-        {/* CARD 6 (Bottom-Center, Span 2 Cols): CALENDAR & SITE VISITS TIMELINE */}
+        {/* CARD 6: CALENDAR & SITE VISITS TIMELINE */}
         <CalendarCard
-          setMonthOffset={setMonthOffset}
-          monthNames={monthNames}
-          setCalendarModalOpen={setCalendarModalOpen}
+          weekOffset={weekOffset}
+          setWeekOffset={setWeekOffset}
+          weekLabel={weekLabel}
+          openCalendarModal={openCalendarModal}
           weekColumns={weekColumns}
           calendarEvents={calendarEvents}
           handleDeleteCalendarEvent={handleDeleteCalendarEvent}
         />
       </section>
 
-      {/* =====================================================================
-          3. LIVE WEBSITE CMS & CRM WORKSPACE (PROJECTS, SERVICES, KANBAN, LEADS)
-          ===================================================================== */}
+      {/* 3. LIVE WEBSITE CMS & CRM WORKSPACE (REQUESTS, PIPELINE, PROJECTS, SERVICES) */}
       <DashboardTabs
         projects={projects}
         services={services}
@@ -744,12 +809,13 @@ export default function Dashboard() {
         filteredCRMItems={filteredCRMItems}
         draggedId={draggedId}
         updateItemStage={updateItemStage}
+        savingStageId={savingStageId}
         setDraggedId={setDraggedId}
         setInspectedItem={setInspectedItem}
       />
 
       {/* =====================================================================
-          MODAL A: CREATE / EDIT WEBSITE PROJECT (Syncs to Homepage & /projects)
+          MODAL A: CREATE / EDIT WEBSITE PROJECT
           ===================================================================== */}
       <ProjectEditorModal
         projectModalOpen={projectModalOpen}
@@ -767,7 +833,7 @@ export default function Dashboard() {
       />
 
       {/* =====================================================================
-          MODAL B: CREATE / EDIT SERVICE (Syncs to Services Pages & Homepage)
+          MODAL B: CREATE / EDIT SERVICE
           ===================================================================== */}
       <ServiceEditorModal
         serviceModalOpen={serviceModalOpen}
@@ -801,6 +867,8 @@ export default function Dashboard() {
         calendarForm={calendarForm}
         setCalendarForm={setCalendarForm}
         weekColumns={weekColumns}
+        allCRMItems={allCRMItems}
+        projects={projects}
       />
 
       {/* =====================================================================
@@ -810,6 +878,8 @@ export default function Dashboard() {
         inspectedItem={inspectedItem}
         setInspectedItem={setInspectedItem}
         updateItemStage={updateItemStage}
+        savingStageId={savingStageId}
+        onScheduleVisit={scheduleVisitForClient}
       />
     </div>
   );

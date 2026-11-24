@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { projectAPI, categoryAPI, itemPath } from "../../services/api";
 import { clearProjectsCache, clearProjectDetailsCache } from "../../lib/publicCache";
 import { FiEdit2, FiImage, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import AdminPager from "../../components/admin/AdminPager";
+import AdminMediaImage from "../../components/admin/AdminMediaImage";
 
 const FALLBACK_IMG = "/static/hero-aperture-v2.webp";
 const FETCH_PARAMS = { limit: 1000, page: 1 };
+const PAGE_SIZE = 8;
 const MAX_IMAGES = 10;
 const MAX_IMAGE_MB = 5;
 
@@ -50,6 +53,7 @@ export default function ProjectManager() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [page, setPage] = useState(1);
   const [banner, setBanner] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -295,6 +299,12 @@ export default function ProjectManager() {
       categoryFilter === "all" || getCategoryId(p) === categoryFilter;
     return matchesSearch && matchesCategory;
   });
+  const totalPages = Math.max(Math.ceil(filtered.length / PAGE_SIZE), 1);
+  const safePage = Math.min(page, totalPages);
+  const pagedProjects = filtered.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
 
   return (
     <div className="adm-page">
@@ -346,13 +356,19 @@ export default function ProjectManager() {
               type="text"
               placeholder="Search by title…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="adm-search-input"
             />
           </div>
           <select
             value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
+            onChange={(e) => {
+              setCategoryFilter(e.target.value);
+              setPage(1);
+            }}
             className="adm-filter-select"
             aria-label="Filter by category"
           >
@@ -375,8 +391,9 @@ export default function ProjectManager() {
                 : "No projects match your filters."}
             </div>
           ) : (
-            <div className="adm-table-wrap">
-              <table>
+            <>
+              <div className="adm-table-wrap">
+                <table>
                 <thead>
                   <tr>
                     <th>Project</th>
@@ -389,7 +406,7 @@ export default function ProjectManager() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((p) => {
+                  {pagedProjects.map((p) => {
                     const cover = p.images?.[0] ? imageUrl(p.images[0]) : "";
                     const catLabel =
                       typeof p.categoryId === "object" && p.categoryId
@@ -400,13 +417,10 @@ export default function ProjectManager() {
                         <td style={{ minWidth: "240px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                             {cover ? (
-                              <img
+                              <AdminMediaImage
                                 src={cover}
+                                fallbackSrc={FALLBACK_IMG}
                                 alt={p.title || "project"}
-                                onError={(e) => {
-                                  e.currentTarget.onerror = null;
-                                  e.currentTarget.src = FALLBACK_IMG;
-                                }}
                                 style={{
                                   width: "56px",
                                   height: "44px",
@@ -515,8 +529,16 @@ export default function ProjectManager() {
                     );
                   })}
                 </tbody>
-              </table>
-            </div>
+                </table>
+              </div>
+              <AdminPager
+                page={safePage}
+                pageSize={PAGE_SIZE}
+                totalItems={filtered.length}
+                onPageChange={setPage}
+                noun="projects"
+              />
+            </>
           )}
         </div>
       </div>
@@ -703,13 +725,10 @@ export default function ProjectManager() {
                   >
                     {formImages.map((url) => (
                       <div key={url} style={thumbWrapStyle}>
-                        <img
+                        <AdminMediaImage
                           src={imageUrl(url)}
+                          fallbackSrc={FALLBACK_IMG}
                           alt="Saved project"
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = FALLBACK_IMG;
-                          }}
                           style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
                         <button
@@ -738,8 +757,8 @@ export default function ProjectManager() {
                             fontWeight: 700,
                             padding: "1px 6px",
                             borderRadius: "9999px",
-                            background: "#080807",
-                            color: "#c5a059",
+                            background: "#1b1a17",
+                            color: "#8a6a28",
                           }}
                         >
                           New

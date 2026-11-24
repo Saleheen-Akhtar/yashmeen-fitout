@@ -1,5 +1,40 @@
-import { FiSearch, FiPlus, FiGlobe, FiArrowUpRight, FiEdit2, FiTrash2 } from "react-icons/fi";
-import { resolveImage, FALLBACK_PROJECT_IMG, STAGES, formatDateShort } from './dashboardData';
+import { useMemo, useState } from "react";
+import {
+  FiArrowUpRight,
+  FiEdit2,
+  FiGlobe,
+  FiGrid,
+  FiList,
+  FiPlus,
+  FiSearch,
+  FiTrash2,
+  FiX,
+} from "react-icons/fi";
+import { FaWhatsapp } from "react-icons/fa";
+import AdminPager from "../AdminPager";
+import AdminMediaImage from "../AdminMediaImage";
+import {
+  FALLBACK_PROJECT_IMG,
+  STAGES,
+  formatDateShort,
+  resolveImage,
+} from "./dashboardData";
+import { createWhatsAppUrl } from "../../../lib/calendarExport";
+
+const DEFAULT_PAGE_SIZES = {
+  projects: 6,
+  services: 6,
+  leads: 5,
+};
+
+const pageSlice = (items, requestedPage, pageSize) => {
+  const totalPages = Math.max(Math.ceil(items.length / pageSize), 1);
+  const page = Math.min(Math.max(requestedPage, 1), totalPages);
+  return {
+    page,
+    items: items.slice((page - 1) * pageSize, page * pageSize),
+  };
+};
 
 export default function DashboardTabs({
   projects,
@@ -24,86 +59,177 @@ export default function DashboardTabs({
   filteredCRMItems,
   draggedId,
   updateItemStage,
+  savingStageId,
   setDraggedId,
   setInspectedItem,
 }) {
+  const [pages, setPages] = useState({ projects: 1, services: 1, leads: 1 });
+  const [pageSizes, setPageSizes] = useState(DEFAULT_PAGE_SIZES);
+
+  // Filters per tab for maximum efficiency
+  const [leadSourceFilter, setLeadSourceFilter] = useState("all");
+  const [leadStageFilter, setLeadStageFilter] = useState("all");
+  const [projectCategoryFilter, setProjectCategoryFilter] = useState("all");
+  const [projectViewMode, setProjectViewMode] = useState("grid");
+  const [serviceStatusFilter, setServiceStatusFilter] = useState("all");
+  const [kanbanTypeFilter, setKanbanTypeFilter] = useState("all");
+
+  const query = searchQuery.trim().toLowerCase();
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter((project) => {
+      const matchesQuery =
+        !query ||
+        project.title?.toLowerCase().includes(query) ||
+        project.location?.toLowerCase().includes(query) ||
+        project.sector?.toLowerCase().includes(query);
+
+      const categoryId =
+        typeof project.categoryId === "object"
+          ? project.categoryId?._id
+          : project.categoryId;
+      const matchesCategory =
+        projectCategoryFilter === "all" || categoryId === projectCategoryFilter;
+
+      return matchesQuery && matchesCategory;
+    });
+  }, [projects, query, projectCategoryFilter]);
+
+  const filteredServices = useMemo(() => {
+    return services
+      .map((service, index) => ({ service, index }))
+      .filter(({ service }) => {
+        const matchesQuery =
+          !query ||
+          service.title?.toLowerCase().includes(query) ||
+          service.shortDesc?.toLowerCase().includes(query);
+
+        const isLive = service.active !== false;
+        const matchesStatus =
+          serviceStatusFilter === "all" ||
+          (serviceStatusFilter === "live" && isLive) ||
+          (serviceStatusFilter === "hidden" && !isLive);
+
+        return matchesQuery && matchesStatus;
+      });
+  }, [services, query, serviceStatusFilter]);
+
+  const allLeadItems = useMemo(
+    () => filteredCRMItems.filter((item) => item.type !== "project"),
+    [filteredCRMItems],
+  );
+
+  const filteredLeadItems = useMemo(() => {
+    return allLeadItems.filter((item) => {
+      const matchesSource =
+        leadSourceFilter === "all" || item.type === leadSourceFilter;
+      const matchesStage =
+        leadStageFilter === "all" || item.stage === leadStageFilter;
+      return matchesSource && matchesStage;
+    });
+  }, [allLeadItems, leadSourceFilter, leadStageFilter]);
+
+  const filteredKanbanItems = useMemo(() => {
+    if (kanbanTypeFilter === "all") return filteredCRMItems;
+    return filteredCRMItems.filter((item) => item.type === kanbanTypeFilter);
+  }, [filteredCRMItems, kanbanTypeFilter]);
+
+  const projectPage = pageSlice(
+    filteredProjects,
+    pages.projects,
+    pageSizes.projects,
+  );
+  const servicePage = pageSlice(
+    filteredServices,
+    pages.services,
+    pageSizes.services,
+  );
+  const leadsPage = pageSlice(
+    filteredLeadItems,
+    pages.leads,
+    pageSizes.leads,
+  );
+
+  const tabs = [
+    { id: "leads", label: "Requests", count: quotes.length + enquiries.length },
+    { id: "kanban", label: "Pipeline", count: allCRMItems.length },
+    { id: "projects", label: "Projects", count: projects.length },
+    { id: "services", label: "Services", count: services.length },
+  ];
+
+  const setPage = (key, value) =>
+    setPages((current) => ({ ...current, [key]: value }));
+
+  const setPageSize = (key, value) => {
+    setPageSizes((current) => ({ ...current, [key]: value }));
+    setPages((current) => ({ ...current, [key]: 1 }));
+  };
+
   return (
-    <section
-      id="crm-cms-workspace"
-      className="crex-card"
-      style={{ padding: "clamp(16px, 2.5vw, 26px)" }}
-    >
-      {/* Header Bar & Pill Tab Switcher */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "16px",
-          marginBottom: "24px",
-          paddingBottom: "18px",
-          borderBottom: "1px solid var(--crex-line)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-          {[
-            { id: "projects", label: `Website Projects (${projects.length})` },
-            { id: "services", label: `Services & Copy (${services.length})` },
-            { id: "kanban", label: `CRM Pipeline (${allCRMItems.length})` },
-            { id: "leads", label: `Quotes & Inquiries (${quotes.length + enquiries.length})` },
-          ].map((tab) => {
-            const active = activeTab === tab.id;
-            return (
+    <section id="crm-cms-workspace" className="workspace-panel">
+      {/* Top Toolbar: Tabs + Search + Actions */}
+      <header className="workspace-toolbar">
+        <nav className="workspace-tabs" aria-label="Dashboard workspace">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`workspace-tab ${activeTab === tab.id ? "is-active" : ""}`}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setPages((current) => ({ ...current, [tab.id]: 1 }));
+              }}
+              aria-pressed={activeTab === tab.id}
+            >
+              <span>{tab.label}</span>
+              <span className="workspace-tab-count">{tab.count}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="workspace-actions">
+          <div className="workspace-search">
+            <FiSearch size={14} aria-hidden="true" />
+            <input
+              type="search"
+              placeholder="Search this view"
+              value={searchQuery}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
+                setPages((current) => ({ ...current, [activeTab]: 1 }));
+              }}
+              aria-label="Search dashboard workspace"
+            />
+            {searchQuery && (
               <button
-                key={tab.id}
                 type="button"
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear search"
                 style={{
-                  background: active ? "var(--crex-dark)" : "rgba(255,255,255,0.7)",
-                  color: active ? "#ffffff" : "var(--crex-muted)",
-                  border: active ? "1px solid var(--crex-dark)" : "1px solid var(--crex-line)",
-                  borderRadius: "9999px",
-                  padding: "8px 16px",
-                  fontSize: "12.5px",
-                  fontWeight: active ? 600 : 500,
+                  background: "transparent",
+                  border: "none",
                   cursor: "pointer",
-                  transition: "all 0.2s ease",
+                  color: "var(--crex-muted)",
+                  padding: "2px",
+                  display: "inline-flex",
                 }}
               >
-                {tab.label}
+                <FiX size={13} />
               </button>
-            );
-          })}
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", maxWidth: "100%" }}>
-          <div style={{ position: "relative", width: "min(220px, 100%)", flex: "1 1 180px" }}>
-            <FiSearch
-              size={13}
-              color="#8a8a86"
-              style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }}
-            />
-            <input
-              type="text"
-              placeholder="Search workspace..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: "32px", borderRadius: "9999px", width: "100%", fontSize: "12.5px" }}
-            />
+            )}
           </div>
 
           {activeTab === "projects" && (
-            <button type="button" onClick={openCreateProjectModal} className="crex-btn-accent">
+            <button type="button" onClick={openCreateProjectModal} className="adm-btn-primary">
               <FiPlus size={14} />
-              <span>Publish Project</span>
+              <span>New project</span>
             </button>
           )}
 
           {activeTab === "services" && (
-            <button type="button" onClick={openCreateServiceModal} className="crex-btn-accent">
+            <button type="button" onClick={openCreateServiceModal} className="adm-btn-primary">
               <FiPlus size={14} />
-              <span>Add Service</span>
+              <span>New service</span>
             </button>
           )}
 
@@ -113,398 +239,618 @@ export default function DashboardTabs({
               setSiteForm(webDetails);
               setSiteModalOpen(true);
             }}
-            className="crex-btn-ghost"
+            className="adm-btn-secondary"
           >
-            <FiGlobe size={13} />
-            <span>Edit Website Copy & Info</span>
+            <FiGlobe size={14} />
+            <span>Website content</span>
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* ---------------- TAB 1: WEBSITE PROJECTS CMS ---------------- */}
-      {activeTab === "projects" && (
-        <div className="crex-animate-in">
-          <div style={{ marginBottom: "16px", fontSize: "12.5px", color: "var(--crex-muted)" }}>
-            Any project created, edited, or deleted here updates the live Homepage Selected Works and{" "}
-            <a href="/projects" target="_blank" rel="noreferrer" style={{ color: "var(--crex-ink)", fontWeight: 600 }}>
-              /projects
-            </a>{" "}
-            immediately.
+      {/* =====================================================================
+          TAB 1: REQUESTS (QUOTES & INQUIRIES) - OPTIMIZED TABLE
+          ===================================================================== */}
+      {activeTab === "leads" && (
+        <div className="workspace-view crex-animate-in">
+          <div className="workspace-view-head">
+            <div>
+              <span className="workspace-kicker">Client intake</span>
+              <h2>Quotes and inquiries</h2>
+            </div>
           </div>
 
-          <div className="crex-card-grid-projects">
-            {projects
-              .filter(
-                (p) =>
-                  !searchQuery.trim() ||
-                  p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  (p.location || "").toLowerCase().includes(searchQuery.toLowerCase())
-              )
-              .map((proj) => {
-                const catName =
-                  typeof proj.categoryId === "object"
-                    ? proj.categoryId?.categoryName
-                    : categories.find((c) => c._id === proj.categoryId)?.categoryName || "Fit-Out";
-                return (
-                  <div key={proj._id} className="crm-bezel-wrapper">
-                    <div className="crm-bezel-inner" style={{ overflow: "hidden" }}>
-                      <div style={{ height: "145px", position: "relative", background: "#eae7df" }}>
-                        <img
-                          src={resolveImage(proj.images?.[0])}
-                          alt={proj.title}
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = FALLBACK_PROJECT_IMG;
-                          }}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        />
-                        <span
-                          style={{
-                            position: "absolute",
-                            top: "10px",
-                            left: "10px",
-                            background: "rgba(8,8,7,0.84)",
-                            color: "#ffffff",
-                            fontSize: "10px",
-                            fontWeight: 600,
-                            padding: "3px 9px",
-                            borderRadius: "9999px",
-                          }}
-                        >
-                          {catName}
-                        </span>
-                      </div>
+          {/* Quick Filter Bar: Source & Stage Pills */}
+          <div className="workspace-filter-bar">
+            <div className="workspace-filter-group">
+              <button
+                type="button"
+                className={`workspace-filter-pill ${leadSourceFilter === "all" ? "is-active" : ""}`}
+                onClick={() => {
+                  setLeadSourceFilter("all");
+                  setPage("leads", 1);
+                }}
+              >
+                <span>All sources</span>
+                <span className="pill-count">{allLeadItems.length}</span>
+              </button>
+              <button
+                type="button"
+                className={`workspace-filter-pill ${leadSourceFilter === "quote" ? "is-active" : ""}`}
+                onClick={() => {
+                  setLeadSourceFilter("quote");
+                  setPage("leads", 1);
+                }}
+              >
+                <span>Quotes</span>
+                <span className="pill-count">{quotes.length}</span>
+              </button>
+              <button
+                type="button"
+                className={`workspace-filter-pill ${leadSourceFilter === "enquiry" ? "is-active" : ""}`}
+                onClick={() => {
+                  setLeadSourceFilter("enquiry");
+                  setPage("leads", 1);
+                }}
+              >
+                <span>Inquiries</span>
+                <span className="pill-count">{enquiries.length}</span>
+              </button>
+            </div>
 
-                      <div style={{ padding: "14px 16px" }}>
-                        <h4 style={{ margin: "0 0 4px 0", fontSize: "14.5px", fontWeight: 600 }}>
-                          {proj.title}
-                        </h4>
-                        <div style={{ fontSize: "11.5px", color: "var(--crex-muted)", marginBottom: "12px" }}>
-                          {proj.location || "Dubai, UAE"} · {proj.size || "Turnkey"}
-                        </div>
+            <div className="workspace-filter-group">
+              <select
+                className="workspace-select-filter"
+                value={leadStageFilter}
+                onChange={(e) => {
+                  setLeadStageFilter(e.target.value);
+                  setPage("leads", 1);
+                }}
+                aria-label="Filter requests by stage"
+              >
+                <option value="all">All stages ({allLeadItems.length})</option>
+                {STAGES.map((stg) => {
+                  const count = allLeadItems.filter((i) => i.stage === stg.id).length;
+                  return (
+                    <option key={stg.id} value={stg.id}>
+                      {stg.name} ({count})
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          </div>
 
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            paddingTop: "10px",
-                            borderTop: "1px solid var(--crex-line)",
-                          }}
-                        >
-                          <a
-                            href={`/project/details/${proj._id}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              fontSize: "11.5px",
-                              fontWeight: 600,
-                              color: "var(--crex-ink)",
-                              textDecoration: "none",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "4px",
-                            }}
-                          >
-                            <span>Preview</span>
-                            <FiArrowUpRight size={12} />
-                          </a>
-
-                          <div style={{ display: "flex", gap: "6px" }}>
-                            <button
-                              type="button"
-                              onClick={() => openEditProjectModal(proj)}
-                              className="crex-btn-ghost"
-                              style={{ padding: "5px 10px", fontSize: "11px" }}
-                            >
-                              <FiEdit2 size={11} />
-                              <span>Edit</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteProject(proj._id)}
-                              style={{
-                                background: "#fef2f2",
-                                color: "#b91c1c",
-                                border: "1px solid rgba(185, 28, 28, 0.28)",
-                                borderRadius: "9999px",
-                                padding: "5px 9px",
-                                cursor: "pointer",
-                              }}
-                              title="Delete Project"
-                            >
-                              <FiTrash2 size={12} />
-                            </button>
+          {/* Requests Table */}
+          {leadsPage.items.length === 0 ? (
+            <div className="workspace-empty">No requests match the selected filters.</div>
+          ) : (
+            <div className="workspace-table-shell adm-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Scope / Service</th>
+                    <th>Source</th>
+                    <th>Stage (One-click update)</th>
+                    <th>Received</th>
+                    <th aria-label="Actions" style={{ textAlign: "right" }}>Inspect</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leadsPage.items.map((item) => (
+                    <tr key={item.id}>
+                      <td data-label="Client">
+                        <div className="workspace-client">
+                          <span className="crm-avatar" aria-hidden="true">{item.initials}</span>
+                          <div>
+                            <strong>{item.title}</strong>
+                            <span>{item.email || item.mobile}</span>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
+                      </td>
+                      <td data-label="Scope">{item.subtitle}</td>
+                      <td data-label="Source">
+                        <span className="card-source-pill">{item.sourceName || "Lead"}</span>
+                      </td>
+                      <td data-label="Stage">
+                        <select
+                          className="table-stage-select"
+                          value={item.stage}
+                          disabled={savingStageId === item.id}
+                          onChange={(e) => updateItemStage(item.id, e.target.value, item.title)}
+                          aria-label={`Change stage for ${item.title}`}
+                        >
+                          {STAGES.map((stage) => (
+                            <option key={stage.id} value={stage.id}>
+                              {stage.name}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td data-label="Received">{formatDateShort(item.date)}</td>
+                      <td data-label="Action" style={{ textAlign: "right" }}>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}>
+                          {item.mobile && (
+                            <a
+                              href={createWhatsAppUrl(
+                                item.mobile,
+                                `Hello ${item.title}, thank you for contacting Yashmeen Future Building & Fit-Out regarding your ${item.subtitle} brief. We would like to discuss your project requirements.`
+                              )}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="table-action-whatsapp"
+                              title={`Chat with ${item.title} on WhatsApp`}
+                              aria-label={`Chat with ${item.title} on WhatsApp`}
+                            >
+                              <FaWhatsapp size={14} />
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            className="workspace-inspect"
+                            onClick={() => setInspectedItem(item)}
+                          >
+                            Inspect
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <AdminPager
+            page={leadsPage.page}
+            pageSize={pageSizes.leads}
+            pageSizeOptions={[5, 10, 20]}
+            onPageSizeChange={(newSize) => setPageSize("leads", newSize)}
+            totalItems={filteredLeadItems.length}
+            onPageChange={(value) => setPage("leads", value)}
+            noun="requests"
+          />
         </div>
       )}
 
-      {/* ---------------- TAB 2: SERVICES & WEBSITE SECTIONS ---------------- */}
-      {activeTab === "services" && (
-        <div className="crex-animate-in">
-          <div style={{ marginBottom: "16px", fontSize: "12.5px", color: "var(--crex-muted)" }}>
-            Services edited or added here synchronize directly with the Homepage Core Disciplines, dedicated{" "}
-            <a href="/services/architecture" target="_blank" rel="noreferrer" style={{ fontWeight: 600, color: "var(--crex-ink)" }}>
-              /services/*
-            </a>{" "}
-            pages, and Contact Enquiry forms.
-          </div>
-
-          <div className="crex-card-grid-services">
-            {services.map((srv, idx) => (
-              <div key={srv.id || idx} className="crm-bezel-wrapper">
-                <div className="crm-bezel-inner" style={{ padding: "16px" }}>
-                  <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "10px" }}>
-                    <img
-                      src={srv.image || FALLBACK_PROJECT_IMG}
-                      alt={srv.title}
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = FALLBACK_PROJECT_IMG;
-                      }}
-                      style={{ width: "54px", height: "42px", borderRadius: "10px", objectFit: "cover", flexShrink: 0 }}
-                    />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: "10px", fontWeight: 700, color: "var(--crex-brass-deep)", letterSpacing: "0.06em" }}>
-                        {srv.eyebrow || "SERVICE"}
-                      </div>
-                      <h4 style={{ margin: 0, fontSize: "15px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {srv.title}
-                      </h4>
-                    </div>
-                    <span
-                      className={srv.active !== false ? "badge-sage" : "badge-neutral"}
-                      style={{ fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "9999px", flexShrink: 0 }}
-                    >
-                      {srv.active !== false ? "Live" : "Hidden"}
-                    </span>
-                  </div>
-
-                  <p style={{ fontSize: "12px", color: "var(--crex-muted)", lineHeight: 1.5, margin: "0 0 14px 0" }}>
-                    {srv.shortDesc}
-                  </p>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      paddingTop: "10px",
-                      borderTop: "1px solid var(--crex-line)",
-                    }}
-                  >
-                    <a
-                      href={srv.route || `/services/${srv.slug}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{
-                        fontSize: "11.5px",
-                        fontWeight: 600,
-                        color: "var(--crex-ink)",
-                        textDecoration: "none",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
-                    >
-                      <span>View Live Page</span>
-                      <FiArrowUpRight size={12} />
-                    </a>
-
-                    <div style={{ display: "flex", gap: "6px" }}>
-                      <button
-                        type="button"
-                        onClick={() => openEditServiceModal(srv, idx)}
-                        className="crex-btn-ghost"
-                        style={{ padding: "5px 10px", fontSize: "11px" }}
-                      >
-                        <FiEdit2 size={11} />
-                        <span>Edit</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteService(idx)}
-                        style={{
-                          background: "#fef2f2",
-                          color: "#b91c1c",
-                          border: "1px solid rgba(185, 28, 28, 0.28)",
-                          borderRadius: "9999px",
-                          padding: "5px 9px",
-                          cursor: "pointer",
-                        }}
-                        title="Delete Service"
-                      >
-                        <FiTrash2 size={12} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ---------------- TAB 3: CRM DRAG & DROP KANBAN ---------------- */}
+      {/* =====================================================================
+          TAB 2: PIPELINE (KANBAN BOARD) - SCROLLABLE & ACCESSIBLE
+          ===================================================================== */}
       {activeTab === "kanban" && (
-        <div className="crex-animate-in">
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(5, minmax(230px, 1fr))",
-              gap: "14px",
-              overflowX: "auto",
-              paddingBottom: "8px",
-            }}
-          >
+        <div className="workspace-view crex-animate-in">
+          <div className="workspace-view-head">
+            <div>
+              <span className="workspace-kicker">Sales workflow</span>
+              <h2>CRM pipeline</h2>
+            </div>
+            <span className="workspace-help">Drag cards or use the stage selector inside</span>
+          </div>
+
+          {/* Quick Filter Bar for Pipeline */}
+          <div className="workspace-filter-bar">
+            <div className="workspace-filter-group">
+              <button
+                type="button"
+                className={`workspace-filter-pill ${kanbanTypeFilter === "all" ? "is-active" : ""}`}
+                onClick={() => setKanbanTypeFilter("all")}
+              >
+                <span>All records</span>
+                <span className="pill-count">{filteredCRMItems.length}</span>
+              </button>
+              <button
+                type="button"
+                className={`workspace-filter-pill ${kanbanTypeFilter === "quote" ? "is-active" : ""}`}
+                onClick={() => setKanbanTypeFilter("quote")}
+              >
+                <span>Quotes only</span>
+                <span className="pill-count">
+                  {filteredCRMItems.filter((i) => i.type === "quote").length}
+                </span>
+              </button>
+              <button
+                type="button"
+                className={`workspace-filter-pill ${kanbanTypeFilter === "enquiry" ? "is-active" : ""}`}
+                onClick={() => setKanbanTypeFilter("enquiry")}
+              >
+                <span>Inquiries only</span>
+                <span className="pill-count">
+                  {filteredCRMItems.filter((i) => i.type === "enquiry").length}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div className="crm-board">
             {STAGES.map((stage) => {
-              const colItems = filteredCRMItems.filter((i) => i.stage === stage.id);
+              const columnItems = filteredKanbanItems.filter((item) => item.stage === stage.id);
               return (
-                <div
+                <section
                   key={stage.id}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
+                  className={`crm-stage ${columnItems.length === 0 ? "is-empty" : ""}`}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(event) => {
+                    event.preventDefault();
                     if (draggedId) {
-                      const found = allCRMItems.find((i) => i.id === draggedId);
-                      if (found) updateItemStage(draggedId, stage.id, found.title);
+                      const item = allCRMItems.find((candidate) => candidate.id === draggedId);
+                      if (item) updateItemStage(draggedId, stage.id, item.title);
                       setDraggedId(null);
                     }
                   }}
-                  style={{
-                    background: "rgba(241, 240, 238, 0.55)",
-                    border: "1px solid var(--crex-line)",
-                    borderRadius: "18px",
-                    padding: "12px",
-                    minHeight: "360px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "10px",
-                  }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "4px 6px",
-                    }}
-                  >
-                    <span style={{ fontSize: "12.5px", fontWeight: 600 }}>{stage.name}</span>
-                    <span
-                      className={stage.badgeClass}
-                      style={{
-                        fontSize: "10.5px",
-                        fontWeight: 700,
-                        padding: "2px 8px",
-                        borderRadius: "9999px",
-                      }}
-                    >
-                      {colItems.length}
-                    </span>
-                  </div>
-
-                  {colItems.map((item) => (
-                    <div
-                      key={item.id}
-                      draggable
-                      onDragStart={() => setDraggedId(item.id)}
-                      onClick={() => setInspectedItem(item)}
-                      className="crm-bezel-wrapper"
-                      style={{ cursor: "pointer" }}
-                    >
-                      <div className="crm-bezel-inner" style={{ padding: "12px" }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
-                            <div
-                              className="crm-avatar"
-                              style={{ width: "26px", height: "26px", fontSize: "10px" }}
-                            >
-                              {item.initials}
-                            </div>
-                            <div style={{ minWidth: 0 }}>
-                              <div style={{ fontSize: "12.5px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                {item.title}
-                              </div>
-                              <div style={{ fontSize: "10.5px", color: "var(--crex-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                {item.subtitle}
-                              </div>
+                  <header>
+                    <span>{stage.name}</span>
+                    <strong>{columnItems.length}</strong>
+                  </header>
+                  <div className="crm-stage-list">
+                    {columnItems.length === 0 ? (
+                      <div className="crm-stage-empty">No records</div>
+                    ) : (
+                      columnItems.map((item) => (
+                        <article
+                          key={item.id}
+                          className="crm-request-card"
+                          draggable={!savingStageId}
+                          onDragStart={() => setDraggedId(item.id)}
+                          onDragEnd={() => setDraggedId(null)}
+                          onClick={() => setInspectedItem(item)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") setInspectedItem(item);
+                          }}
+                          role="button"
+                          tabIndex={0}
+                          aria-busy={savingStageId === item.id}
+                        >
+                          <div className="crm-request-head">
+                            <span className="crm-avatar">{item.initials}</span>
+                            <div>
+                              <h3>{item.title}</h3>
+                              <p>{item.subtitle}</p>
                             </div>
                           </div>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "10.5px", color: "var(--crex-muted)", gap: "6px" }}>
-                          <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.location}</span>
-                          <span className={item.badgeStyle} style={{ padding: "1px 6px", borderRadius: "9999px", fontWeight: 600, flexShrink: 0 }}>
-                            {item.typeBadge}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                          <footer>
+                            <span>{item.location}</span>
+                            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                              {item.mobile && (
+                                <a
+                                  href={createWhatsAppUrl(
+                                    item.mobile,
+                                    `Hello ${item.title}, this is Yashmeen Future Building & Fit-Out following up on your project status.`
+                                  )}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="card-action-whatsapp"
+                                  title={`Message ${item.title} on WhatsApp`}
+                                  aria-label={`Message ${item.title} on WhatsApp`}
+                                >
+                                  <FaWhatsapp size={11} />
+                                </a>
+                              )}
+                              <span className="card-source-pill">{item.sourceName || "Lead"}</span>
+                              <span className={item.stageBadgeStyle || item.badgeStyle}>{item.stageName}</span>
+                            </div>
+                          </footer>
+                        </article>
+                      ))
+                    )}
+                  </div>
+                </section>
               );
             })}
           </div>
         </div>
       )}
 
-      {/* ---------------- TAB 4: QUOTES & INQUIRIES TABLE ---------------- */}
-      {activeTab === "leads" && (
-        <div className="crex-animate-in adm-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Client</th>
-                <th>Scope / Service</th>
-                <th>Source</th>
-                <th>Location / Budget</th>
-                <th>Date</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCRMItems
-                .filter((i) => i.type !== "project")
-                .map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <div className="crm-avatar">{item.initials}</div>
+      {/* =====================================================================
+          TAB 3: PROJECTS (GRID VS COMPACT LIST VIEW)
+          ===================================================================== */}
+      {activeTab === "projects" && (
+        <div className="workspace-view crex-animate-in">
+          <div className="workspace-view-head">
+            <div>
+              <span className="workspace-kicker">Live portfolio</span>
+              <h2>Selected work</h2>
+            </div>
+            <a href="/projects" target="_blank" rel="noreferrer" className="workspace-text-link">
+              View public page <FiArrowUpRight size={13} />
+            </a>
+          </div>
+
+          {/* Quick Filter Bar: Category Select & View Switcher */}
+          <div className="workspace-filter-bar">
+            <div className="workspace-filter-group">
+              <select
+                className="workspace-select-filter"
+                value={projectCategoryFilter}
+                onChange={(e) => {
+                  setProjectCategoryFilter(e.target.value);
+                  setPage("projects", 1);
+                }}
+                aria-label="Filter projects by category"
+              >
+                <option value="all">All categories ({projects.length})</option>
+                {categories.map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.categoryName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="workspace-filter-group">
+              <div className="workspace-view-toggle" role="group" aria-label="Project view mode">
+                <button
+                  type="button"
+                  className={projectViewMode === "grid" ? "is-active" : ""}
+                  onClick={() => setProjectViewMode("grid")}
+                  title="Grid view"
+                >
+                  <FiGrid size={13} />
+                </button>
+                <button
+                  type="button"
+                  className={projectViewMode === "list" ? "is-active" : ""}
+                  onClick={() => setProjectViewMode("list")}
+                  title="Compact list view"
+                >
+                  <FiList size={13} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {projectPage.items.length === 0 ? (
+            <div className="workspace-empty">No projects match this search or filter.</div>
+          ) : projectViewMode === "grid" ? (
+            <div className="workspace-project-grid">
+              {projectPage.items.map((project) => {
+                const categoryName =
+                  typeof project.categoryId === "object"
+                    ? project.categoryId?.categoryName
+                    : categories.find((c) => c._id === project.categoryId)?.categoryName ||
+                      "Fit-Out";
+                return (
+                  <article key={project._id} className="workspace-project-card">
+                    <AdminMediaImage
+                      src={resolveImage(project.images?.[0])}
+                      fallbackSrc={FALLBACK_PROJECT_IMG}
+                      alt={project.title}
+                    />
+                    <div className="workspace-project-copy">
+                      <span className="workspace-kicker">{categoryName}</span>
+                      <h3>{project.title}</h3>
+                      <p>
+                        {project.location || "Dubai, UAE"} · {project.size || "Turnkey"}
+                      </p>
+                      <div className="workspace-card-actions">
+                        <a href={`/project/details/${project._id}`} target="_blank" rel="noreferrer">
+                          Preview <FiArrowUpRight size={12} />
+                        </a>
                         <div>
-                          <div style={{ fontWeight: 600 }}>{item.title}</div>
-                          <div style={{ fontSize: "11px", color: "var(--crex-muted)" }}>{item.email}</div>
+                          <button
+                            type="button"
+                            onClick={() => openEditProjectModal(project)}
+                            aria-label={`Edit ${project.title}`}
+                          >
+                            <FiEdit2 size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            className="is-danger"
+                            onClick={() => handleDeleteProject(project._id)}
+                            aria-label={`Delete ${project.title}`}
+                          >
+                            <FiTrash2 size={13} />
+                          </button>
                         </div>
                       </div>
-                    </td>
-                    <td>{item.subtitle}</td>
-                    <td>
-                      <span className={item.badgeStyle} style={{ padding: "3px 9px", borderRadius: "9999px", fontSize: "11px", fontWeight: 600 }}>
-                        {item.typeBadge}
-                      </span>
-                    </td>
-                    <td>{item.budget || item.location}</td>
-                    <td>{formatDateShort(item.date)}</td>
-                    <td>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            /* Compact Efficient Table View */
+            <div className="workspace-table-shell adm-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Project</th>
+                    <th>Category</th>
+                    <th>Location</th>
+                    <th>Scope / Size</th>
+                    <th aria-label="Actions" style={{ textAlign: "right" }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projectPage.items.map((project) => {
+                    const categoryName =
+                      typeof project.categoryId === "object"
+                        ? project.categoryId?.categoryName
+                        : categories.find((c) => c._id === project.categoryId)?.categoryName ||
+                          "Fit-Out";
+                    return (
+                      <tr key={project._id}>
+                        <td data-label="Project">
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <AdminMediaImage
+                              src={resolveImage(project.images?.[0])}
+                              fallbackSrc={FALLBACK_PROJECT_IMG}
+                              alt={project.title}
+                              style={{
+                                width: "42px",
+                                height: "32px",
+                                borderRadius: "6px",
+                                objectFit: "cover",
+                                flexShrink: 0,
+                              }}
+                            />
+                            <div>
+                              <strong>{project.title}</strong>
+                              <div style={{ fontSize: "11px", color: "var(--crex-muted)" }}>
+                                {project.sector || "Architectural"}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td data-label="Category">
+                          <span className="adm-chip">{categoryName}</span>
+                        </td>
+                        <td data-label="Location">{project.location || "Dubai, UAE"}</td>
+                        <td data-label="Scope">{project.size || "Turnkey"}</td>
+                        <td data-label="Actions" style={{ textAlign: "right" }}>
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                            <button
+                              type="button"
+                              className="adm-action-btn"
+                              onClick={() => openEditProjectModal(project)}
+                              aria-label={`Edit ${project.title}`}
+                            >
+                              <FiEdit2 size={12} />
+                            </button>
+                            <button
+                              type="button"
+                              className="adm-action-btn is-danger"
+                              onClick={() => handleDeleteProject(project._id)}
+                              aria-label={`Delete ${project.title}`}
+                            >
+                              <FiTrash2 size={12} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <AdminPager
+            page={projectPage.page}
+            pageSize={pageSizes.projects}
+            pageSizeOptions={projectViewMode === "grid" ? [6, 12, 24] : [5, 10, 20]}
+            onPageSizeChange={(newSize) => setPageSize("projects", newSize)}
+            totalItems={filteredProjects.length}
+            onPageChange={(value) => setPage("projects", value)}
+            noun="projects"
+          />
+        </div>
+      )}
+
+      {/* =====================================================================
+          TAB 4: SERVICES & COPY - OPTIMIZED WITH STATUS FILTERS
+          ===================================================================== */}
+      {activeTab === "services" && (
+        <div className="workspace-view crex-animate-in">
+          <div className="workspace-view-head">
+            <div>
+              <span className="workspace-kicker">Website offer</span>
+              <h2>Services and copy</h2>
+            </div>
+          </div>
+
+          {/* Quick Filter Bar for Services */}
+          <div className="workspace-filter-bar">
+            <div className="workspace-filter-group">
+              <button
+                type="button"
+                className={`workspace-filter-pill ${serviceStatusFilter === "all" ? "is-active" : ""}`}
+                onClick={() => {
+                  setServiceStatusFilter("all");
+                  setPage("services", 1);
+                }}
+              >
+                <span>All services</span>
+                <span className="pill-count">{services.length}</span>
+              </button>
+              <button
+                type="button"
+                className={`workspace-filter-pill ${serviceStatusFilter === "live" ? "is-active" : ""}`}
+                onClick={() => {
+                  setServiceStatusFilter("live");
+                  setPage("services", 1);
+                }}
+              >
+                <span>Live only</span>
+                <span className="pill-count">
+                  {services.filter((s) => s.active !== false).length}
+                </span>
+              </button>
+              <button
+                type="button"
+                className={`workspace-filter-pill ${serviceStatusFilter === "hidden" ? "is-active" : ""}`}
+                onClick={() => {
+                  setServiceStatusFilter("hidden");
+                  setPage("services", 1);
+                }}
+              >
+                <span>Hidden</span>
+                <span className="pill-count">
+                  {services.filter((s) => s.active === false).length}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {servicePage.items.length === 0 ? (
+            <div className="workspace-empty">No services match this filter.</div>
+          ) : (
+            <div className="workspace-service-grid">
+              {servicePage.items.map(({ service, index }) => (
+                <article key={service.id || index} className="workspace-service-card">
+                  <img
+                    src={service.image || FALLBACK_PROJECT_IMG}
+                    alt={service.title}
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = FALLBACK_PROJECT_IMG;
+                    }}
+                  />
+                  <div>
+                    <span className="workspace-kicker">{service.eyebrow || "Service"}</span>
+                    <h3>{service.title}</h3>
+                    <p>{service.shortDesc}</p>
+                  </div>
+                  <span className={`workspace-status ${service.active !== false ? "is-live" : ""}`}>
+                    {service.active !== false ? "Live" : "Hidden"}
+                  </span>
+                  <div className="workspace-card-actions">
+                    <a href={service.route || `/services/${service.slug}`} target="_blank" rel="noreferrer">
+                      Public page <FiArrowUpRight size={12} />
+                    </a>
+                    <div>
                       <button
                         type="button"
-                        onClick={() => setInspectedItem(item)}
-                        className="crex-btn-ghost"
-                        style={{ padding: "5px 12px", fontSize: "11px" }}
+                        onClick={() => openEditServiceModal(service, index)}
+                        aria-label={`Edit ${service.title}`}
                       >
-                        Inspect
+                        <FiEdit2 size={13} />
                       </button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+                      <button
+                        type="button"
+                        className="is-danger"
+                        onClick={() => handleDeleteService(index)}
+                        aria-label={`Delete ${service.title}`}
+                      >
+                        <FiTrash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          <AdminPager
+            page={servicePage.page}
+            pageSize={pageSizes.services}
+            pageSizeOptions={[4, 6, 12]}
+            onPageSizeChange={(newSize) => setPageSize("services", newSize)}
+            totalItems={filteredServices.length}
+            onPageChange={(value) => setPage("services", value)}
+            noun="services"
+          />
         </div>
       )}
     </section>

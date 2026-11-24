@@ -123,6 +123,7 @@ export default function AdminLayout() {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
+        background: "var(--crex-sand)",
       }}
     >
       {/* Top Floating Architectural Bento Pill Header */}

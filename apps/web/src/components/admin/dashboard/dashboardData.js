@@ -52,7 +52,7 @@ export const formatDateShort = (dateStr) => {
 export const fetchDashboardBundle = async () => {
   const [qRes, eRes, pRes, cRes, wRes] = await Promise.allSettled([
     quoteAPI.getAll({ limit: 100 }),
-    enquiryAPI.getAll(),
+    enquiryAPI.getAll({ limit: 100 }),
     projectAPI.getAll({ limit: 100 }),
     categoryAPI.getAll(),
     webDetailsAPI.adminDetails(),

@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { categoryAPI } from "../../services/api";
 import { clearProjectsCache, clearGalleryCache } from "../../lib/publicCache";
 import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import AdminPager from "../../components/admin/AdminPager";
+
+const PAGE_SIZE = 8;
 
 const invalidateSiteCaches = () => {
   clearProjectsCache();
@@ -31,7 +34,7 @@ const ToggleSwitch = ({ checked, onChange, disabled, label }) => (
       display: "inline-flex",
       alignItems: "center",
       justifyContent: checked ? "flex-end" : "flex-start",
-      background: checked ? "#080807" : "#d8d5ce",
+      background: checked ? "#1b1a17" : "#d8d5ce",
       cursor: disabled ? "not-allowed" : "pointer",
       opacity: disabled ? 0.6 : 1,
       transition: "background 0.2s ease",
@@ -43,7 +46,7 @@ const ToggleSwitch = ({ checked, onChange, disabled, label }) => (
         width: "18px",
         height: "18px",
         borderRadius: "50%",
-        background: checked ? "#c5a059" : "#ffffff",
+        background: checked ? "#8a6a28" : "#ffffff",
         boxShadow: "0 1px 2px rgba(8,8,7,0.28)",
       }}
     />
@@ -54,6 +57,7 @@ export default function CategoryManager() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [banner, setBanner] = useState(null); // { type, text }
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -218,6 +222,13 @@ export default function CategoryManager() {
   const filtered = categories.filter((c) =>
     c.categoryName?.toLowerCase().includes(search.trim().toLowerCase()),
   );
+  const totalPages = Math.max(Math.ceil(filtered.length / PAGE_SIZE), 1);
+  const safePage = Math.min(page, totalPages);
+  const pagedCategories = filtered.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
+  const activeCount = categories.filter((category) => category.status).length;
 
   return (
     <div className="adm-page">
@@ -228,6 +239,9 @@ export default function CategoryManager() {
             <p className="adm-subtitle">
               Create, edit, and organise portfolio and gallery categories across the site.
             </p>
+            <span className="adm-header-meta">
+              {activeCount} active · {categories.length} total
+            </span>
           </div>
           <button
             type="button"
@@ -269,13 +283,16 @@ export default function CategoryManager() {
               type="text"
               placeholder="Search categories…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="adm-search-input"
             />
           </div>
         </div>
 
-        <div className="adm-card">
+        <div className="adm-card adm-card-flat">
           {loading ? (
             <div className="adm-empty">Loading categories…</div>
           ) : filtered.length === 0 ? (
@@ -285,67 +302,55 @@ export default function CategoryManager() {
                 : "No categories match your search."}
             </div>
           ) : (
-            <div className="adm-table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Category name</th>
-                    <th>Status</th>
-                    <th style={{ textAlign: "right" }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((category) => (
-                    <tr key={category._id}>
-                      <td style={{ fontWeight: 600, minWidth: "180px" }}>
-                        {category.categoryName}
-                      </td>
-                      <td>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                          <ToggleSwitch
-                            checked={!!category.status}
-                            onChange={() => toggleStatus(category)}
-                            disabled={togglingId === category._id}
-                            label={`Toggle status for ${category.categoryName}`}
-                          />
-                          <span
-                            style={{
-                              fontSize: "12.5px",
-                              fontWeight: 600,
-                              color: category.status ? "#285234" : "var(--crex-muted)",
-                            }}
-                          >
-                            {category.status ? "Active" : "Inactive"}
-                          </span>
-                        </div>
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        <div style={{ display: "inline-flex", gap: "8px", justifyContent: "flex-end" }}>
-                          <button
-                            type="button"
-                            className="adm-icon-btn"
-                            onClick={() => openEditModal(category)}
-                            aria-label="Edit category"
-                            title="Edit category"
-                          >
-                            <FiEdit2 size={15} />
-                          </button>
-                          <button
-                            type="button"
-                            className="adm-icon-btn is-danger"
-                            onClick={() => confirmDelete(category)}
-                            aria-label="Delete category"
-                            title="Delete category"
-                          >
-                            <FiTrash2 size={15} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <>
+              <div className="category-list">
+                {pagedCategories.map((category, index) => (
+                  <article key={category._id} className="category-row">
+                    <span className="category-number">
+                      {String((safePage - 1) * PAGE_SIZE + index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="category-copy">
+                      <h3>{category.categoryName}</h3>
+                      <p>{category.status ? "Visible across project and gallery filters" : "Hidden from public filters"}</p>
+                    </div>
+                    <div className="category-status-control">
+                      <ToggleSwitch
+                        checked={!!category.status}
+                        onChange={() => toggleStatus(category)}
+                        disabled={togglingId === category._id}
+                        label={`Toggle status for ${category.categoryName}`}
+                      />
+                      <span>{category.status ? "Active" : "Inactive"}</span>
+                    </div>
+                    <div className="category-actions">
+                      <button
+                        type="button"
+                        className="adm-icon-btn"
+                        onClick={() => openEditModal(category)}
+                        aria-label={`Edit ${category.categoryName}`}
+                      >
+                        <FiEdit2 size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="adm-icon-btn is-danger"
+                        onClick={() => confirmDelete(category)}
+                        aria-label={`Delete ${category.categoryName}`}
+                      >
+                        <FiTrash2 size={15} />
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+              <AdminPager
+                page={safePage}
+                pageSize={PAGE_SIZE}
+                totalItems={filtered.length}
+                onPageChange={setPage}
+                noun="categories"
+              />
+            </>
           )}
         </div>
       </div>

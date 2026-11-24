@@ -5,6 +5,7 @@ import { sendEnquiryEmail } from '../middlewares/sendEmail.js';
 import { handlePublicSubmissionTrap } from '../utils/publicSubmission.js';
 
 const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
+const CRM_STAGES = ["leads", "feasibility", "proposal", "construction", "completed"];
 
 export const createEnquiry = async (req, res) => {
     try {
@@ -57,8 +58,24 @@ export const getAllEnquiries = async (req, res) => {
         const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1);
         const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 25, 1), 100);
         const filter = { archivedAt: null };
+
+        if (req.query.search?.trim()) {
+            const safe = req.query.search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const regex = new RegExp(safe, "i");
+            filter.$or = [
+                { name: regex },
+                { mobile: regex },
+                { email: regex },
+                { services: regex },
+            ];
+        }
+
         const [enquiries, total] = await Promise.all([
-            EnquiryModel.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+            EnquiryModel.find(filter)
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .lean(),
             EnquiryModel.countDocuments(filter),
         ]);
         return res.status(200).json({
@@ -69,6 +86,31 @@ export const getAllEnquiries = async (req, res) => {
     } catch (error) {
         logError("Failed to fetch enquiries:", error);
         return res.status(500).json({ success: false, message: "Failed to fetch enquiries" });
+    }
+};
+
+export const updateEnquiryStage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { stage } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: "Invalid enquiry ID" });
+        }
+        if (!CRM_STAGES.includes(stage)) {
+            return res.status(400).json({ success: false, message: "Invalid CRM stage" });
+        }
+        const enquiry = await EnquiryModel.findByIdAndUpdate(
+            id,
+            { $set: { crmStage: stage } },
+            { returnDocument: "after", runValidators: true },
+        ).lean();
+        if (!enquiry) {
+            return res.status(404).json({ success: false, message: "Enquiry not found" });
+        }
+        return res.status(200).json({ success: true, data: enquiry });
+    } catch (error) {
+        logError("Failed to update enquiry stage:", error);
+        return res.status(500).json({ success: false, message: "Failed to update enquiry stage" });
     }
 };
 

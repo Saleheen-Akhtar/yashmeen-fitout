@@ -11,6 +11,7 @@ const PROJECT_TYPES = [
   "Retail",
   "Other",
 ];
+const CRM_STAGES = ["leads", "feasibility", "proposal", "construction", "completed"];
 
 // ---------- helpers ----------
 
@@ -175,6 +176,31 @@ export const getQuoteById = async (req, res) => {
     return res.status(200).json({ success: true, data: quote });
   } catch (error) {
     return handleError(res, error, "Failed to fetch quote request");
+  }
+};
+
+// PATCH /api/quote/stage/:id (admin)
+export const updateQuoteStage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { stage } = req.body;
+    if (!isValidId(id)) {
+      return res.status(400).json({ success: false, message: "Invalid quote ID" });
+    }
+    if (!CRM_STAGES.includes(stage)) {
+      return res.status(400).json({ success: false, message: "Invalid CRM stage" });
+    }
+    const quote = await QuoteModel.findByIdAndUpdate(
+      id,
+      { $set: { crmStage: stage } },
+      { returnDocument: "after", runValidators: true },
+    ).lean();
+    if (!quote) {
+      return res.status(404).json({ success: false, message: "Quote request not found" });
+    }
+    return res.status(200).json({ success: true, data: quote });
+  } catch (error) {
+    return handleError(res, error, "Failed to update quote stage");
   }
 };
 

@@ -19,6 +19,11 @@ const projectSchema = mongoose.Schema(
         sector: { type: String, trim: true },   // e.g. "Commercial"
         videoUrl: { type: String, trim: true },
         description: { type: String },
+        isFeatured: {
+            type: Boolean,
+            default: false,
+            index: true
+        },
         images: [
             {
                 type: String,
@@ -30,6 +35,7 @@ const projectSchema = mongoose.Schema(
 );
 
 projectSchema.index({ categoryId: 1 });
+projectSchema.index({ isFeatured: -1, createdAt: -1 });
 
 const ProjectModel = mongoose.model('Project', projectSchema);
 

@@ -28,7 +28,7 @@ const hasValidTextFields = (body) =>
 export const createProject = async (req, res) => {
     let uploadedAssets = [];
     try {
-        const { categoryId, title, description, videoUrl } = req.body;
+        const { categoryId, title, description, videoUrl, isFeatured } = req.body;
 
         if (!categoryId) {
             return res.status(400).json({ success: false, message: "categoryId is required" });
@@ -60,6 +60,7 @@ export const createProject = async (req, res) => {
             videoUrl: videoUrl ? videoUrl.trim() : undefined,
             description,
             images,
+            isFeatured: isFeatured === true || isFeatured === 'true' || isFeatured === 1 || isFeatured === '1',
         };
 
         // Empty strings are stored as "not set"
@@ -100,7 +101,7 @@ export const getProjectsVersion = async (req, res) => {
 
 export const getAllProjects = async (req, res) => {
     try {
-        const { categoryId } = req.query;
+        const { categoryId, isFeatured } = req.query;
 
         const filter = {};
         if (categoryId) {
@@ -109,8 +110,11 @@ export const getAllProjects = async (req, res) => {
             }
             filter.categoryId = categoryId;
         }
+        if (isFeatured !== undefined) {
+            filter.isFeatured = isFeatured === 'true' || isFeatured === true || isFeatured === '1' || isFeatured === 1;
+        }
 
-        const projects = await ProjectModel.find(filter).populate('categoryId').sort({ createdAt: -1 });
+        const projects = await ProjectModel.find(filter).populate('categoryId').sort({ isFeatured: -1, createdAt: -1 });
         return res.status(200).json({ success: true, data: projects });
     } catch (error) {
         logError("Failed to fetch projects:", error);
@@ -145,7 +149,7 @@ export const updateProject = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid project id" });
         }
 
-        const { categoryId, title, description, videoUrl } = req.body;
+        const { categoryId, title, description, videoUrl, isFeatured } = req.body;
 
         if (videoUrl !== undefined && !isValidVideoUrl(videoUrl)) {
             return res.status(400).json({ success: false, message: "videoUrl must be a valid http(s) URL" });
@@ -208,6 +212,9 @@ export const updateProject = async (req, res) => {
         if (title !== undefined) project.title = title.trim();
         if (videoUrl !== undefined) project.videoUrl = videoUrl.trim(); // "" clears the video
         if (description !== undefined) project.description = description;
+        if (isFeatured !== undefined) {
+            project.isFeatured = isFeatured === true || isFeatured === 'true' || isFeatured === 1 || isFeatured === '1';
+        }
 
         // size / location / scope / sector: sent -> updated ("" clears it), not sent -> untouched
         TEXT_FIELDS.forEach((f) => {

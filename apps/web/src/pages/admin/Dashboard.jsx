@@ -412,6 +412,7 @@ export default function Dashboard() {
       sector: "Residential",
       description: "",
       isFeatured: false,
+      featuredOrder: 0,
     });
     setProjectFiles([]);
     setExistingImages([]);
@@ -433,6 +434,7 @@ export default function Dashboard() {
       sector: proj.sector || "",
       description: proj.description || "",
       isFeatured: Boolean(proj.isFeatured),
+      featuredOrder: Number(proj.featuredOrder) || 1,
     });
     setProjectFiles([]);
     setExistingImages(proj.images || []);
@@ -463,6 +465,7 @@ export default function Dashboard() {
       fd.append("sector", projectForm.sector || "");
       fd.append("description", projectForm.description || "");
       fd.append("isFeatured", Boolean(projectForm.isFeatured));
+      fd.append("featuredOrder", Number(projectForm.featuredOrder) || 0);
       projectFiles.forEach((f) => fd.append("images", f));
 
       if (editingProject?._id) {

@@ -679,6 +679,8 @@ export default function EditorialCarousel3D({
                     src={item.src}
                     alt={item.alt || item.title}
                     loading={idx < 3 ? "eager" : "lazy"}
+                    decoding="async"
+                    fetchPriority={idx === 0 ? "high" : "auto"}
                     draggable={false}
                     onError={(e) => {
                       if (!e.currentTarget.dataset.fallbackApplied) {

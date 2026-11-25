@@ -123,9 +123,8 @@ export default function ProjectEditorModal({
 
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
+                display: "grid",
+                gap: "10px",
                 padding: "12px 14px",
                 borderRadius: "10px",
                 background: projectForm.isFeatured ? "rgba(186, 153, 94, 0.12)" : "rgba(0, 0, 0, 0.03)",
@@ -133,22 +132,52 @@ export default function ProjectEditorModal({
                 transition: "all 0.2s ease",
               }}
             >
-              <div>
-                <div style={{ fontWeight: 600, fontSize: "13px", color: projectForm.isFeatured ? "#8b6f3c" : "#1a1a1a" }}>
-                  Feature on Homepage Showcase
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: "13px", color: projectForm.isFeatured ? "#8b6f3c" : "#1a1a1a" }}>
+                    Feature on Homepage Showcase
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#666", marginTop: "2px" }}>
+                    Pin this project to the 3D gallery and flagship curation on the home screen
+                  </div>
                 </div>
-                <div style={{ fontSize: "11px", color: "#666", marginTop: "2px" }}>
-                  Pin this project to the 3D gallery and flagship curation on the home screen
-                </div>
+                <label style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", margin: 0 }}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(projectForm.isFeatured)}
+                    onChange={(e) => setProjectForm((p) => ({ ...p, isFeatured: e.target.checked }))}
+                    style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "#ba995e" }}
+                  />
+                </label>
               </div>
-              <label style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", margin: 0 }}>
-                <input
-                  type="checkbox"
-                  checked={Boolean(projectForm.isFeatured)}
-                  onChange={(e) => setProjectForm((p) => ({ ...p, isFeatured: e.target.checked }))}
-                  style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "#ba995e" }}
-                />
-              </label>
+
+              {projectForm.isFeatured && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "8px", borderTop: "1px dashed rgba(186, 153, 94, 0.3)" }}>
+                  <label style={{ fontSize: "12px", fontWeight: 600, color: "#8b6f3c" }}>
+                    Showcase Sequence (Position 1 to 6)
+                  </label>
+                  <select
+                    value={projectForm.featuredOrder || 1}
+                    onChange={(e) => setProjectForm((p) => ({ ...p, featuredOrder: Number(e.target.value) }))}
+                    style={{
+                      padding: "4px 10px",
+                      borderRadius: "6px",
+                      border: "1px solid rgba(186, 153, 94, 0.5)",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      background: "#fff",
+                      color: "#1a1a1a",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {[1, 2, 3, 4, 5, 6].map((num) => (
+                      <option key={num} value={num}>
+                        Position #{num} {num === 1 ? "(Initial Center)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             <div>
@@ -163,7 +192,12 @@ export default function ProjectEditorModal({
             </div>
 
             <div>
-              <label>Upload Photography</label>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <label style={{ margin: 0 }}>Upload Photography</label>
+                <span style={{ fontSize: "11px", color: "#8b6f3c", fontWeight: 500 }}>
+                  Optimal 4:5 portrait (e.g. 1600 x 2000px)
+                </span>
+              </div>
               <input
                 ref={fileInputRef}
                 type="file"

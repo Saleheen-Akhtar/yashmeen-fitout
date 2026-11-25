@@ -67,6 +67,7 @@ export default function ProjectManager() {
   const [formVideoUrl, setFormVideoUrl] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formIsFeatured, setFormIsFeatured] = useState(false);
+  const [formFeaturedOrder, setFormFeaturedOrder] = useState(0);
   const [formImages, setFormImages] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
   const fileRef = useRef(null);
@@ -148,6 +149,7 @@ export default function ProjectManager() {
     setFormVideoUrl("");
     setFormDescription("");
     setFormIsFeatured(false);
+    setFormFeaturedOrder(0);
     setFormImages([]);
     resetNewFiles();
     setFormError("");
@@ -165,6 +167,7 @@ export default function ProjectManager() {
     setFormVideoUrl(p.videoUrl || "");
     setFormDescription(p.description || "");
     setFormIsFeatured(Boolean(p.isFeatured));
+    setFormFeaturedOrder(Number(p.featuredOrder) || 1);
     setFormImages(Array.isArray(p.images) ? p.images : []);
     resetNewFiles();
     setFormError("");
@@ -247,6 +250,7 @@ export default function ProjectManager() {
     payload.append("videoUrl", videoUrl);
     payload.append("description", description);
     payload.append("isFeatured", formIsFeatured);
+    payload.append("featuredOrder", formFeaturedOrder);
     payload.append("existingImages", JSON.stringify(formImages));
     newFiles.forEach((f) => payload.append("images", f.file));
 
@@ -469,7 +473,7 @@ export default function ProjectManager() {
                                       letterSpacing: "0.04em",
                                     }}
                                   >
-                                    Featured
+                                    Featured {p.featuredOrder > 0 ? `#${p.featuredOrder}` : ""}
                                   </span>
                                 )}
                               </div>
@@ -700,9 +704,8 @@ export default function ProjectManager() {
 
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
+                  display: "grid",
+                  gap: "10px",
                   padding: "12px 14px",
                   borderRadius: "10px",
                   background: formIsFeatured ? "rgba(186, 153, 94, 0.12)" : "rgba(0, 0, 0, 0.03)",
@@ -710,22 +713,52 @@ export default function ProjectManager() {
                   transition: "all 0.2s ease",
                 }}
               >
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: "13px", color: formIsFeatured ? "#8b6f3c" : "inherit" }}>
-                    Feature on Homepage Showcase
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: "13px", color: formIsFeatured ? "#8b6f3c" : "inherit" }}>
+                      Feature on Homepage Showcase
+                    </div>
+                    <div style={{ fontSize: "11px", color: "var(--crex-muted)", marginTop: "2px" }}>
+                      Pin this project to the 3D gallery and flagship curation on the home screen
+                    </div>
                   </div>
-                  <div style={{ fontSize: "11px", color: "var(--crex-muted)", marginTop: "2px" }}>
-                    Pin this project to the 3D gallery and flagship curation on the home screen
-                  </div>
+                  <label style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", margin: 0 }}>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(formIsFeatured)}
+                      onChange={(e) => setFormIsFeatured(e.target.checked)}
+                      style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "#ba995e" }}
+                    />
+                  </label>
                 </div>
-                <label style={{ display: "inline-flex", alignItems: "center", cursor: "pointer", margin: 0 }}>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(formIsFeatured)}
-                    onChange={(e) => setFormIsFeatured(e.target.checked)}
-                    style={{ width: "18px", height: "18px", cursor: "pointer", accentColor: "#ba995e" }}
-                  />
-                </label>
+
+                {formIsFeatured && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "8px", borderTop: "1px dashed rgba(186, 153, 94, 0.3)" }}>
+                    <label style={{ fontSize: "12px", fontWeight: 600, color: "#8b6f3c" }}>
+                      Showcase Sequence (Position 1 to 6)
+                    </label>
+                    <select
+                      value={formFeaturedOrder || 1}
+                      onChange={(e) => setFormFeaturedOrder(Number(e.target.value))}
+                      style={{
+                        padding: "4px 10px",
+                        borderRadius: "6px",
+                        border: "1px solid rgba(186, 153, 94, 0.5)",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        background: "#fff",
+                        color: "#1a1a1a",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {[1, 2, 3, 4, 5, 6].map((num) => (
+                        <option key={num} value={num}>
+                          Position #{num} {num === 1 ? "(Initial Center)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -763,6 +796,9 @@ export default function ProjectManager() {
                   </span>
                   <span style={{ fontSize: "12px", color: "var(--crex-muted)" }}>
                     Select one or several. Up to {MAX_IMAGES} images, {MAX_IMAGE_MB} MB each.
+                  </span>
+                  <span style={{ fontSize: "11px", color: "#8b6f3c", fontWeight: 500, marginTop: "4px" }}>
+                    Optimal for 3D Carousel: 4:5 portrait (e.g. 1600 x 2000px).
                   </span>
                 </button>
 

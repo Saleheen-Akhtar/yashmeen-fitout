@@ -23,8 +23,15 @@ const resolveProjectImage = resolveMediaUrl;
 const mapProjects = (items = []) => {
   if (!Array.isArray(items) || items.length === 0) return [];
 
-  // Dynamically prioritize projects marked as isFeatured, then fill with latest projects
-  const featured = items.filter((p) => p && p.isFeatured === true);
+  // Dynamically prioritize projects marked as isFeatured, sorted by featuredOrder then createdAt
+  const featured = items
+    .filter((p) => p && p.isFeatured === true)
+    .sort((a, b) => {
+      const orderA = a.featuredOrder && a.featuredOrder > 0 ? Number(a.featuredOrder) : 999;
+      const orderB = b.featuredOrder && b.featuredOrder > 0 ? Number(b.featuredOrder) : 999;
+      if (orderA !== orderB) return orderA - orderB;
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    });
   const nonFeatured = items.filter((p) => p && !p.isFeatured);
   const ordered = [...featured, ...nonFeatured].slice(0, 6);
 
@@ -98,6 +105,21 @@ export default function Works() {
       window.removeEventListener("projects-updated", onRefresh);
     };
   }, []);
+
+  useEffect(() => {
+    // Warm browser image cache for top 3 showcase projects during idle time
+    if (typeof window !== "undefined" && Array.isArray(liveProjects) && liveProjects.length > 0) {
+      const topImages = liveProjects.slice(0, 3).map((p) => p.img).filter(Boolean);
+      topImages.forEach((src) => {
+        const link = document.createElement("link");
+        link.rel = "preload";
+        link.as = "image";
+        link.href = src;
+        link.fetchPriority = "high";
+        document.head.appendChild(link);
+      });
+    }
+  }, [liveProjects]);
 
   // Only real projects from the CMS are shown; no invented placeholders.
   const displayedProjects = liveProjects;

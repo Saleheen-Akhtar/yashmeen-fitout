@@ -24,6 +24,11 @@ const projectSchema = mongoose.Schema(
             default: false,
             index: true
         },
+        featuredOrder: {
+            type: Number,
+            default: 0,
+            index: true
+        },
         images: [
             {
                 type: String,
@@ -35,7 +40,7 @@ const projectSchema = mongoose.Schema(
 );
 
 projectSchema.index({ categoryId: 1 });
-projectSchema.index({ isFeatured: -1, createdAt: -1 });
+projectSchema.index({ isFeatured: -1, featuredOrder: 1, createdAt: -1 });
 
 const ProjectModel = mongoose.model('Project', projectSchema);
 
